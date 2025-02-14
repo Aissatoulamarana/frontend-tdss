@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
+import API from 'src/utils/api';
 
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -11,17 +13,9 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { orderBy } from 'src/utils/helper';
+// import { orderBy } from 'src/utils/helper';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import {
-  _jobs,
-  _roles,
-  JOB_SORT_OPTIONS,
-  JOB_BENEFIT_OPTIONS,
-  JOB_EXPERIENCE_OPTIONS,
-  JOB_EMPLOYMENT_TYPE_OPTIONS,
-} from 'src/_mock';
 
 import { Iconify } from 'src/components/iconify';
 import { EmptyContent } from 'src/components/empty-content';
@@ -30,7 +24,7 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { JobList } from '../job-list';
 import { JobSort } from '../job-sort';
 import { JobSearch } from '../job-search';
-import { JobFilters } from '../job-filters';
+
 import { JobFiltersResult } from '../job-filters-result';
 
 // ----------------------------------------------------------------------
@@ -39,27 +33,29 @@ export function JobListView() {
   const openFilters = useBoolean();
 
   const [sortBy, setSortBy] = useState('latest');
-
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [tableData, setTableData] = useState([]);
   const search = useSetState({ query: '', results: [] });
 
-  const filters = useSetState({
-    roles: [],
-    locations: [],
-    benefits: [],
-    experience: 'all',
-    employmentTypes: [],
-  });
+  useEffect(() => {
+    const fetchFonctions = async () => {
+      try {
+        const response = await axios.get(API.listFonctions()); // Remplacez par votre endpoint réel
+        setTableData(response.data || []); // Assurez-vous que l'API renvoie un tableau
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const dataFiltered = applyFilter({ inputData: _jobs, filters: filters.state, sortBy });
+    fetchFonctions();
+  }, []);
 
-  const canReset =
-    filters.state.roles.length > 0 ||
-    filters.state.locations.length > 0 ||
-    filters.state.benefits.length > 0 ||
-    filters.state.employmentTypes.length > 0 ||
-    filters.state.experience !== 'all';
+  const dataFiltered = applyFilter({ inputData: tableData, sortBy });
 
-  const notFound = !dataFiltered.length && canReset;
+  const notFound = !dataFiltered.length;
 
   const handleSortBy = useCallback((newValue) => {
     setSortBy(newValue);
@@ -70,14 +66,14 @@ export function JobListView() {
       search.setState({ query: inputValue });
 
       if (inputValue) {
-        const results = _jobs.filter(
-          (job) => job.title.toLowerCase().indexOf(search.state.query.toLowerCase()) !== -1
+        const results = tableData.filter((job) =>
+          job.name.toLowerCase().includes(inputValue.toLowerCase())
         );
 
         search.setState({ results });
       }
     },
-    [search]
+    [tableData, search]
   );
 
   const renderFilters = (
@@ -90,26 +86,15 @@ export function JobListView() {
       <JobSearch search={search} onSearch={handleSearch} />
 
       <Stack direction="row" spacing={1} flexShrink={0}>
-        <JobFilters
-          filters={filters}
-          canReset={canReset}
-          open={openFilters.value}
-          onOpen={openFilters.onTrue}
-          onClose={openFilters.onFalse}
-          options={{
-            roles: _roles,
-            benefits: JOB_BENEFIT_OPTIONS.map((option) => option.label),
-            employmentTypes: JOB_EMPLOYMENT_TYPE_OPTIONS.map((option) => option.label),
-            experiences: ['all', ...JOB_EXPERIENCE_OPTIONS.map((option) => option.label)],
-          }}
-        />
-
-        <JobSort sort={sortBy} onSort={handleSortBy} sortOptions={JOB_SORT_OPTIONS} />
+        {/* <JobSort sort={sortBy} onSort={handleSortBy} sortOptions /> */}
       </Stack>
     </Stack>
   );
 
-  const renderResults = <JobFiltersResult filters={filters} totalResults={dataFiltered.length} />;
+  const renderResults = <JobFiltersResult totalResults={dataFiltered.length} />;
+
+  if (loading) return <div>Chargement...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <DashboardContent>
@@ -123,7 +108,7 @@ export function JobListView() {
         action={
           <Button
             component={RouterLink}
-            href={paths.dashboard.fonction.list}
+            href={paths.dashboard.fonction.new}
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}
           >
@@ -134,9 +119,7 @@ export function JobListView() {
       />
 
       <Stack spacing={2.5} sx={{ mb: { xs: 3, md: 5 } }}>
-        {renderFilters}
-
-        {canReset && renderResults}
+        {renderFilters}s {renderResults}
       </Stack>
 
       {notFound && <EmptyContent filled sx={{ py: 10 }} />}
@@ -146,44 +129,19 @@ export function JobListView() {
   );
 }
 
-const applyFilter = ({ inputData, filters, sortBy }) => {
-  const { employmentTypes, experience, roles, locations, benefits } = filters;
-
+const applyFilter = ({ inputData, sortBy }) => {
   // Sort by
-  if (sortBy === 'latest') {
-    inputData = orderBy(inputData, ['createdAt'], ['desc']);
-  }
+  // if (sortBy === 'latest') {
+  //   inputData = orderBy(inputData, ['created_at'], ['desc']);
+  // }
 
-  if (sortBy === 'oldest') {
-    inputData = orderBy(inputData, ['createdAt'], ['asc']);
-  }
+  // if (sortBy === 'oldest') {
+  //   inputData = orderBy(inputData, ['created_at'], ['asc']);
+  // }
 
-  if (sortBy === 'popular') {
-    inputData = orderBy(inputData, ['totalViews'], ['desc']);
-  }
-
-  // Filters
-  if (employmentTypes.length) {
-    inputData = inputData.filter((job) =>
-      job.employmentTypes.some((item) => employmentTypes.includes(item))
-    );
-  }
-
-  if (experience !== 'all') {
-    inputData = inputData.filter((job) => job.experience === experience);
-  }
-
-  if (roles.length) {
-    inputData = inputData.filter((job) => roles.includes(job.role));
-  }
-
-  if (locations.length) {
-    inputData = inputData.filter((job) => job.locations.some((item) => locations.includes(item)));
-  }
-
-  if (benefits.length) {
-    inputData = inputData.filter((job) => job.benefits.some((item) => benefits.includes(item)));
-  }
+  // if (sortBy === 'popular') {
+  //   inputData = orderBy(inputData, ['total_views'], ['desc']);
+  // }
 
   return inputData;
 };

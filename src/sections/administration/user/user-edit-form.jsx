@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
-
+import IconButton from '@mui/material/IconButton';
 import { Grid2 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -13,10 +13,11 @@ import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import FormControlLabel from '@mui/material/FormControlLabel';
-
+import InputAdornment from '@mui/material/InputAdornment';
+import { useBoolean } from 'src/hooks/use-boolean';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
-
+import { Iconify } from 'src/components/iconify';
 import { fData } from 'src/utils/format-number';
 
 import { Label } from 'src/components/label';
@@ -24,6 +25,7 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import API from 'src/utils/api';
 import axios from 'axios';
+import MenuItem from '@mui/material/MenuItem';
 
 // ----------------------------------------------------------------------
 
@@ -36,6 +38,10 @@ export const NewUserSchema = zod.object({
     .string()
     .min(1, { message: 'Email est obligatoire!' })
     .email({ message: 'Email doit être valide!' }),
+  password: zod
+    .string()
+    .min(1, { message: 'Password is required!' })
+    .min(6, { message: 'Password must be at least 6 characters!' }),
   phoneNumber: schemaHelper.phoneNumber({ isValidPhoneNumber }),
   country: schemaHelper.objectOrNull({
     message: { required_error: 'Country is required!' },
@@ -55,6 +61,7 @@ export const NewUserSchema = zod.object({
 export function UserNewEditForm({ currentUser }) {
   const router = useRouter();
 
+  const password = useBoolean();
   const defaultValues = useMemo(
     () => ({
       status: currentUser?.status || '',
@@ -64,7 +71,7 @@ export function UserNewEditForm({ currentUser }) {
       email: currentUser?.email || '',
       phoneNumber: currentUser?.phoneNumber || '',
       country: currentUser?.country || '',
-
+      password: currentUser?.password || '',
       city: currentUser?.city || '',
       address: currentUser?.address || '',
       company: currentUser?.company || '',
@@ -220,6 +227,24 @@ export function UserNewEditForm({ currentUser }) {
               <Field.Text name="name" label="Nom Complet" />
               <Field.Text name="email" label="Adresse Mail" />
               <Field.Phone name="phoneNumber" label="Numéro de Téléphone" />
+              <Field.Text
+                name="password"
+                label="Password"
+                placeholder="6+ characters"
+                type={password.value ? 'text' : 'password'}
+                InputLabelProps={{ shrink: true }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={password.onToggle} edge="end">
+                        <Iconify
+                          icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                        />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
               <Field.CountrySelect
                 fullWidth
@@ -231,7 +256,12 @@ export function UserNewEditForm({ currentUser }) {
               <Field.Text name="city" label="Ville" />
               <Field.Text name="address" label="Addresse" />
               <Field.Text name="company" label="Company" />
-              <Field.Text name="role" label="Role" />
+
+              <Field.Select name="role" label="Role" inputlabelprops={{ shrink: true }}>
+                <MenuItem value="Admin">Administrateur</MenuItem>
+                <MenuItem value="user">Client</MenuItem>
+                <MenuItem value="superviseur">Superviseur</MenuItem>
+              </Field.Select>
             </Box>
 
             <Stack alignItems="flex-end" sx={{ mt: 3 }}>

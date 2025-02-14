@@ -1,3 +1,4 @@
+//src/auth/context/jwt/auth-provider.jsx
 'use client';
 
 import { useMemo, useEffect, useCallback } from 'react';
@@ -5,7 +6,7 @@ import { useMemo, useEffect, useCallback } from 'react';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import axios, { endpoints } from 'src/utils/axios';
-
+import API from 'src/utils/api';
 import { STORAGE_KEY } from './constant';
 import { AuthContext } from '../auth-context';
 import { setSession, isValidToken } from './utils';
@@ -20,16 +21,17 @@ export function AuthProvider({ children }) {
 
   const checkUserSession = useCallback(async () => {
     try {
-      const accessToken = sessionStorage.getItem(STORAGE_KEY);
+      console.log('le token', STORAGE_KEY);
+      const access_token = sessionStorage.getItem(STORAGE_KEY);
 
-      if (accessToken && isValidToken(accessToken)) {
-        setSession(accessToken);
+      if (access_token && isValidToken(access_token)) {
+        setSession(access_token);
 
-        const res = await axios.get(endpoints.auth.me);
+        const res = await axios.get(API.me());
 
         const { user } = res.data;
-
-        setState({ user: { ...user, accessToken }, loading: false });
+        console.log('User récupéré :', user);
+        setState({ user: { ...user, access_token }, loading: false });
       } else {
         setState({ user: null, loading: false });
       }

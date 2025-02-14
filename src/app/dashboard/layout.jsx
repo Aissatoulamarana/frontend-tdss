@@ -6,13 +6,13 @@ import { AuthGuard } from 'src/auth/guard';
 // ----------------------------------------------------------------------
 
 export default function Layout({ children }) {
- // if (CONFIG.auth.skip) {
-   // return <DashboardLayout>{children}</DashboardLayout>;
-  // }
+  if (CONFIG.auth.skip) {
+    return <DashboardLayout>{children}</DashboardLayout>;
+  }
 
   return (
-    // <AuthGuard>
+    <AuthGuard>
       <DashboardLayout>{children}</DashboardLayout>
-   //  </AuthGuard>
+    </AuthGuard>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
 import Box from '@mui/material/Box';
@@ -12,11 +12,16 @@ import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 
 import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
+import API from 'src/utils/api';
+import axios from 'axios';
+import debounce from 'lodash.debounce';
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNewEditDetails() {
+export function DeclarationNewEditDetails({ formData, setFormData }) {
   const { control, setValue, watch } = useFormContext();
+  const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
@@ -30,6 +35,7 @@ export function DeclarationNewEditDetails() {
       fonction: '',
       prenom: '',
       nationalite: '',
+      passportExists: false, // Par défaut, on considère que le passport n'existe pas
     });
   };
 
@@ -37,16 +43,94 @@ export function DeclarationNewEditDetails() {
     remove(index);
   };
 
+  useEffect(() => {
+    const fetchFonctions = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(API.listFonctions());
+        console.log('Données reçues :', response.data); // Vérifie le retour du backend
+
+        if (response.data && response.data.fonctions) {
+          const fonctions = response.data.fonctions.map((fonction) => ({
+            value: fonction.name,
+            label: fonction.name,
+            id: fonction.id, // Ajout de l'ID pour éviter le problème de key
+          }));
+          console.log('Options mises à jour :', fonctions);
+          setOptions(fonctions);
+        } else {
+          console.error('Aucune fonction reçue');
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des fonctions :', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFonctions();
+  }, []);
+
   const handleSelectService = useCallback(
     (index, option) => {
-      const selectedService = INVOICE_SERVICE_OPTIONS.find((service) => service.name === option);
+      const selectedService = options.find((fonction) => fonction.value === option);
       if (selectedService) {
-        // Vous pouvez ici spécifier explicitement un champ dans votre formulaire si nécessaire
-        setValue('serviceField', selectedService); // 'serviceField' est un exemple de champ dans votre formulaire
+        setValue('serviceField', selectedService);
       }
     },
-    [setValue]
+    [setValue, options]
   );
+
+  useEffect(() => {
+    // Ajouter les données importées lorsqu'elles changent
+    if (formData && formData.length > 0) {
+      formData.forEach((data) => {
+        console.log(data);
+        append({
+          numero: data['Numero Passeport '] || '', // Adaptation de "Numero Passeport"
+          type: data['Type'] || '', // Adaptation de "Type"
+          nom: data['Nom'] || '', // Adaptation de "Nom"
+          fonction: data['Fonction'] || '', // Adaptation de "Fonction"
+          prenom: data['Prénom'] || '', // Adaptation de "Prénom"
+          nationalite: data['Nationalité'] || '', // Adaptation de "Nationalité"
+          passportExists: false, // On pourra déclencher la vérification ensuite si besoin
+        });
+      });
+    }
+  }, [formData, append]);
+
+  // Fonction debounced pour vérifier le numéro du passeport en temps réel
+  const checkPassportExistence = async (numero, index) => {
+    if (!numero) return;
+    try {
+      const response = await axios.get(API.searchPassport(numero));
+      if (response.data.exists) {
+        setValue(`items[${index}].passportExists`, true);
+        setValue(`items[${index}].type`, '');
+      } else {
+        setValue(`items[${index}].passportExists`, false);
+        setValue(`items[${index}].type`, 'Nouvelle');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la recherche du passeport', error);
+    }
+  };
+
+  // Création de la version debounce de la fonction
+  // On utilise ici 500ms de délai après la dernière saisie
+  const debouncedPassportCheck = useCallback(
+    debounce((numero, index) => {
+      checkPassportExistence(numero, index);
+    }, 500),
+    []
+  );
+
+  // Handler pour le changement de la saisie du numéro de passeport
+  const handlePassportChange = (e, index) => {
+    const numero = e.target.value;
+    setValue(`items[${index}].numero`, numero);
+    debouncedPassportCheck(numero, index);
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -64,13 +148,35 @@ export function DeclarationNewEditDetails() {
                 label="Numero Passeport"
                 type="number"
                 inputlabelprops={{ shrink: true }}
+                onChange={(e) => handlePassportChange(e, index)}
+                error={values.items && values.items[index]?.passportExists} // Active l'erreur si le passeport existe
+                helperText={
+                  values.items && values.items[index]?.passportExists
+                    ? 'Ce numéro de passeport existe déjà'
+                    : ''
+                }
               />
-              <Field.Text
-                size="small"
-                name={`items[${index}].type`}
-                label="Type"
-                inputlabelprops={{ shrink: true }}
-              />
+              {/* Champ "Type" affiché en fonction de l'existence du passeport */}
+              {values.items && values.items[index] && values.items[index].passportExists ? (
+                <Field.Select
+                  name={`items[${index}].type`}
+                  size="small"
+                  label="Type"
+                  inputlabelprops={{ shrink: true }}
+                >
+                  <MenuItem value="Duplicata">Duplicata</MenuItem>
+                  <MenuItem value="Renouvellement">Renouvellement</MenuItem>
+                </Field.Select>
+              ) : (
+                <Field.Text
+                  size="small"
+                  name={`items[${index}].type`}
+                  label="Type"
+                  inputlabelprops={{ shrink: true }}
+                  disabled
+                />
+              )}
+
               <Field.CountrySelect
                 size="small"
                 name={`items[${index}].nationalite`}
@@ -109,13 +215,13 @@ export function DeclarationNewEditDetails() {
 
                 <Divider sx={{ borderStyle: 'dashed' }} />
 
-                {INVOICE_SERVICE_OPTIONS.map((service) => (
+                {options.map((fonction) => (
                   <MenuItem
-                    key={service.id}
-                    value={service.name}
-                    onClick={() => handleSelectService(index, service.name)}
+                    key={fonction.value} // Utilisation de value au lieu d'id
+                    value={fonction.value} // Assure-toi d'utiliser value et non name
+                    onClick={() => handleSelectService(index, fonction.value)}
                   >
-                    {service.name}
+                    {fonction.label} {/* Affiche label au lieu de name */}
                   </MenuItem>
                 ))}
               </Field.Select>

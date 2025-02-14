@@ -20,7 +20,7 @@ import { Form, schemaHelper } from 'src/components/hook-form';
 
 import { DeclarationEditStatusDate } from './declaration-status-edit';
 import { DeclarationNewEditDetails } from './declaration-edit-detail';
-
+import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
 // ----------------------------------------------------------------------
 
 export const NewInvoiceSchema = zod.object({
@@ -31,9 +31,9 @@ export const NewInvoiceSchema = zod.object({
   items: zod.array(
     zod.object({
       numero: zod.number().min(1, { message: 'Numero du passeport obligatoire' }),
-      type: zod.string().min(1, { message: 'Title is required!' }),
+      type: zod.string().min(1, { message: 'Type est obligatoire!' }),
       fonction: zod.string().min(1, { message: 'le champ fonction est obligatoire!' }),
-      nationalite: zod.string().min(1, { message: "Selectionnez votre paus d'origine " }),
+      nationalite: zod.string().min(1, { message: "Selectionnez votre pays d'origine " }),
       // Not required
       prenom: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       nom: zod.string().min(1, { message: 'Entrez votre nom ' }),
@@ -52,7 +52,7 @@ const generateUniqueId = () => {
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNew({ currentInvoice }) {
+export function DeclarationNew({ currentInvoice, formData, setFormData }) {
   const router = useRouter();
 
   const loadingSave = useBoolean();
@@ -63,21 +63,26 @@ export function DeclarationNew({ currentInvoice }) {
     () => ({
       declarationNumber: currentInvoice?.declarationNumber || generateUniqueId(),
       createDate: currentInvoice?.createDate || today(),
-
       status: currentInvoice?.status || 'brouillon',
-
-      items: currentInvoice?.items || [
-        {
-          numero: '',
-          type: 'Nouvelle',
-          nom: '',
-          prenom: '',
-          nationalite: '',
-          fonction: '',
-        },
-      ],
+      items:
+        formData.length > 0
+          ? formData
+          : currentInvoice?.items || [
+            {
+              numero: '',
+              type: 'Nouvelle',
+              nom: '',
+              prenom: '',
+              nationalite: '',
+              fonction: '',
+              empreinte: '',
+              signature: '',
+              recto: '',
+              verso: ''
+            },
+          ],
     }),
-    [currentInvoice]
+    [currentInvoice, formData]
   );
 
   const methods = useForm({
@@ -94,12 +99,14 @@ export function DeclarationNew({ currentInvoice }) {
 
   const handleSaveAsDraft = handleSubmit(async (data) => {
     loadingSave.onTrue();
+    const access_token = sessionStorage.getItem(STORAGE_KEY);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const response = await axios.post('http://127.0.0.1:8000/api/declarations/create/', data, {
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
         },
       });
       console.log('Réponse du backend:', response.data);
@@ -115,7 +122,7 @@ export function DeclarationNew({ currentInvoice }) {
 
   const handleCreateAndSend = handleSubmit(async (data) => {
     loadingSend.onTrue();
-
+    const access_token = sessionStorage.getItem(STORAGE_KEY);
     try {
       // Ajouter le statut "soumise" à la donnée
       data.status = 'soumise';
@@ -133,6 +140,7 @@ export function DeclarationNew({ currentInvoice }) {
       const response = await axios.post('http://127.0.0.1:8000/api/declarations/create/', data, {
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
         },
       });
 
@@ -169,7 +177,7 @@ export function DeclarationNew({ currentInvoice }) {
       <Card>
         <DeclarationEditStatusDate />
 
-        <DeclarationNewEditDetails />
+        <DeclarationNewEditDetails formData={formData} setFormData={setFormData} />
       </Card>
 
       <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>

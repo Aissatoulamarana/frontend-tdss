@@ -29,16 +29,19 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
         </IconButton>
 
         <Stack sx={{ p: 3, pb: 2 }}>
-          <Avatar
+          {/* <Avatar
             alt={job.company.name}
             src={job.company.logo}
             variant="rounded"
             sx={{ width: 48, height: 48, mb: 2 }}
-          />
+          /> */}
 
           <ListItemText
             sx={{ mb: 1 }}
-            secondary={`Date d'ajout: ${fDate(job.createdAt)}`}
+            primary={`
+                ${job.name}
+            `}
+            secondary={`Posted date: ${fDate(job.created_at)}`}
             primaryTypographyProps={{ typography: 'subtitle1' }}
             secondaryTypographyProps={{
               mt: 1,
@@ -55,47 +58,11 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
             sx={{ color: 'primary.main', typography: 'caption' }}
           >
             <Iconify width={16} icon="solar:users-group-rounded-bold" />
-            {job.candidates.length} Personnes
+            {job.number_person} Personnes
           </Stack>
         </Stack>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
-
-        {/* <Box rowGap={1.5} display="grid" gridTemplateColumns="repeat(2, 1fr)" sx={{ p: 3 }}>
-          {[
-            {
-              label: job.experience,
-              icon: <Iconify width={16} icon="carbon:skill-level-basic" sx={{ flexShrink: 0 }} />,
-            },
-            {
-              label: job.employmentTypes.join(', '),
-              icon: <Iconify width={16} icon="solar:clock-circle-bold" sx={{ flexShrink: 0 }} />,
-            },
-            {
-              label: job.salary.negotiable ? 'Negotiable' : fCurrency(job.salary.price),
-              icon: <Iconify width={16} icon="solar:wad-of-money-bold" sx={{ flexShrink: 0 }} />,
-            },
-            {
-              label: job.role,
-              icon: <Iconify width={16} icon="solar:user-rounded-bold" sx={{ flexShrink: 0 }} />,
-            },
-          ].map((item) => (
-            <Stack
-              key={item.label}
-              spacing={0.5}
-              flexShrink={0}
-              direction="row"
-              alignItems="center"
-              sx={{ color: 'text.disabled', minWidth: 0 }}
-            >
-              {item.icon}
-              <Typography variant="caption" noWrap>
-                {item.label}
-              </Typography>
-            </Stack>
-          ))}
-        </Box>
-        */}
       </Card>
 
       <CustomPopover

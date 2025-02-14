@@ -50,8 +50,8 @@ export function JwtSignInView() {
   const password = useBoolean();
 
   const defaultValues = {
-    email: 'demo@minimals.cc',
-    password: '@demo1',
+    email: '',
+    password: '',
   };
 
   const methods = useForm({
@@ -66,11 +66,13 @@ export function JwtSignInView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      setErrorMsg('');
-      // await signInWithPassword({ email: data.email, password: data.password });
-      // await checkUserSession?.();
+      setErrorMsg(''); // Réinitialise le message d'erreur
+      await signInWithPassword({ email: data.email, password: data.password });
+      await checkUserSession?.();
       router.push(paths.dashboard.root);
     } catch (error) {
+      // Capture l'erreur et affiche un message adapté à l'utilisateur
+      console.error('Sign in error:', error);
       setErrorMsg(typeof error === 'string' ? error : error.message || 'Authentication failed');
     }
   });

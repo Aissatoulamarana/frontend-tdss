@@ -17,6 +17,7 @@ export default async function Page({ params }) {
 
     // Avec axios, les données sont accessibles via response.data
     const declarationDetails = response.data;
+    console.log("les données renvoyées par le back :", declarationDetails)
 
     return <DeclarationDetailsView declaration={declarationDetails} />;
   } catch (error) {
@@ -42,15 +43,14 @@ export { dynamic };
  */
 export async function generateStaticParams() {
   if (CONFIG.isStaticExport) {
-    // Si vous voulez générer les pages statiques, récupérez toutes les déclarations
-    const response = await fetch(API.detailsDeclaration(id));
+    const response = await fetch(API.getAllDeclarations());
     if (!response.ok) {
       throw new Error(`Erreur lors de la récupération des déclarations: ${response.statusText}`);
     }
 
     const declarations = await response.json();
 
-    return declarations.map((declaration) => ({ id: declaration.id }));
+    return declarations.map((declaration) => ({ id: declaration.id.toString() })); // Assurez-vous que `id` est une chaîne
   }
   return [];
 }

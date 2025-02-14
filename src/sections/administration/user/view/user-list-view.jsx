@@ -141,6 +141,28 @@ export function UserListView() {
     [filters, table]
   );
 
+  const handleActivate = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour rejeter la déclaration
+        const response = await axios.post(API.activate(id));
+        if (response.data.success) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          console.log('Compte activé avec succès:', response.data.message);
+          toast.success('Compte activé avec succès !');
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error("Erreur lors de l'activation :", response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
   useEffect(() => {
     // Fonction pour récupérer les données
     const fetchUtilisateurs = async () => {
@@ -292,6 +314,7 @@ export function UserListView() {
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onEditRow={() => handleEditRow(row.id)}
                         onViewRow={() => handleViewRow(row.id)}
+                        onActivate={() => handleActivate(row.id)}
                       />
                     ))}
 

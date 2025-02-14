@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -13,6 +13,13 @@ import {
   Button,
   Stack,
   Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Select,
+  MenuItem,
   TableFooter,
   TablePagination,
   FormControlLabel,
@@ -21,57 +28,12 @@ import {
 import Tooltip from '@mui/material/Tooltip';
 import { Iconify } from 'src/components/iconify';
 import IconButton from '@mui/material/IconButton';
-
-const initialRows = [
-  {
-    id: 1,
-    number: '123456',
-    name: 'Diallo Lamarana',
-    nationalite: 'Guinéen',
-    fonction: 'Cadres',
-    permis: 'Permis A',
-  },
-  {
-    id: 2,
-    number: '123456',
-    name: 'Sadou Sow ',
-    nationalite: 'Senegalais',
-    fonction: 'Cadres',
-    permis: 'Permis B',
-  },
-  {
-    id: 3,
-    number: '123456',
-    name: 'Djeinabou Diallo',
-    nationalite: 'Guinéen',
-    fonction: 'Agent',
-    permis: 'Permis C',
-  },
-  {
-    id: 4,
-    number: '123456',
-    name: 'Zoumanigui Condé',
-    nationalite: 'Guinéen',
-    fonction: 'Agent',
-    permis: 'Permis A',
-  },
-  {
-    id: 5,
-    number: '123456',
-    name: 'fassinet jule',
-    nationalite: 'Corean',
-    fonction: 'Cadres',
-    permis: 'Permis B',
-  },
-  {
-    id: 6,
-    number: '123456',
-    name: 'Camara Abdoul',
-    nationalite: 'Algerien',
-    fonction: 'Ouvrier',
-    permis: 'Permis C',
-  },
-];
+import ListItemText from '@mui/material/ListItemText';
+import { Field } from 'src/components/hook-form';
+import API from 'src/utils/api';
+import axios from 'axios';
+import Divider from '@mui/material/Divider';
+import { Autocomplete, CircularProgress } from '@mui/material';
 
 const documentTypes = [
   { label: 'Tous', value: 'All' },
@@ -80,37 +42,90 @@ const documentTypes = [
   { label: 'Ouvrier', value: 'Ouvrier' },
 ];
 
-const FilteredTable = () => {
+const FilteredTable = ({ declaration }) => {
   const [selected, setSelected] = useState([]);
   const [filter, setFilter] = useState('All');
   const [dense, setDense] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const rows =
-    filter === 'All' ? initialRows : initialRows.filter((row) => row.fonction === filter);
+  const [options, setOptions] = useState([]); // Liste des déclarations
+  const [selectedDeclaration, setSelectedDeclaration] = useState(''); // Déclaration sélectionnée
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // État pour la boîte de dialogue
+  const [loading, setLoading] = useState(false);
 
-  const isSelected = (id) => selected.includes(id);
+  const rows =
+    filter === 'All'
+      ? declaration.items // Affiche tous les éléments si le filtre est 'All'
+      : declaration.items.filter((row) => row.fonction === filter); // Filtre les éléments selon la fonction si le filtre est différent de 'All'
+
+  const isSelected = (numero) => selected.includes(numero);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows.map((row) => row.id);
+      const newSelected = rows.map((row) => row.numero);
       setSelected(newSelected);
     } else {
       setSelected([]);
     }
   };
 
-  const handleRowClick = (id) => {
-    setSelected((prevSelected) =>
-      prevSelected.includes(id) ? prevSelected.filter((item) => item !== id) : [...prevSelected, id]
-    );
+  const handleSelectRow = (event, numero) => {
+    event.stopPropagation(); // Empêche le clic sur toute la ligne de cocher la case par accident
+    setSelected((prevSelected) => {
+      if (prevSelected.includes(numero)) {
+        return prevSelected.filter((selectedId) => selectedId !== numero);
+      } else {
+        return [...prevSelected, numero];
+      }
+    });
   };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  useEffect(() => {
+    const fetchDeclarations = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(API.listDeclarations());
+        const declarations = response.data.map((declaration) => ({
+          value: declaration.declaration_number,
+          label: declaration.declaration_number,
+        }));
+        setOptions(declarations);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des déclarations :', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeclarations();
+  }, []);
+
+  const handleMove = async () => {
+    try {
+      const payload = {
+        selected_ids: selected, // IDs des éléments sélectionnés
+        target_declaration: selectedDeclaration.value, // ID de la déclaration cible
+      };
+
+      const response = await axios.post(API.move(), payload);
+      if (response.status === 200) {
+        alert('Déplacement effectué avec succès !');
+        // Mettez à jour les données localement si nécessaire
+        setSelected([]);
+        setIsDialogOpen(false);
+      }
+    } catch (error) {
+      console.error('Erreur lors du déplacement :', error);
+      alert("Une erreur s'est produite lors du déplacement.");
+    }
   };
 
   return (
@@ -138,7 +153,7 @@ const FilteredTable = () => {
         {selected.length > 0 && (
           <Stack direction="row" spacing={2}>
             <Tooltip title="Deplacer">
-              <IconButton color="primary">
+              <IconButton color="primary" onClick={() => setIsDialogOpen(true)}>
                 <Iconify icon="iconamoon:send-fill" />
               </IconButton>
             </Tooltip>
@@ -149,6 +164,54 @@ const FilteredTable = () => {
             </Tooltip>
           </Stack>
         )}
+        {/* Boîte de dialogue */}
+        <Dialog fullWidth open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+          <DialogTitle>Déplacer</DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 4 }}>
+              Êtes-vous sûr de vouloir déplacer <strong>{selected.length}</strong> personnes ?
+            </Typography>
+            <Autocomplete
+              options={options} // Liste des options
+              getOptionLabel={(option) => option.label} // Comment afficher les options
+              loading={loading} // Affiche le loader si les données sont en cours de chargement
+              value={selectedDeclaration} // Déclaration sélectionnée
+              onChange={(event, newValue) => setSelectedDeclaration(newValue)} // Mise à jour de la sélection
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Rechercher ou sélectionner une déclaration"
+                  placeholder="Taper pour rechercher"
+                  variant="outlined"
+                  fullWidth
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loading ? <CircularProgress size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsDialogOpen(false)}>Annuler</Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                handleMove();
+                // Ajoutez ici la logique pour "Déplacer"
+                setIsDialogOpen(false);
+              }}
+            >
+              Déplacer
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Toolbar>
 
       {/* Tableau */}
@@ -171,8 +234,8 @@ const FilteredTable = () => {
             >
               {fonction.label} (
               {fonction.value === 'All'
-                ? initialRows.length
-                : initialRows.filter((row) => row.fonction === fonction.value).length}
+                ? rows.length
+                : rows.filter((row) => row.fonction === fonction.value).length}
               )
             </Button>
           ))}
@@ -197,20 +260,29 @@ const FilteredTable = () => {
           <TableBody>
             {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
               <TableRow
-                key={row.id}
+                key={`${row.id}-${row.numero}`}
                 hover
-                role="checkbox"
-                selected={isSelected(row.id)}
-                onClick={() => handleRowClick(row.id)}
+                selected={isSelected(row.numero)}
                 style={{ cursor: 'pointer' }}
               >
                 <TableCell padding="checkbox">
-                  <Checkbox color="primary" checked={isSelected(row.id)} />
+                  <Checkbox
+                    color="primary"
+                    checked={isSelected(row.numero)}
+                    onChange={(event) => handleSelectRow(event, row.numero)}
+                  />
                 </TableCell>
-                <TableCell>{row.number}</TableCell>
-                <TableCell>{row.name}</TableCell>
+                <TableCell>{row.numero}</TableCell>
+                <TableCell>
+                  <ListItemText
+                    primary={row.nom}
+                    secondary={row.prenom}
+                    primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+                    secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'body2' }}
+                  />
+                </TableCell>
                 <TableCell>{row.nationalite}</TableCell>
-                <TableCell>{row.fonction}</TableCell>
+                <TableCell>{row.fonction__name}</TableCell>
                 <TableCell>{row.permis}</TableCell>
               </TableRow>
             ))}

@@ -22,7 +22,15 @@ import { UserQuickEditForm } from './user-quick-edit-form';
 
 // ----------------------------------------------------------------------
 
-export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow, onViewRow }) {
+export function UserTableRow({
+  row,
+  selected,
+  onEditRow,
+  onSelectRow,
+  onDeleteRow,
+  onViewRow,
+  onActivate,
+}) {
   const confirm = useBoolean();
 
   const popover = usePopover();
@@ -126,6 +134,15 @@ export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRo
           >
             <Iconify icon="solar:pen-bold" />
             Voir
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              onActivate();
+              popover.onClose();
+            }}
+          >
+            <Iconify icon="solar:pen-bold" />
+            Activer
           </MenuItem>
         </MenuList>
       </CustomPopover>

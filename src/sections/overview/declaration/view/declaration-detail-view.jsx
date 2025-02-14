@@ -8,6 +8,8 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { DeclarationDetails } from '../declaration-detail';
 
+import { useAuthContext } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 export function DeclarationDetailsView({ declaration }) {

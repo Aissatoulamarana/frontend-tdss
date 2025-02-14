@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
-export function ImportFilesButton() {
+export function ImportFilesButton({ onImport }) {
   const fileInputRef = useRef();
 
   const handleFileUpload = (event) => {
@@ -19,6 +19,7 @@ export function ImportFilesButton() {
         skipEmptyLines: true,
         complete: (results) => {
           console.log('Données CSV importées :', results.data);
+          onImport(results.data);
         },
         error: (error) => {
           console.error('Erreur de parsing CSV :', error);
@@ -37,6 +38,7 @@ export function ImportFilesButton() {
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
         console.log('Données Excel importées :', jsonData);
+        onImport(jsonData); // Transmet les données importées au parent
       };
       reader.readAsArrayBuffer(file);
     } else {

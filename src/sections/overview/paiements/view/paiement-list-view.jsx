@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback , useEffect} from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -50,6 +50,8 @@ import { PaiementAnalytic } from '../paiement-analytic';
 import { PaiementTableRow } from '../paiement-table-row';
 import { PaiementTableToolbar } from '../paiement-table-toolbar';
 import { PaiementTableFiltersResult } from '../paiement-table-filters';
+import API from 'src/utils/api';
+import axios from 'axios';
 
 // ----------------------------------------------------------------------
 
@@ -76,7 +78,9 @@ export function PaiementListView() {
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_invoices);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [error, setError] = useState(null); // État pour gérer les erreurs
 
   const filters = useSetState({
     name: '',
@@ -183,6 +187,30 @@ export function PaiementListView() {
     },
     [filters, table]
   );
+
+  useEffect(() => {
+    // Fonction pour récupérer les données
+    const fetchFactures = async () => {
+      try {
+        const response = await axios.get(API.listPaiments()); // Remplacez l'URL par celle de votre backend
+        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFactures();
+  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+  if (loading) {
+    console.info('Loading factures...');
+  }
+
+  if (error) {
+    console.error('Error: ' + error);
+  }
 
   return (
     <>
@@ -348,8 +376,8 @@ export function PaiementListView() {
                     )
                     .map((row) => (
                       <PaiementTableRow
-                        key={row.id}
-                        row={row}
+                      key={row.id}
+                      row={row}
                         selected={table.selected.includes(row.id)}
                         onSelectRow={() => table.onSelectRow(row.id)}
                         onViewRow={() => handleViewRow(row.id)}

@@ -21,8 +21,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/:path*',
-        destination: 'http://localhost:8000/:path*', // L'adresse de ton serveur Django
+        source: '/api/:path*',
+        destination: process.env.NEXT_PUBLIC_SERVER_URL + '/api/:path*',
       },
     ];
   },

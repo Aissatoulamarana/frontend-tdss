@@ -255,19 +255,8 @@ export function DeclarationListView() {
   );
 
   const handleViewRow = useCallback(
-    async (id) => {
-      try {
-        const url = API.detailsDeclaration(id);
-        console.log('URL générée:', url); // Vérifiez ici si l'URL est correcte
-        const response = await axios.get(url);
-        if (response.data.success) {
-          router.push(paths.dashboard.declaration.details(id));
-        } else {
-          console.error('Erreur lors de la récupération des détails :', response.data.error);
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des détails :', error);
-      }
+    (id) => {
+      router.push(paths.dashboard.declaration.details(id));
     },
     [router]
   );
@@ -342,9 +331,9 @@ export function DeclarationListView() {
           </Grid2>
           <Grid2 size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Payées"
-              total={getInvoiceLength('paid')}
-              percent={getPercentByStatus('paid')}
+              title="Facturée"
+              total={getInvoiceLength('facturée')}
+              percent={getPercentByStatus('facturée')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],

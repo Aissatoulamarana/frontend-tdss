@@ -2,6 +2,7 @@ import { _invoices } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 
 import { DeclarationEditView } from 'src/sections/overview/declaration/view';
+import { declaration } from 'stylis';
 
 // ----------------------------------------------------------------------
 
@@ -10,9 +11,9 @@ export const metadata = { title: `Modifier Declarations | Dashboard - ${CONFIG.a
 export default function Page({ params }) {
   const { id } = params;
 
-  const currentInvoice = _invoices.find((invoice) => invoice.id === id);
+  const declaration = declaration.find((declaration) => declaration.id === id);
 
-  return <DeclarationEditView invoice={currentInvoice} />;
+  return <DeclarationEditView declaration={declaration} />;
 }
 
 const dynamic = CONFIG.isStaticExport ? 'auto' : 'force-dynamic';
@@ -25,7 +26,7 @@ export { dynamic };
  */
 export async function generateStaticParams() {
   if (CONFIG.isStaticExport) {
-    return _invoices.map((invoice) => ({ id: invoice.id }));
+    return declaration.map((declaration) => ({ id: declaration.id }));
   }
   return [];
 }

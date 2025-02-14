@@ -51,6 +51,7 @@ import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
 import { FactureTableFilters } from '../factures-table-filters';
 import API from 'src/utils/api';
+import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
 
 // ----------------------------------------------------------------------
 
@@ -75,10 +76,12 @@ export function FactureListView() {
   const table = useTable({ defaultOrderBy: 'createDate' });
 
   const confirm = useBoolean();
+  const [options, setOptions] = useState([]);
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
+  const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
 
   const filters = useSetState({
     name: '',
@@ -131,10 +134,10 @@ export function FactureListView() {
       count: getInvoiceLength('paid'),
     },
     {
-      value: 'pending',
+      value: 'En attente',
       label: 'En attente',
       color: 'warning',
-      count: getInvoiceLength('non payée'),
+      count: getInvoiceLength('En attente'),
     },
   ];
 
@@ -173,7 +176,7 @@ export function FactureListView() {
 
   const handleViewRow = useCallback(
     (id) => {
-      router.push(paths.dashboard.invoice.details(id));
+      router.push(paths.dashboard.factures.details(id));
     },
     [router]
   );
@@ -186,16 +189,38 @@ export function FactureListView() {
     [filters, table]
   );
 
+  useEffect(() => {
+    console.log('ID de la banque sélectionnée dans l\'enfant:', selectedBanque?.value);
+  }, [selectedBanque]);
+
+
   const handlePaidRow = useCallback(
     async (id) => {
+      if (!selectedBanque) {
+        toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
+        return;
+      }
+
+      const access_token = sessionStorage.getItem(STORAGE_KEY);
+      const data = {
+        banque_id: selectedBanque?.value
+      }
+      console.log("Données envoyées:", data);
+      console.log("Token d'accès:", access_token);
+
       try {
         // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(`http://127.0.0.1:8000/paid-facture/${id}/`);
+        const response = await axios.post(`http://127.0.0.1:8000/paid-facture/${id}/`, data, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
+          },
+
+        });
 
         if (response.data.success) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
           console.log('Facture payée:', response.data.message);
-          toast.success('facture payée avec success !');
+          toast.success('Facture payée avec succès !');
           router.push(paths.dashboard.factures.list);
         } else {
           console.error('Erreur lors du paiement:', response.data.error);
@@ -206,8 +231,31 @@ export function FactureListView() {
         alert('Erreur lors de la communication avec le serveur.');
       }
     },
-    [router]
+    [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
   );
+
+
+
+  useEffect(() => {
+    const fetchBank = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(API.listBank());
+        const banks = response.data.map((bank) => ({
+          value: bank.id,
+          label: bank.name,
+        }));
+        console.log(banks);
+        setOptions(banks);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des banques :', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBank();
+  }, []);
 
   useEffect(() => {
     // Fonction pour récupérer les données
@@ -226,7 +274,7 @@ export function FactureListView() {
   }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
-    console.info('Loading declarations...');
+    console.info('Loading factures...');
   }
 
   if (error) {
@@ -405,6 +453,10 @@ export function FactureListView() {
                         onEditRow={() => handleEditRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onPaidRow={() => handlePaidRow(row.id)}
+                        Options={options}
+                        setOptions={setOptions}
+                        selectedBanque={selectedBanque}
+                        setSelectedBanque={setSelectedBanque}
                       />
                     ))}
 
@@ -446,7 +498,7 @@ export function FactureListView() {
             color="primary"
             onClick={() => {
               handleDeleteRows();
-              confirm.onFalse();
+              confirm.onTrue();
             }}
           >
             Payer

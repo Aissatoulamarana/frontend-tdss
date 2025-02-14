@@ -57,12 +57,13 @@ export const paths = {
       list: `${ROOTS.DASHBOARD}/declaration/list`,
       new: `${ROOTS.DASHBOARD}/declaration/new`,
       edit: (id) => `${ROOTS.DASHBOARD}/declaration/${id}/edit`,
-      details: (id) => `${ROOTS.DASHBOARD}/declaration/${id}`,
+      details: (id) => `/dashboard/declaration/${id}`,
     },
 
     factures: {
       root: `${ROOTS.DASHBOARD}/factures`,
       list: `${ROOTS.DASHBOARD}/factures/list`,
+      details: (id) => `/dashboard/factures/${id}`,
     },
 
     paiements: {
@@ -90,6 +91,14 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/group`,
       five: `${ROOTS.DASHBOARD}/group/five`,
       six: `${ROOTS.DASHBOARD}/group/six`,
+    },
+
+    client: {
+      root: `${ROOTS.DASHBOARD}/client`,
+      bank: `${ROOTS.DASHBOARD}/client/bank`,
+      business: `${ROOTS.DASHBOARD}/client/business`,
+      embassy: `${ROOTS.DASHBOARD}/client/embassy`,
+      list: `${ROOTS.DASHBOARD}/user/list`,
     },
   },
 };

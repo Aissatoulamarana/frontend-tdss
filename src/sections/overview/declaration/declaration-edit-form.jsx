@@ -63,7 +63,7 @@ export const NewInvoiceSchema = zod
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNewEditForm({ currentInvoice }) {
+export function DeclarationNewEditForm({ declaration }) {
   const router = useRouter();
 
   const loadingSave = useBoolean();

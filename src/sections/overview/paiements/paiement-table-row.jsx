@@ -47,13 +47,13 @@ export function PaiementTableRow({
 
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
-            <Avatar alt={row.invoiceTo.name}>{row.invoiceTo.name.charAt(0).toUpperCase()}</Avatar>
+            
 
             <ListItemText
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.invoiceTo.name}
+                  {row.numero_facture}
                 </Typography>
               }
               secondary={
@@ -63,22 +63,60 @@ export function PaiementTableRow({
                   onClick={onViewRow}
                   sx={{ color: 'text.disabled', cursor: 'pointer' }}
                 >
-                  {row.invoiceNumber}
+                  
                 </Link>
               }
             />
           </Stack>
         </TableCell>
-
-        <TableCell>{row.invoiceNumber}</TableCell>
-        <TableCell>{fCurrency(row.totalAmount)}</TableCell>
-        <TableCell>{row.invoiceTo.name}</TableCell>
-        <TableCell>{row.invoiceTo.name}</TableCell>
+        <TableCell>{row.declaration_number}</TableCell>
 
         <TableCell>
           <ListItemText
-            primary={fDate(row.createDate)}
-            secondary={fTime(row.createDate)}
+          primary= {
+            <Typography variant='body2'>
+              {fCurrency(row.montantUsd)}
+            </Typography>
+          }
+          secondary= {
+            <Typography variant='body2'>
+                {row.montantGnf}
+            </Typography>
+          }/>
+    
+          </TableCell>
+        
+          <TableCell>
+          <Stack spacing={2} direction="row" alignItems="center">
+            
+
+            <ListItemText
+              disableTypography
+              primary={
+                <Typography variant="body2" noWrap>
+                  {row.payer_nom}
+                </Typography>
+              }
+              secondary={
+                <Link
+                  noWrap
+                  variant="body2"
+                  onClick={onViewRow}
+                  sx={{ color: 'text.disabled', cursor: 'pointer' }}
+                >
+                  {row.payer_prenom}
+                  
+                </Link>
+              }
+            />
+          </Stack>
+        </TableCell>
+        <TableCell>{row.bank_name}</TableCell>
+
+        <TableCell>
+          <ListItemText
+            primary={fDate(row.date_paiement)}
+            secondary={fTime(row.date_paiement)}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
           />

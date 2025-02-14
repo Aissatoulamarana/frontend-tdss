@@ -99,16 +99,16 @@ export const navData = [
         icon: ICONS.job,
         children: [
           { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
-          { title: 'Nouvelle', path: paths.dashboard.group.five },
+          { title: 'Nouvelle', path: paths.dashboard.fonction.new },
         ],
       },
       {
         title: 'Client',
-        path: paths.dashboard.group.root,
+        path: paths.dashboard.client.root,
         icon: ICONS.tour,
         children: [
-          { title: 'Listes  ', path: paths.dashboard.group.root },
-          { title: 'Ajouter', path: paths.dashboard.group.five },
+          { title: 'Listes  ', path: paths.dashboard.client.bank },
+          { title: 'Ajouter', path: paths.dashboard.client.root },
         ],
       },
     ],

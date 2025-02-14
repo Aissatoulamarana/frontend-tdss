@@ -8,10 +8,16 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { DeclarationNew } from '../declaration-new';
 import { ImportFilesButton } from '../components/button-import-excel';
+import { useState } from 'react';
 
 // ----------------------------------------------------------------------
 
 export function DeclarationNewView() {
+  const [formData, setFormData] = useState([]); // État pour stocker les données importées
+
+  const handleImportData = (importedData) => {
+    setFormData(importedData); // Met à jour l'état avec les données importées
+  };
   return (
     <DashboardContent maxWidth="xl">
       <CustomBreadcrumbs
@@ -24,10 +30,10 @@ export function DeclarationNewView() {
         sx={{ mb: { xs: 3, md: 2 } }} // Marges pour les breadcrumbs
       />
       <div style={{ marginBottom: '20px' }}>
-        <ImportFilesButton />
+        <ImportFilesButton onImport={handleImportData} />
       </div>
       {/* Ajout d'espace sous ImportFilesButton */}
-      <DeclarationNew />
+      <DeclarationNew formData={formData} setFormData={setFormData} />
     </DashboardContent>
   );
 }
