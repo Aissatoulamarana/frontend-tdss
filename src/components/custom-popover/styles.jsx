@@ -1,5 +1,4 @@
 import { styled } from '@mui/material/styles';
-
 import { CONFIG } from 'src/config-global';
 import { varAlpha, stylesMode } from 'src/theme/styles';
 

@@ -1,7 +1,5 @@
-import { m } from 'framer-motion';
-
 import Box from '@mui/material/Box';
-
+import { m } from 'framer-motion';
 import { varAlpha } from 'src/theme/styles';
 
 import { Logo } from '../logo';

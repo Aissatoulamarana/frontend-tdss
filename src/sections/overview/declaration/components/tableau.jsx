@@ -1,39 +1,36 @@
-import React, { useEffect, useState, useCallback } from 'react';
 import {
+  Box,
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
+  Paper,
+  Stack,
+  Button,
+  Dialog,
+  Switch,
+  Toolbar,
   TableRow,
   Checkbox,
-  Paper,
-  Toolbar,
+  TableBody,
+  TableCell,
+  TableHead,
+  TextField,
   Typography,
-  Button,
-  Stack,
-  Box,
-  Dialog,
   DialogTitle,
+  TableFooter,
+  Autocomplete,
   DialogContent,
   DialogActions,
-  TextField,
-  Select,
-  MenuItem,
-  TableFooter,
+  TableContainer,
   TablePagination,
-  FormControlLabel,
-  Switch,
-} from '@mui/material';
-import Tooltip from '@mui/material/Tooltip';
-import { Iconify } from 'src/components/iconify';
+ FormControlLabel, CircularProgress } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import { Field } from 'src/components/hook-form';
-import API from 'src/utils/api';
+import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
-import Divider from '@mui/material/Divider';
-import { Autocomplete, CircularProgress } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+
+import API from 'src/utils/api';
+
+import { Iconify } from 'src/components/iconify';
 
 const documentTypes = [
   { label: 'Tous', value: 'All' },
@@ -74,9 +71,9 @@ const FilteredTable = ({ declaration }) => {
     setSelected((prevSelected) => {
       if (prevSelected.includes(numero)) {
         return prevSelected.filter((selectedId) => selectedId !== numero);
-      } else {
+      } 
         return [...prevSelected, numero];
-      }
+      
     });
   };
 
@@ -147,7 +144,7 @@ const FilteredTable = ({ declaration }) => {
             {selected.length} sélectionné(s)
           </Typography>
         ) : (
-          <Typography variant="h6"></Typography>
+          <Typography variant="h6" />
         )}
 
         {selected.length > 0 && (

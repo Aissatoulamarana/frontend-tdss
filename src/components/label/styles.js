@@ -2,7 +2,6 @@
 
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
-
 import { varAlpha, stylesMode } from 'src/theme/styles';
 
 // ----------------------------------------------------------------------

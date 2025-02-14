@@ -1,8 +1,7 @@
 import Button from '@mui/material/Button';
+import { CONFIG } from 'src/config-global';
 
 import { RouterLink } from 'src/routes/components';
-
-import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 

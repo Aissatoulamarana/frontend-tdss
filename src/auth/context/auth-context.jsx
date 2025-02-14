@@ -1,5 +1,5 @@
 
-//src/auth/context/auth-context.js
+// src/auth/context/auth-context.js
 
 'use client';
 

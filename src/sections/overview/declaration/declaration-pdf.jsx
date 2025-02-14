@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react';
 import {
-  Document,
   Page,
   View,
   Text,
-  Image,
-  StyleSheet,
   Font,
+  Image,
+  Document,
+  StyleSheet,
 } from '@react-pdf/renderer';
+import React, { useMemo } from 'react';
+
 import { fDate } from 'src/utils/format-time';
 
 // Enregistrement de la police Roboto

@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-
 import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
 

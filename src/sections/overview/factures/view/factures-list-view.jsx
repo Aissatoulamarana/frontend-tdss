@@ -1,39 +1,39 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import axios from 'axios';
-import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import TableBody from '@mui/material/TableBody';
-import { useTheme } from '@mui/material/styles';
 import { Grid2 } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import Tab from '@mui/material/Tab';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
+import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { varAlpha } from 'src/theme/styles';
 
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { sumBy } from 'src/utils/helper';
+import API from 'src/utils/api';
 import { fIsAfter, fIsBetween } from 'src/utils/format-time';
+import { sumBy } from 'src/utils/helper';
 
-import { varAlpha } from 'src/theme/styles';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
-
-import { Label } from 'src/components/label';
-import { toast } from 'src/components/snackbar';
-import { Iconify } from 'src/components/iconify';
-import { Scrollbar } from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
+import { Scrollbar } from 'src/components/scrollbar';
+import { toast } from 'src/components/snackbar';
 import {
   useTable,
   emptyRows,
@@ -46,12 +46,12 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
+import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
+
 import { FactureAnalytic } from '../factures-analytics';
+import { FactureTableFilters } from '../factures-table-filters';
 import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
-import { FactureTableFilters } from '../factures-table-filters';
-import API from 'src/utils/api';
-import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
 
 // ----------------------------------------------------------------------
 
@@ -278,7 +278,7 @@ export function FactureListView() {
   }
 
   if (error) {
-    console.error('Error: ' + error);
+    console.error(`Error: ${  error}`);
   }
 
   return (

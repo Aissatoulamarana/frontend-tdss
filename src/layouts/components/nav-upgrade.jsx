@@ -1,16 +1,14 @@
-import { m } from 'framer-motion';
-
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
 import { alpha as hexAlpha } from '@mui/material/styles';
-
-import { paths } from 'src/routes/paths';
-
+import Typography from '@mui/material/Typography';
+import { m } from 'framer-motion';
 import { CONFIG } from 'src/config-global';
 import { varAlpha, bgGradient } from 'src/theme/styles';
+
+import { paths } from 'src/routes/paths';
 
 import { Label } from 'src/components/label';
 

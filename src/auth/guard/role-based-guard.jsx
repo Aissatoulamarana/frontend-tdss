@@ -1,10 +1,8 @@
 'use client';
 
-import { m } from 'framer-motion';
-
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
-
+import { m } from 'framer-motion';
 import { ForbiddenIllustration } from 'src/assets/illustrations';
 
 import { varBounce, MotionContainer } from 'src/components/animate';

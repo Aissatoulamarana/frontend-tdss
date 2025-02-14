@@ -1,12 +1,11 @@
-import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import { styled, useTheme } from '@mui/material/styles';
+import Toolbar from '@mui/material/Toolbar';
+import { bgBlur, varAlpha } from 'src/theme/styles';
 
 import { useScrollOffSetTop } from 'src/hooks/use-scroll-offset-top';
-
-import { bgBlur, varAlpha } from 'src/theme/styles';
 
 import { layoutClasses } from '../classes';
 

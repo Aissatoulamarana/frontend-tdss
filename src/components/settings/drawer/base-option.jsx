@@ -1,8 +1,7 @@
 import Box from '@mui/material/Box';
+import ButtonBase from '@mui/material/ButtonBase';
 import Switch from '@mui/material/Switch';
 import Tooltip from '@mui/material/Tooltip';
-import ButtonBase from '@mui/material/ButtonBase';
-
 import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
 

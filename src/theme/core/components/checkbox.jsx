@@ -1,5 +1,5 @@
-import SvgIcon from '@mui/material/SvgIcon';
 import { checkboxClasses } from '@mui/material/Checkbox';
+import SvgIcon from '@mui/material/SvgIcon';
 
 // ----------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
-import SvgIcon from '@mui/material/SvgIcon';
 import { alertClasses } from '@mui/material/Alert';
+import SvgIcon from '@mui/material/SvgIcon';
 
 import { varAlpha, stylesMode } from '../../styles';
 

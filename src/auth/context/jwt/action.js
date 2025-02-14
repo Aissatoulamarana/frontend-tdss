@@ -1,11 +1,12 @@
-//src/auth/context/jwt/action.js
+// src/auth/context/jwt/action.js
+
 'use client';
 
-import axios, { endpoints } from 'src/utils/axios';
 import API from 'src/utils/api';
+import axios, { endpoints } from 'src/utils/axios';
 
-import { setSession } from './utils';
 import { STORAGE_KEY } from './constant';
+import { setSession } from './utils';
 
 /** **************************************
  * Sign in

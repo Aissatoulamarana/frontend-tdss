@@ -1,7 +1,7 @@
 'use client';
 
-import CssBaseline from '@mui/material/CssBaseline';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
+import CssBaseline from '@mui/material/CssBaseline';
 import { CssVarsProvider } from '@mui/material/styles';
 
 import { useSettingsContext } from 'src/components/settings';

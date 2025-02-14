@@ -1,4 +1,3 @@
-import { _invoices } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 
 import { DeclarationEditView } from 'src/sections/overview/declaration/view';
@@ -16,9 +15,9 @@ export default function Page({ params }) {
   const { id } = params;
 
 
-  const declaration = declaration.find((declaration) => declaration.id === id);
+  const detailsDeclaration = declarations.find((declaration) => declaration.id === id);
 
-  return <DeclarationEditView declaration={declaration} />;
+  return <DeclarationEditView declaration={detailsDeclaration} />;
 
 }
 
@@ -33,7 +32,7 @@ export { dynamic };
 export async function generateStaticParams() {
   if (CONFIG.isStaticExport) {
 
-    return declaration.map((declaration) => ({ id: declaration.id }));
+    return declarations.map((declaration) => ({ id: declaration.id }));
 
   }
   return [];

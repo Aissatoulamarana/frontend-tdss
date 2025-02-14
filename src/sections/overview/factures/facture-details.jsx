@@ -1,27 +1,25 @@
 
-import { useState, useCallback } from 'react';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
 import { styled } from '@mui/material/styles';
-import TableRow from '@mui/material/TableRow';
-import TableHead from '@mui/material/TableHead';
+import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import Typography from '@mui/material/Typography';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
-import { fDate } from 'src/utils/format-time';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
+
 import { fCurrency } from 'src/utils/format-number';
-import IconButton from '@mui/material/IconButton';
+import { fDate } from 'src/utils/format-time';
+
+import { usePopover } from 'src/components/custom-popover';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
-import { usePopover, CustomPopover } from 'src/components/custom-popover';
+
 import { FactureToolbar } from './facture-toolbar';
-import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -45,8 +43,7 @@ export function FactureDetails({ facture }) {
   const popover = usePopover();
 
   const renderTotal = (
-    <>
-      <StyledTableRow>
+    <StyledTableRow>
         <TableCell colSpan={3} />
         <TableCell sx={{ color: 'text.primary', fontWeight: 'bold' }}>
           <Box sx={{ mt: 2 }} />
@@ -58,9 +55,6 @@ export function FactureDetails({ facture }) {
         </TableCell>
 
       </StyledTableRow>
-
-
-    </>
   );
 
   const renderFooter = (

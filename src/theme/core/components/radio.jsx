@@ -1,5 +1,5 @@
-import SvgIcon from '@mui/material/SvgIcon';
 import { radioClasses } from '@mui/material/Radio';
+import SvgIcon from '@mui/material/SvgIcon';
 
 // ----------------------------------------------------------------------
 

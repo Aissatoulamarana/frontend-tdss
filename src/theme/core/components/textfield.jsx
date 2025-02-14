@@ -1,5 +1,5 @@
-import { inputBaseClasses } from '@mui/material/InputBase';
 import { filledInputClasses } from '@mui/material/FilledInput';
+import { inputBaseClasses } from '@mui/material/InputBase';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';
 
 import { varAlpha } from '../../styles';

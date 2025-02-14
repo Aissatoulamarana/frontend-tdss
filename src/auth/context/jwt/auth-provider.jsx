@@ -1,5 +1,5 @@
 
-//src/auth/context/jwt/auth-provider.jsx
+// src/auth/context/jwt/auth-provider.jsx
 
 'use client';
 
@@ -7,14 +7,11 @@ import { useMemo, useEffect, useCallback } from 'react';
 
 import { useSetState } from 'src/hooks/use-set-state';
 
-import axios, { endpoints } from 'src/utils/axios';
-
-
-
 import API from 'src/utils/api';
+import axios from 'src/utils/axios';
 
-import { STORAGE_KEY } from './constant';
 import { AuthContext } from '../auth-context';
+import { STORAGE_KEY } from './constant';
 import { setSession, isValidToken } from './utils';
 
 // ----------------------------------------------------------------------

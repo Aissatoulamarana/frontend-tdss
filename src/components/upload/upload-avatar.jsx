@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-
+import { useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { varAlpha } from 'src/theme/styles';
 
-import { Image } from '../image';
 import { Iconify } from '../iconify';
+import { Image } from '../image';
 import { uploadClasses } from './classes';
 import { RejectionFiles } from './components/rejection-files';
 

@@ -1,5 +1,5 @@
-import { tableRowClasses } from '@mui/material/TableRow';
 import { tableCellClasses } from '@mui/material/TableCell';
+import { tableRowClasses } from '@mui/material/TableRow';
 
 import { varAlpha } from '../../styles';
 

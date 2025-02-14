@@ -1,14 +1,14 @@
 'use client';
 
-import { paths } from 'src/routes/paths';
-
+import { useState } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
+
+import { paths } from 'src/routes/paths';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { DeclarationNew } from '../declaration-new';
 import { ImportFilesButton } from '../components/button-import-excel';
-import { useState } from 'react';
+import { DeclarationNew } from '../declaration-new';
 
 // ----------------------------------------------------------------------
 

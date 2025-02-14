@@ -1,5 +1,5 @@
-import SvgIcon, { svgIconClasses } from '@mui/material/SvgIcon';
 import { autocompleteClasses } from '@mui/material/Autocomplete';
+import SvgIcon, { svgIconClasses } from '@mui/material/SvgIcon';
 
 import { paper, varAlpha, menuItem } from '../../styles';
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { paths } from 'src/routes/paths';
-
 import { DashboardContent } from 'src/layouts/dashboard';
+
+import { paths } from 'src/routes/paths';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { DeclarationEditForm } from '../declaration-edit-form';
+import { DeclarationNewEditForm } from '../declaration-edit-form';
 
 // ----------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ export function DeclarationEditView({ declaration }) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationEditForm declaration={declaration} />
+      <DeclarationNewEditForm declaration={declaration} />
     </DashboardContent>
   );
 }

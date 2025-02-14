@@ -1,8 +1,7 @@
-import { useRef, useEffect } from 'react';
-import { m, useInView, useAnimation } from 'framer-motion';
-
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { m, useInView, useAnimation } from 'framer-motion';
+import { useRef, useEffect } from 'react';
 
 import { varFade, varContainer } from './variants';
 

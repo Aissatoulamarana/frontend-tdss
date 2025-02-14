@@ -1,27 +1,26 @@
-import { z as zod } from 'zod';
-import { useMemo } from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import LoadingButton from '@mui/lab/LoadingButton';
+import axios from 'axios';
+import { useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { z as zod } from 'zod';
 
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { today, fIsAfter } from 'src/utils/format-time';
-
-import { _addressBooks } from 'src/_mock';
+import API from 'src/utils/api';
+import { today } from 'src/utils/format-time';
 
 import { Form, schemaHelper } from 'src/components/hook-form';
 
-import { DeclarationEditStatusDate } from './declaration-status-edit';
-import { DeclarationNewEditDetails } from './declaration-edit-detail';
 import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
-import API from 'src/utils/api';
+
+import { DeclarationNewEditDetails } from './declaration-edit-detail';
+import { DeclarationEditStatusDate } from './declaration-status-edit';
 // ----------------------------------------------------------------------
 
 export const NewInvoiceSchema = zod.object({
@@ -47,9 +46,7 @@ export const NewInvoiceSchema = zod.object({
   declarationNumber: zod.string(),
 });
 
-const generateUniqueId = () => {
-  return 'DEC-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-};
+const generateUniqueId = () => `DEC-${  Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
 // ----------------------------------------------------------------------
 

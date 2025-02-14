@@ -1,20 +1,15 @@
 'use client';
-import React from 'react';
+
 import {
-  Box,
-  Card,
-  CardContent,
-  CardHeader,
-  Divider,
-  Grid,
-  Typography,
-  Avatar
+  Typography
 } from '@mui/material';
-import { fCurrency } from 'src/utils/format-number';
-import { fDate } from 'src/utils/format-time';
+import React from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
+
 import { paths } from 'src/routes/paths';
+
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
 import { FactureDetails } from '../facture-details';
 
 export function FactureDetailsView({ facture }) {

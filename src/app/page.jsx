@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
+import { CONFIG } from 'src/config-global';
 
 import { useRouter } from 'src/routes/hooks';
-
-import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 

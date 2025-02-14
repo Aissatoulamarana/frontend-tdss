@@ -1,29 +1,31 @@
 'use client';
-import { useCallback, useRef, useState } from 'react';
-import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import NoSsr from '@mui/material/NoSsr';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import DialogActions from '@mui/material/DialogActions';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import NoSsr from '@mui/material/NoSsr';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
+import axios from 'axios';
+import { useRef, useState, useCallback } from 'react';
+import { useReactToPrint } from 'react-to-print';
 
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { Iconify } from 'src/components/iconify';
-import { DeclarationPDF } from './declaration-pdf';
-import { useReactToPrint } from 'react-to-print';
-import DeclarationDetailsPrint from './declaration-print';
+
 import { ShareSendDialog } from './components/ShareSendDialog';
+import { DeclarationPDF } from './declaration-pdf';
+import DeclarationDetailsPrint from './declaration-print';
 
 // ----------------------------------------------------------------------
 

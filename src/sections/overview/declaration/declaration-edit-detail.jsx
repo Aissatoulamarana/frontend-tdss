@@ -1,20 +1,18 @@
-import { useEffect, useCallback, useState } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
-
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import axios from 'axios';
+import debounce from 'lodash.debounce';
+import { useState, useEffect, useCallback } from 'react';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+import API from 'src/utils/api';
 
 import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
-import API from 'src/utils/api';
-import axios from 'axios';
-import debounce from 'lodash.debounce';
 
 // ----------------------------------------------------------------------
 
@@ -88,9 +86,9 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
         console.log(data);
         append({
           numero: data['Numero Passeport '] || '', // Adaptation de "Numero Passeport"
-          type: data['Type'] || '', // Adaptation de "Type"
-          nom: data['Nom'] || '', // Adaptation de "Nom"
-          fonction: data['Fonction'] || '', // Adaptation de "Fonction"
+          type: data.Type || '', // Adaptation de "Type"
+          nom: data.Nom || '', // Adaptation de "Nom"
+          fonction: data.Fonction || '', // Adaptation de "Fonction"
           prenom: data['Prénom'] || '', // Adaptation de "Prénom"
           nationalite: data['Nationalité'] || '', // Adaptation de "Nationalité"
           passportExists: false, // On pourra déclencher la vérification ensuite si besoin

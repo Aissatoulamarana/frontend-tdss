@@ -1,10 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-
-
 // ----------------------------------------------------------------------
-
-
 import { PermisAnalyticsView } from 'src/sections/overview/analytics/permis/view';
 
 // ----------------------------------------------------------------------

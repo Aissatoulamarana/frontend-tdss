@@ -1,31 +1,27 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import API from 'src/utils/api';
-
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+import { DashboardContent } from 'src/layouts/dashboard';
 
-import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
+import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 // import { orderBy } from 'src/utils/helper';
+import API from 'src/utils/api';
 
-import { DashboardContent } from 'src/layouts/dashboard';
-
-import { Iconify } from 'src/components/iconify';
-import { EmptyContent } from 'src/components/empty-content';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-
-import { JobList } from '../job-list';
-import { JobSort } from '../job-sort';
-import { JobSearch } from '../job-search';
+import { EmptyContent } from 'src/components/empty-content';
+import { Iconify } from 'src/components/iconify';
 
 import { JobFiltersResult } from '../job-filters-result';
+import { JobList } from '../job-list';
+import { JobSearch } from '../job-search';
 
 // ----------------------------------------------------------------------
 
@@ -129,7 +125,7 @@ export function JobListView() {
   );
 }
 
-const applyFilter = ({ inputData, sortBy }) => {
+const applyFilter = ({ inputData, sortBy }) => 
   // Sort by
   // if (sortBy === 'latest') {
   //   inputData = orderBy(inputData, ['created_at'], ['desc']);
@@ -143,5 +139,5 @@ const applyFilter = ({ inputData, sortBy }) => {
   //   inputData = orderBy(inputData, ['total_views'], ['desc']);
   // }
 
-  return inputData;
-};
+   inputData
+;

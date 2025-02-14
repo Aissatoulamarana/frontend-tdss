@@ -1,7 +1,7 @@
 'use client';
 
-import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
 import { usePathname } from 'src/routes/hooks';
@@ -10,15 +10,15 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { Logo } from 'src/components/logo';
 
-import { Main } from './main';
-import { NavMobile } from './nav/mobile';
-import { NavDesktop } from './nav/desktop';
-import { Footer, HomeFooter } from './footer';
 import { MenuButton } from '../components/menu-button';
-import { LayoutSection } from '../core/layout-section';
-import { HeaderSection } from '../core/header-section';
-import { SignInButton } from '../components/sign-in-button';
 import { SettingsButton } from '../components/settings-button';
+import { SignInButton } from '../components/sign-in-button';
+import { HeaderSection } from '../core/header-section';
+import { LayoutSection } from '../core/layout-section';
+import { Footer, HomeFooter } from './footer';
+import { Main } from './main';
+import { NavDesktop } from './nav/desktop';
+import { NavMobile } from './nav/mobile';
 
 // ----------------------------------------------------------------------
 

@@ -1,16 +1,15 @@
 'use client';
 
 import { Grid2 } from '@mui/material';
-
 import { _appInvoices } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { DeclarationNew } from '../declaration-new-invoice';
-import { DeclarationWebsiteVisits } from '../declaration-website';
-import { DeclarationWidgetSummary } from '../declaration-summary';
-import { DeclarationCurrentVisits } from '../declaration-current-visits';
 import { DeclarationCurrentDownload } from '../declaration-current-download';
+import { DeclarationCurrentVisits } from '../declaration-current-visits';
+import { DeclarationNew } from '../declaration-new-invoice';
+import { DeclarationWidgetSummary } from '../declaration-summary';
+import { DeclarationWebsiteVisits } from '../declaration-website';
 
 // ----------------------------------------------------------------------
 

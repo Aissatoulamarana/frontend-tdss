@@ -1,4 +1,4 @@
-//src/auth/context/jwt/utils.js
+// src/auth/context/jwt/utils.js
 
 import { paths } from 'src/routes/paths';
 

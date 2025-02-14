@@ -1,13 +1,13 @@
-// ShareSendDialog.js
-import { useState } from 'react';
 import {
   Dialog,
+  Button,
+  TextField,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
-  TextField,
 } from '@mui/material';
+// ShareSendDialog.js
+import { useState } from 'react';
 
 export function ShareSendDialog({ open, onClose, onSubmit, title, label }) {
   const [email, setEmail] = useState('');

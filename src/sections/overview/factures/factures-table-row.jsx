@@ -1,30 +1,31 @@
 'use client';
-import { useState, useEffect } from 'react';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import Avatar from '@mui/material/Avatar';
-import MenuList from '@mui/material/MenuList';
-import MenuItem from '@mui/material/MenuItem';
-import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
-import TableCell from '@mui/material/TableCell';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import ListItemText from '@mui/material/ListItemText';
+
+import { CircularProgress } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import { useBoolean } from 'src/hooks/use-boolean';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
+import Stack from '@mui/material/Stack';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useState } from 'react';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+
 import { fCurrency } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
-import API from 'src/utils/api';
-import axios from 'axios';
-import { Label } from 'src/components/label';
-import { Iconify } from 'src/components/iconify';
+
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
-import { Field } from 'src/components/hook-form';
+import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
+
 import { PayeurForm } from './form-factures';
 
 // ----------------------------------------------------------------------
@@ -43,20 +44,20 @@ export function FactureTableRow({
   selectedBanque
 }) {
   const confirm = useBoolean();
-  
+
   const [loading, setLoading] = useState(false); // Etat pour gérer l'affichage du loader pendant le chargement des options de banque
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
   const [openSecondDialog, setOpenSecondDialog] = useState(false);
- 
-  const [selectedBanqueLocal, setSelectedBanqueLocal] = useState(null); 
- 
- 
+
+  const [selectedBanqueLocal, setSelectedBanqueLocal] = useState(null);
+
+
   const handleChangeBanque = (event, newValue) => {
     console.log('Banque sélectionnée:', newValue); // Vérification de l'objet sélectionné
     setSelectedBanqueLocal(newValue);
     setSelectedBanque(newValue);
   };
-  
+
 
   const popover = usePopover();
 

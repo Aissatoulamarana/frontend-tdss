@@ -1,25 +1,25 @@
-import { z as zod } from 'zod';
-import { useForm } from 'react-hook-form';
-import { useMemo, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Divider from '@mui/material/Divider';
 import CardHeader from '@mui/material/CardHeader';
-import Button from '@mui/material/Button';
-import LoadingButton from '@mui/lab/LoadingButton';
-import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
-import { useRouter } from 'src/routes/hooks';
-import { Iconify } from 'src/components/iconify';
-import { Form, Field } from 'src/components/hook-form';
-import { toast } from 'sonner';
-import API from 'src/utils/api';
 import axios from 'axios';
+import { useMemo, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z as zod } from 'zod';
+
+import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
+
+import API from 'src/utils/api';
+
+import { Form, Field } from 'src/components/hook-form';
 
 export const NewJobSchema = zod.object({
   name: zod.string().min(1, { message: 'Le nom est requis !' }),

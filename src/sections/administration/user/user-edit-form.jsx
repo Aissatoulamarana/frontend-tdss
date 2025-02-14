@@ -1,31 +1,34 @@
-import { z as zod } from 'zod';
-import { useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, Controller } from 'react-hook-form';
-import { isValidPhoneNumber } from 'react-phone-number-input/input';
-import IconButton from '@mui/material/IconButton';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { Grid2 } from '@mui/material';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
-import LoadingButton from '@mui/lab/LoadingButton';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import InputAdornment from '@mui/material/InputAdornment';
-import { useBoolean } from 'src/hooks/use-boolean';
-import { paths } from 'src/routes/paths';
+import axios from 'axios';
+import { useMemo } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { isValidPhoneNumber } from 'react-phone-number-input/input';
+import { z as zod } from 'zod';
+
 import { useRouter } from 'src/routes/hooks';
-import { Iconify } from 'src/components/iconify';
+import { paths } from 'src/routes/paths';
+
+import { useBoolean } from 'src/hooks/use-boolean';
+
+import API from 'src/utils/api';
 import { fData } from 'src/utils/format-number';
 
+import { Form, Field, schemaHelper } from 'src/components/hook-form';
+import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
-import { Form, Field, schemaHelper } from 'src/components/hook-form';
-import API from 'src/utils/api';
-import axios from 'axios';
-import MenuItem from '@mui/material/MenuItem';
 
 // ----------------------------------------------------------------------
 
@@ -194,11 +197,9 @@ export function UserNewEditForm({ currentUser }) {
               name="isVerified"
               labelPlacement="start"
               label={
-                <>
-                  <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
                     Verification du mail
                   </Typography>
-                </>
               }
               sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
             />

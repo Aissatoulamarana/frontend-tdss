@@ -1,16 +1,15 @@
 'use client';
 
 import { Grid2 } from '@mui/material';
-
 import { _appInvoices } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Paiement } from '../paiement';
-import { PaiementNew } from '../paiement-new';
-import { PaiementSummary } from '../paiement-summary';
-import { PaiementOverview } from '../paiement-overview';
 import { PaiementCurrentVisits } from '../paiement-current';
+import { PaiementNew } from '../paiement-new';
+import { PaiementOverview } from '../paiement-overview';
+import { PaiementSummary } from '../paiement-summary';
 
 // ----------------------------------------------------------------------
 

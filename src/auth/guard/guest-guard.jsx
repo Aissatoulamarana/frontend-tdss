@@ -2,10 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CONFIG } from 'src/config-global';
 
 import { useRouter, useSearchParams } from 'src/routes/hooks';
-
-import { CONFIG } from 'src/config-global';
 
 import { SplashScreen } from 'src/components/loading-screen';
 

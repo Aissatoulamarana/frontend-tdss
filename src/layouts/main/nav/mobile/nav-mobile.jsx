@@ -1,11 +1,10 @@
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
 import { useEffect } from 'react';
 
-import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
-import Button from '@mui/material/Button';
-
-import { paths } from 'src/routes/paths';
 import { usePathname } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';

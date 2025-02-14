@@ -1,11 +1,10 @@
-import dynamic from 'next/dynamic';
-
 import Box from '@mui/material/Box';
+import dynamic from 'next/dynamic';
 
 import { withLoadingProps } from 'src/utils/with-loading-props';
 
-import { chartClasses } from './classes';
 import { ChartLoading } from './chart-loading';
+import { chartClasses } from './classes';
 
 // ----------------------------------------------------------------------
 

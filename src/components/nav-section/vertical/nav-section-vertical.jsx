@@ -1,13 +1,12 @@
+import Collapse from '@mui/material/Collapse';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
 import { useState, useCallback } from 'react';
 
-import Stack from '@mui/material/Stack';
-import Collapse from '@mui/material/Collapse';
-import { useTheme } from '@mui/material/styles';
-
-import { NavList } from './nav-list';
 import { navSectionClasses } from '../classes';
 import { navSectionCssVars } from '../css-vars';
 import { NavUl, NavLi, Subheader } from '../styles';
+import { NavList } from './nav-list';
 
 // ----------------------------------------------------------------------
 

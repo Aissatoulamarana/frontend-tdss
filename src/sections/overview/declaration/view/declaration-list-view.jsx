@@ -1,40 +1,40 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import { useEffect } from 'react';
-import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Card from '@mui/material/Card';
 import { Grid2 } from '@mui/material';
-import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import TableBody from '@mui/material/TableBody';
-import { useTheme } from '@mui/material/styles';
+import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { useTheme } from '@mui/material/styles';
+import Tab from '@mui/material/Tab';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
+import axios from 'axios';
+import { useState, useEffect , useCallback } from 'react';
+import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { varAlpha } from 'src/theme/styles';
 
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { sumBy } from 'src/utils/helper';
+import API from 'src/utils/api';
 import { fIsAfter, fIsBetween } from 'src/utils/format-time';
+import { sumBy } from 'src/utils/helper';
 
-import { varAlpha } from 'src/theme/styles';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
-
-import { Label } from 'src/components/label';
-import { toast } from 'src/components/snackbar';
-import { Iconify } from 'src/components/iconify';
-import { Scrollbar } from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
+import { Scrollbar } from 'src/components/scrollbar';
+import { toast } from 'src/components/snackbar';
 import {
   useTable,
   emptyRows,
@@ -47,12 +47,10 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationSummary } from '../declaration-analytic';
-import { InvoiceTableToolbar } from '../declaration-table-toolbar';
 import { InvoiceTableFiltersResult } from '../declaration-table-filters';
-import axios from 'axios';
-import API from 'src/utils/api';
+import { DeclarationTableRow } from '../declaration-table-row';
+import { InvoiceTableToolbar } from '../declaration-table-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -159,7 +157,7 @@ export function DeclarationListView() {
         alert('Déclaration supprimée avec succès !');
       } else {
         console.error('Erreur lors de la suppression:', response.data.error);
-        alert('Erreur : ' + response.data.error);
+        alert(`Erreur : ${  response.data.error}`);
       }
     } catch (error) {
       console.error('Erreur réseau ou serveur:', error);
@@ -290,7 +288,7 @@ export function DeclarationListView() {
   }
 
   if (error) {
-    console.error('Error: ' + error);
+    console.error(`Error: ${  error}`);
   }
 
   return (

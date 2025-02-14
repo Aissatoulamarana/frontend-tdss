@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 
+import { RemoveButton, DownloadButton } from './action-buttons';
 import { fileThumbnailClasses } from './classes';
 import { fileData, fileThumb, fileFormat } from './utils';
-import { RemoveButton, DownloadButton } from './action-buttons';
 
 // ----------------------------------------------------------------------
 

@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-
 import { varAlpha } from 'src/theme/styles';
 
 import { Iconify } from '../../iconify';

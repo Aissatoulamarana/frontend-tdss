@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import parse from 'autosuggest-highlight/parse';
-import match from 'autosuggest-highlight/match';
-
 import Box from '@mui/material/Box';
-import SvgIcon from '@mui/material/SvgIcon';
-import InputBase from '@mui/material/InputBase';
-import { useTheme } from '@mui/material/styles';
+import Dialog, { dialogClasses } from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import Dialog, { dialogClasses } from '@mui/material/Dialog';
+import InputBase from '@mui/material/InputBase';
+import { useTheme } from '@mui/material/styles';
+import SvgIcon from '@mui/material/SvgIcon';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import { useState, useCallback } from 'react';
+import { varAlpha } from 'src/theme/styles';
 
 import { useRouter } from 'src/routes/hooks';
 import { isExternalLink } from 'src/routes/utils';
@@ -18,10 +18,8 @@ import { isExternalLink } from 'src/routes/utils';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useEventListener } from 'src/hooks/use-event-listener';
 
-import { varAlpha } from 'src/theme/styles';
-
-import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { SearchNotFound } from 'src/components/search-not-found';
 

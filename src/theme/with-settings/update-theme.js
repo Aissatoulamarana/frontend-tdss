@@ -1,9 +1,9 @@
 import COLORS from '../core/colors.json';
-import PRIMARY_COLOR from './primary-color.json';
 import { components as coreComponents } from '../core/components';
-import { hexToRgbChannel, createPaletteChannel } from '../styles';
-import { primary as corePrimary, grey as coreGreyPalette } from '../core/palette';
 import { createShadowColor, customShadows as coreCustomShadows } from '../core/custom-shadows';
+import { primary as corePrimary, grey as coreGreyPalette } from '../core/palette';
+import { hexToRgbChannel, createPaletteChannel } from '../styles';
+import PRIMARY_COLOR from './primary-color.json';
 
 // ----------------------------------------------------------------------
 

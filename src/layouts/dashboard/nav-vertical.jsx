@@ -1,11 +1,10 @@
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-
 import { varAlpha, hideScrollY } from 'src/theme/styles';
 
 import { Logo } from 'src/components/logo';
-import { Scrollbar } from 'src/components/scrollbar';
 import { NavSectionMini, NavSectionVertical } from 'src/components/nav-section';
+import { Scrollbar } from 'src/components/scrollbar';
 
 import { NavToggleButton } from '../components/nav-toggle-button';
 

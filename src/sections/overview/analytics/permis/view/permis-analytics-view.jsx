@@ -1,16 +1,16 @@
 'use client';
 
 import { Grid2 } from '@mui/material';
-
+import { useTheme } from '@mui/material/styles';
 import { _appInvoices } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useTheme } from '@mui/material/styles';
-import { PermisNew } from '../permis-new';
+
 import { PermisWebsiteVisits } from '../permis-analytics';
-import { PermisWidgetSummary } from '../permis-summary';
 import { PermisCurrentVisits } from '../permis-current';
 import { PermisCurrentDownload } from '../permis-donut';
+import { PermisNew } from '../permis-new';
+import { PermisWidgetSummary } from '../permis-summary';
 
 // ----------------------------------------------------------------------
 

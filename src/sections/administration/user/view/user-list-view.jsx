@@ -1,34 +1,35 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-
 import Box from '@mui/material/Box';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import TableBody from '@mui/material/TableBody';
+import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
+import Tab from '@mui/material/Tab';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
+import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+import { _roles } from 'src/_mock';
+import { DashboardContent } from 'src/layouts/dashboard';
+import { varAlpha } from 'src/theme/styles';
 
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
-import { varAlpha } from 'src/theme/styles';
-import { DashboardContent } from 'src/layouts/dashboard';
-import { _roles, USER_STATUS_OPTIONS } from 'src/_mock';
+import API from 'src/utils/api';
 
-import { Label } from 'src/components/label';
-import { toast } from 'src/components/snackbar';
-import { Iconify } from 'src/components/iconify';
-import { Scrollbar } from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
+import { Scrollbar } from 'src/components/scrollbar';
+import { toast } from 'src/components/snackbar';
 import {
   useTable,
   emptyRows,
@@ -41,11 +42,9 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
+import { UserTableFiltersResult } from '../user-table-filters-result';
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
-import { UserTableFiltersResult } from '../user-table-filters-result';
-import axios from 'axios';
-import API from 'src/utils/api';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
@@ -184,7 +183,7 @@ export function UserListView() {
   }
 
   if (error) {
-    console.error('Error: ' + error);
+    console.error(`Error: ${  error}`);
   }
   return (
     <>

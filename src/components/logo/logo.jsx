@@ -1,15 +1,13 @@
 'use client';
 
-import { useId, forwardRef } from 'react';
-
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
+import { useId, forwardRef } from 'react';
+import { CONFIG } from 'src/config-global';
 
 import { RouterLink } from 'src/routes/components';
 
 import { logoClasses } from './classes';
-
-import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 
@@ -177,7 +175,7 @@ export const Logo = forwardRef(
           </linearGradient>
         </defs>
       </svg>
-    // );*/
+    // ); */
 
     const baseSize = {
       width: width ?? 40,

@@ -1,7 +1,6 @@
-import { m } from 'framer-motion';
-
-import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import { m } from 'framer-motion';
 
 // ----------------------------------------------------------------------
 

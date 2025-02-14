@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
 import { Page, View, Text, Font, Image, Document, StyleSheet } from '@react-pdf/renderer';
-import { fDate } from 'src/utils/format-time';
+import { useMemo } from 'react';
+
 import { fCurrency } from 'src/utils/format-number';
+import { fDate } from 'src/utils/format-time';
 
 // Enregistrement de la police Roboto
 Font.register({
@@ -109,8 +110,7 @@ export function FacturePDF({ facture }) {
     <View style={styles.mb40}>
       <View style={[styles.container, styles.mb8]}>
         <Image source="/logo/logo-single.png" style={{ width: 48, height: 48 }} />
-        <View style={{ textAlign: 'right' }}>
-        </View>
+        <View style={{ textAlign: 'right' }} />
       </View>
       {/* Numéro de facture centré */}
       <View>

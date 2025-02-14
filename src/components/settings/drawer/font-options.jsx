@@ -1,5 +1,4 @@
 import Box from '@mui/material/Box';
-
 import { CONFIG } from 'src/config-global';
 import { setFont } from 'src/theme/styles';
 

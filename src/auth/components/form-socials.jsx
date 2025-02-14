@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-
 import { GithubIcon, GoogleIcon, TwitterIcon } from 'src/assets/icons';
 
 // ----------------------------------------------------------------------

@@ -1,5 +1,5 @@
-import SvgIcon from '@mui/material/SvgIcon';
 import { chipClasses } from '@mui/material/Chip';
+import SvgIcon from '@mui/material/SvgIcon';
 
 import { varAlpha, stylesMode } from '../../styles';
 

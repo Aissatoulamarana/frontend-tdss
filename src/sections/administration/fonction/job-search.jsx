@@ -1,14 +1,13 @@
-import parse from 'autosuggest-highlight/parse';
-import match from 'autosuggest-highlight/match';
-
+import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import Autocomplete from '@mui/material/Autocomplete';
-import InputAdornment from '@mui/material/InputAdornment';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
 
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
 import { SearchNotFound } from 'src/components/search-not-found';

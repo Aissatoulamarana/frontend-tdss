@@ -1,28 +1,27 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
 import { useTheme, useColorScheme } from '@mui/material/styles';
-
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 import COLORS from 'src/theme/core/colors.json';
-import { paper, varAlpha } from 'src/theme/styles';
 import { defaultFont } from 'src/theme/core/typography';
+import { paper, varAlpha } from 'src/theme/styles';
 import PRIMARY_COLOR from 'src/theme/with-settings/primary-color.json';
 
 import { Iconify } from '../../iconify';
-import { BaseOption } from './base-option';
-import { NavOptions } from './nav-options';
 import { Scrollbar } from '../../scrollbar';
-import { FontOptions } from './font-options';
-import { useSettingsContext } from '../context';
-import { PresetsOptions } from './presets-options';
 import { defaultSettings } from '../config-settings';
+import { useSettingsContext } from '../context';
+import { BaseOption } from './base-option';
+import { FontOptions } from './font-options';
 import { FullScreenButton } from './fullscreen-button';
+import { NavOptions } from './nav-options';
+import { PresetsOptions } from './presets-options';
 
 // ----------------------------------------------------------------------
 

@@ -1,12 +1,11 @@
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
 import ListSubheader from '@mui/material/ListSubheader';
-
 import { stylesMode } from 'src/theme/styles';
 
-import { navSectionClasses } from './classes';
-import { svgColorClasses } from '../svg-color';
 import { Iconify, iconifyClasses } from '../iconify';
+import { svgColorClasses } from '../svg-color';
+import { navSectionClasses } from './classes';
 
 // ----------------------------------------------------------------------
 

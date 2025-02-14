@@ -1,6 +1,6 @@
-import SvgIcon from '@mui/material/SvgIcon';
 import { buttonClasses } from '@mui/material/Button';
 import { dialogActionsClasses } from '@mui/material/DialogActions';
+import SvgIcon from '@mui/material/SvgIcon';
 
 import { stylesMode } from '../../styles';
 

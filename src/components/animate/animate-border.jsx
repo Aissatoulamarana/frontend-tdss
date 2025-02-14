@@ -1,10 +1,8 @@
 'use client';
 
+import Box from '@mui/material/Box';
 import { m } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
-
-import Box from '@mui/material/Box';
-
 import { borderGradient } from 'src/theme/styles';
 
 // ----------------------------------------------------------------------

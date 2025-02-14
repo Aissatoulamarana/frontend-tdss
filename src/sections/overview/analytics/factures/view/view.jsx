@@ -1,15 +1,14 @@
 'use client';
 
 import { Grid2 } from '@mui/material';
-
 import { _appInvoices } from 'src/_mock';
 import { CONFIG } from 'src/config-global';
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { FactureNew } from '../facture-new-invoice';
-import { FactureOverview } from '../facture-overview';
 import { FactureWidgetSummary } from '../facture-bloc';
 import { FactureCurrentDownload } from '../facture-current';
+import { FactureNew } from '../facture-new-invoice';
+import { FactureOverview } from '../facture-overview';
 import { FactureWebsiteVisits } from '../facture-website-visits';
 
 // ----------------------------------------------------------------------

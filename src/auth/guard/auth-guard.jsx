@@ -1,14 +1,13 @@
 
-//src/auth/guard/auth-guard.jsx
+// src/auth/guard/auth-guard.jsx
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-
-import { paths } from 'src/routes/paths';
-import { useRouter, usePathname, useSearchParams } from 'src/routes/hooks';
-
 import { CONFIG } from 'src/config-global';
+
+import { useRouter, usePathname, useSearchParams } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 
 import { SplashScreen } from 'src/components/loading-screen';
 

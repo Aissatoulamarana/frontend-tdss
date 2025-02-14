@@ -1,20 +1,19 @@
 'use client';
 
-import { m } from 'framer-motion';
-
-import Badge from '@mui/material/Badge';
 import Avatar from '@mui/material/Avatar';
-import SvgIcon from '@mui/material/SvgIcon';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
+import Badge from '@mui/material/Badge';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import SvgIcon from '@mui/material/SvgIcon';
+import Typography from '@mui/material/Typography';
+import { m } from 'framer-motion';
 
 import { fToNow } from 'src/utils/format-time';
 
 import { varHover } from 'src/components/animate';
-import { Scrollbar } from 'src/components/scrollbar';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { Scrollbar } from 'src/components/scrollbar';
 
 // ----------------------------------------------------------------------
 

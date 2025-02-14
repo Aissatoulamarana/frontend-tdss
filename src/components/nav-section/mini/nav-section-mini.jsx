@@ -1,10 +1,10 @@
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 
-import { NavList } from './nav-list';
-import { NavUl, NavLi } from '../styles';
 import { navSectionClasses } from '../classes';
 import { navSectionCssVars } from '../css-vars';
+import { NavUl, NavLi } from '../styles';
+import { NavList } from './nav-list';
 
 // ----------------------------------------------------------------------
 

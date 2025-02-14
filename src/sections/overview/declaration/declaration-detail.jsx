@@ -1,28 +1,17 @@
-import { useState, useCallback } from 'react';
-
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
-import { styled } from '@mui/material/styles';
-import TableRow from '@mui/material/TableRow';
-import TableHead from '@mui/material/TableHead';
-import TableBody from '@mui/material/TableBody';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
+import { useState, useCallback } from 'react';
+
 import { fDate } from 'src/utils/format-time';
-import { fCurrency } from 'src/utils/format-number';
-import IconButton from '@mui/material/IconButton';
+
+import { usePopover } from 'src/components/custom-popover';
 import { Label } from 'src/components/label';
-import { Scrollbar } from 'src/components/scrollbar';
-import { usePopover, CustomPopover } from 'src/components/custom-popover';
 
 import FilteredTable from './components/tableau';
 import { DeclarationToolbar } from './declaration-toolbar';
-import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 

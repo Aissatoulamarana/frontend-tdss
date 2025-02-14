@@ -1,8 +1,7 @@
+import axios from 'axios';
 import { CONFIG } from 'src/config-global';
 
 import API from 'src/utils/api';
-import axios from 'axios';
-
 
 import { DeclarationDetailsView } from 'src/sections/overview/declaration/view';
 

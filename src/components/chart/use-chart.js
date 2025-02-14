@@ -1,5 +1,4 @@
 import { useTheme } from '@mui/material/styles';
-
 import { varAlpha } from 'src/theme/styles';
 
 // ----------------------------------------------------------------------

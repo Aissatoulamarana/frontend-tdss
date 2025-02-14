@@ -3,22 +3,21 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/material/styles';
-
-import { DashboardContent } from 'src/layouts/dashboard';
 import { _appAuthors, _appRelated, _appInvoices, _appInstalled } from 'src/_mock';
+import { DashboardContent } from 'src/layouts/dashboard';
 
 import { svgColorClasses } from 'src/components/svg-color';
 
 import { useMockedUser } from 'src/auth/hooks';
 
-import { AppWidget } from '../app-widget';
+import { AppAreaInstalled } from '../app-area-installed';
+import { AppCurrentDownload } from '../app-current-download';
 import { AppNewInvoice } from '../app-new-invoice';
 import { AppTopAuthors } from '../app-top-authors';
-import { AppTopRelated } from '../app-top-related';
-import { AppAreaInstalled } from '../app-area-installed';
-import { AppWidgetSummary } from '../app-widget-summary';
-import { AppCurrentDownload } from '../app-current-download';
 import { AppTopInstalledCountries } from '../app-top-installed-countries';
+import { AppTopRelated } from '../app-top-related';
+import { AppWidget } from '../app-widget';
+import { AppWidgetSummary } from '../app-widget-summary';
 
 // ----------------------------------------------------------------------
 

@@ -1,7 +1,5 @@
-import { useMemo } from 'react';
-
 import { styled } from '@mui/material/styles';
-
+import { useMemo } from 'react';
 import { varAlpha, stylesMode } from 'src/theme/styles';
 
 import { bulletColor } from 'src/components/nav-section';

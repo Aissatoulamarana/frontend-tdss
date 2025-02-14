@@ -1,6 +1,7 @@
-import { CONFIG } from 'src/config-global';
-import API from 'src/utils/api';
 import axios from 'axios';
+import { CONFIG } from 'src/config-global';
+
+import API from 'src/utils/api';
 
 import { FactureDetailsView } from 'src/sections/overview/factures/view';
 

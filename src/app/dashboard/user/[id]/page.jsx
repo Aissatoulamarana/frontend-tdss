@@ -1,6 +1,7 @@
 // /src/app/dashboard/user/[id]/page.jsx
 
 import React from 'react';
+
 import API from 'src/utils/api';
 
 // Fonction pour récupérer les données de l'utilisateur

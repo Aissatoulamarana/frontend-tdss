@@ -1,14 +1,15 @@
-// DeclarationDetailsPrint.js
-import React, { forwardRef } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
+// DeclarationDetailsPrint.js
+import React, { forwardRef } from 'react';
+
 import { fDate } from 'src/utils/format-time';
+
 import FilteredTable from './components/tableau';
 
-const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => {
-  return (
+const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => (
     <Card ref={ref} sx={{ pt: 5, px: 5 }}>
       <Box
         rowGap={5}
@@ -48,7 +49,6 @@ const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => {
 
       <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
     </Card>
-  );
-});
+  ));
 
 export default DeclarationDetailsPrint;

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
 import { usePathname } from 'src/routes/hooks';
-import { isExternalLink } from 'src/routes/utils';
 import { useActiveLink } from 'src/routes/hooks/use-active-link';
+import { isExternalLink } from 'src/routes/utils';
 
-import { NavItem } from './nav-item';
 import { navSectionClasses } from '../classes';
 import { NavUl, NavLi, NavCollapse } from '../styles';
+import { NavItem } from './nav-item';
 
 // ----------------------------------------------------------------------
 

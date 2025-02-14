@@ -2,9 +2,8 @@
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-
-import { varAlpha } from 'src/theme/styles';
 import { DashboardContent } from 'src/layouts/dashboard';
+import { varAlpha } from 'src/theme/styles';
 
 // ----------------------------------------------------------------------
 

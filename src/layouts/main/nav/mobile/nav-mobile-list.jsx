@@ -1,12 +1,10 @@
-import { useState, useCallback } from 'react';
-
 import Collapse from '@mui/material/Collapse';
-
-import { isExternalLink } from 'src/routes/utils';
-import { useActiveLink } from 'src/routes/hooks/use-active-link';
-
+import { useState, useCallback } from 'react';
 import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
+
+import { useActiveLink } from 'src/routes/hooks/use-active-link';
+import { isExternalLink } from 'src/routes/utils';
 
 import { NavLi, navSectionClasses, NavSectionVertical } from 'src/components/nav-section';
 

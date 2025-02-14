@@ -1,12 +1,11 @@
 'use client';
 
-import { forwardRef } from 'react';
-
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
+import { forwardRef } from 'react';
 
-import { StyledLabel } from './styles';
 import { labelClasses } from './classes';
+import { StyledLabel } from './styles';
 
 // ----------------------------------------------------------------------
 

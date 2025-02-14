@@ -1,18 +1,17 @@
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
-import Typography from '@mui/material/Typography';
-import ListItemText from '@mui/material/ListItemText';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import { CONFIG } from 'src/config-global';
 
 import { fToNow } from 'src/utils/format-time';
 
-import { CONFIG } from 'src/config-global';
-
-import { Label } from 'src/components/label';
 import { FileThumbnail } from 'src/components/file-thumbnail';
+import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
