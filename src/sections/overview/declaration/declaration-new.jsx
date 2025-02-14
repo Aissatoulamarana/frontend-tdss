@@ -21,6 +21,7 @@ import { Form, schemaHelper } from 'src/components/hook-form';
 import { DeclarationEditStatusDate } from './declaration-status-edit';
 import { DeclarationNewEditDetails } from './declaration-edit-detail';
 import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
+import API from 'src/utils/api';
 // ----------------------------------------------------------------------
 
 export const NewInvoiceSchema = zod.object({
@@ -103,7 +104,7 @@ export function DeclarationNew({ currentInvoice, formData, setFormData }) {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const response = await axios.post('http://127.0.0.1:8000/api/declarations/create/', data, {
+      const response = await axios.post(API.createDeclaration(), data, {
         headers: {
           'Content-Type': 'application/json',
           "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
@@ -137,7 +138,7 @@ export function DeclarationNew({ currentInvoice, formData, setFormData }) {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Envoyer les données au backend via axios
-      const response = await axios.post('http://127.0.0.1:8000/api/declarations/create/', data, {
+      const response = await axios.post(API.createDeclaration(), data, {
         headers: {
           'Content-Type': 'application/json',
           "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token

@@ -210,7 +210,7 @@ export function FactureListView() {
 
       try {
         // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(`http://127.0.0.1:8000/paid-facture/${id}/`, data, {
+        const response = await axios.post(API.paidFacture(id), data, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token

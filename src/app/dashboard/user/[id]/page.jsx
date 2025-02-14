@@ -1,40 +1,32 @@
-import React from 'react';
+// /src/app/dashboard/user/[id]/page.jsx
 
-const UserDetails = ({ user }) => {
-  if (!user) return <p>Loading...</p>;
+import React from 'react';
+import API from 'src/utils/api';
+
+// Fonction pour récupérer les données de l'utilisateur
+async function getUserData(id) {
+  const res = await fetch(API.userDetails(id), { cache: "no-store" });
+
+  if (!res.ok) {
+    return null; // Gérer les erreurs de récupération
+  }
+
+  return res.json();
+}
+
+export default async function UserDetails({ params }) {
+  const { id } = params;
+  const user = await getUserData(id);
+
+  if (!user) return <p>Utilisateur introuvable</p>;
 
   return (
     <div>
       <h1>User Details</h1>
-      <p>
-        <strong>Username:</strong> {user.username}
-      </p>
-      <p>
-        <strong>Email:</strong> {user.email}
-      </p>
-      <p>
-        <strong>First Name:</strong> {user.phone_number}
-      </p>
-      <p>
-        <strong>Last Name:</strong> {user.role}
-      </p>
+      <p><strong>Username:</strong> {user.username}</p>
+      <p><strong>Email:</strong> {user.email}</p>
+      <p><strong>Phone Number:</strong> {user.phone_number}</p>
+      <p><strong>Role:</strong> {user.role}</p>
     </div>
   );
-};
-
-export async function getServerSideProps(context) {
-  const { id } = context.params;
-
-  const res = await fetch(`http://localhost:8000/api/users/${id}/`);
-  if (!res.ok) {
-    return { notFound: true };
-  }
-
-  const user = await res.json();
-
-  return {
-    props: { user },
-  };
 }
-
-export default UserDetails;
