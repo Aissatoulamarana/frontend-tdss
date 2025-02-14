@@ -19,14 +19,15 @@ const nextConfig = {
 
   // Fonction rewrites à placer à l'intérieur de nextConfig
   async rewrites() {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://default-api-url.com'; // Fallback URL
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_SERVER_URL}/api/:path*`, // Correctement formaté
+        destination: `${serverUrl}/api/:path*`,
       },
     ];
   },
-
+  
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
