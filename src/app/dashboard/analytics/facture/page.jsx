@@ -4,7 +4,11 @@ import { AnalyticsFactureView } from 'src/sections/overview/analytics/factures/v
 
 // ----------------------------------------------------------------------
 
-export const metadata = { title: `Dashboard - ${CONFIG.appName}` };
+
+
+
+export const metadata = { title: `Analytics Factures - ${CONFIG.appName}` };
+
 
 export default function Page() {
   return <AnalyticsFactureView />;

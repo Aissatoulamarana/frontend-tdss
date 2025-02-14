@@ -50,8 +50,8 @@ export function JwtSignInView() {
   const password = useBoolean();
 
   const defaultValues = {
-    email: 'demo@minimals.cc',
-    password: '@demo1',
+    email: '',
+    password: '',
   };
 
   const methods = useForm({
@@ -66,19 +66,33 @@ export function JwtSignInView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      setErrorMsg(''); // Réinitialise le message d'erreur
       await signInWithPassword({ email: data.email, password: data.password });
       await checkUserSession?.();
-
-      router.refresh();
+      router.push(paths.dashboard.root);
     } catch (error) {
-      console.error(error);
-      setErrorMsg(typeof error === 'string' ? error : error.message);
+      // Capture l'erreur et affiche un message adapté à l'utilisateur
+      console.error('Sign in error:', error);
+      setErrorMsg(typeof error === 'string' ? error : error.message || 'Authentication failed');
     }
   });
 
+  const {
+    register, // Connecte les champs du formulaire
+
+    formState: { errors }, // Accède aux erreurs et à l'état d'envoi
+  } = methods;
+
   const renderForm = (
     <Box gap={3} display="flex" flexDirection="column">
-      <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
+      <Field.Text
+        name="email"
+        label="Email"
+        {...register('email')}
+        error={!!errors.email} // Vérifie si une erreur existe pour ce champ
+        helperText={errors.email?.message}
+        InputLabelProps={{ shrink: true }}
+      />
 
       <Box gap={1.5} display="flex" flexDirection="column">
         <Link
@@ -93,8 +107,11 @@ export function JwtSignInView() {
 
         <Field.Text
           name="password"
-          label="Password"
+          label="Mot de passe"
           placeholder="6+ characters"
+          {...register('password')}
+          error={!!errors.password}
+          helperText={errors.password?.message}
           type={password.value ? 'text' : 'password'}
           InputLabelProps={{ shrink: true }}
           InputProps={{

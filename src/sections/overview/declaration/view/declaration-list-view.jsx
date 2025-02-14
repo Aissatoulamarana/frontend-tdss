@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-
+import { useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
@@ -27,7 +27,7 @@ import { fIsAfter, fIsBetween } from 'src/utils/format-time';
 
 import { varAlpha } from 'src/theme/styles';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { _invoices, INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -51,12 +51,13 @@ import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationSummary } from '../declaration-analytic';
 import { InvoiceTableToolbar } from '../declaration-table-toolbar';
 import { InvoiceTableFiltersResult } from '../declaration-table-filters';
+import axios from 'axios';
+import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'invoiceNumber', label: 'Déclaration' },
-  { id: 'type', label: 'Type de declaration' },
   { id: 'Number', label: 'Nombre Personnel' },
   { id: 'createDate', label: 'Date de Création' },
   { id: 'price', label: 'Facture' },
@@ -76,7 +77,9 @@ export function DeclarationListView() {
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_invoices);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [error, setError] = useState(null); // État pour gérer les erreurs
 
   const filters = useSetState({
     name: '',
@@ -126,35 +129,43 @@ export function DeclarationListView() {
       value: 'submit',
       label: 'Soumise',
       color: 'warnning',
-      count: getInvoiceLength('pending'),
+      count: getInvoiceLength('soumise'),
     },
     {
       value: 'success',
       label: 'Validées',
       color: 'success',
-      count: getInvoiceLength('success'),
+      count: getInvoiceLength('validée'),
+    },
+    {
+      value: 'warning',
+      label: 'Brouillon',
+      color: 'warning',
+      count: getInvoiceLength('brouillon'),
     },
 
     {
       value: 'reject',
       label: 'Rejetées',
       color: 'error',
-      count: getInvoiceLength('draft'),
+      count: getInvoiceLength('rejetée'),
     },
   ];
-
-  const handleDeleteRow = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
-
-      toast.success('Suppression reussie!');
-
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage.length);
-    },
-    [dataInPage.length, table, tableData]
-  );
+  const handleDeleteRow = async (id) => {
+    try {
+      const response = await axios.delete(API.supprimerDeclaration(id));
+      if (response.data.success) {
+        console.log('Déclaration supprimée:', response.data.message);
+        alert('Déclaration supprimée avec succès !');
+      } else {
+        console.error('Erreur lors de la suppression:', response.data.error);
+        alert('Erreur : ' + response.data.error);
+      }
+    } catch (error) {
+      console.error('Erreur réseau ou serveur:', error);
+      alert('Une erreur est survenue lors de la communication avec le serveur.');
+    }
+  };
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -176,6 +187,73 @@ export function DeclarationListView() {
     [router]
   );
 
+  const handleValidateRow = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour valider la déclaration
+        const response = await axios.post(API.validateDeclaration(id));
+
+        if (response.data.success) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          console.log('Déclaration validée:', response.data.message);
+          toast.success('declaration validée avec success !');
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors de la validation:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        alert('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
+  const handleFacturer = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour rejeter la déclaration
+        const response = await axios.post(API.facturerDeclaration(id));
+        if (response.data.success) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          console.log('Déclaration facturée:', response.data.message);
+          toast.success('Déclaration facturée avec succès !');
+          router.push(paths.dashboard.factures.list);
+        } else {
+          console.error('Erreur lors de la facturation:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
+  const handleRejetter = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour rejeter la déclaration
+        const response = await axios.post(API.rejetterDeclaration(id));
+        if (response.data.success) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          console.log('Déclaration rejetée:', response.data.message);
+          toast.success('Déclaration rejetée avec succès !');
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors du rejet :', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
   const handleViewRow = useCallback(
     (id) => {
       router.push(paths.dashboard.declaration.details(id));
@@ -190,6 +268,30 @@ export function DeclarationListView() {
     },
     [filters, table]
   );
+
+  useEffect(() => {
+    // Fonction pour récupérer les données
+    const fetchDeclarations = async () => {
+      try {
+        const response = await axios.get(API.listDeclarations());
+        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeclarations();
+  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+  if (loading) {
+    console.info('Loading declarations...');
+  }
+
+  if (error) {
+    console.error('Error: ' + error);
+  }
 
   return (
     <>
@@ -229,9 +331,9 @@ export function DeclarationListView() {
           </Grid2>
           <Grid2 size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Payées"
-              total={getInvoiceLength('paid')}
-              percent={getPercentByStatus('paid')}
+              title="Facturée"
+              total={getInvoiceLength('facturée')}
+              percent={getPercentByStatus('facturée')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -255,7 +357,7 @@ export function DeclarationListView() {
           <Grid2 size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Brouillon"
-              total={getInvoiceLength('draft')}
+              total={getInvoiceLength('brouillon')}
               percent={getPercentByStatus('draft')}
               chart={{
                 colors: [theme.vars.palette.error.main],
@@ -384,6 +486,9 @@ export function DeclarationListView() {
                         onViewRow={() => handleViewRow(row.id)}
                         onEditRow={() => handleEditRow(row.id)}
                         onDeleteRow={() => handleDeleteRow(row.id)}
+                        onValidateRow={() => handleValidateRow(row.id)}
+                        onFactureRow={() => handleFacturer(row.id)}
+                        onRejetRow={() => handleRejetter(row.id)}
                       />
                     ))}
 
@@ -416,7 +521,8 @@ export function DeclarationListView() {
         title="Supprimer"
         content={
           <>
-            Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> items?
+            Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong>{' '}
+            declarations?
           </>
         }
         action={

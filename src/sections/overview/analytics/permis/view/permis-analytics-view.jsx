@@ -9,13 +9,13 @@ import { useTheme } from '@mui/material/styles';
 import { PermisNew } from '../permis-new';
 import { PermisWebsiteVisits } from '../permis-analytics';
 import { PermisWidgetSummary } from '../permis-summary';
-import {PermisCurrentVisits} from '../permis-current';
+import { PermisCurrentVisits } from '../permis-current';
 import { PermisCurrentDownload } from '../permis-donut';
 
 // ----------------------------------------------------------------------
 
 export function PermisAnalyticsView() {
-    const theme = useTheme();
+  const theme = useTheme();
 
   return (
     <DashboardContent maxWidth="xl">
@@ -47,7 +47,7 @@ export function PermisAnalyticsView() {
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
               series: [56, 47, 40, 62, 73, 30, 23, 54],
-              colors : [theme.vars.palette.success.main]
+              colors: [theme.vars.palette.success.main],
             }}
           />
         </Grid2>
@@ -64,7 +64,7 @@ export function PermisAnalyticsView() {
             chart={{
               categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
               series: [40, 70, 50, 28, 70, 75, 7, 64],
-              colors : [theme.vars.palette.info.main]
+              colors: [theme.vars.palette.info.main],
             }}
           />
         </Grid2>
@@ -85,8 +85,6 @@ export function PermisAnalyticsView() {
             }}
           />
         </Grid2>
-
-       
 
         <Grid2 size={{ xs: 6, md: 6 }}>
           <PermisCurrentVisits
@@ -138,7 +136,7 @@ export function PermisAnalyticsView() {
               { id: 'Permis A', label: 'Permis A' },
               { id: 'Permis B', label: 'Permis B' },
               { id: 'Permis C', label: 'Permis C' },
-              { id: 'category', label: 'Total Employés' },
+              { id: 'Total', label: 'Total Employés' },
               { id: '' },
             ]}
           />
@@ -152,7 +150,7 @@ export function PermisAnalyticsView() {
               { id: 'Permis A', label: 'Permis A' },
               { id: 'Permis B', label: 'Permis B' },
               { id: 'Permis C', label: 'Permis C' },
-              { id: 'category', label: 'Total Employés' },
+              { id: 'Total', label: 'Total Employés' },
               { id: '' },
             ]}
           />

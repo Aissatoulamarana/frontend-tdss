@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
@@ -21,7 +21,7 @@ import { useSetState } from 'src/hooks/use-set-state';
 
 import { varAlpha } from 'src/theme/styles';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { _roles, _userList, USER_STATUS_OPTIONS } from 'src/_mock';
+import { _roles, USER_STATUS_OPTIONS } from 'src/_mock';
 
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
@@ -44,10 +44,17 @@ import {
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserTableFiltersResult } from '../user-table-filters-result';
-
+import axios from 'axios';
+import API from 'src/utils/api';
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [{ value: 'all', label: 'Tous' }, ...USER_STATUS_OPTIONS];
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'Tous' },
+  { value: 'actif', label: 'Actif' },
+  { value: 'pending', label: 'Pending' },
+  { value: 'banned', label: 'Rejected' },
+  { value: 'inactif', label: 'Inactif' },
+];
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Nom Complet' },
@@ -67,7 +74,9 @@ export function UserListView() {
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_userList);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [error, setError] = useState(null); // État pour gérer les erreurs
 
   const filters = useSetState({ name: '', role: [], status: 'all' });
 
@@ -132,6 +141,51 @@ export function UserListView() {
     [filters, table]
   );
 
+  const handleActivate = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour rejeter la déclaration
+        const response = await axios.post(API.activate(id));
+        if (response.data.success) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          console.log('Compte activé avec succès:', response.data.message);
+          toast.success('Compte activé avec succès !');
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error("Erreur lors de l'activation :", response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
+  useEffect(() => {
+    // Fonction pour récupérer les données
+    const fetchUtilisateurs = async () => {
+      try {
+        const response = await axios.get(API.listUsers());
+        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUtilisateurs();
+  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+  if (loading) {
+    console.info('Loading utilisateurs...');
+  }
+
+  if (error) {
+    console.error('Error: ' + error);
+  }
   return (
     <>
       <DashboardContent maxWidth="xl">
@@ -184,7 +238,7 @@ export function UserListView() {
                       'default'
                     }
                   >
-                    {['active', 'pending', 'banned', 'rejected'].includes(tab.value)
+                    {['actif', 'pending', 'banned', 'inactif'].includes(tab.value)
                       ? tableData.filter((user) => user.status === tab.value).length
                       : tableData.length}
                   </Label>
@@ -260,6 +314,7 @@ export function UserListView() {
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onEditRow={() => handleEditRow(row.id)}
                         onViewRow={() => handleViewRow(row.id)}
+                        onActivate={() => handleActivate(row.id)}
                       />
                     ))}
 

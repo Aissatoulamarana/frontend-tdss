@@ -14,31 +14,56 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { today, fIsAfter } from 'src/utils/format-time';
 
-import { Form } from 'src/components/hook-form';
+import { _addressBooks } from 'src/_mock';
 
-import { DeclarationNewEditStatusDate } from './declaration-status';
+import { Form, schemaHelper } from 'src/components/hook-form';
+
+import { InvoiceNewEditAddress } from './declaration-adress';
+
+import { DeclarationEditStatusDate } from './declaration-status-edit';
 import { DeclarationEdit } from './declaration-edit';
 
 // ----------------------------------------------------------------------
 
-export const NewInvoiceSchema = zod.object({
-  items: zod.array(
-    zod.object({
-      nom: zod.string().min(1, { message: 'Title is required!' }),
-      nationalité: zod.string().min(1, { message: 'Service is required!' }),
-      service: zod.string().min(1, { message: 'Service is required!' }),
-      // Not required
-    })
-  ),
-  // Not required
-
-  status: zod.string(),
-  invoiceNumber: zod.string(),
-});
+export const NewInvoiceSchema = zod
+  .object({
+    invoiceTo: schemaHelper.objectOrNull({
+      message: { required_error: 'Invoice to is required!' },
+    }),
+    createDate: schemaHelper.date({
+      message: { required_error: 'Create date is required!' },
+    }),
+    dueDate: schemaHelper.date({
+      message: { required_error: 'Due date is required!' },
+    }),
+    items: zod.array(
+      zod.object({
+        title: zod.string().min(1, { message: 'Title is required!' }),
+        service: zod.string().min(1, { message: 'Service is required!' }),
+        quantity: zod.number().min(1, { message: 'Quantity must be more than 0' }),
+        // Not required
+        price: zod.number(),
+        total: zod.number(),
+        description: zod.string(),
+      })
+    ),
+    // Not required
+    taxes: zod.number(),
+    status: zod.string(),
+    discount: zod.number(),
+    shipping: zod.number(),
+    totalAmount: zod.number(),
+    invoiceNumber: zod.string(),
+    invoiceFrom: zod.custom().nullable(),
+  })
+  .refine((data) => !fIsAfter(data.createDate, data.dueDate), {
+    message: 'Due date cannot be earlier than create date!',
+    path: ['dueDate'],
+  });
 
 // ----------------------------------------------------------------------
 
-export function DeclarationEditForm({ currentInvoice }) {
+export function DeclarationNewEditForm({ declaration }) {
   const router = useRouter();
 
   const loadingSave = useBoolean();
@@ -49,14 +74,20 @@ export function DeclarationEditForm({ currentInvoice }) {
     () => ({
       invoiceNumber: currentInvoice?.invoiceNumber || 'INV-1990',
       createDate: currentInvoice?.createDate || today(),
+      dueDate: currentInvoice?.dueDate || null,
+      taxes: currentInvoice?.taxes || 0,
+      shipping: currentInvoice?.shipping || 0,
       status: currentInvoice?.status || 'draft',
       discount: currentInvoice?.discount || 0,
+      invoiceFrom: currentInvoice?.invoiceFrom || _addressBooks[0],
+      invoiceTo: currentInvoice?.invoiceTo || null,
       totalAmount: currentInvoice?.totalAmount || 0,
       items: currentInvoice?.items || [
         {
-          nom: '',
-          nationalité: '',
+          title: '',
+          description: '',
           service: '',
+          quantity: 1,
           price: 0,
           total: 0,
         },
@@ -99,7 +130,7 @@ export function DeclarationEditForm({ currentInvoice }) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       reset();
       loadingSend.onFalse();
-      router.push(paths.dashboard.declaration.root);
+      router.push(paths.dashboard.invoice.root);
       console.info('DATA', JSON.stringify(data, null, 2));
     } catch (error) {
       console.error(error);
@@ -110,7 +141,9 @@ export function DeclarationEditForm({ currentInvoice }) {
   return (
     <Form methods={methods}>
       <Card>
-        <DeclarationNewEditStatusDate />
+        <InvoiceNewEditAddress />
+
+        <DeclarationEditStatusDate />
 
         <DeclarationEdit />
       </Card>
@@ -123,7 +156,7 @@ export function DeclarationEditForm({ currentInvoice }) {
           loading={loadingSave.value && isSubmitting}
           onClick={handleSaveAsDraft}
         >
-          Brouillon
+          Save as draft
         </LoadingButton>
 
         <LoadingButton
@@ -132,7 +165,7 @@ export function DeclarationEditForm({ currentInvoice }) {
           loading={loadingSend.value && isSubmitting}
           onClick={handleCreateAndSend}
         >
-          {currentInvoice ? 'Mettre à jour' : 'Créer'} & Soumettre
+          {currentInvoice ? 'Update' : 'Create'} & send
         </LoadingButton>
       </Stack>
     </Form>

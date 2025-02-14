@@ -22,7 +22,7 @@ export function DeclarationNewEditStatusDate() {
         disabled
         name="invoiceNumber"
         label="Numero de la declaration"
-        value={values.invoiceNumber}
+        value={values.declarationNumber}
       />
 
       <Field.Select

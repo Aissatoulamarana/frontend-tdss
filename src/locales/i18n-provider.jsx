@@ -2,8 +2,9 @@
 
 import i18next from 'i18next';
 import { useMemo } from 'react';
-// import LanguageDetector from 'i18next-browser-languagedetector';
-import { I18nextProvider as Provider } from 'react-i18next';
+import resourcesToBackend from 'i18next-resources-to-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import { initReactI18next, I18nextProvider as Provider } from 'react-i18next';
 
 import { localStorageGetItem } from 'src/utils/storage-available';
 
@@ -28,7 +29,11 @@ const init = CONFIG.isStaticExport
   ? { ...i18nOptions(lng), detection: { caches: ['localStorage'] } }
   : { ...i18nOptions(), detection: { caches: ['cookie'] } };
 
-// i18next.use(resourcesToBackend((lang, ns) => import(`./langs/${lang}/${ns}.json`))).init(init);
+i18next
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .use(resourcesToBackend((lang, ns) => import(`./langs/${lang}/${ns}.json`)))
+  .init(init);
 
 // ----------------------------------------------------------------------
 

@@ -1,3 +1,6 @@
+
+//src/auth/context/auth-context.js
+
 'use client';
 
 import { createContext } from 'react';

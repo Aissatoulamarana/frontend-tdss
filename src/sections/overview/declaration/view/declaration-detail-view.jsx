@@ -8,22 +8,24 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { DeclarationDetails } from '../declaration-detail';
 
+import { useAuthContext } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
-export function DeclarationDetailsView({ invoice }) {
+export function DeclarationDetailsView({ declaration }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={invoice?.invoiceNumber}
+        heading={declaration?.declaration_number}
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Invoice', href: paths.dashboard.declaration.root },
-          { name: invoice?.invoiceNumber },
+          { name: 'Declarations', href: paths.dashboard.declaration.list },
+          { name: declaration?.declaration_number },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationDetails invoice={invoice} />
+      <DeclarationDetails declaration={declaration} />
     </DashboardContent>
   );
 }

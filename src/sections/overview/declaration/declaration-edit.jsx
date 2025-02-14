@@ -7,7 +7,6 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
-import { Step, Modal, Stepper, StepLabel } from '@mui/material';
 
 import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 
@@ -18,8 +17,6 @@ export function DeclarationEdit() {
   const { control, setValue, watch } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
   const values = watch();
-  const [openModal, setOpenModal] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
 
   const totalOnRow = values.items.map((item) => item.quantity * item.price);
   const subtotal = totalOnRow.reduce((acc, num) => acc + num, 0);
@@ -63,55 +60,6 @@ export function DeclarationEdit() {
     },
     [setValue, values.items]
   );
-
-  const [uploadedImages, setUploadedImages] = useState([]);
-
-  const handleOpenModal = () => {
-    setOpenModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
-  const handleNext = () => {
-    if (activeStep < 3) {
-      setActiveStep((prevStep) => prevStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (activeStep > 0) {
-      setActiveStep((prevStep) => prevStep - 1);
-    }
-  };
-
-  const handleImageUpload = (event, setImage) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleFinish = () => {
-    const images = [
-      { name: 'Recto', image: rectoImage },
-      { name: 'Verso', image: versoImage },
-      { name: 'Signature', image: signatureImage },
-      { name: 'Empreinte', image: empreinteImage },
-    ];
-
-    // Filtrage des images non nulles
-    const filteredImages = images.filter((img) => img.image !== null);
-    setUploadedImages(filteredImages);
-
-    // Fermeture du modal
-    handleCloseModal();
-  };
 
   return (
     <Box sx={{ p: 3 }}>

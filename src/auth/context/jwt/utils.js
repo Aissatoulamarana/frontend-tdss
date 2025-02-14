@@ -1,3 +1,6 @@
+=
+//src/auth/context/jwt/utils.js
+
 import { paths } from 'src/routes/paths';
 
 import axios from 'src/utils/axios';
@@ -28,13 +31,17 @@ export function jwtDecode(token) {
 
 // ----------------------------------------------------------------------
 
-export function isValidToken(accessToken) {
-  if (!accessToken) {
+
+export function isValidToken(access_token) {
+  if (!access_token) {
+
     return false;
   }
 
   try {
-    const decoded = jwtDecode(accessToken);
+
+    const decoded = jwtDecode(access_token);
+
 
     if (!decoded || !('exp' in decoded)) {
       return false;
@@ -55,28 +62,38 @@ export function tokenExpired(exp) {
   const currentTime = Date.now();
   const timeLeft = exp * 1000 - currentTime;
 
-  setTimeout(() => {
-    try {
-      alert('Token expired!');
-      sessionStorage.removeItem(STORAGE_KEY);
-      window.location.href = paths.auth.jwt.signIn;
-    } catch (error) {
-      console.error('Error during token expiration:', error);
-      throw error;
-    }
-  }, timeLeft);
+  if (timeLeft > 0) {
+    setTimeout(() => {
+      try {
+        alert('Token expired!');
+        sessionStorage.removeItem(STORAGE_KEY);
+        window.location.href = paths.auth.jwt.signIn;
+      } catch (error) {
+        console.error('Error during token expiration:', error);
+        throw error;
+      }
+    }, timeLeft);
+  } else {
+    alert('Token already expired!');
+    sessionStorage.removeItem(STORAGE_KEY);
+    window.location.href = paths.auth.jwt.signIn;
+  }
+
 }
 
 // ----------------------------------------------------------------------
 
-export async function setSession(accessToken) {
+
+=======
+export async function setSession(access_token) {
   try {
-    if (accessToken) {
-      sessionStorage.setItem(STORAGE_KEY, accessToken);
+    if (access_token) {
+      sessionStorage.setItem(STORAGE_KEY, access_token);
 
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+      axios.defaults.headers.common.Authorization = `Bearer ${access_token}`;
 
-      const decodedToken = jwtDecode(accessToken); // ~3 days by minimals server
+      const decodedToken = jwtDecode(access_token); // ~3 days by minimals server
+
 
       if (decodedToken && 'exp' in decodedToken) {
         tokenExpired(decodedToken.exp);

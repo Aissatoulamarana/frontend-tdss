@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -11,150 +11,95 @@ import TableHead from '@mui/material/TableHead';
 import TableBody from '@mui/material/TableBody';
 import Typography from '@mui/material/Typography';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
-
+import IconButton from '@mui/material/IconButton';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
+import { usePopover, CustomPopover } from 'src/components/custom-popover';
+
+import FilteredTable from './components/tableau';
+import { DeclarationToolbar } from './declaration-toolbar';
+import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  [`& .${tableCellClasses.root}`]: {
-    textAlign: 'right',
-    borderBottom: 'none',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
-}));
-
 // ----------------------------------------------------------------------
 
-export function DeclarationDetails({ invoice }) {
-  const [currentStatus, setCurrentStatus] = useState(invoice?.status);
+export function DeclarationDetails({ declaration }) {
+  const [currentStatus, setCurrentStatus] = useState(declaration?.status);
+  const statusOptions = [{ value: declaration.status, label: declaration.status }];
 
-  /* const handleChangeStatus = useCallback((event) => {
+
+  const popover = usePopover();
+
+
+
+  const handleChangeStatus = useCallback((event) => {
     setCurrentStatus(event.target.value);
-  },[]); */
-
-  const renderList = (
-    <Scrollbar sx={{ mt: 5 }}>
-      <Table sx={{ minWidth: 960 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell width={40}>N²</TableCell>
-
-            <TableCell sx={{ typography: 'subtitle2' }}>Numero Passeport</TableCell>
-
-            <TableCell align="right">Nom & Prénom</TableCell>
-            <TableCell align="right">Fonction</TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {invoice?.items.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>{index + 1}</TableCell>
-
-              <TableCell>
-                <Box sx={{ maxWidth: 560 }}>
-                  <Typography variant="subtitle2">{row.title}</Typography>
-
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-                    {row.description}
-                  </Typography>
-                </Box>
-              </TableCell>
-
-              <TableCell align="right">{fCurrency(row.price * row.quantity)}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Scrollbar>
-  );
+  }, []);
 
   return (
-    <Card sx={{ pt: 5, px: 5 }}>
-      <Box
-        rowGap={5}
-        display="grid"
-        alignItems="center"
-        gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
-      >
+    <>
+      <DeclarationToolbar
+        declaration={declaration}
+        currentStatus={currentStatus || ''}
+        onChangeStatus={handleChangeStatus}
+        statusOptions={statusOptions}
+
+      />
+      <Card sx={{ pt: 5, px: 5 }}>
         <Box
-          component="img"
-          alt="logo"
-          src="/logo/logo-single.svg"
-          sx={{ width: 48, height: 48 }}
-        />
+          rowGap={5}
+          display="grid"
+          alignItems="center"
+          gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
+        >
+          <Box
+            component="img"
+            alt="logo"
+            src="/logo/logo-single.png"
+            sx={{ width: 48, height: 48 }}
+          />
+          <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
+            <Label
+              variant="soft"
+              color={
+                (currentStatus === 'paid' && 'success') ||
+                (currentStatus === 'pending' && 'warning') ||
+                (currentStatus === 'overdue' && 'error') ||
+                'default'
+              }
+            >
+              {currentStatus}
+            </Label>
 
-        <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
-          <Label
-            variant="soft"
-            color={
-              (currentStatus === 'paid' && 'success') ||
-              (currentStatus === 'pending' && 'warning') ||
-              (currentStatus === 'overdue' && 'error') ||
-              'default'
-            }
-          >
-            {currentStatus}
-          </Label>
+            <Typography variant="h6"> {declaration?.declaration_number}</Typography>
+          </Stack>
 
-          <Typography variant="h6">{invoice?.invoiceNumber}</Typography>
-        </Stack>
+          <Stack sx={{ typography: 'body2' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Numero de la declaration
+              <br />
+              {declaration?.declaration_number}
+            </Typography>
+          </Stack>
 
-        <Stack sx={{ typography: 'body2' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Client
-            <br />
-            {invoice?.invoiceFrom.name}
-          </Typography>
-        </Stack>
+          <Stack sx={{ typography: 'body2' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Date de creation
+            </Typography>
+            {fDate(declaration?.create_date)}
+          </Stack>
+        </Box>
+        <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
 
-        <Stack sx={{ typography: 'body2' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Date de creation
-          </Typography>
-          {fDate(invoice?.createDate)}
-        </Stack>
-      </Box>
-      <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
-      <Stack
-        direction="row"
-        justifyContent="center"
-        alignItems="center"
-        mb={4}
-        spacing={12} // Ajoute de l'espace entre les éléments
-        sx={{ typography: 'body2' }}
-      >
-        <Stack alignItems="center">
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Cadres
-          </Typography>
-          2
-        </Stack>
+        <FilteredTable declaration={declaration} />
 
-        <Stack alignItems="center">
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Agents
-          </Typography>
-          1
-        </Stack>
-
-        <Stack alignItems="center">
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Ouvriers
-          </Typography>
-          1
-        </Stack>
-      </Stack>
-
-      {renderList}
-
-      <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
-    </Card>
+        <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
+      </Card>
+    </>
   );
 }

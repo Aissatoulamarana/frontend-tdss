@@ -131,7 +131,7 @@ export function OverviewAnalyticsView() {
               { id: 'Permis A', label: 'Permis A' },
               { id: 'Permis B', label: 'Permis B' },
               { id: 'Permis C', label: 'Permis C' },
-              { id: 'category', label: 'Total Employés' },
+              { id: 'Total', label: 'Total Employés' },
               { id: '' },
             ]}
           />
@@ -145,7 +145,7 @@ export function OverviewAnalyticsView() {
               { id: 'Permis A', label: 'Permis A' },
               { id: 'Permis B', label: 'Permis B' },
               { id: 'Permis C', label: 'Permis C' },
-              { id: 'category', label: 'Total Employés' },
+              { id: 'Total', label: 'Total Employés' },
               { id: '' },
             ]}
           />

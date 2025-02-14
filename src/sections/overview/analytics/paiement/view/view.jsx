@@ -94,9 +94,9 @@ export function AnalyticPaiementView() {
             tableData={_appInvoices}
             headLabel={[
               { id: 'id', label: 'Numero de la facture ' },
-              { id: 'category', label: 'Numéro de la déclaration' },
-              { id: 'category', label: 'Montant' },
-              { id: 'category', label: 'Statut' },
+              { id: 'Numero', label: 'Numéro de la déclaration' },
+              { id: 'Montant', label: 'Montant' },
+              { id: 'Status', label: 'Statut' },
               { id: '' },
             ]}
           />

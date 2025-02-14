@@ -10,20 +10,20 @@ import { DeclarationEditForm } from '../declaration-edit-form';
 
 // ----------------------------------------------------------------------
 
-export function DeclarationEditView({ invoice }) {
+export function DeclarationEditView({ declaration }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
         heading="Modifier"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Déclarations', href: paths.dashboard.declaration.root },
-          { name: invoice?.invoiceNumber },
+          { name: 'Déclarations', href: paths.dashboard.declaration.list },
+          { name: declaration?.declaration_number },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationEditForm currentInvoice={invoice} />
+      <DeclarationEditForm declaration={declaration} />
     </DashboardContent>
   );
 }

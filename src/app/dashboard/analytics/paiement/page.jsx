@@ -4,7 +4,9 @@ import { AnalyticPaiementView } from 'src/sections/overview/analytics/paiement/v
 
 // ----------------------------------------------------------------------
 
-export const metadata = { title: `Dashboard - ${CONFIG.appName}` };
+
+export const metadata = { title: `Analytics Paiements - ${CONFIG.appName}` };
+
 
 export default function Page() {
   return <AnalyticPaiementView />;

@@ -16,13 +16,13 @@ import DialogContent from '@mui/material/DialogContent';
 
 import { USER_STATUS_OPTIONS } from 'src/_mock';
 
-import { toast } from 'src/components/snackbar';
+import { toast } from 'sonner';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
 export const UserQuickEditSchema = zod.object({
-  name: zod.string().min(1, { message: 'Le nom est obligatoir!' }),
+  name: zod.string().min(1, { message: 'Le nom est obligatoire!' }),
   email: zod
     .string()
     .min(1, { message: 'Email est obligatoire!' })

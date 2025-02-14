@@ -148,7 +148,7 @@ export function OverviewAppView() {
             tableData={_appInvoices}
             headLabel={[
               { id: 'id', label: 'Déclaration ' },
-              { id: 'category', label: 'Total Employés' },
+              { id: 'Total', label: 'Total Employés' },
               { id: 'price', label: 'Montant' },
               { id: 'status', label: 'Status' },
               { id: '' },
