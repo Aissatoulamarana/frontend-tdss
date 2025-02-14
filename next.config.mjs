@@ -16,8 +16,6 @@ const nextConfig = {
       transform: '@mui/lab/{{member}}',
     },
   },
-<<<<<<< HEAD
-=======
 
   // Fonction rewrites à placer à l'intérieur de nextConfig
   async rewrites() {
@@ -29,7 +27,6 @@ const nextConfig = {
     ];
   },
 
->>>>>>> dev-frontend
   webpack(config) {
     config.module.rules.push({
       test: /\.svg$/,
@@ -38,10 +35,7 @@ const nextConfig = {
 
     return config;
   },
-<<<<<<< HEAD
-=======
 
->>>>>>> dev-frontend
   ...(isStaticExport === 'true' && {
     output: 'export',
   }),

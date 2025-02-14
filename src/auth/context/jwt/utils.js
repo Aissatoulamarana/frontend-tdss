@@ -1,4 +1,3 @@
-=
 //src/auth/context/jwt/utils.js
 
 import { paths } from 'src/routes/paths';
@@ -31,17 +30,13 @@ export function jwtDecode(token) {
 
 // ----------------------------------------------------------------------
 
-
 export function isValidToken(access_token) {
   if (!access_token) {
-
     return false;
   }
 
   try {
-
     const decoded = jwtDecode(access_token);
-
 
     if (!decoded || !('exp' in decoded)) {
       return false;
@@ -78,13 +73,10 @@ export function tokenExpired(exp) {
     sessionStorage.removeItem(STORAGE_KEY);
     window.location.href = paths.auth.jwt.signIn;
   }
-
 }
 
 // ----------------------------------------------------------------------
 
-
-=======
 export async function setSession(access_token) {
   try {
     if (access_token) {
@@ -93,7 +85,6 @@ export async function setSession(access_token) {
       axios.defaults.headers.common.Authorization = `Bearer ${access_token}`;
 
       const decodedToken = jwtDecode(access_token); // ~3 days by minimals server
-
 
       if (decodedToken && 'exp' in decodedToken) {
         tokenExpired(decodedToken.exp);

@@ -1,10 +1,8 @@
-
 //src/auth/context/jwt/action.js
 'use client';
 
 import axios, { endpoints } from 'src/utils/axios';
 import API from 'src/utils/api';
-
 
 import { setSession } from './utils';
 import { STORAGE_KEY } from './constant';
@@ -15,20 +13,6 @@ import { STORAGE_KEY } from './constant';
 export const signInWithPassword = async ({ email, password }) => {
   try {
     const params = { email, password };
-
-<<<<<<< HEAD
-    const res = await axios.post(endpoints.auth.signIn, params);
-
-    const { accessToken } = res.data;
-
-    if (!accessToken) {
-      throw new Error('Access token not found in response');
-    }
-
-    setSession(accessToken);
-  } catch (error) {
-    console.error('Error during sign in:', error);
-    throw error;
 
     const res = await axios.post(API.login(), params);
 
@@ -58,7 +42,6 @@ export const signInWithPassword = async ({ email, password }) => {
       console.error('Error during sign in (unknown error):', error.message);
       throw new Error(error.message);
     }
-
   }
 };
 
