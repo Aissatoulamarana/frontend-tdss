@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { paths } from 'src/routes/paths';
-import { useLocation } from 'react-router';
+
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { ImportFilesButton } from '../components/button-import-excel';
