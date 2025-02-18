@@ -1,4 +1,4 @@
-const BASE_URL = 'https://declaration-qp2u.onrender.com/'; // Adresse de votre backend
+const BASE_URL = 'https://declaration-qp2u.onrender.com'; // Adresse de votre backend
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js

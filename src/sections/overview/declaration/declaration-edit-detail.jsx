@@ -19,44 +19,7 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 
-// Composant auxiliaire pour gérer l'upload et l'aperçu
-function UploadWithPreview({ name, onChange, maxSize, helperText, type }) {
-  const file = useWatch({ name });
-  const [preview, setPreview] = useState(null);
 
-  useEffect(() => {
-    if (file instanceof File) {
-      const objectUrl = URL.createObjectURL(file);
-      setPreview(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    } else {
-      setPreview(null);
-    }
-  }, [file]);
-
-  return (
-    <Box>
-      <Field.UploadAvatar
-        name={name}
-        type={type}
-        maxSize={maxSize}
-        helperText={helperText}
-        onChange={onChange}
-      />
-      {preview && (
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="caption">Aperçu :</Typography>
-          <Box
-            component="img"
-            src={preview}
-            alt="Aperçu"
-            sx={{ maxWidth: '200px', mt: 1 }}
-          />
-        </Box>
-      )}
-    </Box>
-  );
-}
 
 export function DeclarationNewEditDetails({ }) {
   const { control, setValue, watch } = useFormContext();
@@ -350,7 +313,7 @@ export function DeclarationNewEditDetails({ }) {
 
                     {/* Utilisation du composant UploadWithPreview pour chaque étape */}
                     {activeStep === 0 && (
-                      <UploadWithPreview
+                      <Field.UploadAvatar
                         name={`items[${index}].recto`}
                         maxSize={3145728}
                         helperText={
@@ -362,7 +325,7 @@ export function DeclarationNewEditDetails({ }) {
                       />
                     )}
                     {activeStep === 1 && (
-                      <UploadWithPreview
+                      <Field.UploadAvatar
                         name={`items[${index}].verso`}
                         maxSize={3145728}
                         helperText={
@@ -374,7 +337,7 @@ export function DeclarationNewEditDetails({ }) {
                       />
                     )}
                     {activeStep === 2 && (
-                      <UploadWithPreview
+                      <Field.UploadAvatar
                         name={`items[${index}].signature`}
                         type="file"
                         maxSize={3145728}
@@ -387,7 +350,7 @@ export function DeclarationNewEditDetails({ }) {
                       />
                     )}
                     {activeStep === 3 && (
-                      <UploadWithPreview
+                      <Field.UploadAvatar
                         name={`items[${index}].empreinte`}
                         maxSize={3145728}
                         helperText={
