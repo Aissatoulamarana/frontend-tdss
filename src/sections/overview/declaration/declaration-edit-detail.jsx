@@ -19,8 +19,6 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 
-
-
 export function DeclarationNewEditDetails({ }) {
   const { control, setValue, watch } = useFormContext();
   const [options, setOptions] = useState([]);
