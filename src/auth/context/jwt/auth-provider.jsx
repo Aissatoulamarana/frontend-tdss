@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
   const checkUserSession = useCallback(async () => {
     try {
 
-      console.log('le token', STORAGE_KEY);
+
       const access_token = sessionStorage.getItem(STORAGE_KEY);
 
       if (access_token && isValidToken(access_token)) {
@@ -61,9 +61,9 @@ export function AuthProvider({ children }) {
     () => ({
       user: state.user
         ? {
-            ...state.user,
-            role: state.user?.role ?? 'admin',
-          }
+          ...state.user,
+          role: state.user?.role ?? 'admin',
+        }
         : null,
       checkUserSession,
       loading: status === 'loading',

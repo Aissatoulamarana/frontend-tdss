@@ -17,13 +17,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
-
+import Autocomplete from '@mui/material/Autocomplete';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-
+import Typography from '@mui/material/Typography';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
-
+import TextField from '@mui/material/TextField';
 import API from 'src/utils/api';
 import { fIsAfter, fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
@@ -52,6 +52,7 @@ import { FactureAnalytic } from '../factures-analytics';
 import { FactureTableFilters } from '../factures-table-filters';
 import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
+import { PayeurForm } from '../form-factures';
 
 // ----------------------------------------------------------------------
 
@@ -82,6 +83,8 @@ export function FactureListView() {
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
+  const [openFirstDialog, setOpenFirstDialog] = useState(false);
+  const [openSecondDialog, setOpenSecondDialog] = useState(false);
 
   const filters = useSetState({
     name: '',
@@ -115,7 +118,7 @@ export function FactureListView() {
   const getTotalAmount = (statut) =>
     sumBy(
       tableData.filter((item) => item.statut === statut),
-      (facture) => facture.montant
+      (facture) => facture.montantusd
     );
 
   const getPercentByStatus = (statut) => (getInvoiceLength(statut) / tableData.length) * 100;
@@ -190,7 +193,6 @@ export function FactureListView() {
   );
 
   useEffect(() => {
-    console.log('ID de la banque sélectionnée dans l\'enfant:', selectedBanque?.value);
   }, [selectedBanque]);
 
 
@@ -234,6 +236,47 @@ export function FactureListView() {
     [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
   );
 
+  const handlePaid = useCallback(
+    async (id) => {
+      if (!selectedBanque) {
+        toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
+        return;
+      }
+
+      const access_token = sessionStorage.getItem(STORAGE_KEY);
+      const data = {
+        banque_id: selectedBanque?.value,
+        facture_ids: dataFiltered.map((row) => row.id)
+      }
+      console.log("Données envoyées:", data);
+      console.log("Token d'accès:", access_token);
+
+      try {
+        // Appel à l'API backend pour valider la déclaration
+        const response = await axios.post(API.PaidFactures(), data, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
+          },
+
+        });
+
+        if (response.data.success) {
+          console.log('Factures payées:', response.data.message);
+          toast.success('Factures payées avec succès !');
+          router.push(paths.dashboard.factures.list);
+        } else {
+          console.error('Erreur lors du paiement:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        alert('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
+  );
+
 
 
   useEffect(() => {
@@ -257,6 +300,10 @@ export function FactureListView() {
     fetchBank();
   }, []);
 
+  const handleChangeBanque = (event, newValue) => {
+    setSelectedBanque(newValue);
+  };
+
   useEffect(() => {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
@@ -278,7 +325,7 @@ export function FactureListView() {
   }
 
   if (error) {
-    console.error(`Error: ${  error}`);
+    console.error(`Error: ${error}`);
   }
 
   return (
@@ -412,7 +459,10 @@ export function FactureListView() {
                   </Tooltip>
 
                   <Tooltip title="Payer">
-                    <IconButton color="primary" onClick={confirm.onTrue}>
+                    <IconButton color="primary" onClick={() => {
+                      confirm.onTrue();
+                      // Ouvre la première boîte de dialogue
+                    }}>
                       <Iconify icon="mdi:credit-card" />
                     </IconButton>
                   </Tooltip>
@@ -497,8 +547,82 @@ export function FactureListView() {
             variant="contained"
             color="primary"
             onClick={() => {
-              handleDeleteRows();
+
               confirm.onTrue();
+
+              setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
+            }}
+          >
+            Suivant
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        fullWidth
+        open={openFirstDialog}
+        onClose={() => setOpenFirstDialog(false)} // Ferme la première boîte de dialogue
+        title="Payer"
+        content={
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Typography sx={{ mb: 2 }}>
+              Sélectionnez la banque avec laquelle vous voulez payer cette facture
+            </Typography>
+            <Autocomplete
+              options={options}
+              getOptionLabel={(option) => option.label}
+              loading={loading}
+              value={selectedBanque}
+              onChange={handleChangeBanque}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Rechercher ou sélectionner une banque"
+                  placeholder="Taper pour rechercher"
+                  variant="outlined"
+                  fullWidth
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loading ? <CircularProgress size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              sx={{ width: '100%' }}
+            />
+          </Box>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            disabled={!selectedBanque}
+            onClick={() => {
+              setOpenFirstDialog(false); // Ferme la première boîte de dialogue
+              setOpenSecondDialog(true); // Ouvre la deuxième boîte de dialogue
+            }}
+          >
+            Suivant
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={openSecondDialog}
+        onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
+        title="Veuillez fournir les informations suivantes"
+        content={<PayeurForm id={dataFiltered.map((row) => row.id)} />}
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              setOpenSecondDialog(false); // Ferme la deuxième boîte de dialogue
+              handlePaid(); // Action pour "Payer"
             }}
           >
             Payer

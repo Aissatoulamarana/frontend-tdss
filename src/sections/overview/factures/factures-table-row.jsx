@@ -53,7 +53,6 @@ export function FactureTableRow({
 
 
   const handleChangeBanque = (event, newValue) => {
-    console.log('Banque sélectionnée:', newValue); // Vérification de l'objet sélectionné
     setSelectedBanqueLocal(newValue);
     setSelectedBanque(newValue);
   };

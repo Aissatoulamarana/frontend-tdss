@@ -7,7 +7,9 @@ import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
+import { Step, Modal, Stepper, StepLabel } from '@mui/material';
+
 
 import API from 'src/utils/api';
 
@@ -16,10 +18,52 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNewEditDetails({ formData, setFormData }) {
+
+// Composant auxiliaire pour gérer l'upload et l'aperçu
+function UploadWithPreview({ name, onChange, maxSize, helperText, type }) {
+  const file = useWatch({ name });
+  const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (file instanceof File) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    } else {
+      setPreview(null);
+    }
+  }, [file]);
+
+  return (
+    <Box>
+      <Field.UploadAvatar
+        name={name}
+        type={type}
+        maxSize={maxSize}
+        helperText={helperText}
+        onChange={onChange}
+      />
+      {preview && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="caption">Aperçu :</Typography>
+          <Box
+            component="img"
+            src={preview}
+            alt="Aperçu"
+            sx={{ maxWidth: '200px', mt: 1 }}
+          />
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+export function DeclarationNewEditDetails({ }) {
   const { control, setValue, watch } = useFormContext();
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
 
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
@@ -28,18 +72,71 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
   const handleAdd = () => {
     append({
       numero: '',
-      type: 'Nouvelle',
       nom: '',
       fonction: '',
       prenom: '',
-      nationalite: '',
-      passportExists: false, // Par défaut, on considère que le passport n'existe pas
+      telephone: '',
+      passportExists: false,
+      // On initialise les fichiers à null (ils seront mis à jour via le modal)
+      recto: null,
+      verso: null,
+      signature: null,
+      empreinte: null,
     });
   };
 
   const handleRemove = (index) => {
     remove(index);
   };
+
+
+  // Ouvre le modal pour les données biométriques
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  // Ferme le modal et réinitialise le stepper
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setActiveStep(0);
+  };
+
+  // Passe à l'étape suivante (tant que l'étape active est inférieure à 3)
+  const handleNext = () => {
+    if (activeStep < 3) {
+      setActiveStep((prevStep) => prevStep + 1);
+    }
+  };
+
+  // Retour à l'étape précédente
+  const handleBack = () => {
+    if (activeStep > 0) {
+      setActiveStep((prevStep) => prevStep - 1);
+    }
+  };
+
+  // Handler générique pour gérer l'upload d'un fichier.
+  // On passe le nom du champ à mettre à jour dans le formulaire.
+  const handleImageUpload = (fieldName) => (event) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      console.log(`Fichier sélectionné pour ${fieldName}:`, files[0]);
+      setValue(fieldName, files[0]);
+    } else {
+      console.log(`Aucun fichier sélectionné pour ${fieldName}`);
+    }
+  };
+
+
+
+  // Exemple de fonction "finish" : ici, on ferme simplement le modal.
+  // Vous pouvez ajouter d'autres traitements si besoin.
+  const handleFinish = () => {
+
+
+    handleCloseModal();
+  };
+
 
   useEffect(() => {
     const fetchFonctions = async () => {
@@ -79,23 +176,22 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
     [setValue, options]
   );
 
-  useEffect(() => {
-    // Ajouter les données importées lorsqu'elles changent
-    if (formData && formData.length > 0) {
-      formData.forEach((data) => {
-        console.log(data);
-        append({
-          numero: data['Numero Passeport '] || '', // Adaptation de "Numero Passeport"
-          type: data.Type || '', // Adaptation de "Type"
-          nom: data.Nom || '', // Adaptation de "Nom"
-          fonction: data.Fonction || '', // Adaptation de "Fonction"
-          prenom: data['Prénom'] || '', // Adaptation de "Prénom"
-          nationalite: data['Nationalité'] || '', // Adaptation de "Nationalité"
-          passportExists: false, // On pourra déclencher la vérification ensuite si besoin
-        });
-      });
-    }
-  }, [formData, append]);
+  // useEffect(() => {
+  //   // Ajouter les données importées lorsqu'elles changent
+  //   if (formData && formData.length > 0) {
+  //     formData.forEach((data) => {
+  //       console.log(data);
+  //       append({
+  //         numero: data['Numero Passeport '] || '', // Adaptation de "Numero Passeport"
+  //         nom: data.Nom || '', // Adaptation de "Nom"
+  //         fonction: data.Fonction || '', // Adaptation de "Fonction"
+  //         prenom: data['Prénom'] || '', // Adaptation de "Prénom"
+  //         telephone: data['Téléphone'] || '', // Adaptation de "Nationalité"
+  //         passportExists: false, // On pourra déclencher la vérification ensuite si besoin
+  //       });
+  //     });
+  //   }
+  // }, [formData, append]);
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
   const checkPassportExistence = async (numero, index) => {
@@ -130,6 +226,9 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
     debouncedPassportCheck(numero, index);
   };
 
+
+
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
@@ -140,46 +239,27 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
         {fields.map((item, index) => (
           <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
+
               <Field.Text
                 size="small"
                 name={`items[${index}].numero`}
                 label="Numero Passeport"
-                type="number"
+
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 error={values.items && values.items[index]?.passportExists} // Active l'erreur si le passeport existe
                 helperText={
                   values.items && values.items[index]?.passportExists
-                    ? 'Ce numéro de passeport existe déjà'
+                    ? 'Ce numéro de passeport existe déjà ca sera une duplicata ou un renouvellement '
                     : ''
                 }
               />
-              {/* Champ "Type" affiché en fonction de l'existence du passeport */}
-              {values.items && values.items[index] && values.items[index].passportExists ? (
-                <Field.Select
-                  name={`items[${index}].type`}
-                  size="small"
-                  label="Type"
-                  inputlabelprops={{ shrink: true }}
-                >
-                  <MenuItem value="Duplicata">Duplicata</MenuItem>
-                  <MenuItem value="Renouvellement">Renouvellement</MenuItem>
-                </Field.Select>
-              ) : (
-                <Field.Text
-                  size="small"
-                  name={`items[${index}].type`}
-                  label="Type"
-                  inputlabelprops={{ shrink: true }}
-                  disabled
-                />
-              )}
 
-              <Field.CountrySelect
+              <Field.Phone
                 size="small"
-                name={`items[${index}].nationalite`}
-                label="Nationalité"
-                placeholder="Selectionnez un pays "
+                name={`items[${index}].telephone`}
+                label="Numéro de Téléphone"
+                placeholder="votre numero de téléphone  "
                 sx={{ width: '100%' }}
                 inputlabelprops={{ shrink: true }}
               />
@@ -225,6 +305,103 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
               </Field.Select>
             </Stack>
 
+
+            <Button onClick={handleOpenModal} variant="outlined">
+              Données Biometriques
+            </Button>
+
+            {/* Modal pour les données biométriques */}
+            <Modal open={openModal} onClose={handleCloseModal}>
+              <Box
+                sx={{
+                  width: '60%',
+                  maxWidth: 600,
+                  margin: 'auto',
+                  mt: 10,
+                  p: 3,
+                  bgcolor: 'background.paper',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(15%, 60%)',
+                }}
+              >
+                <Stepper activeStep={activeStep} alternativeLabel>
+                  {['Recto', 'Verso', 'Signature', 'Empreinte'].map((label, i) => (
+                    <Step key={i}>
+                      <StepLabel>{label}</StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
+
+                <Box sx={{ mt: 2 }}>
+                  <Stack direction="row" justifyContent="space-between" spacing={2}>
+                    <Button onClick={handleBack} disabled={activeStep === 0}>
+                      Retour
+                    </Button>
+                    <Button onClick={activeStep === 3 ? handleFinish : handleNext}>
+                      {activeStep === 3 ? 'Terminer' : 'Suivant'}
+                    </Button>
+                  </Stack>
+
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="h6" align="center">
+                      {['Recto', 'Verso', 'Signature', 'Empreinte'][activeStep]}
+                    </Typography>
+
+                    {/* Utilisation du composant UploadWithPreview pour chaque étape */}
+                    {activeStep === 0 && (
+                      <UploadWithPreview
+                        name={`items[${index}].recto`}
+                        maxSize={3145728}
+                        helperText={
+                          <Typography variant="caption">
+                            Allowed *.jpeg, *.jpg, *.png, *.gif
+                          </Typography>
+                        }
+                        onChange={handleImageUpload(`items[${index}].recto`)}
+                      />
+                    )}
+                    {activeStep === 1 && (
+                      <UploadWithPreview
+                        name={`items[${index}].verso`}
+                        maxSize={3145728}
+                        helperText={
+                          <Typography variant="caption">
+                            Allowed *.jpeg, *.jpg, *.png, *.gif
+                          </Typography>
+                        }
+                        onChange={handleImageUpload(`items[${index}].verso`)}
+                      />
+                    )}
+                    {activeStep === 2 && (
+                      <UploadWithPreview
+                        name={`items[${index}].signature`}
+                        type="file"
+                        maxSize={3145728}
+                        helperText={
+                          <Typography variant="caption">
+                            Allowed *.jpeg, *.jpg, *.png, *.gif
+                          </Typography>
+                        }
+                        onChange={handleImageUpload(`items[${index}].signature`)}
+                      />
+                    )}
+                    {activeStep === 3 && (
+                      <UploadWithPreview
+                        name={`items[${index}].empreinte`}
+                        maxSize={3145728}
+                        helperText={
+                          <Typography variant="caption">
+                            Allowed *.jpeg, *.jpg, *.png, *.gif
+                          </Typography>
+                        }
+                        onChange={handleImageUpload(`items[${index}].empreinte`)}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            </Modal>
             <Button
               size="small"
               color="error"
@@ -234,6 +411,9 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
               Supprimer
             </Button>
           </Stack>
+
+
+
         ))}
       </Stack>
 
@@ -254,6 +434,10 @@ export function DeclarationNewEditDetails({ formData, setFormData }) {
           Add Item
         </Button>
       </Stack>
+
+
+
+
     </Box>
   );
 }

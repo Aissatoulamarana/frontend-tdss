@@ -17,72 +17,81 @@ import { today } from 'src/utils/format-time';
 
 import { Form, schemaHelper } from 'src/components/hook-form';
 
-import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
+import { STORAGE_KEY } from 'src/auth/context/jwt/constant';
 
 import { DeclarationNewEditDetails } from './declaration-edit-detail';
 import { DeclarationEditStatusDate } from './declaration-status-edit';
-// ----------------------------------------------------------------------
 
+// ----------------------------------------------------------------------
+// Définition du schéma de validation
 export const NewInvoiceSchema = zod.object({
   createDate: schemaHelper.date({
     message: { required_error: 'Create date is required!' },
   }),
-
   items: zod.array(
     zod.object({
-      numero: zod.number().min(1, { message: 'Numero du passeport obligatoire' }),
-      type: zod.string().min(1, { message: 'Type est obligatoire!' }),
+      numero: zod.string().min(1, { message: 'Numero du passeport obligatoire' }),
       fonction: zod.string().min(1, { message: 'le champ fonction est obligatoire!' }),
-      nationalite: zod.string().min(1, { message: "Selectionnez votre pays d'origine " }),
-      // Not required
+      telephone: zod.string().min(1, { message: "Entrez votre numero de téléphone " }),
       prenom: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       nom: zod.string().min(1, { message: 'Entrez votre nom ' }),
+      empreinte: zod.any().optional(),
+      signature: zod.any().optional(),
+      recto: zod.any().optional(),
+      verso: zod.any().optional(),
+
     })
   ),
-  // Not required
-
   status: zod.string(),
-
   declarationNumber: zod.string(),
+  type: zod.string(),
 });
 
-const generateUniqueId = () => `DEC-${  Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+// Génération d'un ID unique
+let currentIdd = 0;
+const generateUniqueId = () => {
+  currentIdd++;
+  const randomPart = Math.random().toString(36).substr(2, 6).toUpperCase();
+  const uniqueId = `DEC-${String(currentIdd).padStart(5, '0')}-${randomPart}`;
+  return uniqueId;
+};
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNew({ currentInvoice, formData, setFormData }) {
+export function DeclarationNew({ currentInvoice, type }) {
   const router = useRouter();
-
   const loadingSave = useBoolean();
-
   const loadingSend = useBoolean();
 
-  const defaultValues = useMemo(
-    () => ({
-      declarationNumber: currentInvoice?.declarationNumber || generateUniqueId(),
+  // Définition des valeurs par défaut
+  const defaultValues = useMemo(() => {
+    const generatedDeclarationNumber =
+      currentInvoice?.declarationNumber || generateUniqueId();
+
+    return {
+      declarationNumber: generatedDeclarationNumber,
       createDate: currentInvoice?.createDate || today(),
       status: currentInvoice?.status || 'brouillon',
+      type: type,
       items:
-        formData.length > 0
-          ? formData
-          : currentInvoice?.items || [
-            {
-              numero: '',
-              type: 'Nouvelle',
-              nom: '',
-              prenom: '',
-              nationalite: '',
-              fonction: '',
-              empreinte: '',
-              signature: '',
-              recto: '',
-              verso: ''
-            },
-          ],
-    }),
-    [currentInvoice, formData]
-  );
+        currentInvoice?.items || [
+          {
+            numero: '',
+            nom: '',
+            prenom: '',
+            telephone: '',
+            fonction: '',
+            // Initialisation des champs fichiers à null
+            empreinte: null,
+            signature: null,
+            recto: null,
+            verso: null,
+          },
+        ],
+    };
+  }, [currentInvoice]);
 
+  // Initialisation du formulaire
   const methods = useForm({
     mode: 'all',
     resolver: zodResolver(NewInvoiceSchema),
@@ -95,87 +104,94 @@ export function DeclarationNew({ currentInvoice, formData, setFormData }) {
     formState: { isSubmitting },
   } = methods;
 
+  // Pour le brouillon, envoi du JSON classique
   const handleSaveAsDraft = handleSubmit(async (data) => {
+    console.log('Envoi brouillon, données :', data);
     loadingSave.onTrue();
     const access_token = sessionStorage.getItem(STORAGE_KEY);
 
     try {
+      // Simulation d'un délai
       await new Promise((resolve) => setTimeout(resolve, 500));
       const response = await axios.post(API.createDeclaration(), data, {
         headers: {
           'Content-Type': 'application/json',
-          "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
+          Authorization: `Bearer ${access_token}`,
         },
       });
-      console.log('Réponse du backend:', response.data);
+      console.log('Brouillon sauvegardé, réponse :', response.data);
       reset();
       loadingSave.onFalse();
       router.push(paths.dashboard.declaration.list);
-      console.info('DATA', JSON.stringify(data, null, 2));
     } catch (error) {
-      console.error(error);
+      console.error('Erreur lors de la sauvegarde brouillon :', error);
       loadingSave.onFalse();
     }
   });
 
   const handleCreateAndSend = handleSubmit(async (data) => {
+    console.log('Envoi final, données :', data);
     loadingSend.onTrue();
     const access_token = sessionStorage.getItem(STORAGE_KEY);
+
     try {
-      // Ajouter le statut "soumise" à la donnée
       data.status = 'soumise';
 
-      // Formater les champs de date si nécessaire (exemple: `created_at` ou `date_field`)
-      if (data.date_field) {
-        const date = new Date(data.date_field);
-        data.date_field = date.toISOString().split('T')[0]; // Convertit en YYYY-MM-DD
-      }
+      // Créer un objet FormData
+      const formData = new FormData();
+      formData.append('createDate', data.createDate);
+      formData.append('declarationNumber', data.declarationNumber);
+      formData.append('status', data.status);
+      formData.append('type', data.type);
 
-      // Simuler un délai pour des actions asynchrones (optionnel)
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Pour chaque item, on ajoute les champs et les fichiers
+      data.items.forEach((item, index) => {
+        formData.append(`items[${index}][numero]`, item.numero);
+        formData.append(`items[${index}][nom]`, item.nom);
+        formData.append(`items[${index}][prenom]`, item.prenom);
+        formData.append(`items[${index}][telephone]`, item.telephone);
+        formData.append(`items[${index}][fonction]`, item.fonction);
 
-      // Envoyer les données au backend via axios
-      const response = await axios.post(API.createDeclaration(), data, {
+        // Ajout des fichiers s'ils existent
+        if (item.empreinte instanceof File) {
+          formData.append(`items[${index}][empreinte]`, item.empreinte);
+        }
+        if (item.signature instanceof File) {
+          formData.append(`items[${index}][signature]`, item.signature);
+        }
+        if (item.recto instanceof File) {
+          formData.append(`items[${index}][recto]`, item.recto);
+        }
+        if (item.verso instanceof File) {
+          formData.append(`items[${index}][verso]`, item.verso);
+        }
+      });
+
+      // Envoyer la requête avec FormData
+      const response = await axios.post(API.createDeclaration(), formData, {
         headers: {
-          'Content-Type': 'application/json',
-          "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${access_token}`,
         },
       });
 
-      // Afficher la réponse du backend dans la console (optionnel)
-      console.log('Réponse du backend:', response.data);
-
-      // Réinitialiser le formulaire après succès
+      console.log('Réponse finale du backend :', response.data);
       reset();
-
-      // Arrêter le chargement
       loadingSend.onFalse();
-
-      // Rediriger l'utilisateur
       router.push(paths.dashboard.declaration.list);
     } catch (error) {
-      console.error("Erreur lors de l'envoi au backend:", error);
-
-      // Arrêter le chargement en cas d'erreur
+      console.error("Erreur lors de l'envoi final :", error);
       loadingSend.onFalse();
-
-      // Gérer les erreurs spécifiques
-      if (error.response) {
-        console.error('Erreur avec le serveur:', error.response.data);
-      } else if (error.request) {
-        console.error('Erreur avec la requête:', error.request);
-      } else {
-        console.error('Erreur générale:', error.message);
-      }
     }
   });
+
+
 
   return (
     <Form methods={methods}>
       <Card>
-        <DeclarationEditStatusDate />
-
-        <DeclarationNewEditDetails formData={formData} setFormData={setFormData} />
+        <DeclarationEditStatusDate type={type} />
+        <DeclarationNewEditDetails />
       </Card>
 
       <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>

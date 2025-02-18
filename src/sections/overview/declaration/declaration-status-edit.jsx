@@ -6,7 +6,7 @@ import { Field } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
-export function DeclarationEditStatusDate() {
+export function DeclarationEditStatusDate({ type }) {
   const { watch } = useFormContext();
 
   const values = watch();
@@ -38,7 +38,12 @@ export function DeclarationEditStatusDate() {
         ))}
       </Field.Select>
 
-      <Field.DatePicker disabled name="createDate" label="Date create" />
+      <Field.Text
+        disabled
+        name="type_dec"
+        label="Type de la declaration"
+        value={type}
+      />
     </Stack>
   );
 }

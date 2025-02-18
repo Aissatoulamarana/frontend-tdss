@@ -58,6 +58,8 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/declaration/new`,
       edit: (id) => `${ROOTS.DASHBOARD}/declaration/${id}/edit`,
       details: (id) => `/dashboard/declaration/${id}`,
+      renew: `${ROOTS.DASHBOARD}/declaration/renew`,
+      duplica: `${ROOTS.DASHBOARD}/declaration/duplica`,
     },
 
     factures: {

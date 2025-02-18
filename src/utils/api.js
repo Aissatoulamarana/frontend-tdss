@@ -1,4 +1,4 @@
-const BASE_URL = 'https://declaration-qp2u.onrender.com'; // Adresse de votre backend
+const BASE_URL = 'http://127.0.0.1:8000'; // Adresse de votre backend
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js
@@ -32,6 +32,7 @@ const API = {
   banni: (id) => `${BASE_URL}/banni-user/${id}/`,
   searchPassport: (numero) => `${BASE_URL}/api/search_passport/?numero=${numero}`,
   listPaiments: () => `${BASE_URL}/paiements/`, // Liste des paiements
+  PaidFactures: () => `${BASE_URL}/paid_factures/`, // payer plusieurs factures a la fois 
 };
 
 export default API;

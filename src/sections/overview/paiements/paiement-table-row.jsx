@@ -46,7 +46,7 @@ export function PaiementTableRow({
 
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
-            
+
 
             <ListItemText
               disableTypography
@@ -61,7 +61,7 @@ export function PaiementTableRow({
                   variant="body2"
                   onClick={onViewRow}
                   sx={{ color: 'text.disabled', cursor: 'pointer' }}
-                 />
+                />
               }
             />
           </Stack>
@@ -70,28 +70,28 @@ export function PaiementTableRow({
 
         <TableCell>
           <ListItemText
-          primary= {
-            <Typography variant='body2'>
-              {fCurrency(row.montantUsd)}
-            </Typography>
-          }
-          secondary= {
-            <Typography variant='body2'>
+            primary={
+              <Typography variant='body2'>
+                {fCurrency(row.montantUsd)}
+              </Typography>
+            }
+            secondary={
+              <Typography variant='body2'>
                 {row.montantGnf}
-            </Typography>
-          }/>
-    
-          </TableCell>
-        
-          <TableCell>
+              </Typography>
+            } />
+
+        </TableCell>
+
+        <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
-            
+
 
             <ListItemText
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.payer_nom}
+                  {row.type}
                 </Typography>
               }
               secondary={
@@ -101,8 +101,8 @@ export function PaiementTableRow({
                   onClick={onViewRow}
                   sx={{ color: 'text.disabled', cursor: 'pointer' }}
                 >
-                  {row.payer_prenom}
-                  
+
+
                 </Link>
               }
             />

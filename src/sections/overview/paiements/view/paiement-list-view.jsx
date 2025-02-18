@@ -13,7 +13,7 @@ import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
-import { useState, useEffect , useCallback} from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
@@ -207,7 +207,7 @@ export function PaiementListView() {
   }
 
   if (error) {
-    console.error(`Error: ${  error}`);
+    console.error(`Error: ${error}`);
   }
 
   return (
@@ -239,7 +239,7 @@ export function PaiementListView() {
             </Grid2>
             <Grid2 size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
-                title="Payées"
+                title="Total En Dollars"
                 percent={2.6}
                 total={18765}
                 chart={{
@@ -250,7 +250,7 @@ export function PaiementListView() {
             </Grid2>
             <Grid2 size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
-                title="En attente"
+                title="Total En GNF"
                 percent={2.6}
                 total={18765}
                 chart={{
@@ -374,8 +374,8 @@ export function PaiementListView() {
                     )
                     .map((row) => (
                       <PaiementTableRow
-                      key={row.id}
-                      row={row}
+                        key={row.id}
+                        row={row}
                         selected={table.selected.includes(row.id)}
                         onSelectRow={() => table.onSelectRow(row.id)}
                         onViewRow={() => handleViewRow(row.id)}
@@ -413,7 +413,7 @@ export function PaiementListView() {
         title="Payer"
         content={
           <>
-            Etes vous sûr de vouloir payer <strong> {table.selected.length} </strong> factures?
+            Etes vous sûr de vouloir payer <strong> {table.selected.length} </strong> paiements?
           </>
         }
         action={

@@ -21,7 +21,8 @@ import {
   DialogActions,
   TableContainer,
   TablePagination,
- FormControlLabel, CircularProgress } from '@mui/material';
+  FormControlLabel, CircularProgress
+} from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
@@ -71,9 +72,9 @@ const FilteredTable = ({ declaration }) => {
     setSelected((prevSelected) => {
       if (prevSelected.includes(numero)) {
         return prevSelected.filter((selectedId) => selectedId !== numero);
-      } 
-        return [...prevSelected, numero];
-      
+      }
+      return [...prevSelected, numero];
+
     });
   };
 
@@ -249,7 +250,7 @@ const FilteredTable = ({ declaration }) => {
               </TableCell>
               <TableCell>Numero du passeport</TableCell>
               <TableCell>Nom & Prenom</TableCell>
-              <TableCell>Nationalité</TableCell>
+              <TableCell>N Téléphone</TableCell>
               <TableCell>Fonction</TableCell>
               <TableCell>Permis</TableCell>
             </TableRow>
@@ -278,7 +279,7 @@ const FilteredTable = ({ declaration }) => {
                     secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'body2' }}
                   />
                 </TableCell>
-                <TableCell>{row.nationalite}</TableCell>
+                <TableCell>{row.telephone}</TableCell>
                 <TableCell>{row.fonction__name}</TableCell>
                 <TableCell>{row.permis}</TableCell>
               </TableRow>

@@ -38,7 +38,12 @@ export function DeclarationNewEditStatusDate() {
         ))}
       </Field.Select>
 
-      <Field.DatePicker name="createDate" label="Date" disabled />
+      <Field.Text
+        disabled
+        name="invoiceNumber"
+        label="Type de la declaration"
+        value={values.declarationNumber}
+      />
     </Stack>
   );
 }
