@@ -60,13 +60,14 @@ export function DeclarationTableRow({
             />
           </Stack>
         </TableCell>
+        <TableCell>{row.type}</TableCell>
 
         <TableCell>{row.items_count}</TableCell>
 
         <TableCell>
           <ListItemText
-            primary={fDate(row.create_date)}
-            secondary={fTime(row.create_date)}
+            primary={fDate(row.created_at)}
+            secondary={fTime(row.created_at)}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
           />

@@ -63,11 +63,11 @@ export const navData = [
         title: 'Déclarations',
         path: paths.dashboard.declaration.list,
         icon: ICONS.declaration,
-        children: [
-          { title: 'Nouvelle', path: paths.dashboard.declaration.new.replace(':type', 'nouvelle') },
-          { title: 'Renouvellement', path: paths.dashboard.declaration.renew.replace(':type', 'renouvellement') },
-          { title: 'Duplicata', path: paths.dashboard.declaration.duplica.replace(':type', 'duplicata') }
-        ]
+        // children: [
+        //   { title: 'Nouvelle', path: paths.dashboard.declaration.new.replace(':type', 'nouvelle') },
+        //   { title: 'Renouvellement', path: paths.dashboard.declaration.renew.replace(':type', 'renouvellement') },
+        //   { title: 'Duplicata', path: paths.dashboard.declaration.duplica.replace(':type', 'duplicata') }
+        // ]
       },
       {
         title: 'Factures',

@@ -649,9 +649,9 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   if (name) {
     inputData = inputData.filter(
-      (invoice) =>
-        invoice.invoiceNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        invoice.invoiceTo.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (facture) =>
+        facture.numero_facture.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        facture.declaration__declaration_number.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
@@ -667,7 +667,7 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   if (!dateError) {
     if (startDate && endDate) {
-      inputData = inputData.filter((invoice) => fIsBetween(invoice.createDate, startDate, endDate));
+      inputData = inputData.filter((facture) => fIsBetween(facture.created_at, startDate, endDate));
     }
   }
 

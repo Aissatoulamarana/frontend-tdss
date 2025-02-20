@@ -3,6 +3,7 @@
 import { Grid2 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { Popover, MenuItem } from '@mui/material';
 import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -13,7 +14,7 @@ import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'axios';
-import { useState, useEffect , useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
@@ -48,17 +49,19 @@ import {
 } from 'src/components/table';
 
 import { DeclarationSummary } from '../declaration-analytic';
-import { InvoiceTableFiltersResult } from '../declaration-table-filters';
+import { DeclarationTableFiltersResult } from '../declaration-table-filters';
 import { DeclarationTableRow } from '../declaration-table-row';
 import { InvoiceTableToolbar } from '../declaration-table-toolbar';
+import { declaration } from 'stylis';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'invoiceNumber', label: 'Déclaration' },
+  { id: 'declarationNumber', label: 'Déclaration' },
+  { id: 'type', label: 'Type Déclaration' },
   { id: 'Number', label: 'Nombre Personnel' },
   { id: 'createDate', label: 'Date de Création' },
-  { id: 'price', label: 'Facture' },
+  { id: 'price', label: 'Montant' },
   { id: 'status', label: 'Status' },
 
   { id: '' },
@@ -67,6 +70,7 @@ const TABLE_HEAD = [
 // ----------------------------------------------------------------------
 
 export function DeclarationListView() {
+  const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
 
   const router = useRouter();
@@ -79,9 +83,12 @@ export function DeclarationListView() {
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
+
+
+
   const filters = useSetState({
-    name: '',
-    service: [],
+    name: '', // mot-clé pour filtrer par numéro ou type de déclaration
+    fonction: [],
     status: 'all',
     startDate: null,
     endDate: null,
@@ -99,8 +106,8 @@ export function DeclarationListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name ||
-    filters.state.service.length > 0 ||
+    !!filters.state.type ||
+    filters.state.fonction.length > 0 ||
     filters.state.status !== 'all' ||
     (!!filters.state.startDate && !!filters.state.endDate);
 
@@ -111,7 +118,7 @@ export function DeclarationListView() {
   const getTotalAmount = (status) =>
     sumBy(
       tableData.filter((item) => item.status === status),
-      (invoice) => invoice.totalAmount
+      (declaration) => declaration.montant_facture
     );
 
   const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
@@ -124,26 +131,26 @@ export function DeclarationListView() {
       count: tableData.length,
     },
     {
-      value: 'submit',
+      value: 'soumise',
       label: 'Soumise',
       color: 'warnning',
       count: getInvoiceLength('soumise'),
     },
     {
-      value: 'success',
+      value: 'validée',
       label: 'Validées',
       color: 'success',
       count: getInvoiceLength('validée'),
     },
     {
-      value: 'warning',
+      value: 'brouillon',
       label: 'Brouillon',
       color: 'warning',
       count: getInvoiceLength('brouillon'),
     },
 
     {
-      value: 'reject',
+      value: 'rejetée',
       label: 'Rejetées',
       color: 'error',
       count: getInvoiceLength('rejetée'),
@@ -154,14 +161,14 @@ export function DeclarationListView() {
       const response = await axios.delete(API.supprimerDeclaration(id));
       if (response.data.success) {
         console.log('Déclaration supprimée:', response.data.message);
-        alert('Déclaration supprimée avec succès !');
+        toast.success('Déclaration supprimée avec succès !');
       } else {
         console.error('Erreur lors de la suppression:', response.data.error);
-        alert(`Erreur : ${  response.data.error}`);
+        toast.error(`Erreur : ${response.data.error}`);
       }
     } catch (error) {
       console.error('Erreur réseau ou serveur:', error);
-      alert('Une erreur est survenue lors de la communication avec le serveur.');
+      toast.error('Une erreur est survenue lors de la communication avec le serveur.');
     }
   };
 
@@ -193,8 +200,13 @@ export function DeclarationListView() {
 
         if (response.data.success) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          console.log('Déclaration validée:', response.data.message);
           toast.success('declaration validée avec success !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.id === id ? { ...item, status: 'validée' } : item
+            )
+          );
           router.push(paths.dashboard.declaration.list);
         } else {
           console.error('Erreur lors de la validation:', response.data.error);
@@ -202,7 +214,7 @@ export function DeclarationListView() {
         }
       } catch (error) {
         console.error('Erreur réseau ou serveur:', error);
-        alert('Erreur lors de la communication avec le serveur.');
+        toast.error('Erreur lors de la communication avec le serveur.');
       }
     },
     [router]
@@ -215,8 +227,13 @@ export function DeclarationListView() {
         const response = await axios.post(API.facturerDeclaration(id));
         if (response.data.success) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          console.log('Déclaration facturée:', response.data.message);
           toast.success('Déclaration facturée avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.id === id ? { ...item, status: 'facturée' } : item
+            )
+          );
           router.push(paths.dashboard.factures.list);
         } else {
           console.error('Erreur lors de la facturation:', response.data.error);
@@ -237,8 +254,13 @@ export function DeclarationListView() {
         const response = await axios.post(API.rejetterDeclaration(id));
         if (response.data.success) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          console.log('Déclaration rejetée:', response.data.message);
           toast.success('Déclaration rejetée avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.id === id ? { ...item, status: 'rejetée' } : item
+            )
+          );
           router.push(paths.dashboard.declaration.list);
         } else {
           console.error('Erreur lors du rejet :', response.data.error);
@@ -288,8 +310,20 @@ export function DeclarationListView() {
   }
 
   if (error) {
-    console.error(`Error: ${  error}`);
+    console.error(`Error: ${error}`);
   }
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'declaration-popover' : undefined;
+
 
   return (
     <>
@@ -302,14 +336,48 @@ export function DeclarationListView() {
             { name: 'Listes des déclarations' },
           ]}
           action={
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.declaration.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              Nouvelle Déclaration
-            </Button>
+            <>
+              <Button
+                variant="contained"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                onClick={handleClick} // Ouvre le popover au clic
+                sx={{ mb: { xs: 3, md: 5 } }}
+              >
+                Ajouter
+              </Button>
+              <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'left',
+                }}
+              >
+                <MenuItem
+                  component={RouterLink}
+                  href={paths.dashboard.declaration.new}
+                  onClick={handleClose}
+                >
+                  Nouvelle
+                </MenuItem>
+                <MenuItem
+                  component={RouterLink}
+                  href={paths.dashboard.declaration.renew}
+                  onClick={handleClose}
+                >
+                  Renouvellement
+                </MenuItem>
+                <MenuItem
+                  component={RouterLink}
+                  href={paths.dashboard.declaration.duplica}
+                  onClick={handleClose}
+                >
+                  Duplicata
+                </MenuItem>
+              </Popover>
+            </>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
@@ -400,11 +468,11 @@ export function DeclarationListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ services: INVOICE_SERVICE_OPTIONS.map((option) => option.name) }}
+            options={{ fonctions: INVOICE_SERVICE_OPTIONS.map((option) => option.name) }}
           />
 
           {canReset && (
-            <InvoiceTableFiltersResult
+            <DeclarationTableFiltersResult
               filters={filters}
               onResetPage={table.onResetPage}
               totalResults={dataFiltered.length}
@@ -541,39 +609,44 @@ export function DeclarationListView() {
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, status, service, startDate, endDate } = filters;
+  const { name, status, fonction, startDate, endDate } = filters;
 
+  // Tri des données
   const stabilizedThis = inputData.map((el, index) => [el, index]);
-
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) return order;
     return a[1] - b[1];
   });
-
   inputData = stabilizedThis.map((el) => el[0]);
 
+  // Filtrage par numéro de déclaration ou type de déclaration
+  // Filtrage par numéro de déclaration ou par type via le mot-clé
   if (name) {
-    inputData = inputData.filter(
-      (invoice) =>
-        invoice.invoiceNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        invoice.invoiceTo.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+    inputData = inputData.filter((declaration) =>
+      declaration.declaration_number.toLowerCase().includes(name.toLowerCase()) ||
+      declaration.type.toLowerCase().includes(name.toLowerCase())
     );
   }
 
+  // Filtrage par statut
   if (status !== 'all') {
-    inputData = inputData.filter((invoice) => invoice.status === status);
+    inputData = inputData.filter((declaration) => declaration.status === status);
   }
 
-  if (service.length) {
-    inputData = inputData.filter((invoice) =>
-      invoice.items.some((filterItem) => service.includes(filterItem.service))
+  // Filtrage par fonction (en s'assurant que declaration.items existe)
+  if (fonction.length) {
+    inputData = inputData.filter((declaration) =>
+      (declaration.items || []).some((filterItem) => fonction.includes(filterItem.fonction))
     );
   }
 
+  // Filtrage par date
   if (!dateError) {
     if (startDate && endDate) {
-      inputData = inputData.filter((invoice) => fIsBetween(invoice.createDate, startDate, endDate));
+      inputData = inputData.filter((declaration) =>
+        fIsBetween(declaration.createDate, startDate, endDate)
+      );
     }
   }
 

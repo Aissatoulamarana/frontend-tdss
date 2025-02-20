@@ -55,11 +55,10 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 
 const TABLE_HEAD = [
   { id: 'invoiceNumber', label: 'Numero Facture' },
-
   { id: 'numero', label: 'Numero Déclaration' },
-  { id: 'price', label: 'Montant' },
   { id: 'type', label: 'Type Déclaration' },
   { id: 'status', label: 'Banque' },
+  { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
 
   { id: '' },
@@ -124,18 +123,7 @@ export function PaiementListView() {
       color: 'default',
       count: tableData.length,
     },
-    {
-      value: 'paid',
-      label: 'Payées',
-      color: 'success',
-      count: getInvoiceLength('paid'),
-    },
-    {
-      value: 'pending',
-      label: 'En attente',
-      color: 'warning',
-      count: getInvoiceLength('pending'),
-    },
+
   ];
 
   const handleDeleteRow = useCallback(
@@ -448,14 +436,15 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   if (name) {
     inputData = inputData.filter(
-      (invoice) =>
-        invoice.invoiceNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        invoice.invoiceTo.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (paiement) =>
+        paiement.numero_facture.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        paiement.declaration_number.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        paiement.bank_name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((invoice) => invoice.status === status);
+    inputData = inputData.filter((facture) => facture.statut === status);
   }
 
   if (service.length) {
@@ -466,7 +455,7 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   if (!dateError) {
     if (startDate && endDate) {
-      inputData = inputData.filter((invoice) => fIsBetween(invoice.createDate, startDate, endDate));
+      inputData = inputData.filter((paiement) => fIsBetween(paiement.date_paiement, startDate, endDate));
     }
   }
 

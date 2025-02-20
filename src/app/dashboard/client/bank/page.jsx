@@ -1,11 +1,11 @@
 import { CONFIG } from 'src/config-global';
 
-import { BankCreateView } from 'src/sections/administration/client/bank';
+import { BlankView } from 'src/sections/blank/view';
 
 // ----------------------------------------------------------------------
 
-export const metadata = { title: `New Bank | Dashboard - ${CONFIG.appName}` };
+export const metadata = { title: `Page five | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
-  return <BankCreateView />;
+  return <BlankView title="Listes des banques " />;
 }

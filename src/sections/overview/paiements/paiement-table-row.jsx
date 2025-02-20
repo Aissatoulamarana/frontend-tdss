@@ -68,20 +68,7 @@ export function PaiementTableRow({
         </TableCell>
         <TableCell>{row.declaration_number}</TableCell>
 
-        <TableCell>
-          <ListItemText
-            primary={
-              <Typography variant='body2'>
-                {fCurrency(row.montantUsd)}
-              </Typography>
-            }
-            secondary={
-              <Typography variant='body2'>
-                {row.montantGnf}
-              </Typography>
-            } />
 
-        </TableCell>
 
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
@@ -109,6 +96,21 @@ export function PaiementTableRow({
           </Stack>
         </TableCell>
         <TableCell>{row.bank_name}</TableCell>
+
+        <TableCell>
+          <ListItemText
+            primary={
+              <Typography variant='body2'>
+                {fCurrency(row.montantUsd)}
+              </Typography>
+            }
+            secondary={
+              <Typography variant='body2'>
+                {row.montantGnf}
+              </Typography>
+            } />
+
+        </TableCell>
 
         <TableCell>
           <ListItemText

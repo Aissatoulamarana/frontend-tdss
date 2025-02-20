@@ -9,12 +9,14 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { ImportFilesButton } from '../components/button-import-excel';
 import { DeclarationNew } from '../declaration-new';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
 export function DeclarationNewView() {
-  // const [formData, setFormData] = useState([]); // État pour stocker les données importées
+  const [formData, setFormData] = useState([]); // État pour stocker les données importées
   const [type, setType] = useState('Nouvelle ');
+  const [openDialog, setOpenDialog] = useState(false); // État pour le modal
 
   useEffect(() => {
     // Récupérer le dernier segment de l'URL
@@ -28,11 +30,19 @@ export function DeclarationNewView() {
       duplica: 'Duplicata ',
     };
 
-    // Met à jour le state en fonction du type trouvé
-    setType(typeMapping[lastSegment] || 'Déclaration Inconnue');
+    const newType = typeMapping[lastSegment] || 'Déclaration Inconnue';
+    setType(newType);
+
+    // Vérifier si le type est "Duplicata" ou "Renouvellement"
+    if (newType === 'Renouvellement ' || newType === 'Duplicata ') {
+      setOpenDialog(true);
+    }
+
   }, []);
 
-  ;
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
   const handleImportData = (importedData) => {
     setFormData(importedData); // Met à jour l'état avec les données importées
@@ -53,7 +63,38 @@ export function DeclarationNewView() {
         <ImportFilesButton onImport={handleImportData} />
       </div>
       {/* Ajout d'espace sous ImportFilesButton */}
-      <DeclarationNew type={type} />
+      <DeclarationNew type={type} formData={formData} setFormData={setFormData} />
+
+      {/* MODAL POUR AVERTIR L'UTILISATEUR */}
+      <Dialog
+        open={openDialog}
+        onClose={() => { }}
+        sx={{
+          '& .MuiDialog-paper': {
+            width: '60%', // Réduction de la largeur
+            borderRadius: '12px', // Coins arrondis pour un look plus moderne
+            padding: '10px' // Ajout de padding
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>
+          Information Importante
+        </DialogTitle>
+        <DialogContent sx={{ fontSize: '14px', textAlign: 'center' }}>
+          Pour faire un <strong>{type}</strong>, vous devez entrer le numéro d'identifiant de la personne.
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center' }}>
+          <Button
+            onClick={handleCloseDialog}
+            variant="contained"
+            color="primary"
+            sx={{ borderRadius: '8px', padding: '6px 20px', fontSize: '14px' }}
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </DashboardContent>
   );
 }

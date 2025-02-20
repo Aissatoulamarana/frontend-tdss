@@ -7,7 +7,7 @@ import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-r
 
 // ----------------------------------------------------------------------
 
-export function InvoiceTableFiltersResult({ filters, totalResults, onResetPage, sx }) {
+export function DeclarationTableFiltersResult({ filters, totalResults, onResetPage, sx }) {
   const handleRemoveKeyword = useCallback(() => {
     onResetPage();
     filters.setState({ name: '' });
@@ -15,10 +15,10 @@ export function InvoiceTableFiltersResult({ filters, totalResults, onResetPage, 
 
   const handleRemoveService = useCallback(
     (inputValue) => {
-      const newValue = filters.state.service.filter((item) => item !== inputValue);
+      const newValue = filters.state.fonction.filter((item) => item !== inputValue);
 
       onResetPage();
-      filters.setState({ service: newValue });
+      filters.setState({ fonction: newValue });
     },
     [filters, onResetPage]
   );
@@ -35,8 +35,8 @@ export function InvoiceTableFiltersResult({ filters, totalResults, onResetPage, 
 
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
-      <FiltersBlock label="Service:" isShow={!!filters.state.service.length}>
-        {filters.state.service.map((item) => (
+      <FiltersBlock label="Service:" isShow={!!filters.state.fonction.length}>
+        {filters.state.fonction.map((item) => (
           <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveService(item)} />
         ))}
       </FiltersBlock>

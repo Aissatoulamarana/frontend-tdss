@@ -37,7 +37,7 @@ export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }
         typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value;
 
       onResetPage();
-      filters.setState({ service: newValue });
+      filters.setState({ fonction: newValue });
     },
     [filters, onResetPage]
   );
@@ -71,19 +71,19 @@ export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }
 
           <Select
             multiple
-            value={filters.state.service}
+            value={filters.state.fonction}
             onChange={handleFilterService}
-            input={<OutlinedInput label="service" />}
+            input={<OutlinedInput label="fonction" />}
             renderValue={(selected) => selected.map((value) => value).join(', ')}
             inputProps={{ id: 'invoice-filter-service-select-label' }}
             sx={{ textTransform: 'capitalize' }}
           >
-            {options.services.map((option) => (
+            {options.fonctions.map((option) => (
               <MenuItem key={option} value={option}>
                 <Checkbox
                   disableRipple
                   size="small"
-                  checked={filters.state.service.includes(option)}
+                  checked={filters.state.fonction.includes(option)}
                 />
                 {option}
               </MenuItem>

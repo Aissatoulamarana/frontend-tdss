@@ -31,7 +31,7 @@ export function Client() {
     {
       name: 'Banque',
       icon: <AccountBalanceIcon sx={{ fontSize: 40, color: 'blue' }} />,
-      link: paths.dashboard.client.bank,
+      link: paths.dashboard.client.new_bank,
     },
     {
       name: 'Entreprises',
