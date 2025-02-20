@@ -1,11 +1,10 @@
-import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import axios from 'axios';
 import { useMemo } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 
 import { useRouter } from 'src/routes/hooks';
@@ -14,15 +13,14 @@ import { paths } from 'src/routes/paths';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import API from 'src/utils/api';
-import { today } from 'src/utils/format-time';
 
-import { Form, schemaHelper } from 'src/components/hook-form';
+import { Form } from 'src/components/hook-form';
 
 import { STORAGE_KEY } from 'src/auth/context/jwt/constant';
 
+import { toast } from 'sonner';
 import { DeclarationNewEditDetails } from './declaration-edit-detail';
 import { DeclarationEditStatusDate } from './declaration-status-edit';
-import { toast } from 'sonner';
 
 // ----------------------------------------------------------------------
 // Définition du schéma de validation

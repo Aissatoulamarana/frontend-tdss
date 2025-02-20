@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
-import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 
 
@@ -102,7 +102,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   // Handler générique pour gérer l'upload d'un fichier.
   // On passe le nom du champ à mettre à jour dans le formulaire.
   const handleImageUpload = (fieldName) => (event) => {
-    const files = event.target.files;
+    const {files} = event.target;
     if (files && files.length > 0) {
       console.log(`Fichier sélectionné pour ${fieldName}:`, files[0]);
       setValue(fieldName, files[0]);

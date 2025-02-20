@@ -7,9 +7,9 @@ import { paths } from 'src/routes/paths';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
 import { ImportFilesButton } from '../components/button-import-excel';
 import { DeclarationNew } from '../declaration-new';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@mui/material';
 
 // ----------------------------------------------------------------------
 

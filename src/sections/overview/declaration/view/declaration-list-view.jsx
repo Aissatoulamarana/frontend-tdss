@@ -52,7 +52,6 @@ import { DeclarationSummary } from '../declaration-analytic';
 import { DeclarationTableFiltersResult } from '../declaration-table-filters';
 import { DeclarationTableRow } from '../declaration-table-row';
 import { InvoiceTableToolbar } from '../declaration-table-toolbar';
-import { declaration } from 'stylis';
 
 // ----------------------------------------------------------------------
 
