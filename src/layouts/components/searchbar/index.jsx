@@ -68,9 +68,10 @@ export function Searchbar({ data: navItems = [], sx, ...other }) {
   }, []);
 
   const dataFiltered = applyFilter({
-    inputData: getAllItems({ data: navItems }),
+    inputData: getAllItems({ data: navItems }) || [],
     query: searchQuery,
-  });
+  }) || [];
+
 
   const notFound = searchQuery && !dataFiltered.length;
 
@@ -86,7 +87,8 @@ export function Searchbar({ data: navItems = [], sx, ...other }) {
 
             const partsTitle = parse(title, match(title, searchQuery));
 
-            const partsPath = parse(path, match(path, searchQuery));
+            const partsPath = path ? parse(path, match(path || "", searchQuery || "")) : [];
+
 
             return (
               <Box component="li" key={`${title}${path}`} sx={{ display: 'flex' }}>
