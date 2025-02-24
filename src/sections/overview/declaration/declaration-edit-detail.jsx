@@ -168,21 +168,22 @@ export function DeclarationNewEditDetails({ formData, type }) {
   );
 
   useEffect(() => {
-    // Ajouter les données importées lorsqu'elles changent
     if (formData && formData.length > 0) {
       formData.forEach((data) => {
         console.log(data);
+
         append({
-          numero: data.Numero || '', // Adaptation de "Numero Passeport"
-          nom: data.Nom || '', // Adaptation de "Nom"
-          fonction: data.Fonction || '', // Adaptation de "Fonction"
-          prenom: data.Prenom || '', // Adaptation de "Prénom"
-          telephone: data.Telephone || '', // Adaptation de "Nationalité"
-          passportExists: false, // On pourra déclencher la vérification ensuite si besoin
+          numero: data["Numero "]?.trim() || '', // Suppression espace
+          nom: data.Nom || '',
+          fonction: data.Fonction || '',
+          prenom: data.Prenom || '',
+          telephone: String(data["Telephone"]) || '',
+          passportExists: false,
         });
       });
     }
   }, [formData, append]);
+
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
   const checkPassportExistence = async (numero, index) => {
