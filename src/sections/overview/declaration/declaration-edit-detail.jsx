@@ -177,7 +177,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
           nom: data.Nom || '',
           fonction: data.Fonction || '',
           prenom: data.Prenom || '',
-          telephone: String(data["Telephone"]) || '',
+          telephone: String(data.Telephone) || '',
           passportExists: false,
         });
       });
