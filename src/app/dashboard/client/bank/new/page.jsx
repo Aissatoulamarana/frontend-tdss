@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { BankCreateView } from 'src/sections/administration/client/bank';
+import { BankCreateView } from 'src/sections/administration/client/bank/view';
 
 // ----------------------------------------------------------------------
 

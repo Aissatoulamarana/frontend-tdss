@@ -12,7 +12,7 @@ export function getCountryCode(inputValue, countryCode) {
     }
   }
 
-  return countryCode ?? 'US';
+  return countryCode ?? 'GN';
 }
 
 // ----------------------------------------------------------------------

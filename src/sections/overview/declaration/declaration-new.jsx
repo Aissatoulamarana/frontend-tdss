@@ -49,7 +49,6 @@ export const NewInvoiceSchema = zod.object({
 
     })
   ),
-  identifier: zod.string(),
   status: zod.string(),
   declarationNumber: zod.string(),
   type: zod.string(),

@@ -47,7 +47,7 @@ export function JobList({ jobs }) {
         ))}
       </Box>
 
-      {jobs.length > 8 && (
+      {jobs?.length > 8 && (
         <Pagination
           count={8}
           sx={{

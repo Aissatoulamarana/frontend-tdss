@@ -111,10 +111,10 @@ export const navData = [
         title: 'Client',
         path: paths.dashboard.client.root,
         icon: ICONS.tour,
-        children: [
-          { title: 'Listes  ', path: paths.dashboard.client.bank },
-          { title: 'Ajouter', path: paths.dashboard.client.root },
-        ],
+        // children: [
+        //   { title: 'Listes  ', path: paths.dashboard.client.bank },
+        //   { title: 'Ajouter', path: paths.dashboard.client.root },
+        // ],
       },
     ],
   },

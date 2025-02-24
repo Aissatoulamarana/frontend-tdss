@@ -97,6 +97,7 @@ export const paths = {
 
     client: {
       root: `${ROOTS.DASHBOARD}/client`,
+      bank: `${ROOTS.DASHBOARD}/client/bank`,
       new_bank: `${ROOTS.DASHBOARD}/client/bank/new`,
       business: `${ROOTS.DASHBOARD}/client/business`,
       embassy: `${ROOTS.DASHBOARD}/client/embassy`,
