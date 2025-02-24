@@ -6,7 +6,7 @@ import { paths } from 'src/routes/paths';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { BankNewEditForm } from './bank-new';
+import { BankNewEditForm } from '../bank-new';
 
 // ----------------------------------------------------------------------
 

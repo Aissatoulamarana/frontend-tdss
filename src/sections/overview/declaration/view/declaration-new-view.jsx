@@ -59,9 +59,11 @@ export function DeclarationNewView() {
         ]}
         sx={{ mb: { xs: 3, md: 2 } }} // Marges pour les breadcrumbs
       />
+
       <div style={{ marginBottom: '20px' }}>
         <ImportFilesButton onImport={handleImportData} />
       </div>
+
       {/* Ajout d'espace sous ImportFilesButton */}
       <DeclarationNew type={type} formData={formData} setFormData={setFormData} />
 

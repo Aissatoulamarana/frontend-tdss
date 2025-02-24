@@ -1,5 +1,5 @@
- const BASE_URL = 'http://127.0.0.1:8000'; // Adresse de votre backend
-// const BASE_URL = 'https://declaration-qp2u.onrender.com'; // Adresse de votre backend
+//  const BASE_URL = 'http://127.0.0.1:8000'; // Adresse de votre backend
+ const BASE_URL = 'https://tdss-backend.onrender.com'; // Adresse de votre backend
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js

@@ -102,7 +102,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   // Handler générique pour gérer l'upload d'un fichier.
   // On passe le nom du champ à mettre à jour dans le formulaire.
   const handleImageUpload = (fieldName) => (event) => {
-    const {files} = event.target;
+    const { files } = event.target;
     if (files && files.length > 0) {
       console.log(`Fichier sélectionné pour ${fieldName}:`, files[0]);
       setValue(fieldName, files[0]);
@@ -173,11 +173,11 @@ export function DeclarationNewEditDetails({ formData, type }) {
       formData.forEach((data) => {
         console.log(data);
         append({
-          numero: data['Numero Passeport '] || '', // Adaptation de "Numero Passeport"
+          numero: data.Numero || '', // Adaptation de "Numero Passeport"
           nom: data.Nom || '', // Adaptation de "Nom"
           fonction: data.Fonction || '', // Adaptation de "Fonction"
-          prenom: data['Prénom'] || '', // Adaptation de "Prénom"
-          telephone: data['Téléphone'] || '', // Adaptation de "Nationalité"
+          prenom: data.Prenom || '', // Adaptation de "Prénom"
+          telephone: data.Telephone || '', // Adaptation de "Nationalité"
           passportExists: false, // On pourra déclencher la vérification ensuite si besoin
         });
       });
