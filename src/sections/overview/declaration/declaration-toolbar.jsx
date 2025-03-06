@@ -12,7 +12,7 @@ import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { useRef, useState, useCallback } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
@@ -51,7 +51,7 @@ export function DeclarationToolbar({
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: `Declaration_${declaration?.declaration_number}`,
+    documentTitle: `Declaration_${declaration?.reference}`,
     onAfterPrint: () => console.log('Impression terminée'),
   });
 

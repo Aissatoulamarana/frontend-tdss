@@ -6,7 +6,7 @@ import { paths } from 'src/routes/paths';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { DeclarationNewEditForm } from '../declaration-edit-form';
+import { DeclarationNew } from '../declaration-new';
 
 // ----------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ export function DeclarationEditView({ declaration }) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationNewEditForm declaration={declaration} />
+      <DeclarationNew currentInvoice={declaration} />
     </DashboardContent>
   );
 }

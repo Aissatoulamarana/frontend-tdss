@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { CONFIG } from 'src/config-global';
 
 import API from 'src/utils/api';

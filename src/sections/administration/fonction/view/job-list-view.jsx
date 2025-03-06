@@ -2,7 +2,7 @@
 
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -46,14 +46,14 @@ export function JobListView() {
     const fetchFonctions = async () => {
       try {
         const response = await axios.get(API.listFonctions()); // Remplacez par votre endpoint réel
-        const fonctions = response.data.fonctions || []; // Assurez-vous que c'est bien un tableau
+        const fonctions = response.data || []; // Assurez-vous que c'est bien un tableau
         setTableData(fonctions);
 
         // Extraire uniquement les noms des fonctions
         const nomsFonctions = fonctions.map(fonction => fonction.name);
         setOptions(nomsFonctions);
 
-        console.log("Les noms des fonctions qui sont disponibles :", nomsFonctions);
+
       } catch (err) {
         setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
@@ -66,7 +66,7 @@ export function JobListView() {
 
 
   const filters = useSetState({
-    name
+    name: ''
   });
 
   const dataFiltered = applyFilter({ inputData: tableData, filters: filters.state, sortBy });

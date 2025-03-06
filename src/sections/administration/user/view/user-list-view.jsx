@@ -9,7 +9,7 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -183,7 +183,7 @@ export function UserListView() {
   }
 
   if (error) {
-    console.error(`Error: ${  error}`);
+    console.error(`Error: ${error}`);
   }
   return (
     <>

@@ -6,6 +6,9 @@ import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 
 import { JobItem } from './job-item';
+import axios from 'src/utils/axios';
+import API from 'src/utils/api';
+import toast from 'sonner';
 
 // ----------------------------------------------------------------------
 
@@ -21,14 +24,29 @@ export function JobList({ jobs }) {
 
   const handleEdit = useCallback(
     (id) => {
-      router.push(paths.dashboard.job.edit(id));
+      router.push(paths.dashboard.fonction.edit(id));
     },
     [router]
   );
 
-  const handleDelete = useCallback((id) => {
-    console.info('DELETE', id);
-  }, []);
+  // const handleDelete = useCallback((id) => {
+  //   console.info('DELETE', id);
+  // }, []);
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(API.deleteFonction(id));
+      if (response) {
+        toast.success('fonction supprimée avec succès !');
+      } else {
+        console.error('Erreur lors de la suppression:', response.data.error);
+        toast.error(`Erreur : ${response.data.error}`);
+      }
+    } catch (error) {
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error('Une erreur est survenue lors de la communication avec le serveur.');
+    }
+  };
 
   return (
     <>

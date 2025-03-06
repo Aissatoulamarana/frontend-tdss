@@ -18,7 +18,7 @@ export function DeclarationDetailsView({ declaration }) {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Declarations', href: paths.dashboard.declaration.list },
-          { name: declaration?.declaration_number },
+          { name: declaration?.reference },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />

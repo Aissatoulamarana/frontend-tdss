@@ -4,7 +4,7 @@ import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -28,19 +28,19 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const [activeStep, setActiveStep] = useState(0);
   const [data, setData] = useState();
 
-  const typedec = type.trim();
+  const typedec = type?.trim();
 
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' });
+  const { fields, append, remove } = useFieldArray({ control, name: 'employees' });
 
   const values = watch();
 
   const handleAdd = () => {
     append({
-      numero: '',
-      nom: '',
-      fonction: '',
-      prenom: '',
-      telephone: '',
+      passport_number: '',
+      last: '',
+      job: '',
+      first: '',
+      phone: '',
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
       recto: null,
@@ -136,9 +136,9 @@ export function DeclarationNewEditDetails({ formData, type }) {
         const response = await axios.get(API.listFonctions());
         console.log('Données reçues :', response.data); // Vérifie le retour du backend
 
-        if (response.data && response.data.fonctions) {
-          const fonctions = response.data.fonctions.map((fonction) => ({
-            value: fonction.name,
+        if (response.data && response.data) {
+          const fonctions = response.data.map((fonction) => ({
+            value: String(fonction.id),
             label: fonction.name,
             id: fonction.id, // Ajout de l'ID pour éviter le problème de key
           }));
@@ -173,11 +173,11 @@ export function DeclarationNewEditDetails({ formData, type }) {
         console.log(data);
 
         append({
-          numero: data["Numero "]?.trim() || '', // Suppression espace
-          nom: data.Nom || '',
-          fonction: data.Fonction || '',
-          prenom: data.Prenom || '',
-          telephone: `+${String(data.Telephone)}` || '',
+          passport_number: data["Numero "]?.trim() || '', // Suppression espace
+          last: data.Nom || '',
+          job: data.Fonction || '',
+          first: data.Prenom || '',
+          phone: `+${String(data.Telephone)}` || '',
           passportExists: false,
         });
       });
@@ -193,9 +193,9 @@ export function DeclarationNewEditDetails({ formData, type }) {
       setData(response.data.data)
       console.log('les informations du detenteur de ce passport ', response.data.data)
       if (response.data.exists) {
-        setValue(`items[${index}].passportExists`, true);
+        setValue(`employees[${index}].passportExists`, true);
       } else {
-        setValue(`items[${index}].passportExists`, false);
+        setValue(`employees[${index}].passportExists`, false);
       }
     } catch (error) {
       console.error('Erreur lors de la recherche du passeport', error);
@@ -214,7 +214,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   // Handler pour le changement de la saisie du numéro de passeport
   const handlePassportChange = (e, index) => {
     const numero = e.target.value;
-    setValue(`items[${index}].numero`, numero);
+    setValue(`employees[${index}].passport_number`, numero);
     debouncedPassportCheck(numero, index);
   };
 
@@ -227,11 +227,11 @@ export function DeclarationNewEditDetails({ formData, type }) {
       const response = await axios.get(API.searchIdentifier(identifier));
       const person = response.data.data;
       // Mise à jour dynamique des champs de l'item correspondant
-      setValue(`items[${index}].numero`, person.numero);
-      setValue(`items[${index}].nom`, person.nom);
-      setValue(`items[${index}].prenom`, person.prenom);
-      setValue(`items[${index}].telephone`, person.telephone);
-      setValue(`items[${index}].fonction`, person.fonction);
+      setValue(`employees[${index}].passport_number`, person.numero);
+      setValue(`employees[${index}].last`, person.nom);
+      setValue(`employees[${index}].first`, person.prenom);
+      setValue(`employees[${index}].phone`, person.telephone);
+      setValue(`employees[${index}].job`, person.fonction);
       debouncedPassportCheck(person.numero, index);
     } catch (error) {
       console.error("Erreur lors de la récupération des données:", error);
@@ -249,7 +249,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   //  Créer le handler pour le champ identifier
   const handleIdentifierChange = (e, index) => {
     const identifier = e.target.value;
-    setValue(`items[${index}].identifier`, identifier);
+    setValue(`employees[${index}].identifier`, identifier);
     debouncedIdentifierCheck(identifier, index);
   };
 
@@ -281,10 +281,10 @@ export function DeclarationNewEditDetails({ formData, type }) {
         {fields.map((item, index) => (
           <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
-              {typedec !== 'Nouvelle' && (
+              {typedec == 'Renouvellement' || typedec == 'Duplicata' && (
                 <Field.Text
                   size="small"
-                  name={`items[${index}].identifier`}
+                  name={`employees[${index}].identifier`}
                   label="Identifiant"
                   inputlabelprops={{ shrink: true }}
                   onChange={(e) => handleIdentifierChange(e, index)}
@@ -293,13 +293,13 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
               <Field.Text
                 size="small"
-                name={`items[${index}].numero`}
+                name={`employees[${index}].passport_number`}
                 label="Numéro Passeport"
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
-                error={typedec === "Nouvelle" && Boolean(values.items?.[index]?.passportExists)}
+                error={typedec === "Nouvelle" && Boolean(values.employees?.[index]?.passportExists)}
                 helperText={
-                  values.items?.[index]?.passportExists
+                  values.employees?.[index]?.passportExists
                     ? typedec === "Nouvelle"
                       ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
                       : "✅ Ce passeport existe déjà, il est bien enregistré."
@@ -307,7 +307,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 }
                 sx={{
                   "& .MuiFormHelperText-root": {
-                    color: values.items?.[index]?.passportExists
+                    color: values.employees?.[index]?.passportExists
                       ? typedec === "Nouvelle"
                         ? "error.main"
                         : "success.main"
@@ -321,7 +321,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
               <Field.Phone
                 size="small"
-                name={`items[${index}].telephone`}
+                name={`employees[${index}].phone`}
                 label="Numéro de Téléphone"
                 placeholder="votre numero de téléphone  "
                 sx={{ width: '100%' }}
@@ -330,19 +330,19 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
               <Field.Text
                 size="small"
-                name={`items[${index}].nom`}
+                name={`employees[${index}].last`}
                 label="Nom "
                 inputlabelprops={{ shrink: true }}
               />
               <Field.Text
                 size="small"
-                name={`items[${index}].prenom`}
+                name={`employees[${index}].first`}
                 label="Prénom"
                 inputlabelprops={{ shrink: true }}
               />
 
               <Field.Select
-                name={`items[${index}].fonction`}
+                name={`employees[${index}].job`}
                 size="small"
                 label="Fonction"
                 inputlabelprops={{ shrink: true }}
@@ -359,7 +359,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
                 {options.map((fonction) => (
                   <MenuItem
-                    key={fonction.value} // Utilisation de value au lieu d'id
+                    key={fonction.id} // Utilisation de value au lieu d'id
                     value={fonction.value} // Assure-toi d'utiliser value et non name
                     onClick={() => handleSelectService(index, fonction.value)}
                   >

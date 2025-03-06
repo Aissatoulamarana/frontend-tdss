@@ -24,7 +24,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { useMockedUser } from 'src/auth/hooks';
 
 import { AccountButton } from './account-button';
-import { UpgradeBlock } from './nav-upgrade';
+// import { UpgradeBlock } from './nav-upgrade';
 import { SignOutButton } from './sign-out-button';
 
 // ----------------------------------------------------------------------
@@ -118,7 +118,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
                 <Avatar
                   alt={_mock.fullName(index + 1)}
                   src={_mock.image.avatar(index + 1)}
-                  onClick={() => {}}
+                  onClick={() => { }}
                 />
               </Tooltip>
             ))}
@@ -176,7 +176,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
           </Stack>
 
           <Box sx={{ px: 2.5, py: 3 }}>
-            <UpgradeBlock />
+            {/* <UpgradeBlock /> */}
           </Box>
         </Scrollbar>
 

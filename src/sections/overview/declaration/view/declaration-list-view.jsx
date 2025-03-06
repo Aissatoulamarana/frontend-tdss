@@ -13,7 +13,7 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -51,7 +51,7 @@ import {
 import { DeclarationSummary } from '../declaration-analytic';
 import { DeclarationTableFiltersResult } from '../declaration-table-filters';
 import { DeclarationTableRow } from '../declaration-table-row';
-import { InvoiceTableToolbar } from '../declaration-table-toolbar';
+import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -194,12 +194,14 @@ export function DeclarationListView() {
   const handleValidateRow = useCallback(
     async (id) => {
       try {
-        // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(API.validateDeclaration(id));
+        // Appel à l'API backend pour valider la déclaration en envoyant l'action
+        const response = await axios.post(API.validateDeclaration(id), {
+          action: "validate"
+        });
 
-        if (response.data.success) {
+        if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          toast.success('declaration validée avec success !');
+          toast.success('Déclaration validée avec succès !');
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
@@ -219,12 +221,13 @@ export function DeclarationListView() {
     [router]
   );
 
+
   const handleFacturer = useCallback(
     async (id) => {
       try {
         // Appel à l'API backend pour rejeter la déclaration
         const response = await axios.post(API.facturerDeclaration(id));
-        if (response.data.success) {
+        if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
           toast.success('Déclaration facturée avec succès !');
           // Mise à jour locale du statut dans tableData
@@ -247,14 +250,15 @@ export function DeclarationListView() {
   );
 
   const handleRejetter = useCallback(
-    async (id) => {
+    async (id, motifRejet) => {
       try {
         // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.rejetterDeclaration(id));
-        if (response.data.success) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+        const response = await axios.post(API.rejetterDeclaration(id), {
+          action: "reject",
+          reject_reason: motifRejet
+        });
+        if (response) {
           toast.success('Déclaration rejetée avec succès !');
-          // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
               item.id === id ? { ...item, status: 'rejetée' } : item
@@ -272,6 +276,7 @@ export function DeclarationListView() {
     },
     [router]
   );
+
 
   const handleViewRow = useCallback(
     (id) => {
@@ -463,11 +468,13 @@ export function DeclarationListView() {
             ))}
           </Tabs>
 
-          <InvoiceTableToolbar
+          <DeclarationTableToolbar
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ fonctions: INVOICE_SERVICE_OPTIONS.map((option) => option.name) }}
+            options={{
+              fonctions: [...new Set(dataFiltered.map((option) => option.title.trim()))]
+            }}
           />
 
           {canReset && (
@@ -553,7 +560,7 @@ export function DeclarationListView() {
                         onDeleteRow={() => handleDeleteRow(row.id)}
                         onValidateRow={() => handleValidateRow(row.id)}
                         onFactureRow={() => handleFacturer(row.id)}
-                        onRejetRow={() => handleRejetter(row.id)}
+                        onRejetRow={(rejectReason) => handleRejetter(row.id, rejectReason)}
                       />
                     ))}
 

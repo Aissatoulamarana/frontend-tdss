@@ -20,7 +20,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }) {
+export function DeclarationTableToolbar({ filters, options, dateError, onResetPage }) {
   const popover = usePopover();
 
   const handleFilterName = useCallback(
@@ -67,7 +67,7 @@ export function InvoiceTableToolbar({ filters, options, dateError, onResetPage }
         sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
       >
         <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
-          <InputLabel htmlFor="invoice-filter-service-select-label">Fonction</InputLabel>
+          <InputLabel htmlFor="invoice-filter-service-select-label">Type</InputLabel>
 
           <Select
             multiple

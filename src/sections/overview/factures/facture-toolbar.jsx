@@ -10,7 +10,7 @@ import NoSsr from '@mui/material/NoSsr';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { useRef, useState, useCallback } from 'react';
 // import { DeclarationPDF } from './declaration-pdf';
 import { useReactToPrint } from 'react-to-print';

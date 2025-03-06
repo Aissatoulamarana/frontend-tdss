@@ -12,7 +12,7 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { CircularProgress } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
 import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
@@ -280,26 +280,26 @@ export function FactureListView() {
 
 
 
-  useEffect(() => {
-    const fetchBank = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(API.listBank());
-        const banks = response.data.map((bank) => ({
-          value: bank.id,
-          label: bank.name,
-        }));
-        console.log(banks);
-        setOptions(banks);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des banques :', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchBank = async () => {
+  //     setLoading(true);
+  //     try {
+  //       const response = await axios.get(API.listBank());
+  //       const banks = response.data.map((bank) => ({
+  //         value: bank.id,
+  //         label: bank.name,
+  //       }));
+  //       console.log(banks);
+  //       setOptions(banks);
+  //     } catch (error) {
+  //       console.error('Erreur lors de la récupération des banques :', error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchBank();
-  }, []);
+  //   fetchBank();
+  // }, []);
 
   const handleChangeBanque = (event, newValue) => {
     setSelectedBanque(newValue);

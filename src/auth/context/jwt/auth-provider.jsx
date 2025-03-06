@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
         const res = await axios.get(API.me());
 
-        const { user } = res.data;
+        const user = res.data;
         console.log('User récupéré :', user);
         setState({ user: { ...user, access_token }, loading: false });
 

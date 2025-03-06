@@ -13,25 +13,13 @@ import { paths } from 'src/routes/paths';
 export function Client() {
   const [customOptions, setCustomOptions] = useState([]);
 
-  const handleAddOption = () => {
-    const newOption = prompt('Entrez le nom de la nouvelle catégorie :');
-    if (newOption) {
-      setCustomOptions([
-        ...customOptions,
-        {
-          name: newOption,
-          icon: <PublicIcon sx={{ fontSize: 40, color: 'gray' }} />,
-          link: `/dashboard/client/${newOption.toLowerCase()}`,
-        },
-      ]);
-    }
-  };
+
 
   const options = [
     {
       name: 'Banque',
       icon: <AccountBalanceIcon sx={{ fontSize: 40, color: 'blue' }} />,
-      link: paths.dashboard.client.new_bank,
+      link: paths.dashboard.client.bank,
     },
     {
       name: 'Entreprises',
@@ -39,7 +27,7 @@ export function Client() {
       link: paths.dashboard.client.business,
     },
     {
-      name: 'Ambassade',
+      name: 'Cabinet',
       icon: <PublicIcon sx={{ fontSize: 40, color: 'red' }} />,
       link: paths.dashboard.client.embassy,
     },
@@ -53,9 +41,6 @@ export function Client() {
         <Box component="h1" sx={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
           Choisissez une option
         </Box>
-        <Button variant="outlined" color="primary" onClick={handleAddOption}>
-          Ajouter une catégorie
-        </Button>
       </Box>
 
       {/* Conteneur des cartes */}

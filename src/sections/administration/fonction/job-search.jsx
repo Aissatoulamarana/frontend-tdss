@@ -25,7 +25,7 @@ export function JobSearch({ search, onSearch }) {
     if (search.state.query) {
       if (event.key === 'Enter') {
         const selectProduct = search.state.results.filter(
-          (job) => job.title === search.state.query
+          (job) => job.name === search.state.query
         )[0];
 
         handleClick(selectProduct.id);
@@ -40,7 +40,7 @@ export function JobSearch({ search, onSearch }) {
       popupIcon={null}
       options={search.state.results}
       onInputChange={(event, newValue) => onSearch(newValue)}
-      getOptionLabel={(option) => option.title}
+      getOptionLabel={(option) => option.name}
       noOptionsText={<SearchNotFound query={search.state.query} />}
       isOptionEqualToValue={(option, value) => option.id === value.id}
       renderInput={(params) => (
@@ -59,8 +59,8 @@ export function JobSearch({ search, onSearch }) {
         />
       )}
       renderOption={(props, job, { inputValue }) => {
-        const matches = match(job.title, inputValue);
-        const parts = parse(job.title, matches);
+        const matches = match(job.name, inputValue);
+        const parts = parse(job.name, matches);
 
         return (
           <Box component="li" {...props} onClick={() => handleClick(job.id)} key={job.id}>

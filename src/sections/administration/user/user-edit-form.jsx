@@ -11,7 +11,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
@@ -31,54 +31,51 @@ import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
-
+// Le schéma de validation (nous n'incluons plus username car le backend s'appuie sur email)
 export const NewUserSchema = zod.object({
-  avatarUrl: schemaHelper.file({
-    message: { required_error: 'Televerser une image!' },
-  }),
-  name: zod.string().min(1, { message: 'Le champ Nom est obligatoire!' }),
+  picture: zod.any().optional(),
+
   email: zod
     .string()
     .min(1, { message: 'Email est obligatoire!' })
     .email({ message: 'Email doit être valide!' }),
-  password: zod
-    .string()
-    .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
-  phoneNumber: schemaHelper.phoneNumber({ isValidPhoneNumber }),
+
+  phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
   country: schemaHelper.objectOrNull({
     message: { required_error: 'Country is required!' },
   }),
-  address: zod.string().min(1, { message: 'Address is required!' }),
-  company: zod.string().min(1, { message: 'Company is required!' }),
-  city: zod.string().min(1, { message: 'City is required!' }),
-  role: zod.string().min(1, { message: 'Role is required!' }),
-
+  location: zod.string().optional(),
+  agency: zod.string().optional(),
+  // city: zod.string().optional(),
+  type: zod.string().optional(),
+  job: zod.string().optional(),
   // Not required
-  status: zod.string(),
-  isVerified: zod.boolean(),
+  status: zod.string().optional(),
+  reset_pwd: zod.boolean(),
 });
 
 // ----------------------------------------------------------------------
-
+// Composant ajusté
 export function UserNewEditForm({ currentUser }) {
   const router = useRouter();
-
   const password = useBoolean();
+
   const defaultValues = useMemo(
     () => ({
-      status: currentUser?.status || '',
-      avatarUrl: currentUser?.avatarUrl || null,
-      isVerified: currentUser?.isVerified || true,
-      name: currentUser?.name || '',
+      // On n'utilise plus de champ username côté UI car le backend utilisera l'email pour username
       email: currentUser?.email || '',
-      phoneNumber: currentUser?.phoneNumber || '',
+
+      phone: currentUser?.phone || '',
       country: currentUser?.country || '',
-      password: currentUser?.password || '',
-      city: currentUser?.city || '',
-      address: currentUser?.address || '',
-      company: currentUser?.company || '',
-      role: currentUser?.role || '',
+
+      // city: currentUser?.city || '',
+      location: currentUser?.location || '',
+      agency: currentUser?.agency || '',
+      type: currentUser?.type || '',
+      job: currentUser?.job || '',
+      picture: currentUser?.picture || null,
+      reset_pwd: currentUser?.reset_pwd ?? true,
+      status: currentUser?.status || '',
     }),
     [currentUser]
   );
@@ -101,12 +98,36 @@ export function UserNewEditForm({ currentUser }) {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
+      // Petite pause pour simuler le délai
       await new Promise((resolve) => setTimeout(resolve, 500));
-      const response = await axios.post(API.createUser(), data, {
+
+      // Créer un FormData pour gérer le multipart/form-data
+      const formData = new FormData();
+
+      // Si le champ picture est renseigné et de type File, on l'ajoute
+      if (data.picture && data.picture instanceof File) {
+        formData.append('picture', data.picture);
+      }
+      // Ajouter les autres champs
+      formData.append('email', data.email);
+
+      // Pour le username, on force l'utilisation de l'email (évite les conflits d'unicité)
+      formData.append('username', data.email);
+      formData.append('phone', data.phone);
+      formData.append('country', data.country);
+      // formData.append('city', data.city);
+      formData.append('location', data.location || '');
+      formData.append('agency', data.agency || '');
+      formData.append('type', data.type || '');
+      formData.append('job', data.job || '');
+      formData.append('reset_pwd', data.reset_pwd);
+
+      const response = await axios.post(API.createUser(), formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data',
         },
       });
+
       reset();
       toast.success(currentUser ? 'Mis à jour effectué!' : "Création d'un utilisateur reussie !");
       router.push(paths.dashboard.user.list);
@@ -133,10 +154,9 @@ export function UserNewEditForm({ currentUser }) {
                 {values.status}
               </Label>
             )}
-
             <Box sx={{ mb: 5 }}>
               <Field.UploadAvatar
-                name="avatarUrl"
+                name="picture"
                 maxSize={3145728}
                 helperText={
                   <Typography
@@ -194,12 +214,12 @@ export function UserNewEditForm({ currentUser }) {
             )}
 
             <Field.Switch
-              name="isVerified"
+              name="reset_pwd"
               labelPlacement="start"
               label={
                 <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                    Verification du mail
-                  </Typography>
+                  Vérification du mail
+                </Typography>
               }
               sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
             />
@@ -225,10 +245,11 @@ export function UserNewEditForm({ currentUser }) {
                 sm: 'repeat(2, 1fr)',
               }}
             >
-              <Field.Text name="name" label="Nom Complet" />
+              {/* On a retiré le champ username du formulaire affiché */}
+
               <Field.Text name="email" label="Adresse Mail" />
-              <Field.Phone name="phoneNumber" label="Numéro de Téléphone" />
-              <Field.Text
+              <Field.Phone name="phone" label="Numéro de Téléphone" />
+              {/* <Field.Text
                 name="password"
                 label="Password"
                 placeholder="6+ characters"
@@ -245,24 +266,22 @@ export function UserNewEditForm({ currentUser }) {
                     </InputAdornment>
                   ),
                 }}
-              />
-
+              /> */}
               <Field.CountrySelect
                 fullWidth
                 name="country"
                 label="Country"
-                placeholder="Selectionnez un pays "
+                placeholder="Selectionnez un pays"
               />
-
-              <Field.Text name="city" label="Ville" />
-              <Field.Text name="address" label="Addresse" />
-              <Field.Text name="company" label="Company" />
-
-              <Field.Select name="role" label="Role" inputlabelprops={{ shrink: true }}>
-                <MenuItem value="Admin">Administrateur</MenuItem>
+              {/* <Field.Text name="city" label="Ville" /> */}
+              <Field.Text name="location" label="Addresse" />
+              <Field.Text name="agency" label="Company" />
+              <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
+                <MenuItem value="Admin">Admin</MenuItem>
                 <MenuItem value="user">Client</MenuItem>
                 <MenuItem value="superviseur">Superviseur</MenuItem>
               </Field.Select>
+              <Field.Text name="job" label="Poste" />
             </Box>
 
             <Stack alignItems="flex-end" sx={{ mt: 3 }}>

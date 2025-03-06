@@ -5,7 +5,7 @@
 import API from 'src/utils/api';
 import axios, { endpoints } from 'src/utils/axios';
 
-import { STORAGE_KEY } from './constant';
+import { STORAGE_KEY , STORAGE_KEY_REFRESH_TOKEN } from './constant';
 import { setSession } from './utils';
 
 /** **************************************
@@ -16,14 +16,18 @@ export const signInWithPassword = async ({ email, password }) => {
     const params = { email, password };
 
     const res = await axios.post(API.login(), params);
+    // console.log("reponse du backend lors de la connexion", res)
+    // console.log("le token recupere depuis le backend",res.data.access)
+    const  access_token  = res.data.access;
+    const refresh_token = res.data.refresh;
 
-    const { access_token } = res.data;
+    console.log('le refresh token recupere depuis le backend',refresh_token)
 
     if (!access_token) {
       throw new Error('Access token not found in response');
     }
 
-    setSession(access_token);
+    setSession(access_token, refresh_token);
   } catch (error) {
     // Affiche toute l'erreur pour examiner sa structure complète
     console.error('Error during sign in:', error);
@@ -78,9 +82,25 @@ export const signUp = async ({ email, password, firstName, lastName }) => {
  *************************************** */
 export const signOut = async () => {
   try {
-    await setSession(null);
+    const refresh_token = sessionStorage.getItem(STORAGE_KEY_REFRESH_TOKEN);
+    console.log(sessionStorage.getItem(STORAGE_KEY_REFRESH_TOKEN));
+
+
+    if (!refresh_token) {
+      console.warn("No refresh token found. User might already be logged out.");
+      return;
+    }
+
+    // Déconnexion en envoyant uniquement le refresh token
+    await axios.post(API.logout(), { refresh: refresh_token });
+
+    // Supprime les tokens côté client
+    sessionStorage.removeItem(STORAGE_KEY);  // Supprime le token d'accès
+    sessionStorage.removeItem(STORAGE_KEY_REFRESH_TOKEN); // Supprime le refresh token
+
   } catch (error) {
-    console.error('Error during sign out:', error);
+    console.error("Error during sign out:", error);
     throw error;
   }
 };
+

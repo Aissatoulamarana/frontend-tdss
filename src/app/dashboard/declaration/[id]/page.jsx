@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from 'src/utils/axios';
 import { CONFIG } from 'src/config-global';
 
 import API from 'src/utils/api';
@@ -12,7 +12,7 @@ export const metadata = { title: `Déclaration details | Dashboard - ${CONFIG.ap
 
 
 export default async function Page({ params }) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     // Récupérer les détails de la déclaration via l'API backend

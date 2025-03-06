@@ -65,14 +65,14 @@ export function DeclarationDetails({ declaration }) {
               {currentStatus}
             </Label>
 
-            <Typography variant="h6"> {declaration?.declaration_number}</Typography>
+            <Typography variant="h6"> {declaration?.reference}</Typography>
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Numero de la declaration
               <br />
-              {declaration?.declaration_number}
+              {declaration?.reference}
             </Typography>
           </Stack>
 
@@ -80,7 +80,7 @@ export function DeclarationDetails({ declaration }) {
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Date de creation
             </Typography>
-            {fDate(declaration?.create_date)}
+            {fDate(declaration?.created_on)}
           </Stack>
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />

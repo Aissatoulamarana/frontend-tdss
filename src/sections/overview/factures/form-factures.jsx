@@ -1,11 +1,13 @@
+'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Stack, Button, MenuItem, TextField, Typography } from '@mui/material';
-import axios from 'axios';
-import React, {useEffect} from 'react';
+import axios from 'src/utils/axios';
+import React, { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 
 import API from 'src/utils/api';
+
 
 import { Form, Field } from 'src/components/hook-form';
 
@@ -18,13 +20,15 @@ const NewPayeurSchema = z.object({
   pays: z.string().min(1, { message: 'Selectionnez un pays' }),
   devise: z.string().min(1, { message: 'La devise est obligatoire' }),
   numero_compte: z.string().min(1, { message: 'Le numéro de compte est obligatoire' }),
-  
-  
+
+
 });
 
 
 
-export function PayeurForm({id}) {
+export function PayeurForm({ id }) {
+  const [devises, setDevises] = useState([]);
+
   // Create a single form instance
   const methods = useForm({
     mode: 'all',
@@ -34,7 +38,7 @@ export function PayeurForm({id}) {
       prenom: '',
       email: '',
       telephone: '',
-      devise: 'USD',
+      devise: '',
       numero_compte: '',
       pays: '',
       facture_id: id || '', // Initialise avec id
@@ -46,7 +50,7 @@ export function PayeurForm({id}) {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    setValue, 
+    setValue,
     control,
   } = methods;
 
@@ -62,17 +66,17 @@ export function PayeurForm({id}) {
   // Use useFieldArray with the same control instance
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
- 
+
   const onSubmit = handleSubmit(async (data) => {
     data.facture_id = id; // ✅ Forcer l'ajout si besoin
-    
+
     console.log("Données envoyées:", data); // Vérification
-  
+
     if (!data.facture_id) {
       console.error("Erreur : facture_id est manquant !");
       return;
     }
-  
+
     try {
       const response = await axios.post(API.CreatePayeur(), data, {
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +87,22 @@ export function PayeurForm({id}) {
       console.error("Erreur lors de l'envoi au backend:", error);
     }
   });
-  
+
+  useEffect(() => {
+    axios
+      .get(API.listDevises())
+      .then((response) => {
+        console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
+        setDevises(response.data.results || response.data); // Adapter si c'est sous `results`
+      })
+      .catch((error) => {
+        console.error("Erreur API :", error);
+        setError("Impossible de récupérer les catégories");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
 
   return (
@@ -92,72 +111,85 @@ export function PayeurForm({id}) {
         Information du Payeur
       </Typography>
       {/* Wrap your form with FormProvider */}
-   
-         <Form methods={methods} onSubmit={onSubmit}>
-          <Stack spacing={3}>
-            <TextField
-              label="Nom"
-              {...register('nom')}
-              error={Boolean(errors.nom)}
-              helperText={errors.nom?.message}
-              fullWidth
-            />
-            <TextField
-              label="Prénom"
-              {...register('prenom')}
-              error={Boolean(errors.prenom)}
-              helperText={errors.prenom?.message}
-              fullWidth
-            />
-            <TextField
-              label="Email"
-              {...register('email')}
-              error={Boolean(errors.email)}
-              helperText={errors.email?.message}
-              fullWidth
-            />
-            <TextField
-              label="Téléphone"
-              {...register('telephone')}
-              error={Boolean(errors.telephone)}
-              helperText={errors.telephone?.message}
-              fullWidth
-            />
-            <TextField
-              select
-              label="Devise"
-              {...register('devise')}
-              error={Boolean(errors.devise)}
-              helperText={errors.devise?.message}
-              fullWidth
-            >
-              <MenuItem value="USD">USD (Dollar)</MenuItem>
-              <MenuItem value="GNF">GNF (Franc Guinéen)</MenuItem>
-            </TextField>
-            <TextField
-              label="Numéro de Compte"
-              {...register('numero_compte')}
-              error={Boolean(errors.numero_compte)}
-              helperText={errors.numero_compte?.message}
-              fullWidth
-            />
-           
-              <Field.CountrySelect
-                fullWidth
-                size="small"
-                name="pays"
-                label="Nationalité"
-                placeholder="Selectionnez un pays"
-                sx={{ width: '100%' }}
-                inputlabelprops={{ shrink: true }}
-              />
-           
-            <Button type="submit" variant="contained" disabled={isSubmitting}>
-              Enregistrer
-            </Button>
-          </Stack>
-        </Form>
-      
+
+      <Form methods={methods} onSubmit={onSubmit}>
+        <Stack spacing={3}>
+          <TextField
+            label="Nom"
+            {...register('nom')}
+            error={Boolean(errors.nom)}
+            helperText={errors.nom?.message}
+            fullWidth
+          />
+          <TextField
+            label="Prénom"
+            {...register('prenom')}
+            error={Boolean(errors.prenom)}
+            helperText={errors.prenom?.message}
+            fullWidth
+          />
+          <TextField
+            label="Email"
+            {...register('email')}
+            error={Boolean(errors.email)}
+            helperText={errors.email?.message}
+            fullWidth
+          />
+          <TextField
+            label="Téléphone"
+            {...register('telephone')}
+            error={Boolean(errors.telephone)}
+            helperText={errors.telephone?.message}
+            fullWidth
+          />
+          <Field.Select
+            name="devise"
+            label="Devise"
+            placeholder="Sélectionnez la devise avec la quelle vous effectuez le paiement "
+          >
+            {devises.map((devise) => (
+              <MenuItem key={devise.id} value={String(devise.id)}>
+                {devise.name}
+              </MenuItem>
+            ))}
+          </Field.Select>
+          <TextField
+            select
+            label="Moyen de Paiement"
+            {...register('numero_compte')}
+            error={Boolean(errors.numero_compte)}
+            helperText={errors.numero_compte?.message}
+            fullWidth
+          >
+            <MenuItem value="Virement">Virement</MenuItem>
+            <MenuItem value="Cheque">Cheque</MenuItem>
+            <MenuItem value="Espèces">Espèces</MenuItem>
+          </TextField>
+
+          <TextField
+            label="Reference"
+            {...register('reference')}
+            error={Boolean(errors.reference)}
+            helperText={errors.reference?.message}
+            fullWidth
+          />
+
+          <Field.CountrySelect
+            fullWidth
+            size="small"
+            name="pays"
+            label="Nationalité"
+            placeholder="Selectionnez un pays"
+            sx={{ width: '100%' }}
+            inputlabelprops={{ shrink: true }}
+          />
+
+          <Button type="submit" variant="contained" disabled={isSubmitting}>
+            Enregistrer
+          </Button>
+        </Stack>
+      </Form>
+
     </Box>
   );
 }

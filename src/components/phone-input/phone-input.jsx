@@ -36,7 +36,7 @@ export const PhoneInput = forwardRef(
 
     const hasLabel = !!label;
 
-    const cleanValue = value.replace(/[\s-]+/g, '');
+    const cleanValue = value?.replace(/[\s-]+/g, '');
 
     const handleClear = useCallback(() => {
       onChange('');
@@ -65,15 +65,15 @@ export const PhoneInput = forwardRef(
               pl: variant === 'standard' ? 0 : 1.5,
               ...(variant === 'standard' &&
                 hasLabel && {
-                  mt: size === 'small' ? '16px' : '20px',
-                }),
+                mt: size === 'small' ? '16px' : '20px',
+              }),
               ...((variant === 'filled' || variant === 'outlined') && {
                 mt: size === 'small' ? '8px' : '16px',
               }),
               ...(variant === 'filled' &&
                 hasLabel && {
-                  mt: size === 'small' ? '21px' : '25px',
-                }),
+                mt: size === 'small' ? '21px' : '25px',
+              }),
             }}
           />
         )}

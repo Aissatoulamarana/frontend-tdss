@@ -23,9 +23,9 @@ const ICONS = {
   kanban: icon('ic-kanban'),
   folder: icon('ic-folder'),
   penalite: icon('ic-course'),
-  facture: icon('ic-banking'),
+  facture: icon('ic-invoice'),
   booking: icon('ic-booking'),
-  paiement: icon('ic-invoice'),
+  paiement: icon('ic-banking'),
   product: icon('ic-product'),
   calendar: icon('ic-calendar'),
   disabled: icon('ic-disabled'),
@@ -35,6 +35,7 @@ const ICONS = {
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
   parameter: icon('ic-parameter'),
+  company: icon('ic-company'),
 };
 
 // ----------------------------------------------------------------------
@@ -116,6 +117,17 @@ export const navData = [
         //   { title: 'Ajouter', path: paths.dashboard.client.root },
         // ],
       },
+      {
+        title: 'Agence',
+        path: paths.dashboard.agence.new,
+        icon: ICONS.company,
+      },
+
+      {
+        title: 'Permissions',
+        path: paths.dashboard.permission.list,
+        icon: ICONS.company,
+      }
     ],
   },
 ];

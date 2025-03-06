@@ -16,7 +16,7 @@ export const CONFIG = {
    */
   auth: {
     method: 'jwt',
-    skip: true,
+    skip: false,
     redirectPath: paths.dashboard.root,
   },
   /**

@@ -35,7 +35,7 @@ export function DeclarationTableFiltersResult({ filters, totalResults, onResetPa
 
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
-      <FiltersBlock label="Service:" isShow={!!filters.state.fonction.length}>
+      <FiltersBlock label="type:" isShow={!!filters.state.fonction.length}>
         {filters.state.fonction.map((item) => (
           <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveService(item)} />
         ))}

@@ -86,17 +86,18 @@ export function RHFMultiSelect({
             multiple
             displayEmpty={!!placeholder}
             label={label}
+            value={Array.isArray(field?.value) ? field.value : []} // ✅ Assurer que field.value est un tableau
             renderValue={(selected) => {
-              const selectedItems = options.filter((item) => selected.includes(item.value));
+              const selectedItems = options?.filter((item) => selected.includes(item.value));
 
-              if (!selectedItems.length && placeholder) {
+              if (!selectedItems?.length && placeholder) {
                 return <Box sx={{ color: 'text.disabled' }}>{placeholder}</Box>;
               }
 
               if (chip) {
                 return (
                   <Box sx={{ gap: 0.5, display: 'flex', flexWrap: 'wrap' }}>
-                    {selectedItems.map((item) => (
+                    {selectedItems?.map((item) => (
                       <Chip
                         key={item.value}
                         size="small"
@@ -109,12 +110,12 @@ export function RHFMultiSelect({
                 );
               }
 
-              return selectedItems.map((item) => item.label).join(', ');
+              return selectedItems?.map((item) => item.label).join(', ');
             }}
             {...slotProps?.select}
             inputProps={{ id: labelId, ...slotProps?.select?.inputProps }}
           >
-            {options.map((option) => (
+            {options?.map((option) => (
               <MenuItem key={option.value} value={option.value}>
                 {checkbox && (
                   <Checkbox

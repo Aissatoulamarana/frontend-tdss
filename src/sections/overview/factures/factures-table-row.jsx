@@ -211,11 +211,11 @@ export function FactureTableRow({
           <Button
             variant="contained"
             color="success"
-            disabled={!selectedBanque}
+            // disabled={!selectedBanque}
             onClick={() => {
               setOpenFirstDialog(false); // Ferme la première boîte de dialogue
               setOpenSecondDialog(true); // Ouvre la deuxième boîte de dialogue
-              console.log('ID de la banque sélectionnée:', selectedBanque.value);
+              console.log('ID de la banque sélectionnée:', selectedBanque?.value);
             }}
           >
             Suivant

@@ -87,6 +87,14 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/fonction`,
       new: `${ROOTS.DASHBOARD}/fonction/new`,
       list: `${ROOTS.DASHBOARD}/fonction/list`,
+      edit: (id) => `${ROOTS.DASHBOARD}/fonction/${id}/edit`,
+    },
+
+    permission: {
+      root: `${ROOTS.DASHBOARD}/permission`,
+      new: `${ROOTS.DASHBOARD}/permission/new`,
+      list: `${ROOTS.DASHBOARD}/permission/list`,
+     
     },
 
     group: {
@@ -94,13 +102,17 @@ export const paths = {
       five: `${ROOTS.DASHBOARD}/group/five`,
       six: `${ROOTS.DASHBOARD}/group/six`,
     },
+    agence :{
+      root: `${ROOTS.DASHBOARD}/agence`,
+      new: `${ROOTS.DASHBOARD}/agence/new`,
+    },
 
     client: {
       root: `${ROOTS.DASHBOARD}/client`,
       bank: `${ROOTS.DASHBOARD}/client/bank`,
       new_bank: `${ROOTS.DASHBOARD}/client/bank/new`,
       business: `${ROOTS.DASHBOARD}/client/business`,
-      embassy: `${ROOTS.DASHBOARD}/client/embassy`,
+      embassy: `${ROOTS.DASHBOARD}/client/cabinet/new`,
       list: `${ROOTS.DASHBOARD}/user/list`,
     },
   },
