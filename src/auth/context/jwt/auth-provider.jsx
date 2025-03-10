@@ -35,14 +35,23 @@ export function AuthProvider({ children }) {
 
         const user = res.data;
         console.log('User récupéré :', user);
+
+        // Sauvegarder l'utilisateur dans le localStorage
+        localStorage.setItem('user', JSON.stringify(user));
         setState({ user: { ...user, access_token }, loading: false });
 
       } else {
         setState({ user: null, loading: false });
+
+        // Supprimer l'utilisateur du localStorage si la session est invalide
+        localStorage.removeItem('user');
       }
     } catch (error) {
       console.error(error);
       setState({ user: null, loading: false });
+
+      // Supprimer l'utilisateur du localStorage en cas d'erreur
+      localStorage.removeItem('user');
     }
   }, [setState]);
 

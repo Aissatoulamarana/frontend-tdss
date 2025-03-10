@@ -1,4 +1,5 @@
-'use client';
+"use client";
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
@@ -83,7 +84,7 @@ export function JobNewEditForm({ currentJob }) {
       let response;
       if (currentJob) {
         // Si un job existe, mettre à jour avec PATCH
-        const id = currentJob.id;
+        const {id} = currentJob;
         response = await axios.patch(API.editFonction(id), data, {
           headers: { 'Content-Type': 'application/json' },
         });

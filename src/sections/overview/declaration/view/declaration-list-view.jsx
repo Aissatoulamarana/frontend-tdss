@@ -15,7 +15,6 @@ import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 
@@ -630,8 +629,8 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   // Filtrage par numéro de déclaration ou par type via le mot-clé
   if (name) {
     inputData = inputData.filter((declaration) =>
-      declaration.declaration_number.toLowerCase().includes(name.toLowerCase()) ||
-      declaration.type.toLowerCase().includes(name.toLowerCase())
+      declaration.reference.toLowerCase().includes(name.toLowerCase()) ||
+      declaration.title.toLowerCase().includes(name.toLowerCase())
     );
   }
 
@@ -643,7 +642,7 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   // Filtrage par fonction (en s'assurant que declaration.items existe)
   if (fonction.length) {
     inputData = inputData.filter((declaration) =>
-      (declaration.items || []).some((filterItem) => fonction.includes(filterItem.fonction))
+      (declaration.employees || []).some((filterItem) => fonction.includes(filterItem.fonction))
     );
   }
 

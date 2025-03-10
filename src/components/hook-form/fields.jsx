@@ -5,6 +5,7 @@ import { RHFSelect, RHFMultiSelect } from './rhf-select';
 import { RHFSwitch } from './rhf-switch';
 import { RHFTextField } from './rhf-text-field';
 import { RHFUpload, RHFUploadBox, RHFUploadAvatar } from './rhf-upload';
+import { RHFCode } from './rhf-code';
 // ----------------------------------------------------------------------
 
 export const Field = {
@@ -19,4 +20,5 @@ export const Field = {
   Switch: RHFSwitch,
   Phone: RHFPhoneInput,
   MultiSelect: RHFMultiSelect,
+  Code: RHFCode,
 };

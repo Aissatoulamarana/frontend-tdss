@@ -5,7 +5,7 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Stack from '@mui/material/Stack';
-
+import Avatar from '@mui/material/Avatar';
 import { fDate } from 'src/utils/format-time';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
@@ -24,19 +24,19 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
         </IconButton>
 
         <Stack sx={{ p: 3, pb: 2 }}>
-          {/* <Avatar
-            alt={job.company.name}
-            src={job.company.logo}
+          <Avatar
+            alt={job.name}
+            src={job.name}
             variant="rounded"
             sx={{ width: 48, height: 48, mb: 2 }}
-          /> */}
+          />
 
           <ListItemText
             sx={{ mb: 1 }}
             primary={`
                 ${job.name}
             `}
-            secondary={`Posted date: ${fDate(job.created_at)}`}
+            secondary={`Date d'ajout: ${fDate(job.created_at)}`}
             primaryTypographyProps={{ typography: 'subtitle1' }}
             secondaryTypographyProps={{
               mt: 1,

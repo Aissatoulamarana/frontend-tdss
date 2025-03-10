@@ -1,11 +1,12 @@
 import { CONFIG } from 'src/config-global';
 
-import { Client } from 'src/sections/administration/client/client';
+
+import { ClientListView } from 'src/sections/administration/client/view';
 
 // ----------------------------------------------------------------------
 
-export const metadata = { title: `Kanban | Dashboard - ${CONFIG.appName}` };
+export const metadata = { title: `Profil | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
-  return <Client />;
+  return <ClientListView />;
 }

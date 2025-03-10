@@ -281,7 +281,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
         {fields.map((item, index) => (
           <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
-              {typedec == 'Renouvellement' || typedec == 'Duplicata' && (
+              {typedec === 'Renouvellement' || typedec === 'Duplicata' && (
                 <Field.Text
                   size="small"
                   name={`employees[${index}].identifier`}

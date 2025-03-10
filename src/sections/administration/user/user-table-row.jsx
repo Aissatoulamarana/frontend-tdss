@@ -61,21 +61,21 @@ export function UserTableRow({
 
         <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.phone}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.agency}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.profile_name}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type_name}</TableCell>
 
         <TableCell>
           <Label
             variant="soft"
             color={
-              (row.statut === 'active' && 'success') ||
-              (row.statut === 'pending' && 'warning') ||
-              (row.statut === 'banned' && 'error') ||
+              (row.status === 'active' && 'success') ||
+              (row.status === 'pending' && 'warning') ||
+              (row.status === 'banned' && 'error') ||
               'default'
             }
           >
-            {row.statut}
+            {row.status}
           </Label>
         </TableCell>
 
@@ -132,7 +132,7 @@ export function UserTableRow({
               popover.onClose();
             }}
           >
-            <Iconify icon="solar:pen-bold" />
+            <Iconify icon="solar:eye-bold" />
             Voir
           </MenuItem>
           <MenuItem

@@ -24,7 +24,7 @@ export function FormReturnLink({ sx, href, children, label, icon, ...other }) {
       {...other}
     >
       {icon || <Iconify width={16} icon="eva:arrow-ios-back-fill" />}
-      {label || 'Return to sign in'}
+      {label || 'Retour à la page de connexion'}
     </Link>
   );
 }

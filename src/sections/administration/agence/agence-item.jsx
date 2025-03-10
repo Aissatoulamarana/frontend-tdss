@@ -8,7 +8,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
-import Avatar from '@mui/material/Avatar';
+// import Avatar from '@mui/material/Avatar';
 
 // ----------------------------------------------------------------------
 

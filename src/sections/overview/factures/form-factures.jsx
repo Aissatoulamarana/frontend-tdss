@@ -1,4 +1,5 @@
 'use client';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Stack, Button, MenuItem, TextField, Typography } from '@mui/material';
 import axios from 'src/utils/axios';
@@ -28,6 +29,7 @@ const NewPayeurSchema = z.object({
 
 export function PayeurForm({ id }) {
   const [devises, setDevises] = useState([]);
+  const [loading, setLoading] = useState();
 
   // Create a single form instance
   const methods = useForm({

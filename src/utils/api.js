@@ -50,6 +50,13 @@ const API = {
 
   listProfilesTypes: () => `${BASE_URL}/api/profile_type/`,
 
+  createProfile: () => `${BASE_URL}/add-profile/`,
+  listProfiles: () => `${BASE_URL}/api/profiles/`,
+  listClients: () => `${BASE_URL}/api/clients/`,
+
+  listCategories: () => `${BASE_URL}/api/job-categories/`,
+  
+
 };
 
 export default API;

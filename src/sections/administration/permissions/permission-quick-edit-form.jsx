@@ -1,21 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { toast } from 'sonner';
-import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { z as zod } from 'zod';
 
-import { Form, Field, schemaHelper } from 'src/components/hook-form';
+import { Form, Field } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 // Schéma de validation

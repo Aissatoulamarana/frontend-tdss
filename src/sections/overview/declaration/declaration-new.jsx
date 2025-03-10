@@ -16,7 +16,6 @@ import API from 'src/utils/api';
 
 import { Form } from 'src/components/hook-form';
 
-import { STORAGE_KEY } from 'src/auth/context/jwt/constant';
 
 import { toast } from 'sonner';
 import { DeclarationNewEditDetails } from './declaration-edit-detail';
@@ -110,7 +109,7 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (currentInvoice) {
-        const id = currentInvoice.id;
+        const {id} = currentInvoice;
         // Mettre à jour une déclaration existante
         response = await axios.patch(API.updateDeclaration(id), data, {
           headers: { 'Content-Type': 'application/json' },

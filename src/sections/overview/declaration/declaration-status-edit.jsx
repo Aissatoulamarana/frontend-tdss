@@ -1,15 +1,33 @@
+'use client';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import { useFormContext } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 
 import { Field } from 'src/components/hook-form';
+import { fetchOptions, entreprises } from 'src/utils/options';
+
+import { useMockedUser } from 'src/auth/hooks';
+
 
 // ----------------------------------------------------------------------
 
 export function DeclarationEditStatusDate({ type }) {
   const { watch } = useFormContext();
+  const [loaded, setLoaded] = useState(false);
+
+  const user = useMockedUser()
 
   const values = watch();
+
+  useEffect(() => {
+    // Récupérer les options lors du chargement du composant
+    fetchOptions().then(() => {
+      setLoaded(true); // Marquer comme chargé une fois les données récupérées
+
+    });
+  }, []);
+
 
   return (
     <Stack
@@ -44,6 +62,20 @@ export function DeclarationEditStatusDate({ type }) {
         label="Type de la declaration"
         value={type}
       />
+      {user.type_code === 'ENTREPRISE' &&
+        <Field.Select
+          fullWidth
+          name='profile'
+          label='Entreprise'
+          placeholder="veuillez selectionnez l'entreprise dont vous déclarez"
+        >
+          {entreprises.map((entreprise) => (
+            <MenuItem key={entreprise.uuid} value={String(entreprise.uuid)} sx={{ textTransform: 'capitalize' }}>
+              {entreprise.name}
+            </MenuItem>
+          ))}
+        </Field.Select>
+      }
     </Stack>
   );
 }

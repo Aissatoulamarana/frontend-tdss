@@ -5,10 +5,10 @@ import { useCallback } from 'react';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 
-import { JobItem } from './job-item';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
-import toast from 'sonner';
+import { toast } from 'src/components/snackbar';
+import { JobItem } from './job-item';
 
 // ----------------------------------------------------------------------
 

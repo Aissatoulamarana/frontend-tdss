@@ -29,12 +29,12 @@ import { useAuthContext } from '../../hooks';
 export const SignInSchema = zod.object({
   email: zod
     .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
+    .min(1, { message: "l'email est obligatoire" })
+    .email({ message: "l'email doit être un email valide!" }),
   password: zod
     .string()
-    .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
+    .min(1, { message: 'Mot de passe obligatoire!' })
+    .min(8, { message: 'le mot de passe doit avoir au moins 8 characters!' }),
 });
 
 // ----------------------------------------------------------------------
@@ -96,18 +96,18 @@ export function JwtSignInView() {
       <Box gap={1.5} display="flex" flexDirection="column">
         <Link
           component={RouterLink}
-          href={paths.auth.jwt.signUp}
+          href={paths.auth.jwt.resetPassword}
           variant="body2"
           color="inherit"
           sx={{ alignSelf: 'flex-end' }}
         >
-          Forgot password?
+          Mot de passe oublié?
         </Link>
 
         <Field.Text
           name="password"
           label="Mot de passe"
-          placeholder="6+ characters"
+          placeholder="8+ characters"
           {...register('password')}
           error={!!errors.password}
           helperText={errors.password?.message}
@@ -134,7 +134,7 @@ export function JwtSignInView() {
         loading={isSubmitting}
         loadingIndicator="Sign in..."
       >
-        Sign in
+        Connectez-vous
       </LoadingButton>
     </Box>
   );
@@ -142,22 +142,22 @@ export function JwtSignInView() {
   return (
     <>
       <FormHead
-        title="Sign in to your account"
+        title="Connexion"
         description={
           <>
-            {`Don’t have an account? `}
-            <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">
+            {`Vous pouvez pas acceder a cette plateforme si vous n'avez pas de compte ? `}
+            {/* <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">
               Get started
-            </Link>
+            </Link> */}
           </>
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />
 
       <Alert severity="info" sx={{ mb: 3 }}>
-        Use <strong>{defaultValues.email}</strong>
-        {' with password '}
-        <strong>{defaultValues.password}</strong>
+        Utiliser  votre mail
+        {' et votre mot de passe pour vous connectez '}
+
       </Alert>
 
       {!!errorMsg && (

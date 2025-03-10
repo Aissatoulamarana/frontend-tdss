@@ -15,9 +15,9 @@ export function Section({
   method,
   layoutQuery,
   methods,
-  title = 'Manage the job',
+  title = '',
   imgUrl = `${CONFIG.assetsDir}/assets/illustrations/illustration-dashboard.webp`,
-  subtitle = 'More effectively with optimized workflows.',
+  subtitle = '',
   ...other
 }) {
   const theme = useTheme();
@@ -64,12 +64,12 @@ export function Section({
 
       <Box
         component="img"
-        alt="Dashboard illustration"
-        src={imgUrl}
-        sx={{ width: 1, aspectRatio: '4/3', objectFit: 'cover' }}
+      // alt="Dashboard illustration"
+      // src={imgUrl}
+      // sx={{ width: 1, aspectRatio: '4/3', objectFit: 'cover' }}
       />
 
-      {!!methods?.length && method && (
+      {/* {!!methods?.length && method && (
         <Box component="ul" gap={2} display="flex">
           {methods.map((option) => {
             const selected = method === option.label.toLowerCase();
@@ -105,7 +105,7 @@ export function Section({
             );
           })}
         </Box>
-      )}
+      )} */}
     </Box>
   );
 }

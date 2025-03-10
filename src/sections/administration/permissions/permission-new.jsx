@@ -1,14 +1,13 @@
 'use client';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import axios from 'src/utils/axios';
 import { useMemo, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -103,7 +102,7 @@ export function PermissionNew({ currentPermission }) {
             };
 
             if (currentPermission) {
-                const id = currentPermission.id;
+                const {id} = currentPermission;
                 response = await axios.patch(API.editPermission(id), formattedData, {
                     headers: { 'Content-Type': 'application/json' },
                 });

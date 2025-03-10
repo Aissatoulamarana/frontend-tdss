@@ -1,17 +1,15 @@
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { useCallback } from 'react';
 
-import { usePopover, CustomPopover } from 'src/components/custom-popover';
+import { usePopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
@@ -39,8 +37,7 @@ export function PermissionTableToolbar({ filters, options, onResetPage }) {
     );
 
     return (
-        <>
-            <Stack
+        <Stack
                 spacing={2}
                 alignItems={{ xs: 'flex-end', md: 'center' }}
                 direction={{ xs: 'column', md: 'row' }}
@@ -88,8 +85,5 @@ export function PermissionTableToolbar({ filters, options, onResetPage }) {
 
                 </Stack>
             </Stack>
-
-
-        </>
     );
 }

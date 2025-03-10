@@ -17,11 +17,10 @@ import { ProgressBar } from 'src/components/progress-bar';
 import { SettingsDrawer, defaultSettings, SettingsProvider } from 'src/components/settings';
 import { Snackbar } from 'src/components/snackbar';
 
-import { AuthProvider as JwtAuthProvider } from 'src/auth/context/jwt';
+import { AuthProvider } from 'src/auth/context/jwt';
 // ----------------------------------------------------------------------
 
-const AuthProvider =
-  (CONFIG.auth.method === 'auth0') || JwtAuthProvider;
+
 
 
 export const viewport = {

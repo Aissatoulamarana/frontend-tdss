@@ -104,3 +104,10 @@ export const signOut = async () => {
   }
 };
 
+export const resetPassword = async () => {
+  await axios?.post(API?.resetPassword)
+};
+
+export const updatePassword = async () => {
+  await axios?.post(API?.resetPassword)
+}

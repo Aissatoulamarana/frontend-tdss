@@ -14,7 +14,7 @@ import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 
@@ -285,7 +285,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ services: INVOICE_SERVICE_OPTIONS.map((option) => option.name) }}
+            options={{ services: dataFiltered?.map((option) => option.name) }}
           />
 
           {canReset && (

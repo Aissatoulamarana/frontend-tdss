@@ -44,6 +44,7 @@ export function DeclarationNewEditStatusDate() {
         label="Type de la declaration"
         value={values.declarationNumber}
       />
+
     </Stack>
   );
 }

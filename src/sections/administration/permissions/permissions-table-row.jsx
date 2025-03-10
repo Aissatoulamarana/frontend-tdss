@@ -1,5 +1,3 @@
-import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
@@ -16,7 +14,6 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
-import { Label } from 'src/components/label';
 
 import { PermissionQuickEditForm } from './permission-quick-edit-form';
 

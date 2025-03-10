@@ -14,7 +14,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -27,6 +27,8 @@ import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
 import { PayeurForm } from './form-factures';
+
+import { fetchOptions, banks } from 'src/utils/options';
 
 // ----------------------------------------------------------------------
 
@@ -48,22 +50,27 @@ export function FactureTableRow({
   const [loading, setLoading] = useState(false); // Etat pour gérer l'affichage du loader pendant le chargement des options de banque
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
   const [openSecondDialog, setOpenSecondDialog] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   const [selectedBanqueLocal, setSelectedBanqueLocal] = useState(null);
 
 
   const handleChangeBanque = (event, newValue) => {
     setSelectedBanqueLocal(newValue);
-    setSelectedBanque(newValue);
+    setSelectedBanque(newValue); // Remonte l'objet complet
   };
+
 
 
   const popover = usePopover();
 
-  const OPTIONS = [
-    { label: 'Dollar ($)', value: 'Dollar' },
-    { label: 'GN (Guinée Franc)', value: 'GN' },
-  ];
+  useEffect(() => {
+    // Récupérer les options lors du chargement du composant
+    fetchOptions().then(() => {
+      setLoaded(true); // Marquer comme chargé une fois les données récupérées
+      console.log(banks);
+    });
+  }, []);
 
   return (
     <>
@@ -93,7 +100,7 @@ export function FactureTableRow({
 
         <TableCell>
           <ListItemText
-            primary={fCurrency(row.montant_usd)}
+            primary={fCurrency(row.amount)}
             secondary={`GNF ${row.montant_gnf}`}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
@@ -180,10 +187,10 @@ export function FactureTableRow({
               Sélectionnez la banque avec laquelle vous voulez payer cette facture
             </Typography>
             <Autocomplete
-              options={Options}
-              getOptionLabel={(option) => option.label}
+              options={banks}
+              getOptionLabel={(bank) => bank.name}
               loading={loading}
-              value={selectedBanque}
+              value={selectedBanque || null}
               onChange={handleChangeBanque}
               renderInput={(params) => (
                 <TextField
@@ -211,7 +218,7 @@ export function FactureTableRow({
           <Button
             variant="contained"
             color="success"
-            // disabled={!selectedBanque}
+            disabled={!selectedBanque}
             onClick={() => {
               setOpenFirstDialog(false); // Ferme la première boîte de dialogue
               setOpenSecondDialog(true); // Ouvre la deuxième boîte de dialogue

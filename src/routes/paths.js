@@ -21,7 +21,9 @@ export const paths = {
     },
     jwt: {
       signIn: `${ROOTS.AUTH}/jwt/sign-in`,
-      signUp: `${ROOTS.AUTH}/jwt/sign-up`,
+      // signUp: `${ROOTS.AUTH}/jwt/sign-up`,
+      resetPassword: `${ROOTS.AUTH}/jwt/reset-password`,
+      updatePassword: `${ROOTS.AUTH}/jwt/update-password`,
     },
     firebase: {
       signIn: `${ROOTS.AUTH}/firebase/sign-in`,
@@ -109,11 +111,9 @@ export const paths = {
 
     client: {
       root: `${ROOTS.DASHBOARD}/client`,
-      bank: `${ROOTS.DASHBOARD}/client/bank`,
-      new_bank: `${ROOTS.DASHBOARD}/client/bank/new`,
-      business: `${ROOTS.DASHBOARD}/client/business`,
-      embassy: `${ROOTS.DASHBOARD}/client/cabinet/new`,
-      list: `${ROOTS.DASHBOARD}/user/list`,
+      new: `${ROOTS.DASHBOARD}/client/new`,
+      
+      
     },
   },
 };
