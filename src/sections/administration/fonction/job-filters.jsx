@@ -214,14 +214,14 @@ export function JobFilters({ open, canReset, onOpen, onClose, filters, options }
       >
         Filters
       </Button>
-
       <Drawer
         anchor="right"
         open={open}
         onClose={onClose}
-        slotProps={{ backdrop: { invisible: true } }}
-        PaperProps={{ sx: { width: 320 } }}
-      >
+        slotProps={{
+          backdrop: { invisible: true },
+          paper: { sx: { width: 320 } }
+        }}>
         {renderHead}
 
         <Scrollbar sx={{ px: 2.5, py: 3 }}>

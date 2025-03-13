@@ -55,12 +55,14 @@ export function CustomTabs({ children, slotProps, sx, ...other }) {
         ...sx,
       }}
       {...other}
-      TabIndicatorProps={{
-        children: (
-          <NoSsr>
-            <span />
-          </NoSsr>
-        ),
+      slotProps={{
+        indicator: {
+          children: (
+            <NoSsr>
+              <span />
+            </NoSsr>
+          ),
+        }
       }}
     >
       {children}

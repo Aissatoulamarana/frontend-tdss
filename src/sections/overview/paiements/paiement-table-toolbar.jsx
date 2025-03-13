@@ -126,12 +126,14 @@ export function PaiementTableToolbar({ filters, options, dateError, onResetPage 
             fullWidth
             onChange={handleFilterName}
             placeholder="rechercher par nom ou par numéro"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
 
@@ -140,7 +142,6 @@ export function PaiementTableToolbar({ filters, options, dateError, onResetPage 
           </IconButton>
         </Stack>
       </Stack>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}

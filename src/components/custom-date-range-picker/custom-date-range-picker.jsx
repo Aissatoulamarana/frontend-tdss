@@ -36,7 +36,7 @@ export function CustomDateRangePicker({
       open={open}
       onClose={onClose}
       maxWidth={isCalendarView ? false : 'xs'}
-      PaperProps={{
+      slotProps={{
         ...PaperProps,
         sx: {
           ...(isCalendarView && { maxWidth: 720 }),

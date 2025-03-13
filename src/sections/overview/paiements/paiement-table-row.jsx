@@ -116,9 +116,10 @@ export function PaiementTableRow({
           <ListItemText
             primary={fDate(row.date_paiement)}
             secondary={fTime(row.date_paiement)}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
-          />
+            slotProps={{
+              primary: { typography: 'body2', noWrap: true },
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
+            }} />
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>
@@ -127,7 +128,6 @@ export function PaiementTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
@@ -177,7 +177,6 @@ export function PaiementTableRow({
            */}
         </MenuList>
       </CustomPopover>
-
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}

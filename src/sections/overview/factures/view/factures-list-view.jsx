@@ -511,7 +511,6 @@ export function FactureListView() {
           />
         </Card>
       </DashboardContent>
-
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
@@ -536,7 +535,6 @@ export function FactureListView() {
           </Button>
         }
       />
-
       <ConfirmDialog
         fullWidth
         open={openFirstDialog}
@@ -560,14 +558,16 @@ export function FactureListView() {
                   placeholder="Taper pour rechercher"
                   variant="outlined"
                   fullWidth
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {loading ? <CircularProgress size={20} /> : null}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loading ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }
                   }}
                 />
               )}
@@ -589,7 +589,6 @@ export function FactureListView() {
           </Button>
         }
       />
-
       <ConfirmDialog
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue

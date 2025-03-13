@@ -34,17 +34,20 @@ export function RHFSelect({
           {...field}
           select
           fullWidth
-          SelectProps={{
-            native,
-            MenuProps: { PaperProps: { sx: { maxHeight: 220, ...slotProps?.paper } } },
-            sx: { textTransform: 'capitalize' },
-          }}
-          InputLabelProps={{ htmlFor: labelId, ...InputLabelProps }}
-          inputProps={{ id: labelId, ...inputProps }}
           error={!!error}
           helperText={error ? error?.message : helperText}
           {...other}
-        >
+          slotProps={{
+            htmlInput: { id: labelId, ...inputProps },
+
+            select: {
+              native,
+              MenuProps: { PaperProps: { sx: { maxHeight: 220, ...slotProps?.paper } } },
+              sx: { textTransform: 'capitalize' },
+            },
+
+            inputLabel: { htmlFor: labelId, ...InputLabelProps }
+          }}>
           {children}
         </TextField>
       )}

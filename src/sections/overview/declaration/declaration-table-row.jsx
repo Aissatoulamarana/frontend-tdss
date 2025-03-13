@@ -81,9 +81,10 @@ export function DeclarationTableRow({
           <ListItemText
             primary={fDate(row.created_on)}
             secondary={fTime(row.created_on)}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
-          />
+            slotProps={{
+              primary: { typography: 'body2', noWrap: true },
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
+            }} />
         </TableCell>
         <TableCell>{fCurrency(row.total_amount)}</TableCell>
         <TableCell>
@@ -106,7 +107,6 @@ export function DeclarationTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
@@ -184,7 +184,6 @@ export function DeclarationTableRow({
           </MenuItem>
         </MenuList>
       </CustomPopover>
-
       {/* Boîte de dialogue de confirmation pour la suppression */}
       <ConfirmDialog
         open={deleteConfirm.value}
@@ -205,6 +204,25 @@ export function DeclarationTableRow({
         }
       />
 
+      {/* Exemple de boîte de dialogue de confirmation pour la soumission */}
+      <ConfirmDialog
+        open={submitConfirm.value}
+        onClose={submitConfirm.onFalse}
+        title="Valider"
+        content="Voulez-vous vraiment valider cette déclaration ?"
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              submitConfirm.onFalse();
+              onSubmitRow();
+            }}
+          >
+            Soumettre
+          </Button>
+        }
+      />
       {/* Exemple de boîte de dialogue de confirmation pour la validation */}
       <ConfirmDialog
         open={validateConfirm.value}
@@ -224,7 +242,6 @@ export function DeclarationTableRow({
           </Button>
         }
       />
-
       {/* Exemple de boîte de dialogue de confirmation pour la facturation */}
       <ConfirmDialog
         open={factureConfirm.value}
@@ -244,7 +261,6 @@ export function DeclarationTableRow({
           </Button>
         }
       />
-
       {/* Dialogue personnalisé pour le rejet avec motif */}
       <ConfirmDialog
         open={openRejetDialog}
@@ -276,7 +292,6 @@ export function DeclarationTableRow({
           </Button>
         }
       />
-
     </>
   );
 }

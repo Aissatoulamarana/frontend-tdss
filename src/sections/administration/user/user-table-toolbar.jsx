@@ -76,12 +76,14 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
             value={filters.state.name}
             onChange={handleFilterName}
             placeholder="recherche..."
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
 
@@ -90,7 +92,6 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
           </IconButton>
         </Stack>
       </Stack>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}

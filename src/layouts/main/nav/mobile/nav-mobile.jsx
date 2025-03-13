@@ -27,13 +27,15 @@ export function NavMobile({ data, open, onClose, slots, sx }) {
     <Drawer
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          display: 'flex',
-          flexDirection: 'column',
-          width: 'var(--layout-nav-mobile-width)',
-          ...sx,
-        },
+      slotProps={{
+        paper: {
+          sx: {
+            display: 'flex',
+            flexDirection: 'column',
+            width: 'var(--layout-nav-mobile-width)',
+            ...sx,
+          },
+        }
       }}
     >
       {slots?.topArea ?? (
@@ -41,7 +43,6 @@ export function NavMobile({ data, open, onClose, slots, sx }) {
           <Logo />
         </Box>
       )}
-
       <Scrollbar fillContent>
         <Box component="nav" display="flex" flexDirection="column" flex="1 1 auto" sx={{ pb: 3 }}>
           {/* <NavUl>
@@ -51,7 +52,6 @@ export function NavMobile({ data, open, onClose, slots, sx }) {
           </NavUl> */}
         </Box>
       </Scrollbar>
-
       {slots?.bottomArea ?? (
         <Box gap={1.5} display="flex" sx={{ px: 2.5, py: 3 }}>
           <SignInButton fullWidth />

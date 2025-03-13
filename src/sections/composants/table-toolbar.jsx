@@ -14,7 +14,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function PermissionTableToolbar({ filters, options, onResetPage }) {
+export function TableToolbar({ filters, options, onResetPage }) {
     const popover = usePopover();
 
     const handleFilterName = useCallback(
@@ -38,12 +38,12 @@ export function PermissionTableToolbar({ filters, options, onResetPage }) {
 
     return (
         <Stack
-                spacing={2}
-                alignItems={{ xs: 'flex-end', md: 'center' }}
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
-            >
-            <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
+            spacing={2}
+            alignItems={{ xs: 'flex-end', md: 'center' }}
+            direction={{ xs: 'column', md: 'row' }}
+            sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
+        >
+            {/* <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
                 <InputLabel htmlFor="permission-filter-role-select-label">Profile</InputLabel>
                 <Select
                     multiple
@@ -65,7 +65,7 @@ export function PermissionTableToolbar({ filters, options, onResetPage }) {
                         </MenuItem>
                     ))}
                 </Select>
-            </FormControl>
+            </FormControl> */}
             <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
                 <TextField
                     fullWidth

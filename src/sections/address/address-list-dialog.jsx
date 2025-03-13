@@ -99,22 +99,22 @@ export function AddressListDialog({
 
         {action && action}
       </Stack>
-
       <Stack sx={{ p: 2, pt: 0 }}>
         <TextField
           value={searchAddress}
           onChange={handleSearchAddress}
           placeholder="Search..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-              </InputAdornment>
-            ),
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                </InputAdornment>
+              ),
+            }
           }}
         />
       </Stack>
-
       {notFound ? (
         <SearchNotFound query={searchAddress} sx={{ px: 3, pt: 5, pb: 10 }} />
       ) : (

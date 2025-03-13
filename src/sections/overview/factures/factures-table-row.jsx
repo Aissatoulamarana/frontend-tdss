@@ -102,18 +102,20 @@ export function FactureTableRow({
           <ListItemText
             primary={fCurrency(row.amount)}
             secondary={`GNF ${row.montant_gnf}`}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
-          />
+            slotProps={{
+              primary: { typography: 'body2', noWrap: true },
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
+            }} />
         </TableCell>
 
         <TableCell>
           <ListItemText
             primary={fDate(row.created_at)}
             secondary={fTime(row.created_at)}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'caption' }}
-          />
+            slotProps={{
+              primary: { typography: 'body2', noWrap: true },
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
+            }} />
         </TableCell>
 
         <TableCell>
@@ -199,14 +201,16 @@ export function FactureTableRow({
                   placeholder="Taper pour rechercher"
                   variant="outlined"
                   fullWidth
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {loading ? <CircularProgress size={20} /> : null}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loading ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }
                   }}
                 />
               )}
@@ -229,7 +233,6 @@ export function FactureTableRow({
           </Button>
         }
       />
-
       <ConfirmDialog
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue

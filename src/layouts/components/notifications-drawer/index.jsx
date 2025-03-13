@@ -137,14 +137,14 @@ export function NotificationsDrawer({ data = [], sx, ...other }) {
           </SvgIcon>
         </Badge>
       </IconButton>
-
       <Drawer
         open={drawer.value}
         onClose={drawer.onFalse}
         anchor="right"
-        slotProps={{ backdrop: { invisible: true } }}
-        PaperProps={{ sx: { width: 1, maxWidth: 420 } }}
-      >
+        slotProps={{
+          backdrop: { invisible: true },
+          paper: { sx: { width: 1, maxWidth: 420 } }
+        }}>
         {renderHead}
 
         {renderTabs}

@@ -129,12 +129,14 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
             value={filters.state.name}
             onChange={handleFilterName}
             placeholder="rechercher par nom ou par numéro"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
 
@@ -143,7 +145,6 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
           </IconButton>
         </Stack>
       </Stack>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}

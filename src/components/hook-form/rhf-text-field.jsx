@@ -25,11 +25,12 @@ export function RHFTextField({ name, helperText, type, ...other }) {
           }}
           error={!!error}
           helperText={error?.message ?? helperText}
-          inputProps={{
-            autoComplete: 'off',
-          }}
           {...other}
-        />
+          slotProps={{
+            htmlInput: {
+              autoComplete: 'off',
+            }
+          }} />
       )}
     />
   );

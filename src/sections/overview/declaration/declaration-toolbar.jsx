@@ -149,10 +149,11 @@ export function DeclarationToolbar({
           label="Status"
           value={currentStatus}
           onChange={onChangeStatus}
-          inputProps={{ id: `status-select-label` }}
-          InputLabelProps={{ htmlFor: `status-select-label` }}
           sx={{ maxWidth: 160 }}
-        >
+          slotProps={{
+            htmlInput: { id: `status-select-label` },
+            inputLabel: { htmlFor: `status-select-label` }
+          }}>
           {statusOptions.map((option) => (
             <MenuItem key={option.value} value={option.value}>
               {option.label}
@@ -160,7 +161,6 @@ export function DeclarationToolbar({
           ))}
         </TextField>
       </Stack>
-
       {/* Dialog pour l'envoi par email */}
       <ShareSendDialog
         open={openSend}
@@ -169,7 +169,6 @@ export function DeclarationToolbar({
         title="Envoyer la déclaration"
         label="Saisissez l'email destinataire"
       />
-
       {/* Dialog pour partager la déclaration */}
       <ShareSendDialog
         open={openShare}
@@ -178,7 +177,6 @@ export function DeclarationToolbar({
         title="Partager la déclaration"
         label="Saisissez l'email à partager"
       />
-
       <Dialog fullScreen open={view.value}>
         <Box sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
           <DialogActions sx={{ p: 1.5 }}>
