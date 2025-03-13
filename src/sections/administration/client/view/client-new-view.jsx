@@ -17,7 +17,7 @@ export function ClientCreateView() {
                 heading="Ajouter Un nouveau profil"
                 links={[
                     { name: 'Dashboard', href: paths.dashboard.root },
-                    { name: 'Client', href: paths.dashboard.client.root },
+                    { name: 'Profil', href: paths.dashboard.client.root },
                     { name: 'Nouveau' },
                 ]}
                 sx={{ mb: { xs: 3, md: 5 } }}

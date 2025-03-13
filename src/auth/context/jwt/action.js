@@ -8,6 +8,21 @@ import axios, { endpoints } from 'src/utils/axios';
 import { STORAGE_KEY , STORAGE_KEY_REFRESH_TOKEN } from './constant';
 import { setSession } from './utils';
 
+
+export const resetPassword = async ({email}) => {
+  try {
+    const params = {email}
+    const res = await axios.post(API.resetPassword(), params);
+    console.log (res)
+
+  }catch (error) {
+    console.log('Error during reset password', error)
+  }
+};
+
+
+
+
 /** **************************************
  * Sign in
  *************************************** */
@@ -50,6 +65,7 @@ export const signInWithPassword = async ({ email, password }) => {
   }
 };
 
+
 /** **************************************
  * Sign up
  *************************************** */
@@ -90,11 +106,7 @@ export const signOut = async () => {
       console.warn("No refresh token found. User might already be logged out.");
       return;
     }
-
-    // Déconnexion en envoyant uniquement le refresh token
-    await axios.post(API.logout(), { refresh: refresh_token });
-
-    // Supprime les tokens côté client
+  // Supprime les tokens côté client
     sessionStorage.removeItem(STORAGE_KEY);  // Supprime le token d'accès
     sessionStorage.removeItem(STORAGE_KEY_REFRESH_TOKEN); // Supprime le refresh token
 
@@ -104,10 +116,8 @@ export const signOut = async () => {
   }
 };
 
-export const resetPassword = async () => {
-  await axios?.post(API?.resetPassword)
-};
+
 
 export const updatePassword = async () => {
-  await axios?.post(API?.resetPassword)
+  await axios?.post(API?.resetPassword())
 }

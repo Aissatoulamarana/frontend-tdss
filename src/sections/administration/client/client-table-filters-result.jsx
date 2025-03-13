@@ -18,10 +18,10 @@ export function ClientTableFiltersResult({ filters, onResetPage, totalResults, s
 
     const handleRemoveRole = useCallback(
         (inputValue) => {
-            const newValue = filters?.state?.type_nom.filter((item) => item !== inputValue);
+            const newValue = filters?.state?.type.filter((item) => item !== inputValue);
 
             onResetPage();
-            filters.setState({ type_nom: newValue });
+            filters.setState({ type: newValue });
         },
         [filters, onResetPage]
     );
@@ -42,8 +42,8 @@ export function ClientTableFiltersResult({ filters, onResetPage, totalResults, s
                 />
             </FiltersBlock>
 
-            <FiltersBlock label="Type:" isShow={!!filters?.state?.type_nom?.length}>
-                {filters?.state?.type_nom?.map((item) => (
+            <FiltersBlock label="Type:" isShow={!!filters?.state?.type?.length}>
+                {filters?.state?.type?.map((item) => (
                     <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveRole(item)} />
                 ))}
             </FiltersBlock>

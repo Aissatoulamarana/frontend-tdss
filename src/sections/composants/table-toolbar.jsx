@@ -66,20 +66,19 @@ export function TableToolbar({ filters, options, onResetPage }) {
                     ))}
                 </Select>
             </FormControl> */}
+
             <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
                 <TextField
                     fullWidth
                     value={filters?.state?.name}
                     onChange={handleFilterName}
                     placeholder="recherche..."
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                                </InputAdornment>
-                            ),
-                        }
+                    InputProps={{
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                            </InputAdornment>
+                        ),
                     }}
                 />
 

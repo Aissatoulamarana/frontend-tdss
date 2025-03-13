@@ -112,10 +112,14 @@ export function ProfilTypeListView() {
 
     const handleEditRow = useCallback(
         (id) => {
+
             router.push(paths.dashboard.user.edit(slug));
+
         },
         [router]
     );
+
+
 
 
 
@@ -202,7 +206,9 @@ export function ProfilTypeListView() {
                             onSelectAllRows={(checked) =>
                                 table.onSelectAllRows(
                                     checked,
+
                                     dataFiltered.map((row) => row.slug)
+
                                 )
                             }
                             action={
@@ -226,7 +232,9 @@ export function ProfilTypeListView() {
                                     onSelectAllRows={(checked) =>
                                         table.onSelectAllRows(
                                             checked,
+
                                             dataFiltered.map((row) => row.slug)
+
                                         )
                                     }
                                 />

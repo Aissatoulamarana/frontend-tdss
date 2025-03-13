@@ -18,7 +18,7 @@ import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
-// import { ClientQuickEditForm } from './client-quick-edit-form';
+import { ClientQuickEditForm } from './client-quick-edit-form';
 
 // ----------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ export function ClientTableRow({
     onSelectRow,
     onDeleteRow,
     onViewRow,
-    onActivate,
+
 }) {
     const confirm = useBoolean();
 
@@ -41,7 +41,7 @@ export function ClientTableRow({
         <>
             <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
                 <TableCell padding="checkbox">
-                    <Checkbox id={row.uuid} checked={selected} onClick={onSelectRow} />
+                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
                 </TableCell>
 
                 <TableCell>
@@ -62,7 +62,7 @@ export function ClientTableRow({
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.contact}</TableCell>
 
 
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type_nom}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type}</TableCell>
 
                 <TableCell>
                     <Label
@@ -96,7 +96,7 @@ export function ClientTableRow({
                 </TableCell>
             </TableRow>
 
-            {/* <ClientQuickEditForm currentClient={row} open={quickEdit.value} onClose={quickEdit.onFalse} /> */}
+            <ClientQuickEditForm currentClient={row} open={quickEdit.value} onClose={quickEdit.onFalse} />
 
             <CustomPopover
                 open={popover.open}
@@ -124,15 +124,6 @@ export function ClientTableRow({
                     >
                         <Iconify icon="solar:eye-bold" />
                         Voir
-                    </MenuItem>
-                    <MenuItem
-                        onClick={() => {
-                            onActivate();
-                            popover.onClose();
-                        }}
-                    >
-                        <Iconify icon="solar:pen-bold" />
-                        Activer
                     </MenuItem>
                 </MenuList>
             </CustomPopover>

@@ -41,11 +41,8 @@ export const SignInSchema = zod.object({
 
 export function JwtSignInView() {
   const router = useRouter();
-
   const { checkUserSession } = useAuthContext();
-
   const [errorMsg, setErrorMsg] = useState('');
-
   const password = useBoolean();
 
   const defaultValues = {
@@ -70,16 +67,14 @@ export function JwtSignInView() {
       await checkUserSession?.();
       router.push(paths.dashboard.root);
     } catch (error) {
-      // Capture l'erreur et affiche un message adapté à l'utilisateur
       console.error('Sign in error:', error);
       setErrorMsg(typeof error === 'string' ? error : error.message || 'Authentication failed');
     }
   });
 
   const {
-    register, // Connecte les champs du formulaire
-
-    formState: { errors }, // Accède aux erreurs et à l'état d'envoi
+    register,
+    formState: { errors },
   } = methods;
 
   const renderForm = (
@@ -88,7 +83,7 @@ export function JwtSignInView() {
         name="email"
         label="Email"
         {...register('email')}
-        error={!!errors.email} // Vérifie si une erreur existe pour ce champ
+        error={!!errors.email}
         helperText={errors.email?.message}
         InputLabelProps={{ shrink: true }}
       />
@@ -140,24 +135,30 @@ export function JwtSignInView() {
   );
 
   return (
-    <>
+    <Box
+      sx={{
+        maxWidth: 800,
+        mx: 'auto',
+        mt: 4,
+        p: 4,
+        border: '1px solid #e0e0e0', // Bordure légère
+        borderRadius: 2,
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', // Ombre subtile
+        backgroundColor: 'background.paper'
+      }}
+    >
       <FormHead
         title="Connexion"
         description={
           <>
-            {`Vous pouvez pas acceder a cette plateforme si vous n'avez pas de compte ? `}
-            {/* <Link component={RouterLink} href={paths.auth.jwt.signUp} variant="subtitle2">
-              Get started
-            </Link> */}
+            {`Vous ne pouvez pas accéder à cette plateforme si vous n'avez pas de compte `}
           </>
         }
         sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />
 
       <Alert severity="info" sx={{ mb: 3 }}>
-        Utiliser  votre mail
-        {' et votre mot de passe pour vous connectez '}
-
+        Utilisez votre mail et votre mot de passe pour vous connecter.
       </Alert>
 
       {!!errorMsg && (
@@ -169,6 +170,6 @@ export function JwtSignInView() {
       <Form methods={methods} onSubmit={onSubmit}>
         {renderForm}
       </Form>
-    </>
+    </Box>
   );
 }

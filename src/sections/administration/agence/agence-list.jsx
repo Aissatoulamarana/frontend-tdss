@@ -57,10 +57,10 @@ export function AgenceList({ agences }) {
             >
                 {agences.map((agence) => (
                     <AgenceItem
-                        key={agence.id}
+                        key={agence.slug}
                         agence={agence}
-                        onEdit={() => handleEdit(agence.id)}
-                        onDelete={() => handleDelete(agence.id)}
+                        onEdit={() => handleEdit(agence.slug)}
+                        onDelete={() => handleDelete(agence.slug)}
                     />
                 ))}
             </Box>

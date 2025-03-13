@@ -31,6 +31,7 @@ export function DeclarationTableRow({
   onValidateRow,
   onFactureRow,
   onRejetRow,
+  onSubmitRow,
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -38,6 +39,8 @@ export function DeclarationTableRow({
   const validateConfirm = useBoolean();
   // Pour la facturation (exemple)
   const factureConfirm = useBoolean();
+  // Pour la soumission
+  const submitConfirm = useBoolean();
 
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
@@ -133,6 +136,18 @@ export function DeclarationTableRow({
             <Iconify icon="solar:pen-bold" />
             Modifier
           </MenuItem>
+
+          {!['validée', 'facturée', 'rejetée', 'soumise'].includes(row.status) && (
+            <MenuItem
+              onClick={() => {
+                submitConfirm.onTrue();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="mdi:check-bold" />
+              Soumettre
+            </MenuItem>
+          )}
 
           {!['validée', 'facturée', 'rejetée'].includes(row.status) && (
             <MenuItem

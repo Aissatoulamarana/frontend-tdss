@@ -2,7 +2,7 @@
 
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import CssBaseline from '@mui/material/CssBaseline';
-import { CssVarsProvider } from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 
 import { useSettingsContext } from 'src/components/settings';
 
@@ -19,14 +19,12 @@ export function ThemeProvider({ children }) {
 
   return (
     <AppRouterCacheProvider options={{ key: 'css' }}>
-      <CssVarsProvider
-        theme={theme}
-        defaultMode={schemeConfig.defaultMode}
-        modeStorageKey={schemeConfig.modeStorageKey}
-      >
+      <MuiThemeProvider theme={theme}>
         <CssBaseline />
-        <RTL direction={settings.direction}>{children}</RTL>
-      </CssVarsProvider>
+        <RTL direction={settings.direction}>
+          {children}
+        </RTL>
+      </MuiThemeProvider>
     </AppRouterCacheProvider>
   );
 }

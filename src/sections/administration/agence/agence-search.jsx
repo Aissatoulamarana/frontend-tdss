@@ -23,7 +23,7 @@ export function AgenceSearch({ search, onSearch }) {
 
     const handleKeyUp = (event) => {
         if (search.state.query) {
-            if (event.key === 'Enter') {
+            if (event.key === 'Entrée') {
                 const selectProduct = search.state.results.filter(
                     (agence) => agence.name === search.state.query
                 )[0];
@@ -46,7 +46,7 @@ export function AgenceSearch({ search, onSearch }) {
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    placeholder="Search..."
+                    placeholder="Recherche..."
                     onKeyUp={handleKeyUp}
                     slotProps={{
                         input: {

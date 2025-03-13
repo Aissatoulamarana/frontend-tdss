@@ -19,6 +19,7 @@ import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
 import { UserQuickEditForm } from './user-quick-edit-form';
+import { BpCheckbox } from 'src/components/custom-checkbox/custom-checkbox';
 
 // ----------------------------------------------------------------------
 
@@ -41,7 +42,7 @@ export function UserTableRow({
     <>
       <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
         <TableCell padding="checkbox">
-          <Checkbox id={row.id} checked={selected} onClick={onSelectRow} />
+          <BpCheckbox id={row.slug} checked={selected} onClick={onSelectRow} />
         </TableCell>
 
         <TableCell>

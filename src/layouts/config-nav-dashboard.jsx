@@ -40,6 +40,9 @@ const ICONS = {
 
 // ----------------------------------------------------------------------
 
+const user = JSON.parse(localStorage.getItem('user'));
+const entreprise = user?.type_code?.toLowerCase().trim();
+
 export const navData = [
   /**
    * Overview
@@ -87,47 +90,63 @@ export const navData = [
   /**
    * Management
    */
-  {
-    subheader: 'Administration',
-    items: [
+  ...(entreprise !== 'entreprise'
+    ? [
       {
-        title: 'Utilisateurs',
-        path: paths.dashboard.user.root,
-        icon: ICONS.user,
-        children: [
-          { title: 'Listes Utilisateurs ', path: paths.dashboard.user.list },
-          { title: 'Nouveau', path: paths.dashboard.user.new },
+        subheader: 'Administration',
+        items: [
+          {
+            title: 'Utilisateurs',
+            path: paths.dashboard.user.root,
+            icon: ICONS.user,
+            children: [
+              { title: 'Listes Utilisateurs', path: paths.dashboard.user.list },
+              { title: 'Nouveau', path: paths.dashboard.user.new },
+            ],
+          },
+          {
+            title: 'Fonction',
+            path: paths.dashboard.fonction.root,
+            icon: ICONS.job,
+            children: [
+              { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
+              { title: 'Nouvelle', path: paths.dashboard.fonction.new },
+            ],
+          },
+          {
+            title: 'Profils',
+            path: paths.dashboard.client.root,
+            icon: ICONS.tour,
+          },
+          {
+            title: 'Agence',
+            path: paths.dashboard.agence.root,
+            icon: ICONS.company,
+          },
+          {
+            title: 'Permissions',
+            path: paths.dashboard.permission.list,
+            icon: ICONS.company,
+          },
+          {
+            title: 'Regions',
+            path: paths.dashboard.region.root,
+            icon: ICONS.company,
+          },
+          {
+            title: 'Type  Profil',
+            path: paths.dashboard.profilType.root,
+            icon: ICONS.company,
+          },
+          {
+            title: 'Type Utilisateur',
+            path: paths.dashboard.userType.root,
+            icon: ICONS.company,
+          },
         ],
       },
-      {
-        title: 'Fonction',
-        path: paths.dashboard.fonction.root,
-        icon: ICONS.job,
-        children: [
-          { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
-          { title: 'Nouvelle', path: paths.dashboard.fonction.new },
-        ],
-      },
-      {
-        title: 'Client',
-        path: paths.dashboard.client.root,
-        icon: ICONS.tour,
-        // children: [
-        //   { title: 'Listes  ', path: paths.dashboard.client.bank },
-        //   { title: 'Ajouter', path: paths.dashboard.client.root },
-        // ],
-      },
-      {
-        title: 'Agence',
-        path: paths.dashboard.agence.new,
-        icon: ICONS.company,
-      },
+    ]
+    : []),
 
-      {
-        title: 'Permissions',
-        path: paths.dashboard.permission.list,
-        icon: ICONS.company,
-      }
-    ],
-  },
+
 ];

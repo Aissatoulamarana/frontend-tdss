@@ -14,7 +14,7 @@ import { useSettingsContext } from 'src/components/settings';
 
 import { layoutClasses } from '../classes';
 import { AccountDrawer } from '../components/account-drawer';
-import { ContactsPopover } from '../components/contacts-popover';
+// import { ContactsPopover } from '../components/contacts-popover';
 import { LanguagePopover } from '../components/language-popover';
 // import { _workspaces } from '../config-nav-workspace';
 import { MenuButton } from '../components/menu-button';
@@ -63,7 +63,7 @@ export function DashboardLayout({ sx, children, header, data }) {
             toolbar: {
               sx: {
                 ...(isNavHorizontal && {
-                  bgcolor: 'var(--layout-nav-bg)',
+                  bgcolor: 'white',
                   [`& .${iconButtonClasses.root}`]: {
                     color: 'var(--layout-nav-text-secondary-color)',
                   },
@@ -147,7 +147,7 @@ export function DashboardLayout({ sx, children, header, data }) {
                 {/* -- Notifications popover -- */}
                 <NotificationsDrawer data={_notifications} />
                 {/* -- Contacts popover -- */}
-                <ContactsPopover data={_contacts} />
+                {/* <ContactsPopover data={_contacts} /> */}
                 {/* -- Settings button -- */}
                 <SettingsButton />
                 {/* -- Account drawer -- */}

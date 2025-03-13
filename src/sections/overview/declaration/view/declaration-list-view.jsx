@@ -1,6 +1,6 @@
 'use client';
 
-import { Grid2 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Popover, MenuItem } from '@mui/material';
@@ -190,11 +190,41 @@ export function DeclarationListView() {
     [router]
   );
 
+  const handleSubmitRow = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour valider la déclaration en envoyant l'action
+        const response = await axios.post(API.validateDeclaration(slug), {
+          action: "validate"
+        });
+
+        if (response) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          toast.success('Déclaration validée avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.id === id ? { ...item, status: 'validée' } : item
+            )
+          );
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors de la validation:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
   const handleValidateRow = useCallback(
     async (id) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.validateDeclaration(id), {
+        const response = await axios.post(API.validateDeclaration(slug), {
           action: "validate"
         });
 
@@ -225,7 +255,7 @@ export function DeclarationListView() {
     async (id) => {
       try {
         // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.facturerDeclaration(id));
+        const response = await axios.post(API.facturerDeclaration(slug));
         if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
           toast.success('Déclaration facturée avec succès !');
@@ -385,8 +415,8 @@ export function DeclarationListView() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-          <Grid2 size={{ xs: 6, md: 3 }}>
+        <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} >
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
               total={tableData.length}
@@ -397,8 +427,8 @@ export function DeclarationListView() {
                 series: [20, 41, 63, 33, 28, 35, 50, 46],
               }}
             />
-          </Grid2>
-          <Grid2 size={{ xs: 6, md: 3 }}>
+          </Grid>
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Facturée"
               total={getInvoiceLength('facturée')}
@@ -409,9 +439,9 @@ export function DeclarationListView() {
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
               }}
             />
-          </Grid2>
+          </Grid>
 
-          <Grid2 size={{ xs: 6, md: 3 }}>
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="En attente"
               total={getInvoiceLength('pending')}
@@ -422,8 +452,8 @@ export function DeclarationListView() {
                 series: [18, 19, 31, 8, 16, 37, 12, 33],
               }}
             />
-          </Grid2>
-          <Grid2 size={{ xs: 6, md: 3 }}>
+          </Grid>
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Brouillon"
               total={getInvoiceLength('brouillon')}
@@ -434,8 +464,8 @@ export function DeclarationListView() {
                 series: [18, 19, 31, 8, 16, 37, 12, 33],
               }}
             />
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
 
         <Card>
           <Tabs
@@ -552,14 +582,15 @@ export function DeclarationListView() {
                       <DeclarationTableRow
                         key={row.id}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onValidateRow={() => handleValidateRow(row.id)}
-                        onFactureRow={() => handleFacturer(row.id)}
-                        onRejetRow={(rejectReason) => handleRejetter(row.id, rejectReason)}
+                        selected={table.selected.includes(row.slug)}
+                        onSelectRow={() => table.onSelectRow(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
+                        onEditRow={() => handleEditRow(row.slug)}
+                        onSubmitRow={() => handleSubmitRow(row.slug)}
+                        onDeleteRow={() => handleDeleteRow(row.slug)}
+                        onValidateRow={() => handleValidateRow(row.slug)}
+                        onFactureRow={() => handleFacturer(row.slug)}
+                        onRejetRow={(rejectReason) => handleRejetter(row.slug, rejectReason)}
                       />
                     ))}
 
