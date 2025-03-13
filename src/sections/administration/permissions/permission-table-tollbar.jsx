@@ -43,47 +43,48 @@ export function PermissionTableToolbar({ filters, options, onResetPage }) {
                 direction={{ xs: 'column', md: 'row' }}
                 sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
             >
-                <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
-                    <InputLabel htmlFor="permission-filter-role-select-label">Profile</InputLabel>
-                    <Select
-                        multiple
-                        value={filters?.state?.profil}
-                        onChange={handleFilterRole}
-                        input={<OutlinedInput label="Role" />}
-                        renderValue={(selected) => selected?.map((value) => value).join(', ')}
-                        inputProps={{ id: 'permission-filter-role-select-label' }}
-                        MenuProps={{ PaperProps: { sx: { maxHeight: 240 } } }}
-                    >
-                        {options?.roles?.map((option) => (
-                            <MenuItem key={option} value={option}>
-                                <Checkbox
-                                    disableRipple
-                                    size="small"
-                                    checked={filters?.state?.role?.includes(option)}
-                                />
-                                {option}
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
-                    <TextField
-                        fullWidth
-                        value={filters?.state?.name}
-                        onChange={handleFilterName}
-                        placeholder="recherche..."
-                        InputProps={{
+            <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
+                <InputLabel htmlFor="permission-filter-role-select-label">Profile</InputLabel>
+                <Select
+                    multiple
+                    value={filters?.state?.profil}
+                    onChange={handleFilterRole}
+                    input={<OutlinedInput label="Role" />}
+                    renderValue={(selected) => selected?.map((value) => value).join(', ')}
+                    inputProps={{ id: 'permission-filter-role-select-label' }}
+                    MenuProps={{ PaperProps: { sx: { maxHeight: 240 } } }}
+                >
+                    {options?.roles?.map((option) => (
+                        <MenuItem key={option} value={option}>
+                            <Checkbox
+                                disableRipple
+                                size="small"
+                                checked={filters?.state?.role?.includes(option)}
+                            />
+                            {option}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+            <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
+                <TextField
+                    fullWidth
+                    value={filters?.state?.name}
+                    onChange={handleFilterName}
+                    placeholder="recherche..."
+                    slotProps={{
+                        input: {
                             startAdornment: (
                                 <InputAdornment position="start">
                                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                                 </InputAdornment>
                             ),
-                        }}
-                    />
+                        }
+                    }}
+                />
 
 
-                </Stack>
             </Stack>
+        </Stack>
     );
 }

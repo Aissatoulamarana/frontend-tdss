@@ -24,7 +24,6 @@ export function ProfileGallery({ gallery }) {
       <Typography variant="h4" sx={{ my: 5 }}>
         Gallery
       </Typography>
-
       <Box
         gap={3}
         display="grid"
@@ -55,15 +54,17 @@ export function ProfileGallery({ gallery }) {
               }}
               primary={image.title}
               secondary={fDate(image.postedAt)}
-              primaryTypographyProps={{ noWrap: true, typography: 'subtitle1' }}
-              secondaryTypographyProps={{
-                mt: 0.5,
-                color: 'inherit',
-                component: 'span',
-                typography: 'body2',
-                sx: { opacity: 0.48 },
-              }}
-            />
+              slotProps={{
+                primary: { noWrap: true, typography: 'subtitle1' },
+
+                secondary: {
+                  mt: 0.5,
+                  color: 'inherit',
+                  component: 'span',
+                  typography: 'body2',
+                  sx: { opacity: 0.48 },
+                }
+              }} />
 
             <Image
               alt="gallery"
@@ -80,7 +81,6 @@ export function ProfileGallery({ gallery }) {
           </Card>
         ))}
       </Box>
-
       <Lightbox
         index={lightbox.selected}
         slides={slides}

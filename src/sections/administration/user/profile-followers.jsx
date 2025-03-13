@@ -59,7 +59,6 @@ function FollowerItem({ follower, selected, onSelected }) {
   return (
     <Card sx={{ display: 'flex', alignItems: 'center', p: (theme) => theme.spacing(3, 2, 3, 3) }}>
       <Avatar alt={name} src={avatarUrl} sx={{ width: 48, height: 48, mr: 2 }} />
-
       <ListItemText
         primary={name}
         secondary={
@@ -68,18 +67,19 @@ function FollowerItem({ follower, selected, onSelected }) {
             {country}
           </>
         }
-        primaryTypographyProps={{ noWrap: true, typography: 'subtitle2' }}
-        secondaryTypographyProps={{
-          mt: 0.5,
-          noWrap: true,
-          display: 'flex',
-          component: 'span',
-          alignItems: 'center',
-          typography: 'caption',
-          color: 'text.disabled',
-        }}
-      />
+        slotProps={{
+          primary: { noWrap: true, typography: 'subtitle2' },
 
+          secondary: {
+            mt: 0.5,
+            noWrap: true,
+            display: 'flex',
+            component: 'span',
+            alignItems: 'center',
+            typography: 'caption',
+            color: 'text.disabled',
+          }
+        }} />
       <Button
         size="small"
         variant={selected ? 'text' : 'outlined'}

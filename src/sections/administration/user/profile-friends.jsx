@@ -38,17 +38,18 @@ export function ProfileFriends({ friends, searchFriends, onSearchFriends }) {
           value={searchFriends}
           onChange={onSearchFriends}
           placeholder="Search friends..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-              </InputAdornment>
-            ),
-          }}
           sx={{ width: { xs: 1, sm: 260 } }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                </InputAdornment>
+              ),
+            }
+          }}
         />
       </Stack>
-
       {notFound ? (
         <SearchNotFound query={searchFriends} sx={{ py: 10 }} />
       ) : (

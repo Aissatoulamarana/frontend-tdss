@@ -132,7 +132,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   return (
     <Paper>
       {/* Barre de menu pour les filtres */}
-
       {/* Barre d'outils conditionnelle */}
       <Toolbar
         sx={{
@@ -185,14 +184,16 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                   placeholder="Taper pour rechercher"
                   variant="outlined"
                   fullWidth
-                  InputProps={{
-                    ...params.InputProps,
-                    endAdornment: (
-                      <>
-                        {loading ? <CircularProgress size={20} /> : null}
-                        {params.InputProps.endAdornment}
-                      </>
-                    ),
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loading ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }
                   }}
                 />
               )}
@@ -214,7 +215,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           </DialogActions>
         </Dialog>
       </Toolbar>
-
       {/* Tableau */}
       <TableContainer>
         {/* Barre des filtres fixes */}
@@ -287,9 +287,10 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                   <ListItemText
                     primary={row.last}
                     secondary={row.first}
-                    primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-                    secondaryTypographyProps={{ mt: 0.5, component: 'span', typography: 'body2' }}
-                  />
+                    slotProps={{
+                      primary: { typography: 'body2', noWrap: true },
+                      secondary: { mt: 0.5, component: 'span', typography: 'body2' }
+                    }} />
                 </TableCell>
                 <TableCell>{row.phone}</TableCell>
                 <TableCell>{row.fonction}</TableCell>

@@ -69,18 +69,6 @@ export function CountrySelect({
     return (
       <TextField
         {...baseField}
-        InputProps={{
-          ...params.InputProps,
-          startAdornment: (
-            <InputAdornment position="start" sx={{ ...(!country.code && { display: 'none' }) }}>
-              <FlagIcon
-                key={country.label}
-                code={country.code}
-                sx={{ width: 22, height: 22, borderRadius: '50%' }}
-              />
-            </InputAdornment>
-          ),
-        }}
         sx={{
           [`& .${outlinedInputClasses.root}`]: {
             [`& .${iconifyClasses.flag}`]: { ml: 0.5, mr: -0.5 },
@@ -92,6 +80,20 @@ export function CountrySelect({
               mt: hiddenLabel ? 0 : -2,
             },
           },
+        }}
+        slotProps={{
+          input: {
+            ...params.InputProps,
+            startAdornment: (
+              <InputAdornment position="start" sx={{ ...(!country.code && { display: 'none' }) }}>
+                <FlagIcon
+                  key={country.label}
+                  code={country.code}
+                  sx={{ width: 22, height: 22, borderRadius: '50%' }}
+                />
+              </InputAdornment>
+            ),
+          }
         }}
       />
     );

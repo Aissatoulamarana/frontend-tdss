@@ -93,13 +93,13 @@ export function CountryListPopover({
               code={country.code}
               sx={{ mr: 1, width: 22, height: 22, borderRadius: '50%' }}
             />
-
             <ListItemText
               primary={country.label}
               secondary={`${country.code} (+${country.phone})`}
-              primaryTypographyProps={{ noWrap: true, typography: 'body2' }}
-              secondaryTypographyProps={{ typography: 'caption' }}
-            />
+              slotProps={{
+                primary: { noWrap: true, typography: 'body2' },
+                secondary: { typography: 'caption' }
+              }} />
           </MenuItem>
         );
       })}
@@ -109,7 +109,6 @@ export function CountryListPopover({
   return (
     <>
       {renderButton}
-
       <Popover
         disableRestoreFocus
         open={popover.open}
@@ -139,19 +138,21 @@ export function CountryListPopover({
             value={searchCountry}
             onChange={(event) => onSearchCountry(event.target.value)}
             placeholder="Search..."
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
-              endAdornment: searchCountry && (
-                <InputAdornment position="end">
-                  <IconButton size="small" edge="end" onClick={() => onSearchCountry('')}>
-                    <Iconify width={16} icon="mingcute:close-line" />
-                  </IconButton>
-                </InputAdornment>
-              ),
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchCountry && (
+                  <InputAdornment position="end">
+                    <IconButton size="small" edge="end" onClick={() => onSearchCountry('')}>
+                      <Iconify width={16} icon="mingcute:close-line" />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }
             }}
           />
         </Box>

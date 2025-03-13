@@ -37,14 +37,16 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
                 ${job.name}
             `}
             secondary={`Date d'ajout: ${fDate(job.created_at)}`}
-            primaryTypographyProps={{ typography: 'subtitle1' }}
-            secondaryTypographyProps={{
-              mt: 1,
-              component: 'span',
-              typography: 'caption',
-              color: 'text.disabled',
-            }}
-          />
+            slotProps={{
+              primary: { typography: 'subtitle1' },
+
+              secondary: {
+                mt: 1,
+                component: 'span',
+                typography: 'caption',
+                color: 'text.disabled',
+              }
+            }} />
 
           <Stack
             spacing={0.5}
@@ -59,7 +61,6 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
       </Card>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}

@@ -49,15 +49,17 @@ export function ProfileCover({ name, avatarUrl, role, coverUrl }) {
           sx={{ mt: 3, ml: { md: 3 }, textAlign: { xs: 'center', md: 'unset' } }}
           primary={name}
           secondary={role}
-          primaryTypographyProps={{ typography: 'h4' }}
-          secondaryTypographyProps={{
-            mt: 0.5,
-            color: 'inherit',
-            component: 'span',
-            typography: 'body2',
-            sx: { opacity: 0.48 },
-          }}
-        />
+          slotProps={{
+            primary: { typography: 'h4' },
+
+            secondary: {
+              mt: 0.5,
+              color: 'inherit',
+              component: 'span',
+              typography: 'body2',
+              sx: { opacity: 0.48 },
+            }
+          }} />
       </Stack>
     </Box>
   );

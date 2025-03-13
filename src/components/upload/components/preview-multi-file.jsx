@@ -64,7 +64,6 @@ export function MultiFilePreview({
       {...other}
     >
       {renderFirstNode}
-
       {files.map((file) => {
         const { name, size } = fileData(file);
 
@@ -106,16 +105,16 @@ export function MultiFilePreview({
             }}
           >
             <FileThumbnail file={file} {...slotProps?.thumbnail} />
-
             <ListItemText
               primary={name}
               secondary={fData(size)}
-              secondaryTypographyProps={{
-                component: 'span',
-                typography: 'caption',
+              slotProps={{
+                secondary: {
+                  component: 'span',
+                  typography: 'caption',
+                }
               }}
             />
-
             {onRemove && (
               <IconButton size="small" onClick={() => onRemove(file)}>
                 <Iconify icon="mingcute:close-line" width={16} />
@@ -124,7 +123,6 @@ export function MultiFilePreview({
           </Box>
         );
       })}
-
       {renderLastNode}
     </Box>
   );

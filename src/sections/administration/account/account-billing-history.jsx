@@ -22,21 +22,22 @@ export function AccountBillingHistory({ invoices }) {
   return (
     <Card>
       <CardHeader title="Invoice history" />
-
       <Stack spacing={1.5} sx={{ px: 3, pt: 3 }}>
         {(showMore.value ? invoices : invoices.slice(0, 8)).map((invoice) => (
           <Stack key={invoice.id} direction="row" alignItems="center">
             <ListItemText
               primary={invoice.invoiceNumber}
               secondary={fDate(invoice.createdAt)}
-              primaryTypographyProps={{ typography: 'body2' }}
-              secondaryTypographyProps={{
-                mt: 0.5,
-                component: 'span',
-                typography: 'caption',
-                color: 'text.disabled',
-              }}
-            />
+              slotProps={{
+                primary: { typography: 'body2' },
+
+                secondary: {
+                  mt: 0.5,
+                  component: 'span',
+                  typography: 'caption',
+                  color: 'text.disabled',
+                }
+              }} />
 
             <Typography variant="body2" sx={{ textAlign: 'right', mr: 5 }}>
               {fCurrency(invoice.price)}
@@ -50,7 +51,6 @@ export function AccountBillingHistory({ invoices }) {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
       </Stack>
-
       <Stack alignItems="flex-start" sx={{ p: 2 }}>
         <Button
           size="small"

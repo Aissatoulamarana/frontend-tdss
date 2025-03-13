@@ -5,7 +5,7 @@ import { useFormContext } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 
 import { Field } from 'src/components/hook-form';
-import { fetchOptions, entreprises } from 'src/utils/options';
+import { getEntreprises } from 'src/utils/options';
 
 import { useMockedUser } from 'src/auth/hooks';
 
@@ -15,17 +15,14 @@ import { useMockedUser } from 'src/auth/hooks';
 export function DeclarationEditStatusDate({ type }) {
   const { watch } = useFormContext();
   const [loaded, setLoaded] = useState(false);
+  const [entreprises, setEntreprises] = useState([]);
 
   const user = useMockedUser()
 
   const values = watch();
 
   useEffect(() => {
-    // Récupérer les options lors du chargement du composant
-    fetchOptions().then(() => {
-      setLoaded(true); // Marquer comme chargé une fois les données récupérées
-
-    });
+    getEntreprises.then(data => setEntreprises(data));
   }, []);
 
 

@@ -29,14 +29,16 @@ export function AgenceItem({ agence, onView, onEdit, onDelete }) {
                         sx={{ mb: 1 }}
                         primary={agence.name}
                         secondary={agence.region.name}
-                        primaryTypographyProps={{ typography: 'subtitle1', fontWeight: 600 }}
-                        secondaryTypographyProps={{
-                            mt: 1,
-                            component: 'span',
-                            typography: 'caption',
-                            color: 'text.disabled',
-                        }}
-                    />
+                        slotProps={{
+                            primary: { typography: 'subtitle1', fontWeight: 600 },
+
+                            secondary: {
+                                mt: 1,
+                                component: 'span',
+                                typography: 'caption',
+                                color: 'text.disabled',
+                            }
+                        }} />
 
                     {/* Manager
                     <Typography variant="h6" sx={{ mb: 1 }}>
@@ -75,7 +77,6 @@ export function AgenceItem({ agence, onView, onEdit, onDelete }) {
 
                 <Divider sx={{ borderStyle: 'dashed', my: 2 }} />
             </Card>
-
             {/* Popover des actions */}
             <CustomPopover
                 open={popover.open}

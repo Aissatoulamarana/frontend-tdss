@@ -42,7 +42,6 @@ export function ContactsPopover({ data = [], sx, ...other }) {
           <ellipse cx="9.001" cy="17.001" fill="currentColor" rx="7" ry="4" />
         </SvgIcon>
       </IconButton>
-
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
@@ -69,9 +68,10 @@ export function ContactsPopover({ data = [], sx, ...other }) {
               <ListItemText
                 primary={contact.name}
                 secondary={contact.status === 'offline' ? fToNow(contact.lastActivity) : ''}
-                primaryTypographyProps={{ typography: 'subtitle2' }}
-                secondaryTypographyProps={{ typography: 'caption', color: 'text.disabled' }}
-              />
+                slotProps={{
+                  primary: { typography: 'subtitle2' },
+                  secondary: { typography: 'caption', color: 'text.disabled' }
+                }} />
             </MenuItem>
           ))}
         </Scrollbar>
