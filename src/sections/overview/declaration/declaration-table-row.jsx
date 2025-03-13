@@ -31,6 +31,7 @@ export function DeclarationTableRow({
   onValidateRow,
   onFactureRow,
   onRejetRow,
+  onSubmitRow,
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -38,6 +39,8 @@ export function DeclarationTableRow({
   const validateConfirm = useBoolean();
   // Pour la facturation (exemple)
   const factureConfirm = useBoolean();
+  // Pour la soumission
+  const submitConfirm = useBoolean();
 
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
@@ -134,6 +137,18 @@ export function DeclarationTableRow({
             Modifier
           </MenuItem>
 
+          {!['validée', 'facturée', 'rejetée', 'soumise'].includes(row.status) && (
+            <MenuItem
+              onClick={() => {
+                submitConfirm.onTrue();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="mdi:check-bold" />
+              Soumettre
+            </MenuItem>
+          )}
+
           {!['validée', 'facturée', 'rejetée'].includes(row.status) && (
             <MenuItem
               onClick={() => {
@@ -205,6 +220,25 @@ export function DeclarationTableRow({
         }
       />
 
+      {/* Exemple de boîte de dialogue de confirmation pour la soumission */}
+      <ConfirmDialog
+        open={submitConfirm.value}
+        onClose={submitConfirm.onFalse}
+        title="Valider"
+        content="Voulez-vous vraiment valider cette déclaration ?"
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              submitConfirm.onFalse();
+              onSubmitRow();
+            }}
+          >
+            Soumettre
+          </Button>
+        }
+      />
       {/* Exemple de boîte de dialogue de confirmation pour la validation */}
       <ConfirmDialog
         open={validateConfirm.value}

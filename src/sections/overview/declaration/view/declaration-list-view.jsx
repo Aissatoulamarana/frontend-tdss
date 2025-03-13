@@ -125,7 +125,7 @@ export function DeclarationListView() {
     {
       value: 'all',
       label: 'Toutes',
-      color: 'warnning',
+      color: 'default',
       count: tableData.length,
     },
     {
@@ -190,11 +190,41 @@ export function DeclarationListView() {
     [router]
   );
 
+  const handleSubmitRow = useCallback(
+    async (id) => {
+      try {
+        // Appel à l'API backend pour valider la déclaration en envoyant l'action
+        const response = await axios.post(API.validateDeclaration(slug), {
+          action: "validate"
+        });
+
+        if (response) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          toast.success('Déclaration validée avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.id === id ? { ...item, status: 'validée' } : item
+            )
+          );
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors de la validation:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
   const handleValidateRow = useCallback(
     async (id) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.validateDeclaration(id), {
+        const response = await axios.post(API.validateDeclaration(slug), {
           action: "validate"
         });
 
@@ -225,7 +255,7 @@ export function DeclarationListView() {
     async (id) => {
       try {
         // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.facturerDeclaration(id));
+        const response = await axios.post(API.facturerDeclaration(slug));
         if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
           toast.success('Déclaration facturée avec succès !');
@@ -552,14 +582,15 @@ export function DeclarationListView() {
                       <DeclarationTableRow
                         key={row.id}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onValidateRow={() => handleValidateRow(row.id)}
-                        onFactureRow={() => handleFacturer(row.id)}
-                        onRejetRow={(rejectReason) => handleRejetter(row.id, rejectReason)}
+                        selected={table.selected.includes(row.slug)}
+                        onSelectRow={() => table.onSelectRow(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
+                        onEditRow={() => handleEditRow(row.slug)}
+                        onSubmitRow={() => handleSubmitRow(row.slug)}
+                        onDeleteRow={() => handleDeleteRow(row.slug)}
+                        onValidateRow={() => handleValidateRow(row.slug)}
+                        onFactureRow={() => handleFacturer(row.slug)}
+                        onRejetRow={(rejectReason) => handleRejetter(row.slug, rejectReason)}
                       />
                     ))}
 
