@@ -114,7 +114,7 @@ export const navData = [
             ],
           },
           {
-            title: 'Client',
+            title: 'Profils',
             path: paths.dashboard.client.root,
             icon: ICONS.tour,
           },

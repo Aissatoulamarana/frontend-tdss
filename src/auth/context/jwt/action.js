@@ -106,11 +106,7 @@ export const signOut = async () => {
       console.warn("No refresh token found. User might already be logged out.");
       return;
     }
-
-    // Déconnexion en envoyant uniquement le refresh token
-    await axios.post(API.logout(), { refresh: refresh_token });
-
-    // Supprime les tokens côté client
+  // Supprime les tokens côté client
     sessionStorage.removeItem(STORAGE_KEY);  // Supprime le token d'accès
     sessionStorage.removeItem(STORAGE_KEY_REFRESH_TOKEN); // Supprime le refresh token
 

@@ -33,7 +33,7 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                 typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value;
 
             onResetPage();
-            filters?.setState({ type_nom: newValue });
+            filters?.setState({ type: newValue });
         },
         [filters, onResetPage]
     );
@@ -50,7 +50,7 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                     <InputLabel htmlFor="user-filter-role-select-label">Type</InputLabel>
                     <Select
                         multiple
-                        value={filters.state.type_nom}
+                        value={filters.state.type}
                         onChange={handleFilterRole}
                         input={<OutlinedInput label="Type" />}
                         renderValue={(selected) => selected.map((value) => value).join(', ')}
@@ -62,7 +62,7 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                                 <Checkbox
                                     disableRipple
                                     size="small"
-                                    checked={filters?.state?.type_nom?.includes(option)}
+                                    checked={filters?.state?.type?.includes(option)}
                                 />
                                 {option}
                             </MenuItem>

@@ -6,7 +6,7 @@ import { UserTypeListView } from 'src/sections/administration/userType/user-type
 
 // ----------------------------------------------------------------------
 
-export const metadata = { title: `Region list | Dashboard - ${CONFIG.appName}` };
+export const metadata = { title: `Type User | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
     return <UserTypeListView />;

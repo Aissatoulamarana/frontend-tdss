@@ -46,9 +46,9 @@ export function TableRowCom({
 
 
                         <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-                            <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }}>
-                                {row.code}
-                            </Link>
+                            {/* <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }}> */}
+                            {row.code}
+                            {/* </Link> */}
 
                         </Stack>
                     </Stack>
@@ -62,14 +62,14 @@ export function TableRowCom({
 
                 <TableCell>
                     <Stack direction="row" alignItems="center">
-                        <Tooltip title="Quick Edit" placement="top" arrow>
+                        {/* <Tooltip title="Quick Edit" placement="top" arrow>
                             <IconButton
                                 color={quickEdit.value ? 'inherit' : 'default'}
                                 onClick={quickEdit.onTrue}
                             >
                                 <Iconify icon="solar:pen-bold" />
                             </IconButton>
-                        </Tooltip>
+                        </Tooltip> */}
 
                         <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
                             <Iconify icon="eva:more-vertical-fill" />
@@ -98,24 +98,7 @@ export function TableRowCom({
                         Supprimer
                     </MenuItem>
 
-                    <MenuItem
-                        onClick={() => {
-                            onEditRow();
-                            popover.onClose();
-                        }}
-                    >
-                        <Iconify icon="solar:pen-bold" />
-                        Modifier
-                    </MenuItem>
-                    <MenuItem
-                        onClick={() => {
-                            onViewRow();
-                            popover.onClose();
-                        }}
-                    >
-                        <Iconify icon="solar:pen-bold" />
-                        Voir
-                    </MenuItem>
+
 
                 </MenuList>
             </CustomPopover>

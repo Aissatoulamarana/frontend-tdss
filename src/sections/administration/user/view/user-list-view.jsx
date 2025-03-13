@@ -338,7 +338,7 @@ export function UserListView() {
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
         </Card>
-      </DashboardContent>
+      </DashboardContent >
 
       <ConfirmDialog
         open={confirm.value}

@@ -1,6 +1,6 @@
 'use client';
 
-import { Grid2 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Popover, MenuItem } from '@mui/material';
@@ -125,7 +125,7 @@ export function DeclarationListView() {
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
+      color: 'warnning',
       count: tableData.length,
     },
     {
@@ -385,8 +385,8 @@ export function DeclarationListView() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-          <Grid2 size={{ xs: 6, md: 3 }}>
+        <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} >
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
               total={tableData.length}
@@ -397,8 +397,8 @@ export function DeclarationListView() {
                 series: [20, 41, 63, 33, 28, 35, 50, 46],
               }}
             />
-          </Grid2>
-          <Grid2 size={{ xs: 6, md: 3 }}>
+          </Grid>
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Facturée"
               total={getInvoiceLength('facturée')}
@@ -409,9 +409,9 @@ export function DeclarationListView() {
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
               }}
             />
-          </Grid2>
+          </Grid>
 
-          <Grid2 size={{ xs: 6, md: 3 }}>
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="En attente"
               total={getInvoiceLength('pending')}
@@ -422,8 +422,8 @@ export function DeclarationListView() {
                 series: [18, 19, 31, 8, 16, 37, 12, 33],
               }}
             />
-          </Grid2>
-          <Grid2 size={{ xs: 6, md: 3 }}>
+          </Grid>
+          <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Brouillon"
               total={getInvoiceLength('brouillon')}
@@ -434,8 +434,8 @@ export function DeclarationListView() {
                 series: [18, 19, 31, 8, 16, 37, 12, 33],
               }}
             />
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
 
         <Card>
           <Tabs

@@ -1,3 +1,5 @@
+import { Update } from "@mui/icons-material";
+
 //  const BASE_URL = 'http://127.0.0.1:8000'; // Adresse de votre backend
  const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
 
@@ -64,13 +66,16 @@ const API = {
 
   listDevises: () => `${BASE_URL}/devises/`,
 
-  listProfilesTypes: () => `${BASE_URL}/profile-types/`,
+  listProfilesTypes: () => `${BASE_URL}/profiles/types/`,
 
   createProfile: () => `${BASE_URL}/profiles/`,
   listProfiles: () => `${BASE_URL}/profiles/`,
+  UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}`,
   listClients: () => `${BASE_URL}/profiles/get-groupes/`,
 
   listCategories: () => `${BASE_URL}/api/job-categories/`,
+
+  listUserTypes: () => `${BASE_URL}/profiles/user-types/`,
   
 
 };

@@ -26,8 +26,16 @@ export function SignOutButton({ onClose, ...other }) {
   }, [checkUserSession, onClose, router]);
 
   return (
-    <Button fullWidth variant="soft" size="large" color="error" onClick={handleLogout} {...other}>
-      Deconnexion
+    <Button
+      fullWidth
+      variant="soft"
+      size="large"
+      sx={{ bgcolor: 'error.main', color: 'white' }}
+      onClick={handleLogout}
+      {...other}
+    >
+      Déconnexion
     </Button>
+
   );
 }

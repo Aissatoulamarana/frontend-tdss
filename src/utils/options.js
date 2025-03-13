@@ -1,57 +1,61 @@
+// optionsService.js
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 
-// Déclarer les variables pour stocker les options
-let regions = [];
-let categories = [];
-let devises = [];
-let profileTypes = [];
-let permissions = [];
-let agences = [];
-let declarations = [];
-let entreprises = [];
-let banks = [];
-
-const fetchOptions = async () => {
-  try {
-    const [
-      regionsData,
-      agenceData,
-      categoriesData,
-      devisesData,
-      profileTypeData,
-      permissionsData,
-      declarationsData,
-      entreprisesData,
-      bankData,
-    ] = await Promise.all([
-      axios.get(API.listRegions()),
-      axios.get(API.listAgences()),
-      axios.get(API.listCategories()),
-      axios.get(API.listDevises()),
-      axios.get(API.listProfilesTypes()),
-      axios.get(API.listPermissions()),
-      axios.get(API.listDeclarations()),
-      axios.get(API.listProfiles()),
-      axios.get(API.listProfiles()),
-    ]);
-
-    // Vérification que les données existent avant de les stocker
-    regions = Array.isArray(regionsData?.data) ? regionsData.data : [];
-    categories = Array.isArray(categoriesData?.data) ? categoriesData.data : [];
-    devises = Array.isArray(devisesData?.data) ? devisesData.data : [];
-    profileTypes = Array.isArray(profileTypeData?.data) ? profileTypeData.data : [];
-    permissions = Array.isArray(permissionsData?.data) ? permissionsData.data : [];
-    agences = Array.isArray(agenceData?.data) ? agenceData.data : [];
-    declarations = Array.isArray(declarationsData?.data) ? declarationsData.data : [];
-    entreprises = Array.isArray(entreprisesData?.data.ENTREPRISE) ? entreprisesData.data.ENTREPRISE : [];
-    banks = Array.isArray(bankData?.data?.BANK) ? bankData?.data.BANK : [];
-
-
-  } catch (error) {
-    console.error('Erreur lors de la récupération des options:', error);
-  }
+const cache = {
+  regions: null,
+  categories: null,
+  devises: null,
+  profileTypes: null,
+  permissions: null,
+  agences: null,
+  declarations: null,
+  entreprises: null,
+  banks: null,
 };
 
-// Exposer la fonction fetchOptions et les variables
-export { fetchOptions, regions, categories, devises, profileTypes, permissions, agences, declarations, entreprises, banks };
+const pendingPromises = {};
+
+const fetchAndCache = async (cacheKey, apiCall, dataPath = 'data') => {
+  // Si déjà en cache, retourne immédiatement
+  if (cache[cacheKey]) return cache[cacheKey];
+
+  // Si une promesse est en cours, on la retourne
+  if (pendingPromises[cacheKey]) return pendingPromises[cacheKey];
+
+  // Sinon, on lance l'appel
+  pendingPromises[cacheKey] = axios.get(apiCall()).then(response => {
+    let data;
+    if (dataPath === 'results' && Array.isArray(response?.data?.results)) {
+      data = response.data.results;
+    } else if (Array.isArray(response?.data)) {
+      data = response.data;
+    } else {
+      data = [];
+    }
+    cache[cacheKey] = data;
+    delete pendingPromises[cacheKey];
+    return data;
+  }).catch(error => {
+    console.error(`Erreur lors de la récupération de ${cacheKey}:`, error);
+    delete pendingPromises[cacheKey];
+    throw error;
+  });
+
+  return pendingPromises[cacheKey];
+};
+
+export const getRegions = () => fetchAndCache('regions', API.listRegions, 'results');
+export const getCategories = () => fetchAndCache('categories', API.listCategories);
+export const getDevises = () => fetchAndCache('devises', API.listDevises);
+export const getProfileTypes = () => fetchAndCache('profileTypes', API.listProfilesTypes, 'results');
+export const getPermissions = () => fetchAndCache('permissions', API.listPermissions);
+export const getAgences = () => fetchAndCache('agences', API.listAgences);
+export const getDeclarations = () => fetchAndCache('declarations', API.listDeclarations);
+export const getEntreprises = () => fetchAndCache('entreprises', API.listProfiles);
+export const getBanks = () => fetchAndCache('banks', API.listProfiles);
+
+export const clearCache = () => {
+  Object.keys(cache).forEach(key => cache[key] = null);
+  Object.keys(pendingPromises).forEach(key => delete pendingPromises[key]);
+};

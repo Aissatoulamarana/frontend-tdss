@@ -77,7 +77,7 @@ export function ClientListView() {
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
 
-    const filters = useSetState({ name: '', type_nom: [], status: 'all' });
+    const filters = useSetState({ name: '', type: [], status: 'all' });
 
     const dataFiltered = applyFilter({
         inputData: tableData,
@@ -88,7 +88,7 @@ export function ClientListView() {
     const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
     const canReset =
-        !!filters.state.name || filters.state.type_nom.length > 0 || filters.state.status !== 'all';
+        !!filters.state.name || filters.state.type.length > 0 || filters.state.status !== 'all';
 
     const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
@@ -166,8 +166,8 @@ export function ClientListView() {
         // Fonction pour récupérer les données
         const fetchClient = async () => {
             try {
-                const response = await axios.get(API.listClients());
-                setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+                const response = await axios.get(API.listProfiles());
+                setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -189,11 +189,11 @@ export function ClientListView() {
         <>
             <DashboardContent maxWidth="xl">
                 <CustomBreadcrumbs
-                    heading="Listes des clients"
+                    heading="Listes des Profils"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Client', href: paths.dashboard.client.root },
-                        { name: 'Listes des clients' },
+                        { name: 'Profil', href: paths.dashboard.client.root },
+                        { name: 'Listes des profils' },
                     ]}
                     action={
                         <Button
@@ -202,7 +202,7 @@ export function ClientListView() {
                             variant="contained"
                             startIcon={<Iconify icon="mingcute:add-line" />}
                         >
-                            Nouvel Client
+                            Nouvel Profil
                         </Button>
                     }
                     sx={{ mb: { xs: 3, md: 5 } }}
@@ -249,7 +249,7 @@ export function ClientListView() {
                     <ClientTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage}
-                        options={{ roles: [... new Set(dataFiltered.map((row) => row.type_nom.trim()))] }}
+                        options={{ roles: [... new Set(dataFiltered.map((row) => row.type.trim()))] }}
                     />
 
                     {canReset && (
@@ -269,7 +269,7 @@ export function ClientListView() {
                             onSelectAllRows={(checked) =>
                                 table.onSelectAllRows(
                                     checked,
-                                    dataFiltered.map((row) => row.uuid)
+                                    dataFiltered.map((row) => row.slug)
                                 )
                             }
                             action={
@@ -293,7 +293,7 @@ export function ClientListView() {
                                     onSelectAllRows={(checked) =>
                                         table.onSelectAllRows(
                                             checked,
-                                            dataFiltered.map((row) => row.uuid)
+                                            dataFiltered.map((row) => row.slug)
                                         )
                                     }
                                 />
@@ -306,14 +306,14 @@ export function ClientListView() {
                                         )
                                         .map((row) => (
                                             <ClientTableRow
-                                                key={row.uuid}
+                                                key={row.slug}
                                                 row={row}
-                                                selected={table.selected.includes(row.uuid)}
-                                                onSelectRow={() => table.onSelectRow(row.uuid)}
-                                                onDeleteRow={() => handleDeleteRow(row.uuid)}
-                                                onEditRow={() => handleEditRow(row.uuid)}
-                                                onViewRow={() => handleViewRow(row.uuid)}
-                                                onActivate={() => handleActivate(row.uuid)}
+                                                selected={table.selected.includes(row.slug)}
+                                                onSelectRow={() => table.onSelectRow(row.slug)}
+                                                onDeleteRow={() => handleDeleteRow(row.slug)}
+                                                onEditRow={() => handleEditRow(row.slug)}
+                                                onViewRow={() => handleViewRow(row.slug)}
+                                                onActivate={() => handleActivate(row.slug)}
                                             />
                                         ))}
 
@@ -367,7 +367,7 @@ export function ClientListView() {
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-    const { name, status, type_nom } = filters;
+    const { name, status, type } = filters;
 
     const stabilizedThis = inputData?.map((el, index) => [el, index]);
 
@@ -389,8 +389,8 @@ function applyFilter({ inputData, comparator, filters }) {
         inputData = inputData?.filter((client) => client?.status === status);
     }
 
-    if (type_nom.length) {
-        inputData = inputData?.filter((client) => type_nom?.includes(client.type_nom));
+    if (type.length) {
+        inputData = inputData?.filter((client) => type?.includes(client.type));
     }
 
     return inputData;

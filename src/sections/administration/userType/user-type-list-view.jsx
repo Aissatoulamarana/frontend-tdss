@@ -138,7 +138,7 @@ export function UserTypeListView() {
         // Fonction pour récupérer les données
         const fetchRegions = async () => {
             try {
-                const response = await axios.get(API.listProfilesTypes());
+                const response = await axios.get(API.listUserTypes());
                 setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
@@ -161,10 +161,10 @@ export function UserTypeListView() {
         <>
             <DashboardContent maxWidth="xl">
                 <CustomBreadcrumbs
-                    heading="Listes des types d'utilisateur"
+                    heading=" Types d'utilisateur"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Types ', href: paths.dashboard.userType.root },
+                        { name: 'Types Utilisateur ', href: paths.dashboard.userType.root },
                         { name: "Types d'utilisateurs " },
                     ]}
 
