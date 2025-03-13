@@ -41,7 +41,7 @@ export function UserTableRow({
     <>
       <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
         <TableCell padding="checkbox">
-          <Checkbox id={row.id} checked={selected} onClick={onSelectRow} />
+          <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
         </TableCell>
 
         <TableCell>

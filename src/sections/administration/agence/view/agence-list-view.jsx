@@ -27,7 +27,7 @@ import { AgenceSort } from '../agence-sort';
 // ----------------------------------------------------------------------
 
 
-export const JOB_SORT_OPTIONS = [
+export const SORT_OPTIONS = [
   { label: 'Latest', value: 'latest' },
   { label: 'Popular', value: 'popular' },
   { label: 'Oldest', value: 'oldest' },
@@ -46,7 +46,7 @@ export function AgenceListView() {
     const fetchFonctions = async () => {
       try {
         const response = await axios.get(API.listAgences()); // Remplacez par votre endpoint réel
-        const agences = response.data || []; // Assurez-vous que c'est bien un tableau
+        const agences = response.data.results || []; // Assurez-vous que c'est bien un tableau
         setTableData(agences);
 
         // Extraire uniquement les noms des fonctions
@@ -71,7 +71,7 @@ export function AgenceListView() {
 
   const dataFiltered = applyFilter({ inputData: tableData, filters: filters.state, sortBy });
 
-  const notFound = !dataFiltered.length;
+  const notFound = !dataFiltered?.length;
 
   const handleSortBy = useCallback((newValue) => {
     setSortBy(newValue);
@@ -102,7 +102,7 @@ export function AgenceListView() {
       <AgenceSearch search={search} onSearch={handleSearch} />
 
       <Stack direction="row" spacing={1} flexShrink={0}>
-        <AgenceSort sort={sortBy} onSort={handleSortBy} sortOptions={JOB_SORT_OPTIONS} />
+        <AgenceSort sort={sortBy} onSort={handleSortBy} sortOptions={SORT_OPTIONS} />
       </Stack>
     </Stack>
   );

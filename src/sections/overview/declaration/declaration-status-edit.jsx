@@ -62,20 +62,20 @@ export function DeclarationEditStatusDate({ type }) {
         label="Type de la declaration"
         value={type}
       />
-      {user.type_code === 'ENTREPRISE' &&
-        <Field.Select
-          fullWidth
-          name='profile'
-          label='Entreprise'
-          placeholder="veuillez selectionnez l'entreprise dont vous déclarez"
-        >
-          {entreprises.map((entreprise) => (
-            <MenuItem key={entreprise.uuid} value={String(entreprise.uuid)} sx={{ textTransform: 'capitalize' }}>
-              {entreprise.name}
-            </MenuItem>
-          ))}
-        </Field.Select>
-      }
+      {/* {user.type_code === 'ENTREPRISE' && */}
+      <Field.Select
+        fullWidth
+        name='profile'
+        label='Entreprise'
+        placeholder="veuillez selectionnez l'entreprise dont vous déclarez"
+      >
+        {entreprises.map((entreprise) => (
+          <MenuItem key={entreprise.uuid} value={String(entreprise.uuid)} sx={{ textTransform: 'capitalize' }}>
+            {entreprise.name}
+          </MenuItem>
+        ))}
+      </Field.Select>
+      {/* } */}
     </Stack>
   );
 }

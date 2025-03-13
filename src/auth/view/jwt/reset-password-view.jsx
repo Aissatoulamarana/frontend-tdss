@@ -48,7 +48,7 @@ export function ResetPasswordView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await resetPassword({ username: data.email });
+      await resetPassword({ email: data.email });
 
       const searchParams = new URLSearchParams({ email: data.email }).toString();
 

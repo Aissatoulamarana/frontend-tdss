@@ -167,7 +167,7 @@ export function UserListView() {
     const fetchUtilisateurs = async () => {
       try {
         const response = await axios.get(API.listUsers());
-        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
       } catch (err) {
         setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
@@ -192,7 +192,7 @@ export function UserListView() {
           heading="Listes des utilisateurs"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Utilisateurs', href: paths.dashboard.user.root },
+            { name: 'Utilisateurs', href: paths.dashboard.user.list },
             { name: 'Listes des utilisateurs' },
           ]}
           action={
@@ -306,14 +306,14 @@ export function UserListView() {
                     )
                     .map((row) => (
                       <UserTableRow
-                        key={row.id}
+                        key={row.slug}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onActivate={() => handleActivate(row.id)}
+                        selected={table.selected.includes(row.slug)}
+                        onSelectRow={() => table.onSelectRow(row.slug)}
+                        onDeleteRow={() => handleDeleteRow(row.slug)}
+                        onEditRow={() => handleEditRow(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
+                        onActivate={() => handleActivate(row.slug)}
                       />
                     ))}
 

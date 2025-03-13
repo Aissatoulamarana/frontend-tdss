@@ -83,6 +83,7 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/user`,
       new: `${ROOTS.DASHBOARD}/user/new`,
       list: `${ROOTS.DASHBOARD}/user/list`,
+      account: `${ROOTS.DASHBOARD}/user/account`
     },
 
     fonction: {
@@ -115,5 +116,17 @@ export const paths = {
       
       
     },
+
+    region: {
+      root: `${ROOTS.DASHBOARD}/region`,
+      list: `${ROOTS.DASHBOARD}/region/list`,
+    },
+    profilType: {
+      root: `${ROOTS.DASHBOARD}/profilType`,
+    },
+    userType: {
+      root: `${ROOTS.DASHBOARD}/userType`,
+    },
+
   },
 };

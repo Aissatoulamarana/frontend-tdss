@@ -51,7 +51,7 @@ export function TableSelectedAction({
           ...(dense && { ml: 3 }),
         }}
       >
-        {numSelected} selected
+        {numSelected} selectionné
       </Typography>
 
       {action && action}

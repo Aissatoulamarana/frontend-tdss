@@ -1,5 +1,4 @@
 import { extendTheme } from '@mui/material/styles';
-
 import { shadows, typography, components, colorSchemes, customShadows } from './core';
 import { overridesTheme } from './overrides-theme';
 import { setFont } from './styles/utils';
@@ -10,11 +9,20 @@ import { updateCoreWithSettings, updateComponentsWithSettings } from './with-set
 export function createTheme(settings) {
   const initialTheme = {
     colorSchemes,
+    cssVariables: true,
     shadows: shadows(settings.colorScheme),
     customShadows: customShadows(settings.colorScheme),
     direction: settings.direction,
     shape: { borderRadius: 8 },
-    components,
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          },
+        },
+      },
+    },
     typography: {
       ...typography,
       fontFamily: setFont(settings.fontFamily),
@@ -24,16 +32,14 @@ export function createTheme(settings) {
   };
 
   /**
-   * 1.Update values from settings before creating theme.
+   * 1. Update values from settings before creating theme.
    */
-  const updateTheme = updateCoreWithSettings(initialTheme, settings);
+  const updatedTheme = updateCoreWithSettings(initialTheme, settings);
 
   /**
-   * 2.Create theme + add locale + update component with settings.
+   * 2. Create theme + add locale + update components with settings.
    */
-  const theme = extendTheme(updateTheme, updateComponentsWithSettings(settings), overridesTheme);
-
-  return theme;
+  return extendTheme(updatedTheme, updateComponentsWithSettings(settings), overridesTheme);
 }
 
 // ----------------------------------------------------------------------
@@ -47,7 +53,6 @@ function shouldSkipGeneratingVar(keys, value) {
     'cssVarPrefix',
     'unstable_sxConfig',
     'typography',
-    // 'transitions',
   ];
 
   const skipPaletteKeys = {
@@ -61,18 +66,16 @@ function shouldSkipGeneratingVar(keys, value) {
   if (isPaletteKey) {
     const paletteType = keys[1];
     const skipKeys = skipPaletteKeys[paletteType] || skipPaletteKeys.global;
-
     return keys.some((key) => skipKeys?.includes(key));
   }
 
-  return keys.some((key) => skipGlobalKeys?.includes(key));
+  return keys.some((key) => skipGlobalKeys.includes(key));
 }
 
 /**
-* createTheme without @settings and @locale components.
-*
- ```jsx
-export function createTheme(): Theme {
+ * createTheme without @settings and @locale components.
+ */
+export function createDefaultTheme() {
   const initialTheme = {
     colorSchemes,
     shadows: shadows('light'),
@@ -84,9 +87,5 @@ export function createTheme(): Theme {
     shouldSkipGeneratingVar,
   };
 
-  const theme = extendTheme(initialTheme, overridesTheme);
-
-  return theme;
+  return extendTheme(initialTheme, overridesTheme);
 }
- ```
-*/

@@ -60,7 +60,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     <AnimateAvatar
       width={96}
       slotProps={{
-        avatar: { src: user?.photoURL, alt: user?.displayName },
+        avatar: { src: user?.picture || user?.profile_picture, alt: user?.first_name || user?.profile_name },
         overlay: {
           border: 2,
           spacing: 3,
@@ -68,7 +68,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
         },
       }}
     >
-      {user?.displayName?.charAt(0).toUpperCase()}
+      {user?.email?.charAt(0).toUpperCase()}
     </AnimateAvatar>
   );
 
@@ -76,8 +76,8 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     <>
       <AccountButton
         onClick={handleOpenDrawer}
-        photoURL={user?.photoURL}
-        displayName={user?.displayName}
+        photoURL={user?.picture || user?.profile_picture}
+        displayName={user?.profile_name}
         sx={sx}
         {...other}
       />
@@ -101,7 +101,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
             {renderAvatar}
 
             <Typography variant="subtitle1" noWrap sx={{ mt: 2 }}>
-              {user?.name}
+              {user?.first_name}
             </Typography>
 
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }} noWrap>
@@ -110,7 +110,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
           </Stack>
 
           <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" sx={{ p: 3 }}>
-            {[...Array(3)].map((_, index) => (
+            {/* {[...Array(3)].map((_, index) => (
               <Tooltip
                 key={_mock.fullName(index + 1)}
                 title={`Switch to: ${_mock.fullName(index + 1)}`}
@@ -121,9 +121,9 @@ export function AccountDrawer({ data = [], sx, ...other }) {
                   onClick={() => { }}
                 />
               </Tooltip>
-            ))}
+            ))} */}
 
-            <Tooltip title="Add account">
+            <Tooltip title="Ajoutez un autre compte">
               <IconButton
                 sx={{
                   bgcolor: varAlpha(theme.vars.palette.grey['500Channel'], 0.08),
@@ -175,9 +175,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
             })}
           </Stack>
 
-          <Box sx={{ px: 2.5, py: 3 }}>
-            {/* <UpgradeBlock /> */}
-          </Box>
+
         </Scrollbar>
 
         <Box sx={{ p: 2.5 }}>

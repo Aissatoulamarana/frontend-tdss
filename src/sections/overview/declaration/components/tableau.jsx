@@ -41,7 +41,7 @@ const fixedCategories = [
   { label: 'Ouvrier', value: 'Ouvrier' },
 ];
 
-const FilteredTable = ({ declaration }) => {
+const FilteredTable = ({ declaration, printMode = false }) => {
   const [selected, setSelected] = useState([]);
   const [filter, setFilter] = useState('All');
   const [dense, setDense] = useState(false);
@@ -222,7 +222,7 @@ const FilteredTable = ({ declaration }) => {
           sx={{
             display: 'flex',
             justifyContent: 'space-around',
-            backgroundColor: 'rgba(0, 0, 0, 0)',
+            backgroundColor: printMode ? 'transparent' : 'transparent',
             padding: 1,
             marginBottom: 5
           }}
@@ -297,26 +297,31 @@ const FilteredTable = ({ declaration }) => {
               </TableRow>
             ))}
           </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </TableRow>
-          </TableFooter>
+          {/* Pagination non affichée en mode impression */}
+          {!printMode && (
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  count={rows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </TableRow>
+            </TableFooter>
+          )}
         </Table>
       </TableContainer>
-      <Box sx={{ p: 2 }}>
-        <FormControlLabel
-          control={<Switch checked={dense} onChange={(e) => setDense(e.target.checked)} />}
-          label="Dense"
-        />
-      </Box>
+      {!printMode && (
+        <Box sx={{ p: 2 }}>
+          <FormControlLabel
+            control={<Switch checked={dense} onChange={(e) => setDense(e.target.checked)} />}
+            label="Dense"
+          />
+        </Box>
+      )}
     </Paper>
   );
 };

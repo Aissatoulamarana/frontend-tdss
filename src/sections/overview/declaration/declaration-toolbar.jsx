@@ -86,7 +86,7 @@ export function DeclarationToolbar({
     <NoSsr>
       <PDFDownloadLink
         document={declaration ? <DeclarationPDF declaration={declaration} user={user} /> : <span />}
-        fileName={declaration?.declaration_number}
+        fileName={declaration?.reference}
         style={{ textDecoration: 'none' }}
       >
         {({ loading }) => (

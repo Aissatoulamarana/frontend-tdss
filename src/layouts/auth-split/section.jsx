@@ -16,7 +16,7 @@ export function Section({
   layoutQuery,
   methods,
   title = '',
-  imgUrl = `${CONFIG.assetsDir}/assets/illustrations/illustration-dashboard.webp`,
+  imgUrl = `${CONFIG.assetsDir}/assets/illustrations/illustration-dashboard.webp.png`,
   subtitle = '',
   ...other
 }) {
@@ -64,9 +64,9 @@ export function Section({
 
       <Box
         component="img"
-      // alt="Dashboard illustration"
-      // src={imgUrl}
-      // sx={{ width: 1, aspectRatio: '4/3', objectFit: 'cover' }}
+        alt="Dashboard illustration"
+        src={imgUrl}
+        sx={{ width: 1, aspectRatio: '4/3', objectFit: 'cover' }}
       />
 
       {/* {!!methods?.length && method && (

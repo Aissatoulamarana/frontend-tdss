@@ -28,7 +28,7 @@ export function AgenceItem({ agence, onView, onEdit, onDelete }) {
                     <ListItemText
                         sx={{ mb: 1 }}
                         primary={agence.name}
-                        secondary={agence.region}
+                        secondary={agence.region.name}
                         primaryTypographyProps={{ typography: 'subtitle1', fontWeight: 600 }}
                         secondaryTypographyProps={{
                             mt: 1,
@@ -38,19 +38,19 @@ export function AgenceItem({ agence, onView, onEdit, onDelete }) {
                         }}
                     />
 
-                    {/* Manager */}
+                    {/* Manager
                     <Typography variant="h6" sx={{ mb: 1 }}>
                         Manager
-                    </Typography>
+                    </Typography> */}
 
                     {/* Avatar et Infos du manager */}
-                    <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-                        {/* <Avatar
+                    {/* <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
+                        <Avatar
                             alt={agence?.manager_by?.first_name}
                             src={agence?.manager_by?.picture}
                             variant="rounded"
                             sx={{ width: 48, height: 48 }}
-                        /> */}
+                        />
                         <Stack spacing={0.5}>
                             <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 <Iconify width={16} icon="solar:user-rounded-bold" />
@@ -69,7 +69,7 @@ export function AgenceItem({ agence, onView, onEdit, onDelete }) {
                                 </Typography>
                             </Stack>
                         </Stack>
-                    </Stack>
+                    </Stack> */}
 
                 </Stack>
 
