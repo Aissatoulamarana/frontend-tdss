@@ -1,10 +1,19 @@
 'use client';
 
+import { useEffect } from 'react';
 
+import { useRouter } from 'src/routes/hooks';
 
-import { HomeView } from 'src/sections/home/view';
+import { CONFIG } from 'src/config-global';
 
 // ----------------------------------------------------------------------
+
 export default function Page() {
-  return <HomeView />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push(CONFIG.auth.redirectPath);
+  }, [router]);
+
+  return null;
 }
