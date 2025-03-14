@@ -74,7 +74,7 @@
         "npm-check-updates": "^17.1.15",
         "nprogress": "^0.2.0",
         "papaparse": "^5.5.2",
-        "react": "^19.0.0",
+        "react": "^18.0.0",
         "react-apexcharts": "^1.7.0",
         "react-dom": "^19.0.0",
         "react-dropzone": "^14.3.8",
