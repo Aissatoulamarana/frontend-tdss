@@ -25,7 +25,7 @@ const API = {
   rejetterDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/status-update/`, // Rejetter une déclaration 
   supprimerDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/`, // Supprimer une déclaration
   updateDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/`,// Modifier une déclaration
-  move: () => `${BASE_URL}/declarations/move-employees/`,//deplacer des employés d'une déclaration à une autre
+  move: () => `${BASE_URL}/declarations/move-employees/`,// deplacer des employés d'une déclaration à une autre
 
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures

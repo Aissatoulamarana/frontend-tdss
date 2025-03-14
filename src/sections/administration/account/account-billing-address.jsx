@@ -115,11 +115,11 @@ export function AccountBillingAddress({ addressBook }) {
         </MenuList>
       </CustomPopover>
 
-      <AddressNewForm
+      {/* <AddressNewForm
         open={addressForm.value}
         onClose={addressForm.onFalse}
         onCreate={handleAddNewAddress}
-      />
+      /> */}
     </>
   );
 }

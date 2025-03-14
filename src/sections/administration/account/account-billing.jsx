@@ -1,4 +1,4 @@
-import { Grid22 } from '@mui/material';
+import { Grid } from '@mui/material';
 
 import { AccountBillingPlan } from './account-billing-plan';
 import { AccountBillingPayment } from './account-billing-payment';
@@ -9,18 +9,18 @@ import { AccountBillingAddress } from './account-billing-address';
 
 export function AccountBilling({ cards, plans, invoices, addressBook }) {
   return (
-    <Grid2 container spacing={5} disableEqualOverflow>
-      <Grid2 xs={12} md={8}>
+    <Grid container spacing={5} disableEqualOverflow>
+      <Grid xs={12} md={8}>
         <AccountBillingPlan plans={plans} cardList={cards} addressBook={addressBook} />
 
         <AccountBillingPayment cards={cards} />
 
         <AccountBillingAddress addressBook={addressBook} />
-      </Grid2>
+      </Grid>
 
-      <Grid2 xs={12} md={4}>
+      <Grid xs={12} md={4}>
         <AccountBillingHistory invoices={invoices} />
-      </Grid2>
-    </Grid2>
+      </Grid>
+    </Grid>
   );
 }

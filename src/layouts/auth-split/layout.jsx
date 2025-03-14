@@ -3,7 +3,7 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import { CONFIG } from 'src/config-global';
+// import { CONFIG } from 'src/config-global';
 
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
@@ -14,7 +14,7 @@ import { SettingsButton } from '../components/settings-button';
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
 import { Main, Content } from './main';
-import { Section } from './section';
+// import { Section } from './section';
 
 // ----------------------------------------------------------------------
 

@@ -28,7 +28,7 @@ import { Label } from 'src/components/label';
 
 import { PayeurForm } from './form-factures';
 
-import { fetchOptions, banks } from 'src/utils/options';
+// import { fetchOptions, banks } from 'src/utils/options';
 
 // ----------------------------------------------------------------------
 
@@ -64,13 +64,13 @@ export function FactureTableRow({
 
   const popover = usePopover();
 
-  useEffect(() => {
-    // Récupérer les options lors du chargement du composant
-    fetchOptions().then(() => {
-      setLoaded(true); // Marquer comme chargé une fois les données récupérées
-      console.log(banks);
-    });
-  }, []);
+  // useEffect(() => {
+  //   // Récupérer les options lors du chargement du composant
+  //   fetchOptions().then(() => {
+  //     setLoaded(true); // Marquer comme chargé une fois les données récupérées
+  //     console.log(banks);
+  //   });
+  // }, []);
 
   return (
     <>
@@ -178,7 +178,7 @@ export function FactureTableRow({
           {/* )} */}
         </MenuList>
       </CustomPopover>
-      <ConfirmDialog
+      {/* <ConfirmDialog
         fullWidth
         open={openFirstDialog}
         onClose={() => setOpenFirstDialog(false)} // Ferme la première boîte de dialogue
@@ -232,7 +232,7 @@ export function FactureTableRow({
             Suivant
           </Button>
         }
-      />
+      /> */}
       <ConfirmDialog
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
