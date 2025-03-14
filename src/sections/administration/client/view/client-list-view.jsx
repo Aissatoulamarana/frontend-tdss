@@ -93,17 +93,32 @@ export function ClientListView() {
     const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
     const handleDeleteRow = useCallback(
-        (id) => {
-            const deleteRow = tableData.filter((row) => row.id !== id);
+        async (slug) => {
+            try {
+                // Appel à l'API backend pour supprimer l'élément
+                const response = await axios.delete(API.UpdateProfile(slug));
 
-            toast.success('Suppression reussie!');
+                if (response) {
+                    // Mise à jour des données côté frontend après suppression réussie
+                    const updatedTableData = tableData.filter((row) => row.slug !== slug);
+                    setTableData(updatedTableData);
 
-            setTableData(deleteRow);
+                    toast.success('Suppression réussie !');
 
-            table.onUpdatePageDeleteRow(dataInPage.length);
+                    // Mise à jour de la pagination ou des données affichées
+                    table.onUpdatePageDeleteRow(dataInPage.length);
+                } else {
+                    console.error("Erreur lors de la suppression :", response.data.error);
+                    toast.error('Une erreur est survenue.');
+                }
+            } catch (error) {
+                console.error('Erreur réseau ou serveur :', error);
+                toast.error('Erreur lors de la communication avec le serveur.');
+            }
         },
         [dataInPage.length, table, tableData]
     );
+
 
     const handleDeleteRows = useCallback(() => {
         const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -118,12 +133,7 @@ export function ClientListView() {
         });
     }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
-    const handleEditRow = useCallback(
-        (id) => {
-            router.push(paths.dashboard.user.edit(id));
-        },
-        [router]
-    );
+
 
     const handleViewRow = useCallback(
         (id) => {
@@ -140,16 +150,16 @@ export function ClientListView() {
         [filters, table]
     );
 
-    const handleActivate = useCallback(
-        async (id) => {
+    const handleDelete = useCallback(
+        async (slug) => {
             try {
                 // Appel à l'API backend pour rejeter la déclaration
-                const response = await axios.post(API.activate(id));
+                const response = await axios.delete(API.UpdateProfile(slug));
                 if (response.data.success) {
                     // Si succès, rediriger ou mettre à jour l'interface utilisateur
-                    console.log('Compte activé avec succès:', response.data.message);
-                    toast.success('Compte activé avec succès !');
-                    router.push(paths.dashboard.declaration.list);
+                    console.log('profil supprimé avec succès:', response.data.message);
+                    toast.success('profil supprimé avec succès !');
+                    router.push(paths.dashboard.profil.root);
                 } else {
                     console.error("Erreur lors de l'activation :", response.data.error);
                     toast.error('Une erreur est survenue.');
@@ -313,7 +323,6 @@ export function ClientListView() {
                                                 onDeleteRow={() => handleDeleteRow(row.slug)}
                                                 onEditRow={() => handleEditRow(row.slug)}
                                                 onViewRow={() => handleViewRow(row.slug)}
-                                                onActivate={() => handleActivate(row.slug)}
                                             />
                                         ))}
 
@@ -356,6 +365,7 @@ export function ClientListView() {
                         onClick={() => {
                             handleDeleteRows();
                             confirm.onFalse();
+
                         }}
                     >
                         Supprimer

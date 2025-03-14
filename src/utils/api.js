@@ -70,7 +70,7 @@ const API = {
 
   createProfile: () => `${BASE_URL}/profiles/`,
   listProfiles: () => `${BASE_URL}/profiles/`,
-  UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}`,
+  UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listClients: () => `${BASE_URL}/profiles/get-groupes/`,
 
   listCategories: () => `${BASE_URL}/api/job-categories/`,

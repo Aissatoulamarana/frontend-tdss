@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
+import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
 import { fData } from 'src/utils/format-number';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
@@ -43,6 +43,8 @@ export const NewClientSchema = zod.object({
 });
 
 export function ClientNewEditForm({ currentClient }) {
+    const router = useRouter();
+
     const [loaded, setLoaded] = useState(false);
     const [regions, setRegions] = useState([]);
     const [types, setTypes] = useState([]);
