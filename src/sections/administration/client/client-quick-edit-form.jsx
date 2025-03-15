@@ -38,23 +38,27 @@ export const ClientQuickEditSchema = zod.object({
     // picture: zod.any().optional(),
 });
 
-export function ClientQuickEditForm({ currentClient, open, onClose }) {
+export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow }) {
     const [regions, setRegions] = useState([]);
     const [types, setTypes] = useState([]);
 
     // Définir les valeurs par défaut en s'assurant que les clés correspondent aux données du profil
-    const defaultValues = useMemo(
-        () => ({
+    const defaultValues = useMemo(() => {
+        // Pour la région : trouver l'option dont le nom correspond à currentClient.location
+        const currentRegion = regions.find(region => region.name === currentClient?.location);
+        // Pour le type de profil : pareil, on cherche l'option dont le nom correspond
+        const currentType = types.find(type => type.name === currentClient?.type);
+
+        return {
             name: currentClient?.name || '',
-            type: currentClient?.type || '',
+            type: currentType ? currentType.slug : currentClient?.type || '',
             email: currentClient?.email || '',
             contact: currentClient?.contact || '',
             adresse: currentClient?.adresse || '',
-            location: currentClient?.location || '',
-            // picture: currentClient?.picture || '',
-        }),
-        [currentClient]
-    );
+            location: currentRegion ? currentRegion.slug : currentClient?.location || '',
+        };
+    }, [currentClient, regions, types]);
+
 
     const methods = useForm({
         mode: 'all',
@@ -83,20 +87,23 @@ export function ClientQuickEditForm({ currentClient, open, onClose }) {
     // Fonction de mise à jour : création d'un FormData avec tous les champs
     const onSubmit = handleSubmit(async (data) => {
         try {
-            // Récupérer uniquement les champs modifiés
             const modifiedData = getModifiedFields(currentClient, data);
 
-            // Vérifier s'il y a des modifications avant d'envoyer
             if (Object.keys(modifiedData).length === 0) {
                 toast.info("Aucune modification détectée.");
                 return;
             }
 
-            await axios.patch(API.UpdateProfile(currentClient.slug), modifiedData, {
+            const response = await axios.patch(API.UpdateProfile(currentClient.slug), modifiedData, {
                 headers: { 'Content-Type': 'application/json' }
             });
 
             toast.success('Mise à jour réussie !');
+
+            // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
+            const updatedClient = { ...currentClient, ...modifiedData };
+            console.log("Client mis à jour :", updatedClient);
+            onUpdateRow(updatedClient);
             reset();
             onClose();
         } catch (error) {
@@ -104,6 +111,7 @@ export function ClientQuickEditForm({ currentClient, open, onClose }) {
             console.error('Erreur:', error.response?.data || error.message);
         }
     });
+
 
 
     // Récupérer les options pour les selects
@@ -123,7 +131,7 @@ export function ClientQuickEditForm({ currentClient, open, onClose }) {
             maxWidth="md"
             open={open}
             onClose={onClose}
-            PaperProps={{ sx: { maxWidth: 720 } }}
+            slotProps={{ sx: { maxWidth: 720 } }}
         >
             <Form methods={methods} onSubmit={onSubmit}>
                 <DialogTitle>Mise à jour rapide</DialogTitle>

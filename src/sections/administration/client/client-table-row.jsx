@@ -11,6 +11,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 
+
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -29,6 +30,7 @@ export function ClientTableRow({
     onSelectRow,
     onDeleteRow,
     onViewRow,
+    onUpdateRow,
 
 }) {
     const confirm = useBoolean();
@@ -58,11 +60,12 @@ export function ClientTableRow({
                         </Stack>
                     </Stack>
                 </TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type}</TableCell>
 
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.contact}</TableCell>
 
 
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type}</TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.location}</TableCell>
 
                 <TableCell>
                     <Label
@@ -96,7 +99,8 @@ export function ClientTableRow({
                 </TableCell>
             </TableRow>
 
-            <ClientQuickEditForm currentClient={row} open={quickEdit.value} onClose={quickEdit.onFalse} />
+
+            <ClientQuickEditForm currentClient={row} open={quickEdit.value} onClose={quickEdit.onFalse} onUpdateRow={onUpdateRow} />
 
             <CustomPopover
                 open={popover.open}

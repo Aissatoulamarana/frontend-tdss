@@ -113,6 +113,7 @@ export const paths = {
     client: {
       root: `${ROOTS.DASHBOARD}/client`,
       new: `${ROOTS.DASHBOARD}/client/new`,
+      details: (slug) => `/dashboard/client/${slug}`,
       
       
     },

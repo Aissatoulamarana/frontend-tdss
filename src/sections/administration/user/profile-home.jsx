@@ -8,7 +8,7 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import InputBase from '@mui/material/InputBase';
-import { Grid2 } from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import CardHeader from '@mui/material/CardHeader';
 
 import { fNumber } from 'src/utils/format-number';
@@ -32,150 +32,92 @@ export function ProfileHome({ info, posts }) {
     }
   };
 
-  const renderFollows = (
-    <Card sx={{ py: 3, textAlign: 'center', typography: 'h4' }}>
-      <Stack
-        direction="row"
-        divider={<Divider orientation="vertical" flexItem sx={{ borderStyle: 'dashed' }} />}
-      >
-        <Stack width={1}>
-          {fNumber(info.totalFollowers)}
-          <Box component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
-            Déclarations Soumises
-          </Box>
-        </Stack>
 
-        <Stack width={1}>
-          {fNumber(info.totalFollowing)}
-          <Box component="span" sx={{ color: 'text.secondary', typography: 'body2' }}>
-            Déclarations Validées
-          </Box>
-        </Stack>
-      </Stack>
-    </Card>
-  );
 
   const renderAbout = (
-    <Card>
-      <CardHeader title="About" />
-
-      <Stack spacing={2} sx={{ p: 3, typography: 'body2' }}>
-        <Box>{info.quote}</Box>
-
-        <Box display="flex">
-          Adresse
-          <Link variant="subtitle2" color="inherit">
-            &nbsp;{info.country}
-          </Link>
-        </Box>
-
-        <Box display="flex">
-          <Iconify width={24} icon="fluent:mail-24-filled" sx={{ mr: 2 }} />
-          {info.email}
-        </Box>
-
-        <Box display="flex">
-          <Iconify width={24} icon="ic:round-business-center" sx={{ mr: 2 }} />
-          {info.type_name} {`à `}
-          <Link variant="subtitle2" color="inherit">
-            &nbsp;{info.profile_name}
-          </Link>
-        </Box>
-
-        <Box display="flex">
-          <Iconify width={24} icon="ic:round-business-center" sx={{ mr: 2 }} />
-          {`Agence `}
-          <Link variant="subtitle2" color="inherit">
-            &nbsp;{info.agency}
-          </Link>
-        </Box>
-      </Stack>
-    </Card>
-  );
-
-  const renderPostInput = (
-    <Card sx={{ p: 3 }}>
-      <InputBase
-        multiline
-        fullWidth
-        rows={4}
-        placeholder="Share what you are thinking here..."
-        sx={{
-          p: 2,
-          mb: 3,
-          borderRadius: 1,
-          border: (theme) => `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.2)}`,
-        }}
+    <Card sx={{ overflow: 'visible' }}>
+      <CardHeader
+        title="Description"
+        sx={{ textAlign: 'center', pb: 0 }}
       />
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ color: 'text.secondary' }}>
-          <Fab size="small" color="inherit" variant="softExtended" onClick={handleAttach}>
-            <Iconify icon="solar:gallery-wide-bold" width={24} sx={{ color: 'success.main' }} />
-            Image/Video
-          </Fab>
+      {/* Description centrée en haut */}
+      <Box sx={{ p: 3, textAlign: 'center', fontSize: '1.1rem', lineHeight: 1.6 }}>
+        {info.description}
+      </Box>
 
-          <Fab size="small" color="inherit" variant="softExtended">
-            <Iconify icon="solar:videocamera-record-bold" width={24} sx={{ color: 'error.main' }} />
-            Streaming
-          </Fab>
-        </Stack>
+      <Divider />
 
-        <Button variant="contained">Post</Button>
-      </Stack>
+      {/* Infos en grille dynamique */}
+      <Box sx={{ p: 3 }}>
 
-      <input ref={fileRef} type="file" style={{ display: 'none' }} />
+        {/* Adresse */}
+        <Box display="flex" alignItems="center" justifyContent="space-around" flexWrap="wrap">
+
+          <Box display="flex" alignItems="center" mx={2}>
+            <Iconify icon="mdi:map-marker" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+            <Box>
+              <Box sx={{ fontWeight: 600 }}>Adresse</Box>
+              <Link variant="body2" color="text.secondary">
+                {info.adresse}
+              </Link>
+            </Box>
+          </Box>
+
+
+          {/* Email */}
+
+          <Box display="flex" alignItems="center" mx={2}>
+            <Iconify icon="fluent:mail-24-filled" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+            <Box>
+              <Box sx={{ fontWeight: 600 }}>Email</Box>
+              <Box variant="body2" color="text.secondary">
+                {info.email}
+              </Box>
+            </Box>
+          </Box>
+
+
+          {/* Contact */}
+
+          <Box display="flex" alignItems="center" mx={2}>
+            <Iconify icon="ic:baseline-phone" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+            <Box>
+              <Box sx={{ fontWeight: 600 }}>Contact</Box>
+              <Box variant="body2" color="text.secondary">
+                {info.contact}
+              </Box>
+            </Box>
+          </Box>
+
+
+          {/* Région */}
+
+          <Box display="flex" alignItems="center" mx={2}>
+            <Iconify icon="ic:round-location-city" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+            <Box>
+              <Box sx={{ fontWeight: 600 }}>Région</Box>
+              <Link variant="body2" color="text.secondary">
+                {info.location.name}
+              </Link>
+            </Box>
+          </Box>
+
+        </Box>
+      </Box>
     </Card>
   );
 
-  // const renderSocials = (
-  //   <Card>
-  //     <CardHeader title="Social" />
-
-  //     <Stack spacing={2} sx={{ p: 3 }}>
-  //       {_socials.map((social) => (
-  //         <Stack
-  //           key={social.label}
-  //           spacing={2}
-  //           direction="row"
-  //           sx={{ wordBreak: 'break-all', typography: 'body2' }}
-  //         >
-  //           {social.value === 'facebook' && <FacebookIcon />}
-  //           {social.value === 'instagram' && <InstagramIcon />}
-  //           {social.value === 'linkedin' && <LinkedinIcon />}
-  //           {social.value === 'twitter' && <TwitterIcon />}
-
-  //           <Link color="inherit">
-  //             {social.value === 'facebook' && info?.socialLinks.facebook}
-  //             {social.value === 'instagram' && info?.socialLinks.instagram}
-  //             {social.value === 'linkedin' && info?.socialLinks.linkedin}
-  //             {social.value === 'twitter' && info?.socialLinks.twitter}
-  //           </Link>
-  //         </Stack>
-  //       ))}
-  //     </Stack>
-  //   </Card>
-  // );
 
   return (
-    <Grid2 container spacing={3}>
-      <Grid2 size={{ xs: 12, md: 4 }} >
-        <Stack spacing={3}>
-          {/* {renderFollows} */}
-          {/* {renderAbout} */}
-          {/* {renderSocials} */}
-        </Stack>
-      </Grid2>
 
-      <Grid2 size={{ xs: 12, md: 4 }}>
-        <Stack spacing={3}>
-          {renderAbout}
+    <Grid size={{ xs: 12, md: 4 }}>
+      <Stack spacing={3}>
+        {renderAbout}
 
-          {/* {posts.map((post) => (
-            <ProfilePostItem key={post.id} post={post} />
-          ))} */}
-        </Stack>
-      </Grid2>
-    </Grid2>
+
+      </Stack>
+    </Grid>
+
   );
 }

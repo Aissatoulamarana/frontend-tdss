@@ -57,10 +57,11 @@ const STATUS_OPTIONS = [
 
 const TABLE_HEAD = [
     { id: 'name', label: 'Nom ' },
-    { id: 'phoneNumber', label: 'Numéro de téléphone', width: 180 },
-    //   { id: 'company', label: 'Company', width: 220 },
-    { id: 'role', label: 'Type', width: 180 },
-    { id: 'status', label: 'Status', width: 100 },
+    { id: 'role', label: 'Type' },
+    { id: 'phoneNumber', label: 'Numéro de téléphone' },
+    { id: 'region', label: 'Région' },
+
+    { id: 'status', label: 'Status' },
     { id: '', width: 88 },
 ];
 
@@ -134,10 +135,20 @@ export function ClientListView() {
     }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
 
+    const handleUpdateRow = useCallback((updatedClient) => {
+        console.log("Mise à jour dans le parent :", updatedClient);
+        setTableData((prevData) =>
+            prevData.map((row) =>
+                row.slug === updatedClient.slug ? updatedClient : row
+            )
+        );
+    }, []);
+
+
 
     const handleViewRow = useCallback(
-        (id) => {
-            router.push(paths.dashboard.user.account);
+        (slug) => {
+            router.push(paths.dashboard.client.details(slug));
         },
         [router]
     );
@@ -150,27 +161,6 @@ export function ClientListView() {
         [filters, table]
     );
 
-    const handleDelete = useCallback(
-        async (slug) => {
-            try {
-                // Appel à l'API backend pour rejeter la déclaration
-                const response = await axios.delete(API.UpdateProfile(slug));
-                if (response.data.success) {
-                    // Si succès, rediriger ou mettre à jour l'interface utilisateur
-                    console.log('profil supprimé avec succès:', response.data.message);
-                    toast.success('profil supprimé avec succès !');
-                    router.push(paths.dashboard.profil.root);
-                } else {
-                    console.error("Erreur lors de l'activation :", response.data.error);
-                    toast.error('Une erreur est survenue.');
-                }
-            } catch (error) {
-                console.error('Erreur réseau ou serveur:', error);
-                toast.error('Erreur lors de la communication avec le serveur.');
-            }
-        },
-        [router]
-    );
 
     useEffect(() => {
         // Fonction pour récupérer les données
@@ -323,6 +313,7 @@ export function ClientListView() {
                                                 onDeleteRow={() => handleDeleteRow(row.slug)}
                                                 onEditRow={() => handleEditRow(row.slug)}
                                                 onViewRow={() => handleViewRow(row.slug)}
+                                                onUpdateRow={handleUpdateRow}
                                             />
                                         ))}
 
