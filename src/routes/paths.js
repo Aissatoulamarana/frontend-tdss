@@ -114,6 +114,7 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/client`,
       new: `${ROOTS.DASHBOARD}/client/new`,
       details: (slug) => `/dashboard/client/${slug}`,
+      edit: (slug) => `${ROOTS.DASHBOARD}/client/${slug}/edit`,
       
       
     },

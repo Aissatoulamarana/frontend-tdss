@@ -1,12 +1,15 @@
 'use client';
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import API from "src/utils/api";
 import axios from "src/utils/axios";
 import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
 import Tabs from '@mui/material/Tabs';
-
+import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { useTabs } from 'src/hooks/use-tabs';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -42,6 +45,12 @@ export function ClientDetailsView({ slug }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const router = useRouter()
+
+    const handleEdit = useCallback(() => {
+        router.push(paths.dashboard.client.edit(slug));
+    }, [router]);
+
     const tabs = useTabs('profile');
 
     useEffect(() => {
@@ -76,15 +85,25 @@ export function ClientDetailsView({ slug }) {
 
     return (
         <DashboardContent>
-            <CustomBreadcrumbs
-                heading="Profil"
-                links={[
-                    { name: 'Dashboard', href: paths.dashboard.root },
-                    { name: 'Profil', href: paths.dashboard.client.root },
-                    { name: profil?.name },
-                ]}
-                sx={{ mb: { xs: 3, md: 5 } }}
-            />
+            <Box sx={{ mb: { xs: 3, md: 5 } }}>
+                <CustomBreadcrumbs
+                    heading="Profil"
+                    links={[
+                        { name: 'Dashboard', href: paths.dashboard.root },
+                        { name: 'Profil', href: paths.dashboard.client.root },
+                        { name: profil?.name },
+                    ]}
+                />
+                {/* Bouton d'édition sous les breadcrumbs */}
+                <Stack direction="row" justifyContent="flex-end" sx={{ mt: 1 }}>
+                    <Tooltip title="Modifier">
+                        <IconButton onClick={handleEdit}>
+                            <Iconify icon="solar:pen-bold" />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+            </Box>
+
             <Card sx={{ mb: 3, height: 290, position: 'relative' }}>
                 <ProfileCover
                     role={profil?.type?.name}
@@ -111,8 +130,8 @@ export function ClientDetailsView({ slug }) {
                     </Tabs>
                 </Box>
             </Card>
-            {tabs.value === 'profile' && <ProfileHome info={profil} />}
 
+            {tabs.value === 'profile' && <ProfileHome info={profil} />}
         </DashboardContent>
     );
 }

@@ -36,7 +36,10 @@ export const NewClientSchema = zod.object({
         zod.string().min(1, { message: 'La région est requise et ne peut pas être vide !' }),
         zod.number()
     ]),
-    email: zod.string().min(1, { message: "L'email est obligatoire" }),
+    email: zod
+        .string()
+        .min(1, { message: "l'email est obligatoire" })
+        .email({ message: "l'email doit être un email valide!" }),
     contact: schemaHelper.phoneNumber({ isValidPhoneNumber }),
     picture: zod.any().optional(),
 
@@ -56,7 +59,7 @@ export function ClientNewEditForm({ currentClient }) {
             type: currentClient?.type || '',
             email: currentClient?.email || '',
             contact: currentClient?.contact || '',
-            adresse: currentClient?.addresse || '',
+            adresse: currentClient?.adresse || '',
             location: currentClient?.location || 'Conakry',
             picture: currentClient?.picture || '',
 
