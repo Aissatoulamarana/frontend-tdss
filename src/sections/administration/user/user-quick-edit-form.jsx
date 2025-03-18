@@ -1,3 +1,5 @@
+'use client';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Alert from '@mui/material/Alert';
@@ -17,43 +19,58 @@ import { z as zod } from 'zod';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
+import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
+
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+
 // ----------------------------------------------------------------------
 
 export const UserQuickEditSchema = zod.object({
-  name: zod.string().min(1, { message: 'Le nom est obligatoire!' }),
+  name: zod.string().min(1, { message: 'le nom est obligatoire' }),
   email: zod
     .string()
     .min(1, { message: 'Email est obligatoire!' })
-    .email({ message: 'Email doit être un email valide!' }),
-  phoneNumber: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-  country: schemaHelper.objectOrNull({
-    message: { required_error: 'Country is required!' },
+    .email({ message: 'Email doit etre un email valide !' }),
+  picture: schemaHelper.file({
+    message: { required_error: 'televerser un image!' },
   }),
-  city: zod.string().min(1, { message: 'City is required!' }),
-  address: zod.string().min(1, { message: 'Address is required!' }),
-  company: zod.string().min(1, { message: 'Company is required!' }),
-  role: zod.string().min(1, { message: 'Role is required!' }),
-  // Not required
-  status: zod.string(),
+  phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
+
+  type: zod.string().min(1, { message: 'le type est requis!' }),
+  profile: zod.string().min(1, { message: 'le profil est requis!' }),
+  location: zod.string().min(1, { message: 'la région est réquise!' }),
+  agency: zod.string().min(1, { message: " l' agence est requis" }),
 });
 
 // ----------------------------------------------------------------------
 
-export function UserQuickEditForm({ currentUser, open, onClose }) {
-  const defaultValues = useMemo(
-    () => ({
+export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
+
+
+  const [regions, setRegions] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [profils, setProfils] = useState([]);
+  const [agences, setAgences] = useState([]);
+
+  const defaultValues = useMemo(() => {
+    const currentRegion = regions?.find(region => region.name === currentUser?.location);
+    const currentRole = roles?.find(role => role.name === currentUser?.type);
+    const currentProfil = profils?.find(profil => profil.name === currentUser?.profile);
+    const currentAgence = agences?.find(agence => agence.name === currentUser?.agency);
+
+    return {
+
       name: currentUser?.name || '',
       email: currentUser?.email || '',
-      phoneNumber: currentUser?.phoneNumber || '',
-      address: currentUser?.address || '',
-      country: currentUser?.country || '',
-      city: currentUser?.city || '',
-      status: currentUser?.status,
-      company: currentUser?.company || '',
-      role: currentUser?.role || '',
-    }),
-    [currentUser]
-  );
+      picture: currentUser?.picture || '',
+      phone: currentUser?.phone || '',
+      type: currentRole ? currentRole.slug : currentUser.type || '',
+      profile: currentProfil ? currentProfil.slug : currentUser.profile || '',
+      location: currentRegion ? currentRegion.slug : currentUser.location || '',
+      agency: currentAgence ? currentAgence.slug : currentUser.agency || '',
+    }
+  }, [regions, roles, profils, agences, currentUser])
 
   const methods = useForm({
     mode: 'all',
@@ -67,73 +84,123 @@ export function UserQuickEditForm({ currentUser, open, onClose }) {
     formState: { isSubmitting },
   } = methods;
 
+
+  const getModifiedFields = (originalData, newData) => {
+    const modifiedFields = {};
+
+    Object.keys(newData).forEach((key) => {
+      if (newData[key] !== originalData[key]) {
+        modifiedFields[key] = newData[key];
+      }
+    });
+
+    return modifiedFields;
+  };
+
   const onSubmit = handleSubmit(async (data) => {
-    const promise = new Promise((resolve) => setTimeout(resolve, 1000));
-
     try {
-      reset();
-      onClose();
+      const modifiedData = getModifiedFields(currentUser, data);
 
-      toast.promise(promise, {
-        loading: 'Loading...',
-        success: 'Update success!',
-        error: 'Update error!',
+      if (Object.keys(modifiedData).length === 0) {
+        toast.info("Aucune modification détectée.");
+        return;
+      }
+
+      // Création d'un FormData et ajout des champs modifiés
+      const formData = new FormData();
+      Object.keys(modifiedData).forEach(key => {
+        formData.append(key, modifiedData[key]);
       });
 
-      await promise;
+      // Ne pas définir manuellement le Content-Type pour laisser le navigateur gérer les délimitations
+      const response = await axios.patch(API.updateUser(currentUser.slug), formData);
 
-      console.info('DATA', data);
+      toast.success('Mise à jour réussie !');
+
+      // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
+      const updatedClient = { ...currentUser, ...modifiedData };
+      console.log("utilisateur  mis à jour :", updatedClient);
+      onUpdateRow(updatedClient);
+      reset();
+      onClose();
     } catch (error) {
-      console.error(error);
+      toast.error('Erreur lors de la mise à jour .');
+      console.error('Erreur:', error.response?.data || error.message);
     }
   });
+
+  useEffect(() => {
+    getRegions().then(data => setRegions(data));
+    getAgences().then(data => setAgences(data));
+    getUserTypes().then(data => setRoles(data));
+    getProfils().then(data => setProfils(data));
+  })
+
+  // Pour mettre à jour les valeurs du formulaire dès que currentUser change
+  useEffect(() => {
+    reset(defaultValues);
+  }, [currentUser, defaultValues, reset]);
 
   return (
     <Dialog
       fullWidth
-      maxWidth={false}
+      maxWidth='sm'
       open={open}
       onClose={onClose}
-      PaperProps={{ sx: { maxWidth: 720 } }}
+      slotProps={{ sx: { maxWidth: 720 } }}
     >
       <Form methods={methods} onSubmit={onSubmit}>
         <DialogTitle>Mise à jour rapide</DialogTitle>
 
         <DialogContent>
-          <Alert variant="outlined" severity="info" sx={{ mb: 3 }}>
-            Le compte est en attente de confirmation
-          </Alert>
+
 
           <Box
+            mt={4}
             rowGap={3}
             columnGap={2}
             display="grid"
             gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
           >
-            <Field.Select name="status" label="Status">
-              {USER_STATUS_OPTIONS.map((status) => (
-                <MenuItem key={status.value} value={status.value}>
-                  {status.label}
-                </MenuItem>
-              ))}
-            </Field.Select>
 
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }} />
+
+
 
             <Field.Text name="name" label="Nom complet" />
             <Field.Text name="email" label="Adresse mail" />
-            <Field.Phone name="phoneNumber" label="Numéro de Téléphone" />
+            <Field.Phone name="phone" label="Numéro de Téléphone" />
 
-            <Field.CountrySelect
-              fullWidth
-              name="country"
-              label="Pays"
-              placeholder="Selectionnez un pays "
-            />
-            <Field.Text name="city" label="Ville" />
-            <Field.Text name="address" label="Addresse" />
-            <Field.Text name="company" label="Company" />
-            <Field.Text name="role" label="Role" />
+
+            <Field.Select name="profile" label="Profil" >
+              {profils.map((profil) => (
+                <MenuItem key={profil?.slug} value={profil?.slug}>
+                  {profil?.name}
+                </MenuItem>
+              ))}
+            </Field.Select>
+            <Field.Select name="location" label="Region" >
+              {regions.map((region) => (
+                <MenuItem key={region?.slug} value={region?.slug}>
+                  {region?.name}
+                </MenuItem>
+              ))
+              }
+            </Field.Select>
+            <Field.Select name="agency" label="Agence" >
+              {agences.map((agence) => (
+                <MenuItem key={agence?.slug} value={agence?.slug}>
+                  {agence?.name}
+                </MenuItem>
+              ))
+              }
+            </Field.Select>
+            <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
+              {roles?.map((role) => (
+                <MenuItem key={role.slug} value={role.slug}>
+                  {role?.name}
+                </MenuItem>
+              ))}
+            </Field.Select>
           </Box>
         </DialogContent>
 

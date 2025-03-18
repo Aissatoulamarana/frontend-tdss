@@ -51,7 +51,7 @@ export function ClientTableRow({
                         <Avatar alt={row?.name} src={row.picture} />
 
                         <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-                            <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }}>
+                            <Link color="inherit" onClick={onViewRow} sx={{ cursor: 'pointer' }} underline="hover">
                                 {row.name}
                             </Link>
                             <Box component="span" sx={{ color: 'text.disabled' }}>
@@ -128,6 +128,15 @@ export function ClientTableRow({
                     >
                         <Iconify icon="solar:eye-bold" />
                         Voir
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            onEditRow();
+                            popover.onClose();
+                        }}
+                    >
+                        <Iconify icon="solar:pen-bold" />
+                        Modifier
                     </MenuItem>
                 </MenuList>
             </CustomPopover>

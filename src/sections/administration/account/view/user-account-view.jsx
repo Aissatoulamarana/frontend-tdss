@@ -23,27 +23,27 @@ import { AccountChangePassword } from '../account-change-password';
 
 const TABS = [
   { value: 'general', label: 'General', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
-  {
-    value: 'billing',
-    label: 'Paiements',
-    icon: <Iconify icon="solar:bill-list-bold" width={24} />,
-  },
-  {
-    value: 'notifications',
-    label: 'Notifications',
-    icon: <Iconify icon="solar:bell-bing-bold" width={24} />,
-  },
-  {
-    value: 'social',
-    label: 'Réseaux sociaux',
-    icon: <Iconify icon="solar:share-bold" width={24} />,
-  },
+  // {
+  //   value: 'billing',
+  //   label: 'Paiements',
+  //   icon: <Iconify icon="solar:bill-list-bold" width={24} />,
+  // },
+  // {
+  //   value: 'notifications',
+  //   label: 'Notifications',
+  //   icon: <Iconify icon="solar:bell-bing-bold" width={24} />,
+  // },
+  // {
+  //   value: 'social',
+  //   label: 'Réseaux sociaux',
+  //   icon: <Iconify icon="solar:share-bold" width={24} />,
+  // },
   { value: 'security', label: 'Sécurité', icon: <Iconify icon="ic:round-vpn-key" width={24} /> },
 ];
 
 // ----------------------------------------------------------------------
 
-export function AccountView() {
+export function AccountView({ slug }) {
   const tabs = useTabs('general');
 
   return (
@@ -64,7 +64,7 @@ export function AccountView() {
         ))}
       </Tabs>
 
-      {tabs.value === 'general' && <AccountGeneral />}
+      {tabs.value === 'general' && <AccountGeneral slug={slug} />}
 
       {/* {tabs.value === 'billing' && (
         <AccountBilling
@@ -75,7 +75,7 @@ export function AccountView() {
         />
       )} */}
 
-      {tabs.value === 'notifications' && <AccountNotifications />}
+      {/* {tabs.value === 'notifications' && <AccountNotifications />} */}
 
       {/* {tabs.value === 'social' && <AccountSocialLinks socialLinks={_userAbout.socialLinks} />} */}
 

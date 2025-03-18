@@ -8,6 +8,7 @@ const API = {
   me: () => `${BASE_URL}/users/me/`, // informations de l'utilisateur connecté
   logout: () => `${BASE_URL}/auth/jwt/logout/`, // deconnexion
   resetPassword: () => `${BASE_URL}/users/reset_password/`,// reinitialisation du password
+  resetPasswordConfirmation: () => `${BASE_URL}/users/reset_password_confirm/`,// reinitialisation du password
 
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
   listUsers: () => `${BASE_URL}/users/`, // Liste des utilisateurs
@@ -15,6 +16,7 @@ const API = {
   updateUser: (slug) => `${BASE_URL}/users/${slug}/`, // Mise à jour d'un utilisateur
   userDetails: (slug) => `${BASE_URL}/users/${slug}/`, // Détails d'un utilisateur
   userDelete: (id) => `${BASE_URL}/users/${id}/`, // Supprimer un utilisateur
+  activateAccount:() => `${BASE_URL}/users/activation/`, // activer le compte d'un utilisateur
 
   listDeclarations: () => `${BASE_URL}/declarations/`, // Liste des déclarations
   createDeclaration: () => `${BASE_URL}/declarations/`, // Création d'une déclaration
@@ -52,7 +54,7 @@ const API = {
   createAgence: () => `${BASE_URL}/agency/`,
   listAgences: () => `${BASE_URL}/regions/agencies/`,
 
-  activate: (id) => `${BASE_URL}/activate-user/${id}/`,
+  // activate: (id) => `${BASE_URL}/activate-user/${id}/`,
   banni: (id) => `${BASE_URL}/banni-user/${id}/`,
 
  

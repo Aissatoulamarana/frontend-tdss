@@ -6,6 +6,9 @@ import { paths } from "src/routes/paths";
 import { CustomBreadcrumbs } from "src/components/custom-breadcrumbs";
 import { ClientNewEditForm } from '../client-new';
 
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+
 
 
 export function ClientEditView({ slug }) {

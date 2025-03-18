@@ -1,3 +1,5 @@
+'use client';
+import { useState, useEffect, useMemo } from 'react';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +12,7 @@ import Button from '@mui/material/Button';
 import { Grid2 } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+import MenuItem from '@mui/material/MenuItem';
 
 import { fData } from 'src/utils/format-number';
 
@@ -17,47 +20,77 @@ import { toast } from 'src/components/snackbar';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
 import { useMockedUser } from 'src/auth/hooks';
+import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
 
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
 // ----------------------------------------------------------------------
 
 export const UpdateUserSchema = zod.object({
-  displayName: zod.string().min(1, { message: 'Name is required!' }),
+  first_name: zod.string().min(1, { message: ' Le prénom est obligatoire' }),
+  last_name: zod.string().min(1, { message: 'le nom est obligatoire' }),
   email: zod
     .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
-  photoURL: schemaHelper.file({
-    message: { required_error: 'Avatar is required!' },
+    .min(1, { message: 'Email est obligatoire!' })
+    .email({ message: 'Email doit etre un email valide !' }),
+  picture: schemaHelper.file({
+    message: { required_error: 'televerser un image!' },
   }),
-  phoneNumber: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-  country: schemaHelper.objectOrNull({
-    message: { required_error: 'Country is required!' },
-  }),
-  address: zod.string().min(1, { message: 'Address is required!' }),
-  state: zod.string().min(1, { message: 'State is required!' }),
-  city: zod.string().min(1, { message: 'City is required!' }),
-  zipCode: zod.string().min(1, { message: 'Zip code is required!' }),
-  about: zod.string().min(1, { message: 'About is required!' }),
-  // Not required
-  isPublic: zod.boolean(),
+  phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
+
+  type: zod.string().min(1, { message: 'le type est requis!' }),
+  profile: zod.string().min(1, { message: 'le profil est requis!' }),
+  location: zod.string().min(1, { message: 'la région est réquise!' }),
+  agency: zod.string().min(1, { message: " l' agence est requis" }),
 });
 
-export function AccountGeneral() {
-  const { user } = useMockedUser();
+export function AccountGeneral({ slug }) {
 
-  const defaultValues = {
-    displayName: user?.displayName || '',
-    email: user?.email || '',
-    photoURL: user?.photoURL || null,
-    phoneNumber: user?.phoneNumber || '',
-    country: user?.country || '',
-    address: user?.address || '',
-    state: user?.state || '',
-    city: user?.city || '',
-    zipCode: user?.zipCode || '',
-    about: user?.about || '',
-    isPublic: user?.isPublic || false,
-  };
+  const [user, setUser] = useState();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Récupération des données du profil
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(API.userDetails(slug));
+        setUser(response.data);
+        console.log(response.data);
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [slug]);
+
+
+  const [regions, setRegions] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [profils, setProfils] = useState([]);
+  const [agences, setAgences] = useState([]);
+
+  const defaultValues = useMemo(() => {
+    const currentRegion = regions?.find(region => region.name === user?.location?.name);
+    const currentRole = roles?.find(role => role.name === user?.type?.name);
+    const currentProfil = profils?.find(profil => profil.name === user?.profile?.name);
+    const currentAgence = agences?.find(agence => agence.name === user?.agency?.name);
+
+    return {
+      first_name: user?.first_name || '',
+      last_name: user?.last_name || '',
+      email: user?.email || '',
+      picture: user?.picture || '',
+      phone: user?.phone || '',
+      type: currentRole ? currentRole?.slug : user?.type?.slug || '',
+      profile: currentProfil ? currentProfil?.slug : user?.profile?.slug || '',
+      location: currentRegion ? currentRegion?.slug : user?.location?.slug || '',
+      agency: currentAgence ? currentAgence?.slug : user?.agency.slug || '',
+    }
+  }, [regions, roles, profils, agences, user])
 
   const methods = useForm({
     mode: 'all',
@@ -66,6 +99,7 @@ export function AccountGeneral() {
   });
 
   const {
+    reset,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
@@ -80,6 +114,17 @@ export function AccountGeneral() {
     }
   });
 
+  useEffect(() => {
+    getRegions().then(data => setRegions(data));
+    getAgences().then(data => setAgences(data));
+    getUserTypes().then(data => setRoles(data));
+    getProfils().then(data => setProfils(data));
+  })
+
+  useEffect(() => {
+    reset(defaultValues);
+  }, [user, defaultValues, reset]);
+
   return (
     <Form methods={methods} onSubmit={onSubmit}>
       <Grid2 container spacing={3}>
@@ -93,7 +138,7 @@ export function AccountGeneral() {
             }}
           >
             <Field.UploadAvatar
-              name="photoURL"
+              name="picture"
               maxSize={3145728}
               helperText={
                 <Typography
@@ -120,7 +165,7 @@ export function AccountGeneral() {
             />
 
             <Button variant="soft" color="error" sx={{ mt: 3 }}>
-              Delete user
+              Supprimer l'utilisateur
             </Button>
           </Card>
         </Grid2>
@@ -130,29 +175,54 @@ export function AccountGeneral() {
             <Box
               rowGap={3}
               columnGap={2}
-              display="Grid2"
-              Grid2TemplateColumns={{
+              display="grid"
+              gridTemplateColumns={{
                 xs: 'repeat(1, 1fr)',
                 sm: 'repeat(2, 1fr)',
               }}
             >
-              <Field.Text name="displayName" label="Name" />
-              <Field.Text name="email" label="Email address" />
-              <Field.Phone name="phoneNumber" label="Phone number" />
-              <Field.Text name="address" label="Address" />
+              <Field.Text name="first_name" label="Prénom" />
+              <Field.Text name="last_name" label="Nom" />
+              <Field.Text name="email" label="Adresse Mail" />
+              <Field.Phone name="phone" label="Numéro de Téléphone" />
 
-              <Field.CountrySelect name="country" label="Country" placeholder="Choose a country" />
-
-              <Field.Text name="state" label="State/region" />
-              <Field.Text name="city" label="City" />
-              <Field.Text name="zipCode" label="Zip/code" />
+              <Field.Select name="profile" label="Profil" >
+                {profils.map((profil) => (
+                  <MenuItem key={profil?.slug} value={profil?.slug}>
+                    {profil?.name}
+                  </MenuItem>
+                ))}
+              </Field.Select>
+              <Field.Select name="location" label="Region" >
+                {regions.map((region) => (
+                  <MenuItem key={region?.slug} value={region?.slug}>
+                    {region?.name}
+                  </MenuItem>
+                ))
+                }
+              </Field.Select>
+              <Field.Select name="agency" label="Agence" >
+                {agences.map((agence) => (
+                  <MenuItem key={agence?.slug} value={agence?.slug}>
+                    {agence?.name}
+                  </MenuItem>
+                ))
+                }
+              </Field.Select>
+              <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
+                {roles?.map((role) => (
+                  <MenuItem key={role.slug} value={role.slug}>
+                    {role?.name}
+                  </MenuItem>
+                ))}
+              </Field.Select>
             </Box>
 
             <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
-              <Field.Text name="about" multiline rows={4} label="About" />
+
 
               <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
-                Save changes
+                Enregistrer les changements
               </LoadingButton>
             </Stack>
           </Card>

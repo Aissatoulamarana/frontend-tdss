@@ -93,14 +93,25 @@ export function UserListView() {
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleDeleteRow = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+    (slug) => {
+      try {
+        const response = axios.delete(API.userDelete(slug));
 
-      toast.success('Suppression reussie!');
+        if (response) {
+          const updatedTableData = tableData.filter((row) => row.slug !== slug);
+          setTableData(updatedTableData)
 
-      setTableData(deleteRow);
+          toast.success('Suppression réussie !')
 
-      table.onUpdatePageDeleteRow(dataInPage.length);
+          table.onUpdatePageDeleteRow(dataInPage.length)
+        } else {
+          console.error('Erreur lors de la suppression ',)
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (e) {
+        console.error('Erreur réseau ou serveur :', error)
+        toast.error('Erreur lors de la communication avec le serveur');
+      }
     },
     [dataInPage.length, table, tableData]
   );
@@ -126,8 +137,8 @@ export function UserListView() {
   );
 
   const handleViewRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.user.account);
+    (slug) => {
+      router.push(paths.dashboard.user.account(slug));
     },
     [router]
   );
@@ -139,6 +150,12 @@ export function UserListView() {
     },
     [filters, table]
   );
+
+  const handleUpdateRow = useCallback((updateUser) => {
+    setTableData((prevData) =>
+      prevData.map((row) => (row.slug === updateUser.slug ? updateUser : row))
+    );
+  }, []);
 
   const handleActivate = useCallback(
     async (id) => {
@@ -314,6 +331,7 @@ export function UserListView() {
                         onEditRow={() => handleEditRow(row.slug)}
                         onViewRow={() => handleViewRow(row.slug)}
                         onActivate={() => handleActivate(row.slug)}
+                        onUpdateRow={handleUpdateRow}
                       />
                     ))}
 

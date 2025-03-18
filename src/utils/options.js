@@ -12,6 +12,8 @@ const cache = {
   declarations: null,
   entreprises: null,
   banks: null,
+  profils: null,
+  userTypes: null,
 };
 
 const pendingPromises = {};
@@ -50,10 +52,12 @@ export const getCategories = () => fetchAndCache('categories', API.listCategorie
 export const getDevises = () => fetchAndCache('devises', API.listDevises);
 export const getProfileTypes = () => fetchAndCache('profileTypes', API.listProfilesTypes, 'results');
 export const getPermissions = () => fetchAndCache('permissions', API.listPermissions);
-export const getAgences = () => fetchAndCache('agences', API.listAgences);
+export const getAgences = () => fetchAndCache('agences', API.listAgences , 'results');
 export const getDeclarations = () => fetchAndCache('declarations', API.listDeclarations);
 export const getEntreprises = () => fetchAndCache('entreprises', API.listProfiles);
 export const getBanks = () => fetchAndCache('banks', API.listProfiles);
+export const getProfils = () => fetchAndCache('profils', API.listProfiles , 'results');
+export const getUserTypes = () => fetchAndCache('userTypes', API.listUserTypes, 'results');
 
 export const clearCache = () => {
   Object.keys(cache).forEach(key => cache[key] = null);

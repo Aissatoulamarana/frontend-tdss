@@ -1,3 +1,5 @@
+'use client';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { Grid2 } from '@mui/material';
@@ -5,16 +7,17 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import axios from 'src/utils/axios';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { z as zod } from 'zod';
-
+import InputAdornment from '@mui/material/InputAdornment';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 
@@ -26,29 +29,29 @@ import { fData } from 'src/utils/format-number';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
+import { Iconify } from 'src/components/iconify';
+
+import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
+
 
 // ----------------------------------------------------------------------
 // Le schéma de validation (nous n'incluons plus username car le backend s'appuie sur email)
 export const NewUserSchema = zod.object({
   picture: zod.any().optional(),
-
+  first_name: zod.string().min(1, { message: ' Le prénom est obligatoire' }),
+  last_name: zod.string().min(1, { message: 'le nom est obligatoire' }),
   email: zod
     .string()
     .min(1, { message: 'Email est obligatoire!' })
     .email({ message: 'Email doit être valide!' }),
 
+
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-  country: schemaHelper.objectOrNull({
-    message: { required_error: 'Country is required!' },
-  }),
+  type: zod.string().optional(),
+  profile: zod.string().optional(),
   location: zod.string().optional(),
   agency: zod.string().optional(),
-  // city: zod.string().optional(),
-  type: zod.string().optional(),
-  job: zod.string().optional(),
-  // Not required
-  status: zod.string().optional(),
-  reset_pwd: zod.boolean(),
+
 });
 
 // ----------------------------------------------------------------------
@@ -56,32 +59,39 @@ export const NewUserSchema = zod.object({
 export function UserNewEditForm({ currentUser }) {
   const router = useRouter();
   const password = useBoolean();
+  const [regions, setRegions] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [profils, setProfils] = useState([]);
+  const [agences, setAgences] = useState([]);
 
-  const defaultValues = useMemo(
-    () => ({
-      // On n'utilise plus de champ username côté UI car le backend utilisera l'email pour username
+  const defaultValues = useMemo(() => {
+    const currentRegion = regions?.find(region => region.name === currentUser?.location?.name);
+    const currentRole = roles?.find(role => role.name === currentUser?.type?.name);
+    const currentProfil = profils?.find(profil => profil.name === currentUser?.profile?.name);
+    const currentAgence = agences?.find(agence => agence.name === currentUser?.agency?.name);
+
+    return {
+      first_name: currentUser?.first_name || '',
+      last_name: currentUser?.last_name || '',
       email: currentUser?.email || '',
-
+      picture: currentUser?.picture || '',
       phone: currentUser?.phone || '',
-      country: currentUser?.country || '',
+      type: currentRole ? currentRole.slug : currentUser?.type?.slug || '',
+      profile: currentProfil ? currentProfil.slug : currentUser?.profile?.slug || '',
+      location: currentRegion ? currentRegion.slug : currentUser?.location?.slug || '',
+      agency: currentAgence ? currentAgence.slug : currentUser?.agency?.slug || '',
+    };
+  }, [regions, roles, profils, agences, currentUser]);
 
-      // city: currentUser?.city || '',
-      location: currentUser?.location || '',
-      agency: currentUser?.agency || '',
-      type: currentUser?.type || '',
-      job: currentUser?.job || '',
-      picture: currentUser?.picture || null,
-      reset_pwd: currentUser?.reset_pwd ?? true,
-      status: currentUser?.status || '',
-    }),
-    [currentUser]
-  );
+
+
 
   const methods = useForm({
     mode: 'onSubmit',
     resolver: zodResolver(NewUserSchema),
     defaultValues,
   });
+
 
   const {
     reset,
@@ -93,6 +103,18 @@ export function UserNewEditForm({ currentUser }) {
 
   const values = watch();
 
+  const getModifiedFields = (originalData, newData) => {
+    const modifiedFields = {};
+
+    Object.keys(newData).forEach((key) => {
+      if (newData[key] !== originalData[key]) {
+        modifiedFields[key] = newData[key];
+      }
+    });
+
+    return modifiedFields;
+  };
+
   const onSubmit = handleSubmit(async (data) => {
     try {
       // Petite pause pour simuler le délai
@@ -101,45 +123,71 @@ export function UserNewEditForm({ currentUser }) {
       // Créer un FormData pour gérer le multipart/form-data
       const formData = new FormData();
 
+      // Ajouter tous les champs du formulaire sauf l'image
+      Object.keys(data).forEach(key => {
+        if (key !== 'picture') {
+          formData.append(key, data[key]);
+        }
+      });
       // Si le champ picture est renseigné et de type File, on l'ajoute
       if (data.picture && data.picture instanceof File) {
         formData.append('picture', data.picture);
       }
-      // Ajouter les autres champs
-      formData.append('email', data.email);
 
-      // Pour le username, on force l'utilisation de l'email (évite les conflits d'unicité)
-      formData.append('username', data.email);
-      formData.append('phone', data.phone);
-      formData.append('country', data.country);
-      // formData.append('city', data.city);
-      formData.append('location', data.location || '');
-      formData.append('agency', data.agency || '');
-      formData.append('type', data.type || '');
-      formData.append('job', data.job || '');
-      formData.append('reset_pwd', data.reset_pwd);
-
-      const response = await axios.post(API.createUser(), formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      // Si currentUser est présent, on effectue une mise à jour, sinon une création
+      let response;
+      if (currentUser) {
+        const modifiededData = getModifiedFields(currentUser, data);
+        if (Object.keys(modifiededData).length === 0) {
+          return;
+        }
+        const newData = new FormData();
+        Object.keys(modifiededData).forEach(key => {
+          newData.append(key, modifiededData[key]);
+        })
+        // Appel à la route de mise à jour avec le slug
+        response = await axios.patch(API.updateUser(currentUser.slug), newData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      } else {
+        // Appel à la route de création
+        response = await axios.post(API.createUser(), formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      }
 
       reset();
-      toast.success(currentUser ? 'Mis à jour effectué!' : "Création d'un utilisateur reussie !");
+      toast.success(currentUser ? 'Mis à jour effectué!' : "Création d'un utilisateur réussie !");
       router.push(paths.dashboard.user.list);
-      console.info('DATA', data);
+      console.info('DATA', response);
     } catch (error) {
       console.error(error);
     }
   });
+
+
+  useEffect(() => {
+    getRegions().then(data => setRegions(data));
+    getAgences().then(data => setAgences(data));
+    getUserTypes().then(data => setRoles(data));
+    getProfils().then(data => setProfils(data));
+  })
+  // Pour mettre à jour les valeurs du formulaire dès que currentClient change
+  useEffect(() => {
+    reset(defaultValues);
+  }, [currentUser, defaultValues, reset]);
+
 
   return (
     <Form methods={methods} onSubmit={onSubmit}>
       <Grid2 container spacing={3}>
         <Grid2 size={{ xs: 6, md: 4 }}>
           <Card sx={{ pt: 10, pb: 5, px: 3 }}>
-            {currentUser && (
+            {/* {currentUser && (
               <Label
                 color={
                   (values.status === 'active' && 'success') ||
@@ -150,7 +198,7 @@ export function UserNewEditForm({ currentUser }) {
               >
                 {values.status}
               </Label>
-            )}
+            )} */}
             <Box sx={{ mb: 5 }}>
               <Field.UploadAvatar
                 name="picture"
@@ -173,7 +221,7 @@ export function UserNewEditForm({ currentUser }) {
               />
             </Box>
 
-            {currentUser && (
+            {/* {currentUser && (
               <FormControlLabel
                 labelPlacement="start"
                 control={
@@ -208,9 +256,9 @@ export function UserNewEditForm({ currentUser }) {
                   justifyContent: 'space-between',
                 }}
               />
-            )}
+            )} */}
 
-            <Field.Switch
+            {/* <Field.Switch
               name="reset_pwd"
               labelPlacement="start"
               label={
@@ -219,12 +267,12 @@ export function UserNewEditForm({ currentUser }) {
                 </Typography>
               }
               sx={{ mx: 0, width: 1, justifyContent: 'space-between' }}
-            />
+            /> */}
 
             {currentUser && (
               <Stack justifyContent="center" alignItems="center" sx={{ mt: 3 }}>
-                <Button variant="soft" color="error">
-                  Supprimer un utilisateur
+                <Button variant="soft" sx={{ bgcolor: 'error.main' }} >
+                  Desactiver ce compte
                 </Button>
               </Stack>
             )}
@@ -243,42 +291,42 @@ export function UserNewEditForm({ currentUser }) {
               }}
             >
               {/* On a retiré le champ username du formulaire affiché */}
-
+              <Field.Text name="first_name" label="Prénom" />
+              <Field.Text name="last_name" label="Nom" />
               <Field.Text name="email" label="Adresse Mail" />
               <Field.Phone name="phone" label="Numéro de Téléphone" />
-              {/* <Field.Text
-                name="password"
-                label="Password"
-                placeholder="6+ characters"
-                type={password.value ? 'text' : 'password'}
-                InputLabelProps={{ shrink: true }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={password.onToggle} edge="end">
-                        <Iconify
-                          icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
-                        />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              /> */}
-              <Field.CountrySelect
-                fullWidth
-                name="country"
-                label="Country"
-                placeholder="Selectionnez un pays"
-              />
-              {/* <Field.Text name="city" label="Ville" /> */}
-              <Field.Text name="location" label="Addresse" />
-              <Field.Text name="agency" label="Company" />
-              <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="user">Client</MenuItem>
-                <MenuItem value="superviseur">Superviseur</MenuItem>
+
+              <Field.Select name="profile" label="Profil" >
+                {profils.map((profil) => (
+                  <MenuItem key={profil?.slug} value={profil?.slug}>
+                    {profil?.name}
+                  </MenuItem>
+                ))}
               </Field.Select>
-              <Field.Text name="job" label="Poste" />
+              <Field.Select name="location" label="Region" >
+                {regions.map((region) => (
+                  <MenuItem key={region?.slug} value={region?.slug}>
+                    {region?.name}
+                  </MenuItem>
+                ))
+                }
+              </Field.Select>
+              <Field.Select name="agency" label="Agence" >
+                {agences.map((agence) => (
+                  <MenuItem key={agence?.slug} value={agence?.slug}>
+                    {agence?.name}
+                  </MenuItem>
+                ))
+                }
+              </Field.Select>
+              <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
+                {roles?.map((role) => (
+                  <MenuItem key={role.slug} value={role.slug}>
+                    {role?.name}
+                  </MenuItem>
+                ))}
+              </Field.Select>
+
             </Box>
 
             <Stack alignItems="flex-end" sx={{ mt: 3 }}>

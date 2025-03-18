@@ -31,6 +31,7 @@ export function UserTableRow({
   onDeleteRow,
   onViewRow,
   onActivate,
+  onUpdateRow
 }) {
   const confirm = useBoolean();
 
@@ -51,7 +52,7 @@ export function UserTableRow({
 
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
               <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }}>
-                {row.username}
+                {row.name}
               </Link>
               <Box component="span" sx={{ color: 'text.disabled' }}>
                 {row.email}
@@ -62,9 +63,9 @@ export function UserTableRow({
 
         <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.phone}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.profile_name}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.profile}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type_name}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.type}</TableCell>
 
         <TableCell>
           <Label
@@ -98,7 +99,7 @@ export function UserTableRow({
         </TableCell>
       </TableRow>
 
-      <UserQuickEditForm currentUser={row} open={quickEdit.value} onClose={quickEdit.onFalse} />
+      <UserQuickEditForm currentUser={row} open={quickEdit.value} onClose={quickEdit.onFalse} onUpdateRow={onUpdateRow} />
 
       <CustomPopover
         open={popover.open}

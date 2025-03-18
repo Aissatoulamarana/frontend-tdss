@@ -153,6 +153,12 @@ export function ClientListView() {
         [router]
     );
 
+    const handleEditRow = useCallback(
+        (slug) => {
+            router.push(paths.dashboard.client.edit(slug));
+        }, [router]
+    );
+
     const handleFilterStatus = useCallback(
         (event, newValue) => {
             table.onResetPage();

@@ -83,7 +83,8 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/user`,
       new: `${ROOTS.DASHBOARD}/user/new`,
       list: `${ROOTS.DASHBOARD}/user/list`,
-      account: `${ROOTS.DASHBOARD}/user/account`
+      account: (slug) => `${ROOTS.DASHBOARD}/user/${slug}/account`,
+      edit: (slug) => `${ROOTS.DASHBOARD}/user/${slug}/edit`,
     },
 
     fonction: {

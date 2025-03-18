@@ -14,7 +14,7 @@ export function FormResendCode({ value, disabled, onResendCode, sx, ...other }) 
       }}
       {...other}
     >
-      {`Vous n'avez pas recu de code ? `}
+      {`Vous n'avez pas recu un email ? `}
       <Link
         variant="subtitle2"
         onClick={onResendCode}

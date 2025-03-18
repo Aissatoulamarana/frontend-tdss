@@ -20,7 +20,15 @@ export const resetPassword = async ({email}) => {
   }
 };
 
-
+export const updatePassword = async ({uid , token , new_password}) => {
+  try {
+    const params = {uid, token, new_password}
+    const res = await axios.post(API.resetPasswordConfirmation(), params);
+    console.log(res)
+  }catch (error) {
+    console.log('Error during update password', error)
+  }
+}
 
 
 /** **************************************
@@ -118,6 +126,3 @@ export const signOut = async () => {
 
 
 
-export const updatePassword = async () => {
-  await axios?.post(API?.resetPassword())
-}

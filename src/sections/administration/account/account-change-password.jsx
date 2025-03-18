@@ -68,7 +68,7 @@ export function AccountChangePassword() {
         <Field.Text
           name="oldPassword"
           type={password.value ? 'text' : 'password'}
-          label="Old password"
+          label="Ancien mot de passe"
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -82,7 +82,7 @@ export function AccountChangePassword() {
 
         <Field.Text
           name="newPassword"
-          label="New password"
+          label="Nouveau mot de passe"
           type={password.value ? 'text' : 'password'}
           InputProps={{
             endAdornment: (
@@ -104,7 +104,7 @@ export function AccountChangePassword() {
         <Field.Text
           name="confirmNewPassword"
           type={password.value ? 'text' : 'password'}
-          label="Confirm new password"
+          label="Confirmation mot de passe"
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">

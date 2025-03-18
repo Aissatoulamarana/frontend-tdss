@@ -1,12 +1,11 @@
 import { CONFIG } from 'src/config-global';
 
-
-import { MessageView } from 'src/auth/view/jwt/reset-message';
+import { UpdatePasswordView } from 'src/auth/view/jwt';
 
 // ----------------------------------------------------------------------
 
 export const metadata = { title: `Update password |  - ${CONFIG.appName}` };
 
 export default function Page() {
-  return <MessageView />;
+    return <UpdatePasswordView />;
 }

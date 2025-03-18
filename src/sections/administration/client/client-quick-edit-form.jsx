@@ -13,12 +13,16 @@ import Box from '@mui/material/Box';
 import { toast } from 'sonner';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { z as zod } from 'zod';
+import Grid from '@mui/material/Grid2';
+import Card from '@mui/material/Card';
+import Typography from '@mui/material/Typography';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 
 import { getRegions, getProfileTypes } from 'src/utils/options';
+import { fData } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 // Schéma de validation
@@ -35,7 +39,7 @@ export const ClientQuickEditSchema = zod.object({
     ]),
     email: zod.string().min(1, { message: "L'email est obligatoire" }),
     contact: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-    // picture: zod.any().optional(),
+    picture: zod.any().optional(),
 });
 
 export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow }) {
@@ -56,6 +60,7 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
             contact: currentClient?.contact || '',
             adresse: currentClient?.adresse || '',
             location: currentRegion ? currentRegion.slug : currentClient?.location || '',
+            picture: currentClient?.picture || '',
         };
     }, [currentClient, regions, types]);
 
@@ -84,7 +89,6 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
         return modifiedFields;
     };
 
-    // Fonction de mise à jour : création d'un FormData avec tous les champs
     const onSubmit = handleSubmit(async (data) => {
         try {
             const modifiedData = getModifiedFields(currentClient, data);
@@ -94,9 +98,14 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
                 return;
             }
 
-            const response = await axios.patch(API.UpdateProfile(currentClient.slug), modifiedData, {
-                headers: { 'Content-Type': 'application/json' }
+            // Création d'un FormData et ajout des champs modifiés
+            const formData = new FormData();
+            Object.keys(modifiedData).forEach(key => {
+                formData.append(key, modifiedData[key]);
             });
+
+            // Ne pas définir manuellement le Content-Type pour laisser le navigateur gérer les délimitations
+            const response = await axios.patch(API.UpdateProfile(currentClient.slug), formData);
 
             toast.success('Mise à jour réussie !');
 
@@ -114,6 +123,7 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
 
 
 
+
     // Récupérer les options pour les selects
     useEffect(() => {
         getRegions().then(data => setRegions(data));
@@ -128,7 +138,7 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
     return (
         <Dialog
             fullWidth
-            maxWidth="md"
+            maxWidth="sm"
             open={open}
             onClose={onClose}
             slotProps={{ sx: { maxWidth: 720 } }}
@@ -142,6 +152,37 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
                         gap={3}
                         gridTemplateColumns={{ xs: '1fr', sm: 'repeat(2, 1fr)' }}
                     >
+                        {/* Section Logo centrée */}
+                        <Box
+                            gridColumn={{ xs: '1 / -1', sm: '1 / 3' }}
+                            display="flex"
+                            flexDirection="column"
+                            alignItems="center"
+                        >
+                            <Typography variant="h6" sx={{ mb: 2 }}>
+                                Logo
+                            </Typography>
+                            <Field.UploadAvatar
+                                name="picture"
+                                maxSize={3145728}
+                                helperText={
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            mt: 3,
+                                            mx: 'auto',
+                                            display: 'block',
+                                            textAlign: 'center',
+                                            color: 'text.disabled',
+                                        }}
+                                    >
+                                        Allowed *.jpeg, *.jpg, *.png, *.gif
+                                        <br /> max size of {fData(3145728)}
+                                    </Typography>
+                                }
+                            />
+                        </Box>
+
                         <Field.Text name="name" label="Nom" fullWidth />
                         <Field.Select name="type" label="Type de Profil" fullWidth>
                             {types.map((profiletype) => (
@@ -160,8 +201,6 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
                             ))}
                         </Field.Select>
                         <Field.Text name="adresse" label="Adresse" fullWidth />
-
-                        {/* Vous pouvez ajouter ici d'autres champs (ex: upload d'image) */}
                     </Box>
                 </DialogContent>
                 <DialogActions sx={{ p: 2 }}>
@@ -174,5 +213,6 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
                 </DialogActions>
             </Form>
         </Dialog>
+
     );
 }

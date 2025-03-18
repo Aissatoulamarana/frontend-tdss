@@ -10,7 +10,7 @@ import Link from '@mui/material/Link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
-
+import { useSearchParams } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
@@ -40,6 +40,10 @@ export const SignInSchema = zod.object({
 // ----------------------------------------------------------------------
 
 export function JwtSignInView() {
+
+  const searchParams = useSearchParams();
+  const activated = searchParams.get("activated");
+
   const router = useRouter();
   const { checkUserSession } = useAuthContext();
   const [errorMsg, setErrorMsg] = useState('');
@@ -151,10 +155,12 @@ export function JwtSignInView() {
         title="Connexion"
         description={
           <>
-            {`Vous ne pouvez pas accéder à cette plateforme si vous n'avez pas de compte `}
+            {activated
+              ? "✅ Votre compte a été activé avec succès !"
+              : "Vous ne pouvez pas accéder à cette plateforme si vous n'avez pas de compte."}
           </>
         }
-        sx={{ textAlign: { xs: 'center', md: 'left' } }}
+        sx={{ textAlign: { xs: "center", md: "left" } }}
       />
 
       <Alert severity="info" sx={{ mb: 3 }}>

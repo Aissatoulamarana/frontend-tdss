@@ -26,28 +26,23 @@ import { FormReturnLink } from '../../components/form-return-link';
 import { FormResendCode } from '../../components/form-resend-code';
 import { resetPassword, updatePassword } from '../../context/jwt';
 
+import { useParams } from "next/navigation";
+
 // ----------------------------------------------------------------------
 
 export const UpdatePasswordSchema = zod
     .object({
-        code: zod
-            .string()
-            .min(1, { message: 'Code is required!' })
-            .min(6, { message: 'Code must be at least 6 characters!' }),
-        email: zod
-            .string()
-            .min(1, { message: 'Email is required!' })
-            .email({ message: 'Email must be a valid email address!' }),
         password: zod
             .string()
-            .min(1, { message: 'Password is required!' })
-            .min(6, { message: 'Password must be at least 6 characters!' }),
-        confirmPassword: zod.string().min(1, { message: 'Confirm password is required!' }),
+            .min(1, { message: 'le mot de passe est obligatoire! ' })
+            .min(6, { message: 'le mot de passe doit au moins avoir 8 characters  !' }),
+        confirmPassword: zod.string().min(1, { message: 'le mot de passe de confirmation est obligatoire !' }),
     })
     .refine((data) => data.password === data.confirmPassword, {
-        message: 'Passwords do not match!',
+        message: 'le mot de passe et le mot de passe de confirmation doit être les mêmes!',
         path: ['confirmPassword'],
     });
+
 
 // ----------------------------------------------------------------------
 
@@ -56,15 +51,16 @@ export function UpdatePasswordView() {
 
     const searchParams = useSearchParams();
 
-    const email = searchParams.get('email');
+    const { uid, token } = useParams();
+
+
+
 
     const password = useBoolean();
 
     const countdown = useCountdownSeconds(5);
 
     const defaultValues = {
-        code: '',
-        email: email || '',
         password: '',
         confirmPassword: '',
     };
@@ -85,9 +81,9 @@ export function UpdatePasswordView() {
     const onSubmit = handleSubmit(async (data) => {
         try {
             await updatePassword({
-                username: data.email,
-                confirmationCode: data.code,
-                newPassword: data.password,
+                uid: uid,
+                token: token,
+                new_password: data.password,
             });
 
             router.push(paths.auth.jwt.signIn);
@@ -111,15 +107,6 @@ export function UpdatePasswordView() {
 
     const renderForm = (
         <Box gap={3} display="flex" flexDirection="column">
-            <Field.Text
-                name="email"
-                label="Email "
-                placeholder="example@gmail.com"
-                InputLabelProps={{ shrink: true }}
-                disabled
-            />
-
-            <Field.Code name="code" />
 
             <Field.Text
                 name="password"
@@ -172,8 +159,7 @@ export function UpdatePasswordView() {
             <FormHead
                 icon={<SentIcon />}
                 title="Envoyez la demande!"
-                description={`Nous enverrons un e-mail de confirmation à votre adresse contenant un code à 6 chiffres.  
-Veuillez saisir ce code dans le champ ci-dessous pour vérifier votre adresse e-mail..`}
+                description={`Veuillez renseigner les champs suivants `}
             />
 
             <Form methods={methods} onSubmit={onSubmit}>
