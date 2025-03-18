@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Activate from "src/sections/activate-account/Activate";
+import Activate from "src/sections/activate-account/activate";
 
 const ConfirmPage = () => {
     const { uid, token } = useParams();
