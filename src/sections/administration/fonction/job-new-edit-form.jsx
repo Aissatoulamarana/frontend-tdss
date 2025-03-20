@@ -38,7 +38,7 @@ export function JobNewEditForm({ currentJob }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8000/api/job-categories/")
+      .get(API.listCategories())
       .then((response) => {
         console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
         setCategories(response.data.results || response.data); // Adapter si c'est sous `results`
@@ -84,7 +84,7 @@ export function JobNewEditForm({ currentJob }) {
       let response;
       if (currentJob) {
         // Si un job existe, mettre à jour avec PATCH
-        const {id} = currentJob;
+        const { id } = currentJob;
         response = await axios.patch(API.editFonction(id), data, {
           headers: { 'Content-Type': 'application/json' },
         });

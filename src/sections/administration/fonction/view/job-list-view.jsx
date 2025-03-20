@@ -41,13 +41,24 @@ export function JobListView() {
   const [tableData, setTableData] = useState([]);
   const [options, setOptions] = useState();
   const search = useSetState({ query: '', results: [] });
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+    currentPage: 1,
+  });
 
   useEffect(() => {
     const fetchFonctions = async () => {
       try {
         const response = await axios.get(API.listFonctions()); // Remplacez par votre endpoint réel
-        const fonctions = response.data || []; // Assurez-vous que c'est bien un tableau
+        const fonctions = response.data.results || []; // Assurez-vous que c'est bien un tableau
         setTableData(fonctions);
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+        });
 
         // Extraire uniquement les noms des fonctions
         const nomsFonctions = fonctions.map(fonction => fonction.name);
@@ -141,7 +152,7 @@ export function JobListView() {
 
       {notFound && <EmptyContent filled sx={{ py: 10 }} />}
 
-      <JobList jobs={dataFiltered} />
+      <JobList jobs={dataFiltered} pagination={pagination} />
     </DashboardContent>
   );
 }

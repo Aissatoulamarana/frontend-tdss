@@ -18,7 +18,7 @@ const Activate = ({ uid, token }) => {
             return;
         }
 
-        console.log("🔄 Envoi des données :", { uid, token }); // Debugging
+
 
         axios
             .post(
@@ -27,12 +27,11 @@ const Activate = ({ uid, token }) => {
                 { headers: { "Content-Type": "application/json" } }
             )
             .then(() => {
-                console.log("✅ Activation réussie, redirection...");
-                // 🔄 Redirige vers la connexion avec un message de succès
+
                 router.push(`${paths.auth.jwt.signIn}?activated=true`);
             })
             .catch((err) => {
-                console.error("❌ Erreur API :", err.response?.data || err.message);
+                console.error(" Erreur API :", err.response?.data || err.message);
                 setError("Une erreur est survenue lors de l'activation.");
             })
             .finally(() => setLoading(false));
@@ -45,7 +44,7 @@ const Activate = ({ uid, token }) => {
             ) : error ? (
                 <p style={{ color: "red" }}>{error}</p>
             ) : (
-                <p style={{ color: "green" }}>✅ Votre compte a été activé avec succès !</p>
+                <p style={{ color: "green" }}> Votre compte a été activé avec succès !</p>
             )}
         </div>
     );

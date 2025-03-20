@@ -12,7 +12,7 @@ import { JobItem } from './job-item';
 
 // ----------------------------------------------------------------------
 
-export function JobList({ jobs }) {
+export function JobList({ jobs, pagination }) {
   const router = useRouter();
 
   /* const handleView = useCallback(
@@ -23,8 +23,8 @@ export function JobList({ jobs }) {
   ); */
 
   const handleEdit = useCallback(
-    (id) => {
-      router.push(paths.dashboard.fonction.edit(id));
+    (slug) => {
+      router.push(paths.dashboard.fonction.edit(slug));
     },
     [router]
   );
@@ -48,6 +48,16 @@ export function JobList({ jobs }) {
     }
   };
 
+  const handlePageChange = useCallback(
+    (event, page) => {
+      // Par exemple, l'URL pourrait être modifiée pour inclure ?page=page
+      router.push(`${paths.dashboard.fonction.list}?page=${page}`);
+    },
+    [router]
+  );
+
+  const totalPages = pagination.limit ? Math.ceil(pagination.count / pagination.limit) : 1;
+
   return (
     <>
       <Box
@@ -57,20 +67,22 @@ export function JobList({ jobs }) {
       >
         {jobs.map((job) => (
           <JobItem
-            key={job.id}
+            key={job.slug}
             job={job}
-            onEdit={() => handleEdit(job.id)}
-            onDelete={() => handleDelete(job.id)}
+            onEdit={() => handleEdit(job.slug)}
+            onDelete={() => handleDelete(job.slug)}
           />
         ))}
       </Box>
 
-      {jobs?.length > 8 && (
+      {totalPages > 1 && (
         <Pagination
-          count={8}
+          count={totalPages}
+          page={pagination.currentPage || 1}
+          onChange={handlePageChange}
           sx={{
             mt: { xs: 8, md: 8 },
-            [`& .${paginationClasses.ul}`]: { justifyContent: 'center' },
+            [`& .${paginationClasses.ul}`]: { justifyContent: 'center' }
           }}
         />
       )}

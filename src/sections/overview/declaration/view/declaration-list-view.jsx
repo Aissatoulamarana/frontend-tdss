@@ -327,7 +327,7 @@ export function DeclarationListView() {
     const fetchDeclarations = async () => {
       try {
         const response = await axios.get(API.listDeclarations());
-        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
       } catch (err) {
         setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
@@ -648,40 +648,40 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   const { name, status, fonction, startDate, endDate } = filters;
 
   // Tri des données
-  const stabilizedThis = inputData.map((el, index) => [el, index]);
+  const stabilizedThis = inputData?.map((el, index) => [el, index]);
   stabilizedThis.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) return order;
     return a[1] - b[1];
   });
-  inputData = stabilizedThis.map((el) => el[0]);
+  inputData = stabilizedThis?.map((el) => el[0]);
 
   // Filtrage par numéro de déclaration ou type de déclaration
   // Filtrage par numéro de déclaration ou par type via le mot-clé
   if (name) {
-    inputData = inputData.filter((declaration) =>
-      declaration.reference.toLowerCase().includes(name.toLowerCase()) ||
-      declaration.title.toLowerCase().includes(name.toLowerCase())
+    inputData = inputData?.filter((declaration) =>
+      declaration?.reference?.toLowerCase().includes(name.toLowerCase()) ||
+      declaration?.title?.toLowerCase().includes(name.toLowerCase())
     );
   }
 
   // Filtrage par statut
   if (status !== 'all') {
-    inputData = inputData.filter((declaration) => declaration.status === status);
+    inputData = inputData?.filter((declaration) => declaration?.status === status);
   }
 
   // Filtrage par fonction (en s'assurant que declaration.items existe)
-  if (fonction.length) {
-    inputData = inputData.filter((declaration) =>
-      (declaration.employees || []).some((filterItem) => fonction.includes(filterItem.fonction))
+  if (fonction?.length) {
+    inputData = inputData?.filter((declaration) =>
+      (declaration?.employees || []).some((filterItem) => fonction?.includes(filterItem?.fonction))
     );
   }
 
   // Filtrage par date
   if (!dateError) {
     if (startDate && endDate) {
-      inputData = inputData.filter((declaration) =>
-        fIsBetween(declaration.createDate, startDate, endDate)
+      inputData = inputData?.filter((declaration) =>
+        fIsBetween(declaration?.createDate, startDate, endDate)
       );
     }
   }

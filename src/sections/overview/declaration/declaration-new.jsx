@@ -31,6 +31,7 @@ export const NewInvoiceSchema = zod.object({
       phone: zod.string().min(1, { message: "Entrez votre numero de téléphone " }),
       first: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       last: zod.string().min(1, { message: 'Entrez votre nom ' }),
+      job_category: zod.string().min(1, { message: 'Entrez votre categorie de fonction ' }),
 
     })
   ),
@@ -77,6 +78,7 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
             phone: '',
             job: '',
             identifier: '',
+            job_category: '',
           },
         ],
     };
@@ -109,7 +111,7 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (currentInvoice) {
-        const {id} = currentInvoice;
+        const { id } = currentInvoice;
         // Mettre à jour une déclaration existante
         response = await axios.patch(API.updateDeclaration(id), data, {
           headers: { 'Content-Type': 'application/json' },

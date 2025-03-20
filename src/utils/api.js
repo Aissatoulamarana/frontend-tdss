@@ -9,38 +9,44 @@ const API = {
   logout: () => `${BASE_URL}/auth/jwt/logout/`, // deconnexion
   resetPassword: () => `${BASE_URL}/users/reset_password/`,// reinitialisation du password
   resetPasswordConfirmation: () => `${BASE_URL}/users/reset_password_confirm/`,// reinitialisation du password
+  changePassword : () => `${BASE_URL}/users/set_password/`, // changer le mot de passe
+  changeEmail: () => `${BASE_URL}/users/set_email/`, // changer l'email de l'utilisateur
 
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
   listUsers: () => `${BASE_URL}/users/`, // Liste des utilisateurs
+  listUserTypes: () => `${BASE_URL}/profiles/user-types/`, // Liste des types d'utilisateurs
   deleteUser: (slug) => `${BASE_URL}/users/${slug}/`, // Suppression d'un utilisateur
   updateUser: (slug) => `${BASE_URL}/users/${slug}/`, // Mise à jour d'un utilisateur
   userDetails: (slug) => `${BASE_URL}/users/${slug}/`, // Détails d'un utilisateur
-  userDelete: (id) => `${BASE_URL}/users/${id}/`, // Supprimer un utilisateur
+  userDelete: (slug) => `${BASE_URL}/users/${slug}/`, // Supprimer un utilisateur
   activateAccount:() => `${BASE_URL}/users/activation/`, // activer le compte d'un utilisateur
 
   listDeclarations: () => `${BASE_URL}/declarations/`, // Liste des déclarations
   createDeclaration: () => `${BASE_URL}/declarations/`, // Création d'une déclaration
-  detailsDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/`, // Voir les details d'une déclaration
-  validateDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/status-update/`, // Validation d'une déclaration
-  facturerDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/facturer`, // facturer une déclaration
-  rejetterDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/status-update/`, // Rejetter une déclaration 
-  supprimerDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/`, // Supprimer une déclaration
-  updateDeclaration: (declarationId) => `${BASE_URL}/declarations/${declarationId}/`,// Modifier une déclaration
+  detailsDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Voir les details d'une déclaration
+  validateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/status-update/`, // Validation d'une déclaration
+  soumettreDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/soumettre/`, // Soumettre une déclaration
+  facturerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/facturer`, // facturer une déclaration
+  rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/status-update/`, // Rejetter une déclaration 
+  supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
+  updateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`,// Modifier une déclaration
   move: () => `${BASE_URL}/declarations/move-employees/`,// deplacer des employés d'une déclaration à une autre
 
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
-  paidFacture: (factureId) => `${BASE_URL}factures/${factureId}/mark-paid/`, // Paiement d'une facture
-  detailsFacture: (factureId) => `${BASE_URL}/factures/${factureId}/`,// Details d'une facture 
+  paidFacture: (slug) => `${BASE_URL}factures/${slug}/mark-paid/`, // Paiement d'une facture
+  detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
   PaidFactures: () => `${BASE_URL}/paid_factures/`, // payer plusieurs factures a la fois 
   
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   
   createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
   listFonctions: () => `${BASE_URL}/jobs/`, // Liste des fonctions
-  detailsFonction: (functionId) => `${BASE_URL}/jobs/${functionId}/`, // details d'une fonction
-  deleteFonction: (functionId) => `${BASE_URL}/jobs/${functionId}/`, // Supprimer une fonction
-  editFonction: (functionId) => `${BASE_URL}/jobs/${functionId}/`, // modifier une fonction
+  detailsFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // details d'une fonction
+  deleteFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // Supprimer une fonction
+  editFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // modifier une fonction
+  listCategories: () => `${BASE_URL}/jobs/agent/job-categories/`,
+  listFonctionAgent: () => `${BASE_URL}/jobs/agent/jobs`, // Liste des fonctions des agents
   
 
   CreateBank: () => `${BASE_URL}/bank/create`,
@@ -60,7 +66,7 @@ const API = {
  
   
   searchIdentifier: (identifier) => `${BASE_URL}/api/search_identifier/?identifier=${identifier}`,
-  searchPassport: (numero) => `${BASE_URL}/employees/check-passport/?numero=${numero}`,
+  searchPassport: (numero) => `${BASE_URL}/declarations/employees//check-passport/?numero=${numero}`,
 
   createPermission: () => `${BASE_URL}/permission/`,
   listPermissions: () => `${BASE_URL}/permission/`, // Liste des fonctions
@@ -74,9 +80,9 @@ const API = {
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listClients: () => `${BASE_URL}/profiles/get-groupes/`,
 
-  listCategories: () => `${BASE_URL}/api/job-categories/`,
+ 
 
-  listUserTypes: () => `${BASE_URL}/profiles/user-types/`,
+  
   
 
 };

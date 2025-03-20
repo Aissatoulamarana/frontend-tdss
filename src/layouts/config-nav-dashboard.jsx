@@ -51,18 +51,18 @@ export const navData = [
     subheader: "Vue d'ensemble",
     items: [
       { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
-      {
-        title: 'Statistiques',
-        path: paths.dashboard.analytics.root,
-        icon: ICONS.analytics,
-        children: [
-          { title: 'Declaration', path: paths.dashboard.analytics.declaration },
-          { title: 'Facture', path: paths.dashboard.analytics.facture },
-          { title: 'Paiement', path: paths.dashboard.analytics.paiement },
-          { title: 'Penalité', path: paths.dashboard.group.root },
-          { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
-        ],
-      },
+      // {
+      //   title: 'Statistiques',
+      //   path: paths.dashboard.analytics.root,
+      //   icon: ICONS.analytics,
+      //   children: [
+      //     { title: 'Declaration', path: paths.dashboard.analytics.declaration },
+      //     { title: 'Facture', path: paths.dashboard.analytics.facture },
+      //     { title: 'Paiement', path: paths.dashboard.analytics.paiement },
+      //     { title: 'Penalité', path: paths.dashboard.group.root },
+      //     { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
+      //   ],
+      // },
       {
         title: 'Déclarations',
         path: paths.dashboard.declaration.list,
@@ -73,18 +73,18 @@ export const navData = [
         //   { title: 'Duplicata', path: paths.dashboard.declaration.duplica.replace(':type', 'duplicata') }
         // ]
       },
-      {
-        title: 'Factures',
-        path: paths.dashboard.factures.list,
-        icon: ICONS.facture,
-      },
-      {
-        title: 'Paiements',
-        path: paths.dashboard.paiements.list,
-        icon: ICONS.paiement,
-      },
+      // {
+      //   title: 'Factures',
+      //   path: paths.dashboard.factures.list,
+      //   icon: ICONS.facture,
+      // },
+      // {
+      //   title: 'Paiements',
+      //   path: paths.dashboard.paiements.list,
+      //   icon: ICONS.paiement,
+      // },
 
-      { title: 'Penalités', path: paths.dashboard.penalite.list, icon: ICONS.penalite },
+      // { title: 'Penalités', path: paths.dashboard.penalite.list, icon: ICONS.penalite },
     ],
   },
   /**

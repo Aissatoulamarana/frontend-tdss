@@ -14,21 +14,24 @@ import { toast } from 'src/components/snackbar';
 import { Iconify } from 'src/components/iconify';
 import { Form, Field } from 'src/components/hook-form';
 
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+
 export const ChangePassWordSchema = zod
   .object({
-    oldPassword: zod
+    current_password: zod
       .string()
-      .min(1, { message: 'Password is required!' })
+      .min(1, { message: "l'ancien mot de passe est obligatoire " })
       .min(6, { message: 'Password must be at least 6 characters!' }),
-    newPassword: zod.string().min(1, { message: 'New password is required!' }),
-    confirmNewPassword: zod.string().min(1, { message: 'Confirm password is required!' }),
+    new_password: zod.string().min(1, { message: 'le nouveau mot de passe est obligatoire' }),
+    confirmNewPassword: zod.string().min(1, { message: 'le mot de passe de confirmation est obligatoire' }),
   })
-  .refine((data) => data.oldPassword !== data.newPassword, {
-    message: 'New password must be different than old password',
+  .refine((data) => data.current_password !== data.new_password, {
+    message: "le nouveau mot de passe doit être différent de l'ancien mot de passe",
     path: ['newPassword'],
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: 'Passwords do not match!',
+  .refine((data) => data.new_password === data.confirmNewPassword, {
+    message: 'le nouveau mot de passe et la confirmation du mot de passe doivent être les mêmes!',
     path: ['confirmNewPassword'],
   });
 
@@ -37,7 +40,7 @@ export const ChangePassWordSchema = zod
 export function AccountChangePassword() {
   const password = useBoolean();
 
-  const defaultValues = { oldPassword: '', newPassword: '', confirmNewPassword: '' };
+  const defaultValues = { current_password: '', new_password: '', confirmNewPassword: '' };
 
   const methods = useForm({
     mode: 'all',
@@ -54,11 +57,19 @@ export function AccountChangePassword() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
+
+
+      await axios.post(API.changePassword(), {
+        current_password: data.current_password,
+        new_password: data.new_password,
+      });
+
       reset();
-      toast.success('Update success!');
+      toast.success('Mise à jour réussie !');
       console.info('DATA', data);
     } catch (error) {
       console.error(error);
+      toast.error("Une erreur s'est produite lors de la mise à jour");
     }
   });
 
@@ -66,7 +77,7 @@ export function AccountChangePassword() {
     <Form methods={methods} onSubmit={onSubmit}>
       <Card sx={{ p: 3, gap: 3, display: 'flex', flexDirection: 'column' }}>
         <Field.Text
-          name="oldPassword"
+          name="current_password"
           type={password.value ? 'text' : 'password'}
           label="Ancien mot de passe"
           InputProps={{
@@ -81,7 +92,7 @@ export function AccountChangePassword() {
         />
 
         <Field.Text
-          name="newPassword"
+          name="new_password"
           label="Nouveau mot de passe"
           type={password.value ? 'text' : 'password'}
           InputProps={{
@@ -95,8 +106,7 @@ export function AccountChangePassword() {
           }}
           helperText={
             <Stack component="span" direction="row" alignItems="center">
-              <Iconify icon="eva:info-fill" width={16} sx={{ mr: 0.5 }} /> Password must be minimum
-              6+
+              <Iconify icon="eva:info-fill" width={16} sx={{ mr: 0.5 }} /> le mot de passe doit être au moins de 8 caractères
             </Stack>
           }
         />
@@ -117,7 +127,7 @@ export function AccountChangePassword() {
         />
 
         <LoadingButton type="submit" variant="contained" loading={isSubmitting} sx={{ ml: 'auto' }}>
-          Save changes
+          Enregistrer les changements
         </LoadingButton>
       </Card>
     </Form>

@@ -83,7 +83,7 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/user`,
       new: `${ROOTS.DASHBOARD}/user/new`,
       list: `${ROOTS.DASHBOARD}/user/list`,
-      account: (slug) => `${ROOTS.DASHBOARD}/user/${slug}/account`,
+      account: `${ROOTS.DASHBOARD}/user/account`,
       edit: (slug) => `${ROOTS.DASHBOARD}/user/${slug}/edit`,
     },
 
@@ -91,7 +91,7 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/fonction`,
       new: `${ROOTS.DASHBOARD}/fonction/new`,
       list: `${ROOTS.DASHBOARD}/fonction/list`,
-      edit: (id) => `${ROOTS.DASHBOARD}/fonction/${id}/edit`,
+      edit: (slug) => `${ROOTS.DASHBOARD}/fonction/${slug}/edit`,
     },
 
     permission: {

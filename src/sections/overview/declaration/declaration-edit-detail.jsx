@@ -16,6 +16,7 @@ import API from 'src/utils/api';
 import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
 
+import { getJobCategories } from 'src/utils/options';
 // ----------------------------------------------------------------------
 
 
@@ -27,6 +28,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const [openModalDoc, setOpenModalDoc] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [data, setData] = useState();
+  const [categories, setCategories] = useState([]);
 
   const typedec = type?.trim();
 
@@ -133,14 +135,15 @@ export function DeclarationNewEditDetails({ formData, type }) {
     const fetchFonctions = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(API.listFonctions());
+        const response = await axios.get(API.listFonctionAgent());
         console.log('Données reçues :', response.data); // Vérifie le retour du backend
 
-        if (response.data && response.data) {
-          const fonctions = response.data.map((fonction) => ({
-            value: String(fonction.id),
+        if (response.data && response.data.results) {
+          const fonctions = response.data.results.map((fonction) => ({
+            value: (fonction.slug),
             label: fonction.name,
-            id: fonction.id, // Ajout de l'ID pour éviter le problème de key
+            slug: fonction.slug,
+            category: fonction.category
           }));
           console.log('Options mises à jour :', fonctions);
           setOptions(fonctions);
@@ -156,6 +159,11 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
     fetchFonctions();
   }, []);
+
+  useEffect(() => {
+    getJobCategories().then((data) => setCategories(data));
+  })
+
 
   const handleSelectService = useCallback(
     (index, option) => {
@@ -189,7 +197,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const checkPassportExistence = async (numero, index) => {
     if (!numero) return;
     try {
-      const response = await axios.get(API.searchPassport(numero));
+      const response = await axios.post(API.searchPassport(numero));
       setData(response.data.data)
       console.log('les informations du detenteur de ce passport ', response.data.data)
       if (response.data.exists) {
@@ -311,7 +319,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
                       ? typedec === "Nouvelle"
                         ? "error.main"
                         : "success.main"
-                      : "inherit"
+                      : "error.main"
                   }
                 }}
               />
@@ -341,6 +349,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 inputlabelprops={{ shrink: true }}
               />
 
+
               <Field.Select
                 name={`employees[${index}].job`}
                 size="small"
@@ -348,6 +357,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 inputlabelprops={{ shrink: true }}
                 sx={{ maxWidth: { md: 160 } }}
               >
+
                 <MenuItem
                   // onClick={() => handleClearService(index)}
                   sx={{ fontStyle: 'italic', color: 'text.secondary' }}
@@ -359,11 +369,39 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
                 {options.map((fonction) => (
                   <MenuItem
-                    key={fonction.id} // Utilisation de value au lieu d'id
-                    value={fonction.value} // Assure-toi d'utiliser value et non name
+                    key={fonction.slug} // Utilisation de slug
+                    value={fonction.value} // utiliser value et non name
                     onClick={() => handleSelectService(index, fonction.value)}
                   >
-                    {fonction.label} {/* Affiche label au lieu de name */}
+                    {fonction.label}
+                  </MenuItem>
+                ))}
+              </Field.Select>
+
+              <Field.Select
+                name={`employees[${index}].job_category`}
+                size="small"
+                label="Categorie Fonction"
+                inputlabelprops={{ shrink: true }}
+                sx={{ maxWidth: { md: 160 } }}
+              >
+
+                <MenuItem
+                  // onClick={() => handleClearService(index)}
+                  sx={{ fontStyle: 'italic', color: 'text.secondary' }}
+                >
+                  None
+                </MenuItem>
+
+                <Divider sx={{ borderStyle: 'dashed' }} />
+
+                {categories.map((category) => (
+                  <MenuItem
+                    key={category.slug} // Utilisation de slug
+                    value={category.slug} // utiliser value et non name
+                    onClick={() => handleSelectService(index, category.slug)}
+                  >
+                    {category.name}
                   </MenuItem>
                 ))}
               </Field.Select>
@@ -592,9 +630,6 @@ export function DeclarationNewEditDetails({ formData, type }) {
           Add Item
         </Button>
       </Stack>
-
-
-
 
     </Box>
   );

@@ -18,6 +18,7 @@ import { AccountBilling } from '../account-billing';
 import { AccountSocialLinks } from '../account-social-links';
 import { AccountNotifications } from '../account-notifications';
 import { AccountChangePassword } from '../account-change-password';
+import { AccountChangeEmail } from '../account-change-email';
 
 // ----------------------------------------------------------------------
 
@@ -39,11 +40,12 @@ const TABS = [
   //   icon: <Iconify icon="solar:share-bold" width={24} />,
   // },
   { value: 'security', label: 'Sécurité', icon: <Iconify icon="ic:round-vpn-key" width={24} /> },
+  { value: 'email', label: 'Email', icon: <Iconify icon="mdi:email" width={24} /> },
 ];
 
 // ----------------------------------------------------------------------
 
-export function AccountView({ slug }) {
+export function AccountView() {
   const tabs = useTabs('general');
 
   return (
@@ -58,13 +60,13 @@ export function AccountView({ slug }) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <Tabs value={tabs.value} onChange={tabs.onChange} sx={{ mb: { xs: 3, md: 5 } }}>
+      <Tabs value={tabs.value} onChange={tabs.onChange} sx={{ mb: { xs: 4, md: 6 } }}>
         {TABS.map((tab) => (
           <Tab key={tab.value} label={tab.label} icon={tab.icon} value={tab.value} />
         ))}
       </Tabs>
 
-      {tabs.value === 'general' && <AccountGeneral slug={slug} />}
+      {tabs.value === 'general' && <AccountGeneral />}
 
       {/* {tabs.value === 'billing' && (
         <AccountBilling
@@ -80,6 +82,7 @@ export function AccountView({ slug }) {
       {/* {tabs.value === 'social' && <AccountSocialLinks socialLinks={_userAbout.socialLinks} />} */}
 
       {tabs.value === 'security' && <AccountChangePassword />}
+      {tabs.value === 'email' && <AccountChangeEmail />}
     </DashboardContent>
   );
 }

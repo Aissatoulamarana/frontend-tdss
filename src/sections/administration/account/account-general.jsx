@@ -8,7 +8,7 @@ import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
+
 import { Grid2 } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -22,8 +22,7 @@ import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import { useMockedUser } from 'src/auth/hooks';
 import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
 
-import API from 'src/utils/api';
-import axios from 'src/utils/axios';
+
 // ----------------------------------------------------------------------
 
 export const UpdateUserSchema = zod.object({
@@ -44,53 +43,25 @@ export const UpdateUserSchema = zod.object({
   agency: zod.string().min(1, { message: " l' agence est requis" }),
 });
 
-export function AccountGeneral({ slug }) {
+export function AccountGeneral() {
 
-  const [user, setUser] = useState();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    // Récupération des données du profil
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(API.userDetails(slug));
-        setUser(response.data);
-        console.log(response.data);
-      } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [slug]);
-
-
+  const { user } = useMockedUser();
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [profils, setProfils] = useState([]);
   const [agences, setAgences] = useState([]);
 
-  const defaultValues = useMemo(() => {
-    const currentRegion = regions?.find(region => region.name === user?.location?.name);
-    const currentRole = roles?.find(role => role.name === user?.type?.name);
-    const currentProfil = profils?.find(profil => profil.name === user?.profile?.name);
-    const currentAgence = agences?.find(agence => agence.name === user?.agency?.name);
-
-    return {
-      first_name: user?.first_name || '',
-      last_name: user?.last_name || '',
-      email: user?.email || '',
-      picture: user?.picture || '',
-      phone: user?.phone || '',
-      type: currentRole ? currentRole?.slug : user?.type?.slug || '',
-      profile: currentProfil ? currentProfil?.slug : user?.profile?.slug || '',
-      location: currentRegion ? currentRegion?.slug : user?.location?.slug || '',
-      agency: currentAgence ? currentAgence?.slug : user?.agency.slug || '',
-    }
-  }, [regions, roles, profils, agences, user])
+  const defaultValues = {
+    first_name: user?.first_name || '',
+    last_name: user?.last_name || '',
+    email: user?.email || '',
+    picture: user?.picture || null,
+    phone: user?.phone || '',
+    type: user?.type || '',
+    profile: user?.profile || '',
+    location: user?.location || '',
+    agency: user?.agency || '',
+  };
 
   const methods = useForm({
     mode: 'all',
@@ -99,7 +70,6 @@ export function AccountGeneral({ slug }) {
   });
 
   const {
-    reset,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
@@ -120,10 +90,6 @@ export function AccountGeneral({ slug }) {
     getUserTypes().then(data => setRoles(data));
     getProfils().then(data => setProfils(data));
   })
-
-  useEffect(() => {
-    reset(defaultValues);
-  }, [user, defaultValues, reset]);
 
   return (
     <Form methods={methods} onSubmit={onSubmit}>
@@ -157,16 +123,16 @@ export function AccountGeneral({ slug }) {
               }
             />
 
-            <Field.Switch
+            {/* <Field.Switch
               name="isPublic"
               labelPlacement="start"
               label="Public profile"
               sx={{ mt: 5 }}
-            />
+            /> */}
 
-            <Button variant="soft" color="error" sx={{ mt: 3 }}>
+            {/* <Button variant="soft" color="error" sx={{ mt: 3 }}>
               Supprimer l'utilisateur
-            </Button>
+            </Button> */}
           </Card>
         </Grid2>
 

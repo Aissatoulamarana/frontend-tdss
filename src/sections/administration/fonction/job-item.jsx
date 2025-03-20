@@ -36,16 +36,17 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
             primary={`
                 ${job.name}
             `}
-            secondary={`Date d'ajout: ${fDate(job.created_at)}`}
+            // secondary={`Date d'ajout: ${fDate(job.created_at)}`}
+            secondary={`Categorie: ${job.category}`}
             slotProps={{
               primary: { typography: 'subtitle1' },
-
               secondary: {
                 mt: 1,
                 component: 'span',
                 typography: 'caption',
                 color: 'text.disabled',
-              }
+              },
+
             }} />
 
           <Stack
