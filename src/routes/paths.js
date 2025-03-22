@@ -131,5 +131,11 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/userType`,
     },
 
+    devise: {
+      root: `${ROOTS.DASHBOARD}/devise`, 
+    },
+    permit: {
+      root: `${ROOTS.DASHBOARD}/permit`,
+    }
   },
 };
