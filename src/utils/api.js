@@ -71,16 +71,15 @@ const API = {
   createPermission: () => `${BASE_URL}/permission/`,
   listPermissions: () => `${BASE_URL}/permission/`, // Liste des fonctions
 
-  listDevises: () => `${BASE_URL}/devises/`,
-
   listProfilesTypes: () => `${BASE_URL}/profiles/types/`,
-
+  
   createProfile: () => `${BASE_URL}/profiles/`,
   listProfiles: () => `${BASE_URL}/profiles/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listClients: () => `${BASE_URL}/profiles/get-groupes/`,
-
- 
+  
+  listDevises: () => `${BASE_URL}/devises/`,
+  listPermits: () => `${BASE_URL}/permits/`,
 
   
   
