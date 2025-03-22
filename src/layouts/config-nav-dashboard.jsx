@@ -3,6 +3,7 @@ import { CONFIG } from 'src/config-global';
 import { paths } from 'src/routes/paths';
 
 import { SvgColor } from 'src/components/svg-color';
+import path from 'path';
 
 // ----------------------------------------------------------------------
 
@@ -143,6 +144,16 @@ export const navData = [
             path: paths.dashboard.userType.root,
             icon: ICONS.company,
           },
+          {
+            title: 'Devises', 
+            path: paths.dashboard.devise.root,
+            icon: ICONS.company,
+          },
+          {
+            title: 'Permits', 
+            path: paths.dashboard.permit.root,
+            icon: ICONS.company,
+          }
         ],
       },
     ]
