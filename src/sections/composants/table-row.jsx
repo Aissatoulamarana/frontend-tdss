@@ -117,3 +117,154 @@ export function TableRowCom({
         </>
     );
 }
+
+// table row for devise
+export function TableRowComDevise({
+    row,
+    selected,
+    onEditRow,
+    onSelectRow,
+    onDeleteRow,
+    onViewRow,
+
+}) {
+    const confirm = useBoolean();
+
+    const popover = usePopover();
+
+    const quickEdit = useBoolean();
+
+    return (
+        <>
+            <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
+                <TableCell padding="checkbox">
+                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                </TableCell>
+                {/* name, sign, value */}
+                <TableCell sx={{ width: "30%", whiteSpace: 'nowrap' }}>{row.name}</TableCell>
+                <TableCell sx={{ width: "30%", whiteSpace: 'nowrap' }}>{row.sign}</TableCell>
+                <TableCell sx={{ width: "30%", whiteSpace: 'nowrap' }}>{row.value}</TableCell>
+                {/* <TableCell>
+                    <Stack direction="row" alignItems="center">
+                        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                            <Iconify icon="eva:more-vertical-fill" />
+                        </IconButton>
+                    </Stack>
+                </TableCell> */}
+            </TableRow>
+
+
+
+            <CustomPopover
+                open={popover.open}
+                anchorEl={popover.anchorEl}
+                onClose={popover.onClose}
+                slotProps={{ arrow: { placement: 'right-top' } }}
+            >
+                <MenuList>
+                    <MenuItem
+                        onClick={() => {
+                            confirm.onTrue();
+                            popover.onClose();
+                        }}
+                        sx={{ color: 'error.main' }}
+                    >
+                        <Iconify icon="solar:trash-bin-trash-bold" />
+                        Supprimer
+                    </MenuItem>
+
+
+
+                </MenuList>
+            </CustomPopover>
+
+            <ConfirmDialog
+                open={confirm.value}
+                onClose={confirm.onFalse}
+                title="Supprimer"
+                content="Etes vous sur de vouloir supprimer?"
+                action={
+                    <Button variant="contained" color="error" onClick={onDeleteRow}>
+                        Supprimer
+                    </Button>
+                }
+            />
+        </>
+    );
+}
+
+// table row for permit
+export function TableRowComPermit({
+    row,
+    selected,
+    onEditRow,
+    onSelectRow,
+    onDeleteRow,
+    onViewRow,
+
+}) {
+    const confirm = useBoolean();
+
+    const popover = usePopover();
+
+    const quickEdit = useBoolean();
+
+    return (
+        <>
+            <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
+                <TableCell padding="checkbox">
+                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                </TableCell>
+                {/* name, sign, value */}
+                <TableCell sx={{ width: "25%", whiteSpace: 'nowrap' }}>{row.name}</TableCell>
+                <TableCell sx={{ width: "25%", whiteSpace: 'nowrap' }}>{row.type}</TableCell>
+                <TableCell sx={{ width: "25%", whiteSpace: 'nowrap' }}>{row.price}</TableCell>
+                <TableCell sx={{ width: "25%", whiteSpace: 'nowrap' }}>{row.devise}</TableCell>
+                {/* <TableCell>
+                    <Stack direction="row" alignItems="center">
+                        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                            <Iconify icon="eva:more-vertical-fill" />
+                        </IconButton>
+                    </Stack>
+                </TableCell> */}
+            </TableRow>
+
+
+
+            <CustomPopover
+                open={popover.open}
+                anchorEl={popover.anchorEl}
+                onClose={popover.onClose}
+                slotProps={{ arrow: { placement: 'right-top' } }}
+            >
+                <MenuList>
+                    <MenuItem
+                        onClick={() => {
+                            confirm.onTrue();
+                            popover.onClose();
+                        }}
+                        sx={{ color: 'error.main' }}
+                    >
+                        <Iconify icon="solar:trash-bin-trash-bold" />
+                        Supprimer
+                    </MenuItem>
+
+
+
+                </MenuList>
+            </CustomPopover>
+
+            <ConfirmDialog
+                open={confirm.value}
+                onClose={confirm.onFalse}
+                title="Supprimer"
+                content="Etes vous sur de vouloir supprimer?"
+                action={
+                    <Button variant="contained" color="error" onClick={onDeleteRow}>
+                        Supprimer
+                    </Button>
+                }
+            />
+        </>
+    );
+}
