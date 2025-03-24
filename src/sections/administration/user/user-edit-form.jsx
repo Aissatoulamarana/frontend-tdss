@@ -59,6 +59,7 @@ export const NewUserSchema = zod.object({
 export function UserNewEditForm({ currentUser }) {
   const router = useRouter();
   const password = useBoolean();
+  const [eror, setError] = useState(null);
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [profils, setProfils] = useState([]);
@@ -166,6 +167,16 @@ export function UserNewEditForm({ currentUser }) {
       console.info('DATA', response);
     } catch (error) {
       console.error(error);
+      // Extraire le message d'erreur dans une chaîne de caractères
+      const errorMessage =
+        error
+          (typeof error === 'string' ? error : JSON.stringify(error));
+
+      // Mette à jour l'état si nécessaire
+      setError(errorMessage);
+
+      // Afficher l'erreur en utilisant la chaîne extraite
+      toast.error(errorMessage);
     }
   });
 

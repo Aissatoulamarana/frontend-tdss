@@ -1,7 +1,7 @@
 import { Button } from '@mui/material';
 import Papa from 'papaparse';
 import React, { useRef } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 export function ImportFilesButton({ onImport }) {
   const fileInputRef = useRef();
@@ -26,20 +26,27 @@ export function ImportFilesButton({ onImport }) {
         },
       });
     } else if (fileExtension === 'xls' || fileExtension === 'xlsx') {
-      // Traitement des fichiers Excel
+      // Traitement des fichiers Excel avec ExcelJS
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+      reader.onload = async (e) => {
+        const data = e.target.result;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(data);
 
-        // Lire le premier onglet
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        // Lire la première feuille
+        const worksheet = workbook.worksheets[0];
+        const jsonData = [];
+
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return; // Ignorer la ligne d'en-tête
+          const rowData = row.values.slice(1); // Ignorer l'index 0 qui est vide
+          jsonData.push(rowData);
+        });
 
         console.log('Données Excel importées :', jsonData);
-        onImport(jsonData); // Transmet les données importées au parent
+        onImport(jsonData);
       };
+
       reader.readAsArrayBuffer(file);
     } else {
       console.error(

@@ -97,21 +97,21 @@ export const navData = [
         items: [
           {
             title: 'Utilisateurs',
-            path: paths.dashboard.user.root,
+            path: paths.dashboard.user.list,
             icon: ICONS.user,
-            children: [
-              { title: 'Listes Utilisateurs', path: paths.dashboard.user.list },
-              { title: 'Nouveau', path: paths.dashboard.user.new },
-            ],
+            // children: [
+            //   { title: 'Listes Utilisateurs', path: paths.dashboard.user.list },
+            //   { title: 'Nouveau', path: paths.dashboard.user.new },
+            // ],
           },
           {
             title: 'Fonction',
-            path: paths.dashboard.fonction.root,
+            path: paths.dashboard.fonction.list,
             icon: ICONS.job,
-            children: [
-              { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
-              { title: 'Nouvelle', path: paths.dashboard.fonction.new },
-            ],
+            // children: [
+            //   { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
+            //   { title: 'Nouvelle', path: paths.dashboard.fonction.new },
+            // ],
           },
           {
             title: 'Profils',
