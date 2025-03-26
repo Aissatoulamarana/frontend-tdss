@@ -71,7 +71,7 @@ export function JwtSignInView() {
       await checkUserSession?.();
       router.push(paths.dashboard.root);
     } catch (error) {
-      console.error('Sign in error:', error);
+      console.error('Sign in error dans la vue :', error);
       setErrorMsg(typeof error === 'string' ? error : error.message || 'Authentication failed');
     }
   });

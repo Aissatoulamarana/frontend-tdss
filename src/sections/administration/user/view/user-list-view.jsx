@@ -64,6 +64,7 @@ const TABLE_HEAD = [
   { id: '', width: 88 },
 ];
 
+const ROWS_PER_PAGE = 5; // Affichage par défaut
 // ----------------------------------------------------------------------
 
 export function UserListView() {
@@ -73,11 +74,19 @@ export function UserListView() {
 
   const confirm = useBoolean();
 
+
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
   const filters = useSetState({ name: '', role: [], status: 'all' });
+
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+    currentPage: 1,
+  });
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -179,21 +188,44 @@ export function UserListView() {
     [router]
   );
 
-  useEffect(() => {
-    // Fonction pour récupérer les données
-    const fetchUtilisateurs = async () => {
-      try {
-        const response = await axios.get(API.listUsers());
-        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
-      } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
 
+  // Fonction pour récupérer les données
+  const fetchUtilisateurs = async (urlOrPage = 1) => {
+    setLoading(true);
+    try {
+      let url;
+      if (typeof urlOrPage === 'string') {
+        // Utilisation directe de l’URL next ou previous
+        url = urlOrPage;
+      } else {
+        // Construit l’URL à partir du numéro de page
+        const page = urlOrPage;
+        const offset = (page - 1) * ROWS_PER_PAGE;
+        url = API.listUsers(`?limit=${ROWS_PER_PAGE}&offset=${offset}`);
+      }
+      const response = await axios.get(url);
+      setTableData(response.data.results);
+      setPagination((prev) => ({
+        count: response.data.count,
+        next: response.data.next,
+        previous: response.data.previous,
+        currentPage:
+          typeof urlOrPage === 'string'
+            ? // Si on utilise une URL, on détermine la nouvelle page en fonction de la présence de next ou previous
+            prev.next === url ? prev.currentPage + 1 : prev.currentPage - 1
+            : urlOrPage,
+      }));
+    } catch (err) {
+      setError(err.message || 'Erreur lors du chargement des données.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Chargement initial
+  useEffect(() => {
     fetchUtilisateurs();
-  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, []);
 
   if (loading) {
     console.info('Loading utilisateurs...');
@@ -202,6 +234,25 @@ export function UserListView() {
   if (error) {
     console.error(`Error: ${error}`);
   }
+
+  // Gestion du changement de page
+  // On vérifie si l'utilisateur clique pour aller à la page suivante ou précédente en se basant sur l'index (0 basé)
+  const handlePageChange = (event, newPageIndex) => {
+    const currentPage = pagination.currentPage;
+    // newPageIndex est 0 basé
+    if (newPageIndex + 1 > currentPage) {
+      // Si page suivante et si un lien "next" est fourni par le backend
+      if (pagination.next) {
+        fetchUtilisateurs(pagination.next);
+      }
+    } else if (newPageIndex + 1 < currentPage) {
+      // Si page précédente et si un lien "previous" est fourni par le backend
+      if (pagination.previous) {
+        fetchUtilisateurs(pagination.previous);
+      }
+    }
+  };
+
   return (
     <>
       <DashboardContent maxWidth="xl">
@@ -347,11 +398,11 @@ export function UserListView() {
           </Box>
 
           <TablePaginationCustom
-            page={table.page}
+            page={pagination.currentPage - 1}
             dense={table.dense}
-            count={dataFiltered.length}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
+            count={pagination.count}
+            rowsPerPage={ROWS_PER_PAGE}
+            onPageChange={handlePageChange}
             onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
