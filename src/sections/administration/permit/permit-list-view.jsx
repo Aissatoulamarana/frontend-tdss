@@ -162,7 +162,7 @@ export function PermitListView() {
         <>
             <DashboardContent maxWidth="xl">
                 <CustomBreadcrumbs
-                    heading="Devises"
+                    heading="Permits"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
                         { name: 'Permit', href: paths.dashboard.devise.root },

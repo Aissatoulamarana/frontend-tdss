@@ -86,7 +86,7 @@ export const paths = {
       account: `${ROOTS.DASHBOARD}/user/account`,
       edit: (slug) => `${ROOTS.DASHBOARD}/user/${slug}/edit`,
     },
-
+    
     fonction: {
       root: `${ROOTS.DASHBOARD}/fonction`,
       new: `${ROOTS.DASHBOARD}/fonction/new`,
@@ -130,12 +130,20 @@ export const paths = {
     userType: {
       root: `${ROOTS.DASHBOARD}/userType`,
     },
-
+    
     devise: {
       root: `${ROOTS.DASHBOARD}/devise`, 
     },
     permit: {
       root: `${ROOTS.DASHBOARD}/permit`,
-    }
+    },
+    jobCategory: {
+      root: `${ROOTS.DASHBOARD}/jobCategory`,
+      new: `${ROOTS.DASHBOARD}/jobCategory/new`,
+      list: `${ROOTS.DASHBOARD}/jobCategory/list`, 
+      details: (slug) => `${ROOTS.DASHBOARD}/jobCategory/${slug}`,
+      edit: (slug) => `${ROOTS.DASHBOARD}/jobCategory/${slug}/edit`,
+      delete: (slug) => `${ROOTS.DASHBOARD}/jobCategory/${slug}/delete`,
+    },
   },
 };
