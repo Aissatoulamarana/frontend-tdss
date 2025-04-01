@@ -1,52 +1,57 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { paths } from 'src/routes/paths';
 
-import { DashboardContent } from 'src/layouts/dashboard';
-
-import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-
-import { JobCategoryNewEditForm } from '../job-category-new-edit-form'
+import { useEffect, useState } from 'react'
+import { DashboardContent } from "src/layouts/dashboard";
+import { paths } from "src/routes/paths";
+import { CustomBreadcrumbs } from "src/components/custom-breadcrumbs";
+import { JobCategoryNewEditForm } from '../job-category-new';
 
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 
-// ----------------------------------------------------------------------
 
-export function JobEditView({ slug }) {
 
-    const [job, setJob] = useState();
+export function JobCategoryEditView({ slug }) {
+    // console.log("Slug reçu:", slug);
+    // console.log("URL API appelée:", API.editJobCategory(slug));
+
+    const [jobCategory, setJobCategory] = useState();
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchJob = async () => {
+        // Récupération des données du profil
+        const fetchJobCategory = async () => {
             try {
-                const response = await axios.get(API.detailsFonction(slug));
-                setJob(response.data);
-                console.log('Données du job à modifier', response.data);
-            } catch (error) {
-                setError(error.message || 'Erreurs lors du chargement des données');
+                const response = await axios.get(API.editJobCategory(slug));
+                setJobCategory(response.data);
+                console.log(response.data);
+            } catch (err) {
+                setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
                 setLoading(false);
             }
         };
-        fetchJob();
+
+        fetchJobCategory();
     }, [slug]);
 
     return (
         <DashboardContent>
             <CustomBreadcrumbs
-                heading="Modifier"
+                heading="Modifier Job Category"
                 links={[
                     { name: 'Dashboard', href: paths.dashboard.root },
-                    { name: 'Fonction', href: paths.dashboard.fonction.root },
-                    { name: job?.name },
+                    { name: 'Catégories Professionnelles', href: paths.dashboard.jobCategory.root },
+                    { name: 'Modifier' },
                 ]}
                 sx={{ mb: { xs: 3, md: 5 } }}
-            />
+            >
 
-            <JobCategoryNewEditForm currentJob={job} />
+
+
+            </CustomBreadcrumbs>
+            <JobCategoryNewEditForm currentJobCategory={jobCategory} />
         </DashboardContent>
     );
-}
+} 
