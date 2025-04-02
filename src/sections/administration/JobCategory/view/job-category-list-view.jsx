@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
+import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
@@ -26,6 +27,7 @@ import API from 'src/utils/api';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
@@ -40,26 +42,25 @@ import {
     TablePaginationCustom,
 } from 'src/components/table';
 
-
-import { TableToolbar } from 'src/sections/composants/table-toolbar';
-import { TableFiltersResult } from 'src/sections/composants/table-filters-results';
-import { TableRowComPermit } from 'src/sections/composants/table-row';
+import { JobCategoryTableRow } from '../job-category-table-row';
+import { JobCategoryTableToolbar } from '../job-category-table-toolbar';
 // ----------------------------------------------------------------------
 
-
+const STATUS_OPTIONS = [
+    { value: 'all', label: 'Tous' },
+    { value: 'ON', label: 'Actif' },
+    { value: 'OFF', label: 'Inactif' },
+];
 
 const TABLE_HEAD = [
-    { id: 'name', label: 'Nom' },
-    { id: 'type', label: 'Type ' },
-    { id: 'price', label: 'Prix' },
-    { id: 'devise', label: 'Devise' },
-
-    { id: '', width: 88 },
+    { id: 'name', label: 'Nom ' },
+    { id: 'permit', label: 'Permit' },
+    { id: 'status', label: 'Status' },
 ];
 
 // ----------------------------------------------------------------------
 
-export function PermitListView() {
+export function JobCategoryListView() {
     const table = useTable();
 
     const router = useRouter();
@@ -70,7 +71,7 @@ export function PermitListView() {
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
 
-    const filters = useSetState({ name: '', profil: [], status: 'all' });
+    const filters = useSetState({ name: '', type: [], status: 'all' });
 
     const dataFiltered = applyFilter({
         inputData: tableData,
@@ -81,22 +82,37 @@ export function PermitListView() {
     const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
     const canReset =
-        !!filters.state.name || filters.state.profil.length > 0 || filters.state.status !== 'all';
+        !!filters.state.name || filters.state.type.length > 0 || filters.state.status !== 'all';
 
     const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
     const handleDeleteRow = useCallback(
-        (id) => {
-            const deleteRow = tableData.filter((row) => row.id !== id);
+        async (slug) => {
+            try {
+                // Appel à l'API backend pour supprimer l'élément
+                const response = await axios.delete(API.deleteJobCategory(slug));
 
-            toast.success('Suppression reussie!');
+                if (response) {
+                    // Mise à jour des données côté frontend après suppression réussie
+                    const updatedTableData = tableData.filter((row) => row.slug !== slug);
+                    setTableData(updatedTableData);
 
-            setTableData(deleteRow);
+                    toast.success('Suppression réussie !');
 
-            table.onUpdatePageDeleteRow(dataInPage.length);
+                    // Mise à jour de la pagination ou des données affichées
+                    table.onUpdatePageDeleteRow(dataInPage.length);
+                } else {
+                    console.error("Erreur lors de la suppression :", response.data.error);
+                    toast.error('Une erreur est survenue.');
+                }
+            } catch (error) {
+                console.error('Erreur réseau ou serveur :', error);
+                toast.error('Erreur lors de la communication avec le serveur.');
+            }
         },
         [dataInPage.length, table, tableData]
     );
+
 
     const handleDeleteRows = useCallback(() => {
         const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -111,18 +127,30 @@ export function PermitListView() {
         });
     }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
-    const handleEditRow = useCallback(
-        (id) => {
-            router.push(paths.dashboard.user.edit(id));
+
+    const handleUpdateRow = useCallback((updatedJobCategory) => {
+        console.log("Mise à jour dans le parent :", updatedJobCategory);
+        setTableData((prevData) =>
+            prevData.map((row) =>
+                row.slug === updatedJobCategory.slug ? updatedJobCategory : row
+            )
+        );
+    }, []);
+
+
+
+    const handleViewRow = useCallback(
+        (slug) => {
+            router.push(paths.dashboard.jobCategory.details(slug));
         },
         [router]
     );
 
-    const handleViewRow = useCallback(
-        (id) => {
-            router.push(paths.dashboard.user.account);
-        },
-        [router]
+    const handleEditRow = useCallback(
+        (slug) => {
+            console.log("Navigating to edit page for:", slug);
+            router.push(paths.dashboard.jobCategory.edit(slug));
+        }, [router]
     );
 
     const handleFilterStatus = useCallback(
@@ -134,12 +162,11 @@ export function PermitListView() {
     );
 
 
-
     useEffect(() => {
-        // Fonction pour récupérer les devises
-        const fetchRegions = async () => {
+        // Fonction pour récupérer les données
+        const fetchJobCategory = async () => {
             try {
-                const response = await axios.get(API.listPermits());
+                const response = await axios.get(API.listJobCategory());
                 setTableData(response.data.results); 
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
@@ -148,7 +175,7 @@ export function PermitListView() {
             }
         };
 
-        fetchRegions();
+        fetchJobCategory();
     }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
     if (loading) {
@@ -162,13 +189,22 @@ export function PermitListView() {
         <>
             <DashboardContent maxWidth="xl">
                 <CustomBreadcrumbs
-                    heading="Permits"
+                    heading="Fonctions Professionnelles"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Permit', href: paths.dashboard.devise.root },
-                        { name: "Liste des Permits" },
+                        { name: 'Fonctions Professionnelles', href: paths.dashboard.jobCategory.root },
+                        { name: 'Listes des Fonctions Professionnelles' },
                     ]}
-
+                    action={
+                        <Button
+                            component={RouterLink}
+                            href={paths.dashboard.jobCategory.new}
+                            variant="contained"
+                            startIcon={<Iconify icon="mingcute:add-line" />}
+                        >
+                            Nouvelle Fonction Professionnelle
+                        </Button>
+                    }
                     sx={{ mb: { xs: 3, md: 5 } }}
                 />
 
@@ -182,23 +218,47 @@ export function PermitListView() {
                                 `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
                         }}
                     >
-
+                        {STATUS_OPTIONS.map((tab) => (
+                            <Tab
+                                key={tab.value}
+                                iconPosition="end"
+                                value={tab.value}
+                                label={tab.label}
+                                icon={
+                                    <Label
+                                        variant={
+                                            ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                                            'soft'
+                                        }
+                                        color={
+                                            (tab.value === 'ON' && 'success') ||
+                                            (tab.value === 'OFF' && 'error') ||
+                                            'default'
+                                        }
+                                    >
+                                        {['ON', 'OFF'].includes(tab.value)
+                                            ? tableData.filter((jobCategory) => jobCategory.status === tab.value).length
+                                            : tableData.length}
+                                    </Label>
+                                }
+                            />
+                        ))}
                     </Tabs>
 
-                    <TableToolbar
+                    {/* <JobCategoryTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage}
-                        options={{ profil: _roles }}
-                    />
+                        options={{ roles: [... new Set(dataFiltered.map((row) => row.type.trim()))] }}
+                    /> */}
 
-                    {canReset && (
-                        <TableFiltersResult
+                    {/* {canReset && (
+                        <ClientTableFiltersResult
                             filters={filters}
                             totalResults={dataFiltered.length}
                             onResetPage={table.onResetPage}
                             sx={{ p: 2.5, pt: 0 }}
                         />
-                    )}
+                    )} */}
 
                     <Box sx={{ position: 'relative' }}>
                         <TableSelectedAction
@@ -208,7 +268,7 @@ export function PermitListView() {
                             onSelectAllRows={(checked) =>
                                 table.onSelectAllRows(
                                     checked,
-                                    dataFiltered.map((row) => row.id)
+                                    dataFiltered.map((row) => row.slug)
                                 )
                             }
                             action={
@@ -232,20 +292,19 @@ export function PermitListView() {
                                     onSelectAllRows={(checked) =>
                                         table.onSelectAllRows(
                                             checked,
-                                            dataFiltered.map((row) => row.id)
+                                            dataFiltered.map((row) => row.slug)
                                         )
                                     }
                                 />
 
                                 <TableBody>
-                                    {/* slug, name, sign, value */}
                                     {dataFiltered
                                         .slice(
                                             table.page * table.rowsPerPage,
                                             table.page * table.rowsPerPage + table.rowsPerPage
                                         )
                                         .map((row) => (
-                                            <TableRowComPermit
+                                            <JobCategoryTableRow
                                                 key={row.slug}
                                                 row={row}
                                                 selected={table.selected.includes(row.slug)}
@@ -253,7 +312,7 @@ export function PermitListView() {
                                                 onDeleteRow={() => handleDeleteRow(row.slug)}
                                                 onEditRow={() => handleEditRow(row.slug)}
                                                 onViewRow={() => handleViewRow(row.slug)}
-
+                                                onUpdateRow={handleUpdateRow}
                                             />
                                         ))}
 
@@ -286,7 +345,7 @@ export function PermitListView() {
                 title="Supprimer"
                 content={
                     <>
-                        Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> type d'utilisateur?
+                        Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> items?
                     </>
                 }
                 action={
@@ -296,6 +355,7 @@ export function PermitListView() {
                         onClick={() => {
                             handleDeleteRows();
                             confirm.onFalse();
+
                         }}
                     >
                         Supprimer
@@ -307,7 +367,7 @@ export function PermitListView() {
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-    const { name, status, profil } = filters;
+    const { name, status, type } = filters;
 
     const stabilizedThis = inputData?.map((el, index) => [el, index]);
 
@@ -321,16 +381,16 @@ function applyFilter({ inputData, comparator, filters }) {
 
     if (name) {
         inputData = inputData?.filter(
-            (profiltype) => profiltype?.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+            (client) => client?.name?.toLowerCase().indexOf(name.toLowerCase()) !== -1
         );
     }
 
     if (status !== 'all') {
-        inputData = inputData?.filter((profiltype) => permission?.status === status);
+        inputData = inputData?.filter((client) => client?.status === status);
     }
 
-    if (profil.length) {
-        inputData = inputData?.filter((permission) => profil?.includes(permission?.profile));
+    if (type.length) {
+        inputData = inputData?.filter((client) => type?.includes(client.type));
     }
 
     return inputData;

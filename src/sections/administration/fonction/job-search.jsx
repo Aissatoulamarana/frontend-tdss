@@ -65,7 +65,7 @@ export function JobSearch({ search, onSearch }) {
         const parts = parse(job.name, matches);
 
         return (
-          <Box component="li" {...props} onClick={() => handleClick(job.id)} key={job.id}>
+          <Box component="li" {...props} onClick={() => handleClick(job.slug)} key={job.slug}>
             <div>
               {parts.map((part, index) => (
                 <Typography

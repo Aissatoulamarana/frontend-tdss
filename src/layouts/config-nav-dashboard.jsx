@@ -106,6 +106,15 @@ export const navData = [
             // ],
           },
           {
+            title: 'Fonctions Professionnelles',
+            path: paths.dashboard.jobCategory.root,
+            // icon: ICONS.job,
+            // children: [
+            //   { title: 'Listes Catégories Professionnelles', path: paths.dashboard.jobCategory.list },
+            //   { title: 'Nouvelle', path: paths.dashboard.jobCategory.new },
+            // ]
+          },
+          {
             title: 'Fonction',
             path: paths.dashboard.fonction.list,
             icon: ICONS.job,

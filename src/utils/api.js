@@ -81,8 +81,12 @@ const API = {
   listDevises: () => `${BASE_URL}/devises/`,
   listPermits: () => `${BASE_URL}/permits/`,
 
-  
-  
+  // job-category
+  createJobCategory: () => `${BASE_URL}/jobs/job-category/`,
+  listJobCategory: () => `${BASE_URL}/jobs/job-category/`,
+  detailsJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
+  editJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
+  deleteJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
 
 };
 
