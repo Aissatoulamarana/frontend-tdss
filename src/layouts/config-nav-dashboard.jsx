@@ -42,7 +42,7 @@ const ICONS = {
 // ----------------------------------------------------------------------
 
 const user = JSON.parse(localStorage.getItem('user'));
-const entreprise = user?.type_code?.toLowerCase().trim();
+const type = user?.type?.toLowerCase().trim();
 
 export const navData = [
   /**
@@ -74,11 +74,11 @@ export const navData = [
         //   { title: 'Duplicata', path: paths.dashboard.declaration.duplica.replace(':type', 'duplicata') }
         // ]
       },
-      // {
-      //   title: 'Factures',
-      //   path: paths.dashboard.factures.list,
-      //   icon: ICONS.facture,
-      // },
+      {
+        title: 'Factures',
+        path: paths.dashboard.factures.list,
+        icon: ICONS.facture,
+      },
       // {
       //   title: 'Paiements',
       //   path: paths.dashboard.paiements.list,
@@ -91,7 +91,7 @@ export const navData = [
   /**
    * Management
    */
-  ...(entreprise !== 'entreprise'
+  ...(type !== 'agent'
     ? [
       {
         subheader: 'Administration',
@@ -145,12 +145,12 @@ export const navData = [
             icon: ICONS.company,
           },
           {
-            title: 'Devises', 
+            title: 'Devises',
             path: paths.dashboard.devise.root,
             icon: ICONS.company,
           },
           {
-            title: 'Permits', 
+            title: 'Permits',
             path: paths.dashboard.permit.root,
             icon: ICONS.company,
           }

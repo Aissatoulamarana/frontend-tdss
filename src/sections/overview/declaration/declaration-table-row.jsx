@@ -23,6 +23,7 @@ import { Label } from 'src/components/label';
 
 export function DeclarationTableRow({
   row,
+  user,
   selected,
   onSelectRow,
   onViewRow,
@@ -55,6 +56,32 @@ export function DeclarationTableRow({
     setOpenRejetDialog(false);
   };
 
+  const statusLabels = {
+    UNSUBMITTED: 'Non soumise',
+    SUBMITTED: 'Soumise',
+    REJECTED: 'Rejetée',
+    VALIDATED: 'Validée',
+    BILLED: 'Facturée',
+  };
+
+  // Ajoute la couleur correspondante au statut
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'VALIDATED':
+        return 'success';
+      case 'SUBMITTED':
+        return 'info';
+      case 'UNSUBMITTED':
+        return 'warning';
+      case 'REJECTED':
+        return 'error';
+      case 'BILLED':
+        return 'primary';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <>
       <TableRow hover selected={selected}>
@@ -62,7 +89,7 @@ export function DeclarationTableRow({
           <Checkbox
             checked={selected}
             onClick={onSelectRow}
-            inputProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
+            slotProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
           />
         </TableCell>
 
@@ -79,7 +106,8 @@ export function DeclarationTableRow({
           </Stack>
         </TableCell>
         <TableCell>{row.title}</TableCell>
-        <TableCell>{row.employee_count}</TableCell>
+        <TableCell>{row.company}</TableCell>
+        <TableCell>{row.nb_employees}</TableCell>
         <TableCell>
           <ListItemText
             primary={fDate(row.created_on)}
@@ -91,17 +119,8 @@ export function DeclarationTableRow({
         </TableCell>
         <TableCell>{fCurrency(row.total_amount)}</TableCell>
         <TableCell>
-          <Label
-            variant="soft"
-            color={
-              (row.status === 'validée' && 'success') ||
-              (row.status === 'soumise' && 'info') ||
-              (row.status === 'brouillon' && 'warning') ||
-              (row.status === 'rejetée' && 'error') ||
-              'default'
-            }
-          >
-            {row.status}
+          <Label variant="soft" color={getStatusColor(row.status)}>
+            {statusLabels[row.status] || 'Inconnu'}
           </Label>
         </TableCell>
         <TableCell align="right" sx={{ px: 1 }}>
@@ -110,6 +129,7 @@ export function DeclarationTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
+
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
@@ -137,53 +157,58 @@ export function DeclarationTableRow({
             Modifier
           </MenuItem>
 
-          {!['validée', 'facturée', 'rejetée', 'soumise'].includes(row.status) && (
-            <MenuItem
-              onClick={() => {
-                submitConfirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="mdi:check-bold" />
-              Soumettre
-            </MenuItem>
-          )}
+          {user?.type !== 'Admin' &&
+            [
+              !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
+                <MenuItem key="submit"
+                  onClick={() => {
+                    submitConfirm.onTrue();
+                    popover.onClose();
+                  }}
+                >
+                  <Iconify icon="mdi:check-bold" />
+                  Soumettre
+                </MenuItem>
+              ),
 
-          {!['validée', 'facturée', 'rejetée'].includes(row.status) && (
-            <MenuItem
-              onClick={() => {
-                validateConfirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="mdi:check-bold" />
-              Valider
-            </MenuItem>
-          )}
+              !['VALIDATED', 'BILLED', 'REJECTED'].includes(row.status) && (
+                <MenuItem key="validate"
+                  onClick={() => {
+                    validateConfirm.onTrue();
+                    popover.onClose();
+                  }}
+                >
+                  <Iconify icon="mdi:check-bold" />
+                  Valider
+                </MenuItem>
+              ),
 
-          {!['rejetée', 'facturée', 'validée'].includes(row.status) && (
-            <MenuItem
-              onClick={() => {
-                setOpenRejetDialog(true);
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="material-symbols:cancel" />
-              Rejeter
-            </MenuItem>
-          )}
+              !['REJECTED', 'BILLED', 'VALIDATED'].includes(row.status) && (
+                <MenuItem key="reject"
+                  onClick={() => {
+                    setOpenRejetDialog(true);
+                    popover.onClose();
+                  }}
+                >
+                  <Iconify icon="material-symbols:cancel" />
+                  Rejeter
+                </MenuItem>
+              ),
 
-          {!['facturée', 'rejetée', 'brouillon', 'soumise'].includes(row.status) && (
-            <MenuItem
-              onClick={() => {
-                factureConfirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="mdi:credit-card" />
-              Facturer
-            </MenuItem>
-          )}
+              !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
+                <MenuItem key="facture"
+                  onClick={() => {
+                    factureConfirm.onTrue();
+                    popover.onClose();
+                  }}
+                >
+                  <Iconify icon="mdi:credit-card" />
+                  Facturer
+                </MenuItem>
+              )
+            ].filter(Boolean) // Supprime les valeurs `false` du tableau
+          }
+
 
           <Divider sx={{ borderStyle: 'dashed' }} />
 

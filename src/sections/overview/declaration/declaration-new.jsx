@@ -31,7 +31,8 @@ export const NewInvoiceSchema = zod.object({
       phone: zod.string().min(1, { message: "Entrez votre numero de téléphone " }),
       first: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       last: zod.string().min(1, { message: 'Entrez votre nom ' }),
-      job_category: zod.string().min(1, { message: 'Entrez votre categorie de fonction ' }),
+
+
 
     })
   ),
@@ -40,14 +41,7 @@ export const NewInvoiceSchema = zod.object({
   title: zod.string(),
 });
 
-// Génération d'un ID unique
-let currentIdd = 0;
-const generateUniqueId = () => {
-  currentIdd++;
-  const randomPart = Math.random().toString(36).substr(2, 6).toUpperCase();
-  const uniqueId = `DEC-${String(currentIdd).padStart(5, '0')}-${randomPart}`;
-  return uniqueId;
-};
+
 
 // ----------------------------------------------------------------------
 
@@ -60,13 +54,13 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
 
   // Définition des valeurs par défaut
   const defaultValues = useMemo(() => {
-    const generatedDeclarationNumber =
-      currentInvoice?.declarationNumber || generateUniqueId();
+
+
 
     return {
-      declarationNumber: generatedDeclarationNumber,
       status: currentInvoice?.status || 'brouillon',
       title: title || currentInvoice?.title,
+      company: currentInvoice?.company || '',
 
       employees: formData?.length > 0
         ? formData
@@ -78,7 +72,7 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
             phone: '',
             job: '',
             identifier: '',
-            job_category: '',
+
           },
         ],
     };

@@ -7,11 +7,13 @@ import { Divider } from '@mui/material';
 
 export const _account = [
   {
+    id: 'accueil',
     label: 'Accueil',
     href: '/',
     icon: <Iconify icon="solar:home-angle-bold-duotone" />,
   },
   {
+    id: 'profil',
     label: 'Profil',
     href: paths.dashboard.user.root,
     icon: (
@@ -58,11 +60,13 @@ export const _account = [
   //   ),
   // },
   {
+    id: 'security',
     label: 'Securité',
     href: '#',
     icon: <Iconify icon="solar:shield-keyhole-bold-duotone" />,
   },
   {
+    id: 'account',
     label: 'Paramètres du Compte',
     href: paths.dashboard.user.account,
     icon: <Iconify icon="solar:settings-bold-duotone" />,

@@ -150,8 +150,8 @@ export function AccountDrawer({ data = [], sx, ...other }) {
 
               return (
                 <MenuItem
-                  key={option.label}
-                  onClick={() => handleClickItem(option.label === 'Home' ? rootHref : option.href)}
+                  key={option.id || option.label}
+                  onClick={() => handleClickItem(option.label === 'Accueil' ? rootHref : option.href)}
                   sx={{
                     py: 1,
                     color: 'text.secondary',
@@ -162,7 +162,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
                   {option.icon}
 
                   <Box component="span" sx={{ ml: 2 }}>
-                    {option.label === 'Home' ? rootLabel : option.label}
+                    {option.label === 'Accueil' ? rootLabel : option.label}
                   </Box>
 
                   {option.info && (

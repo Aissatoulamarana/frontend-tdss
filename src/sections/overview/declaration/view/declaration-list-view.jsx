@@ -52,11 +52,14 @@ import { DeclarationTableFiltersResult } from '../declaration-table-filters';
 import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'declarationNumber', label: 'Déclaration' },
   { id: 'type', label: 'Type Déclaration' },
+  { id: 'company', label: 'Entreprise' },
   { id: 'Number', label: 'Nombre Personnel' },
   { id: 'createDate', label: 'Date de Création' },
   { id: 'price', label: 'Montant' },
@@ -70,6 +73,11 @@ const TABLE_HEAD = [
 export function DeclarationListView() {
   const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
+
+
+  const { user } = useMockedUser();
+  const type_user = user?.type?.toLowerCase().trim();
+  console.log('type_user:', type_user);
 
   const router = useRouter();
 
@@ -129,30 +137,37 @@ export function DeclarationListView() {
       count: tableData.length,
     },
     {
-      value: 'soumise',
+      value: 'SUBMITTED',
       label: 'Soumise',
       color: 'warnning',
-      count: getInvoiceLength('soumise'),
+      count: getInvoiceLength('SUBMITTED'),
     },
     {
-      value: 'validée',
+      value: 'VALIDATED',
       label: 'Validées',
       color: 'success',
-      count: getInvoiceLength('validée'),
+      count: getInvoiceLength('VALIDATED'),
     },
     {
-      value: 'brouillon',
+      value: 'BILLED',
+      label: 'Facturées',
+      color: 'primary',
+      count: getInvoiceLength('BILLED'),
+    },
+    {
+      value: 'UNSUBMITTED',
       label: 'Brouillon',
       color: 'warning',
-      count: getInvoiceLength('brouillon'),
+      count: getInvoiceLength('UNSUBMITTED'),
     },
 
     {
-      value: 'rejetée',
+      value: 'REJECTED',
       label: 'Rejetées',
       color: 'error',
-      count: getInvoiceLength('rejetée'),
+      count: getInvoiceLength('REJECTED'),
     },
+
   ];
   const handleDeleteRow = async (id) => {
     try {
@@ -191,7 +206,7 @@ export function DeclarationListView() {
   );
 
   const handleSubmitRow = useCallback(
-    async (id) => {
+    async (slug) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
         const response = await axios.post(API.validateDeclaration(slug), {
@@ -221,7 +236,7 @@ export function DeclarationListView() {
   );
 
   const handleValidateRow = useCallback(
-    async (id) => {
+    async (slug) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
         const response = await axios.post(API.validateDeclaration(slug), {
@@ -234,7 +249,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.id === id ? { ...item, status: 'validée' } : item
+              item.slug === slug ? { ...item, status: 'VALIDATED' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -252,7 +267,7 @@ export function DeclarationListView() {
 
 
   const handleFacturer = useCallback(
-    async (id) => {
+    async (slug) => {
       try {
         // Appel à l'API backend pour rejeter la déclaration
         const response = await axios.post(API.facturerDeclaration(slug));
@@ -262,7 +277,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.id === id ? { ...item, status: 'facturée' } : item
+              item.slug === slug ? { ...item, status: 'BILLED' } : item
             )
           );
           router.push(paths.dashboard.factures.list);
@@ -279,10 +294,10 @@ export function DeclarationListView() {
   );
 
   const handleRejetter = useCallback(
-    async (id, motifRejet) => {
+    async (slug, motifRejet) => {
       try {
         // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.rejetterDeclaration(id), {
+        const response = await axios.post(API.rejetterDeclaration(slug), {
           action: "reject",
           reject_reason: motifRejet
         });
@@ -290,7 +305,7 @@ export function DeclarationListView() {
           toast.success('Déclaration rejetée avec succès !');
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.id === id ? { ...item, status: 'rejetée' } : item
+              item.slug === slug ? { ...item, status: 'REJECTED' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -308,8 +323,8 @@ export function DeclarationListView() {
 
 
   const handleViewRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.declaration.details(id));
+    (slug) => {
+      router.push(paths.dashboard.declaration.details(slug));
     },
     [router]
   );
@@ -369,51 +384,54 @@ export function DeclarationListView() {
             { name: 'Listes des déclarations' },
           ]}
           action={
-            <>
-              <Button
-                variant="contained"
-                startIcon={<Iconify icon="mingcute:add-line" />}
-                onClick={handleClick} // Ouvre le popover au clic
-                sx={{ mb: { xs: 3, md: 5 } }}
-              >
-                Ajouter
-              </Button>
-              <Popover
-                id={id}
-                open={open}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-              >
-                <MenuItem
-                  component={RouterLink}
-                  href={paths.dashboard.declaration.new}
-                  onClick={handleClose}
+            type_user !== 'admin' && ( //  Cache le bouton si type_user est "admin"
+              <>
+                <Button
+                  variant="contained"
+                  startIcon={<Iconify icon="mingcute:add-line" />}
+                  onClick={handleClick} // Ouvre le popover au clic
+                  sx={{ mb: { xs: 3, md: 5 } }}
                 >
-                  Nouvelle
-                </MenuItem>
-                <MenuItem
-                  component={RouterLink}
-                  href={paths.dashboard.declaration.renew}
-                  onClick={handleClose}
+                  Ajouter
+                </Button>
+                <Popover
+                  id={id}
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                  }}
                 >
-                  Renouvellement
-                </MenuItem>
-                <MenuItem
-                  component={RouterLink}
-                  href={paths.dashboard.declaration.duplica}
-                  onClick={handleClose}
-                >
-                  Duplicata
-                </MenuItem>
-              </Popover>
-            </>
+                  <MenuItem
+                    component={RouterLink}
+                    href={paths.dashboard.declaration.new}
+                    onClick={handleClose}
+                  >
+                    Nouvelle
+                  </MenuItem>
+                  <MenuItem
+                    component={RouterLink}
+                    href={paths.dashboard.declaration.renew}
+                    onClick={handleClose}
+                  >
+                    Renouvellement
+                  </MenuItem>
+                  <MenuItem
+                    component={RouterLink}
+                    href={paths.dashboard.declaration.duplica}
+                    onClick={handleClose}
+                  >
+                    Duplicata
+                  </MenuItem>
+                </Popover>
+              </>
+            )
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
+
 
         <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} >
           <Grid size={{ xs: 6, md: 3 }}>
@@ -580,7 +598,8 @@ export function DeclarationListView() {
                     )
                     .map((row) => (
                       <DeclarationTableRow
-                        key={row.id}
+                        user={user}
+                        key={row.slug}
                         row={row}
                         selected={table.selected.includes(row.slug)}
                         onSelectRow={() => table.onSelectRow(row.slug)}

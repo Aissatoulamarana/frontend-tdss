@@ -28,7 +28,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const [openModalDoc, setOpenModalDoc] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [data, setData] = useState();
-  const [categories, setCategories] = useState([]);
+
 
   const typedec = type?.trim();
 
@@ -160,9 +160,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
     fetchFonctions();
   }, []);
 
-  useEffect(() => {
-    getJobCategories().then((data) => setCategories(data));
-  })
+
 
 
   const handleSelectService = useCallback(
@@ -378,33 +376,6 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 ))}
               </Field.Select>
 
-              <Field.Select
-                name={`employees[${index}].job_category`}
-                size="small"
-                label="Categorie Fonction"
-                inputlabelprops={{ shrink: true }}
-                sx={{ maxWidth: { md: 160 } }}
-              >
-
-                <MenuItem
-                  // onClick={() => handleClearService(index)}
-                  sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-                >
-                  None
-                </MenuItem>
-
-                <Divider sx={{ borderStyle: 'dashed' }} />
-
-                {categories.map((category) => (
-                  <MenuItem
-                    key={category.slug} // Utilisation de slug
-                    value={category.slug} // utiliser value et non name
-                    onClick={() => handleSelectService(index, category.slug)}
-                  >
-                    {category.name}
-                  </MenuItem>
-                ))}
-              </Field.Select>
             </Stack>
 
 
