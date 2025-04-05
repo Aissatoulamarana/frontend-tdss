@@ -43,7 +43,7 @@ export const NewInvoiceSchema = zod.object({
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNew({ currentInvoice, type, formData }) {
+export function DeclarationNew({ declaration, type, formData }) {
   const router = useRouter();
   const loadingSave = useBoolean();
   const loadingSend = useBoolean();
@@ -56,13 +56,13 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
 
 
     return {
-      status: currentInvoice?.status || 'brouillon',
-      title: title || currentInvoice?.title,
-      company: currentInvoice?.company || '',
+      status: declaration?.status || 'brouillon',
+      title: title || declaration?.title,
+      company: declaration?.company || '',
 
       employees: formData?.length > 0
         ? formData
-        : currentInvoice?.employees || [
+        : declaration?.employees || [
           {
             passport_number: '',
             first: '',
@@ -74,7 +74,7 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
           },
         ],
     };
-  }, [currentInvoice, formData]);
+  }, [declaration, formData]);
 
   console.log("Valeur de type dans DeclarationNew :", type);
 
@@ -102,8 +102,8 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
       // Simuler un délai pour des actions asynchrones (optionnel)
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      if (currentInvoice) {
-        const { slug } = currentInvoice;
+      if (declaration) {
+        const { slug } = declaration;
         // Mettre à jour une déclaration existante
         response = await axios.patch(API.updateDeclaration(slug), data, {
           headers: { 'Content-Type': 'application/json' },
@@ -173,7 +173,7 @@ export function DeclarationNew({ currentInvoice, type, formData }) {
           loading={loadingSend.value && isSubmitting}
           onClick={handleCreateAndSend}
         >
-          {currentInvoice ? 'Mettre A jour' : 'Soumettre'}
+          {declaration ? 'Mettre A jour' : 'Soumettre'}
         </LoadingButton>
       </Stack>
     </Form>

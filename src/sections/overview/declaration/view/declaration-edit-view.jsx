@@ -45,7 +45,7 @@ export function DeclarationEditView({ slug }) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationNew currentInvoice={declaration} />
+      <DeclarationNew declaration={declaration} />
     </DashboardContent>
   );
 }

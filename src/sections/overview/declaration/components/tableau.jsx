@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Table,
@@ -21,19 +22,18 @@ import {
   DialogActions,
   TableContainer,
   TablePagination,
-  FormControlLabel, CircularProgress
+  FormControlLabel,
+  CircularProgress
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
-import React, { useState, useEffect, useCallback } from 'react';
-
 import API from 'src/utils/api';
-
 import { Iconify } from 'src/components/iconify';
 import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
+import { EmployeeQuickEditForm } from './employe-quick-edit-form';
 
 const fixedCategories = [
   { label: 'Tous', value: 'All' },
@@ -52,13 +52,18 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   const [selectedDeclaration, setSelectedDeclaration] = useState(null); // Déclaration sélectionnée
   const [isDialogOpen, setIsDialogOpen] = useState(false); // État pour la boîte de dialogue
   const [loading, setLoading] = useState(false);
+  const [employee, setEmployee] = useState([]); // Liste des employés
+  // État pour l'ouverture du formulaire d'édition rapide
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
+  const [currentEmployee, setCurrentEmployee] = useState(null);
 
   const router = useRouter();
 
+  // Calcul des lignes selon le filtre
   const rows =
     filter === 'All'
-      ? declaration?.employees // Affiche tous les éléments si le filtre est 'All'
-      : declaration?.employees.filter((row) => row.fonction === filter); // Filtre les éléments selon la fonction si le filtre est différent de 'All'
+      ? employee
+      : employee.filter((row) => row.fonction === filter);
 
   const isSelected = (slug) => selected.includes(slug);
 
@@ -72,19 +77,19 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   };
 
   const handleSelectRow = (event, slug) => {
-    event.stopPropagation(); // Empêche le clic sur toute la ligne de cocher la case par accident
+    event.stopPropagation();
     setSelected((prevSelected) => {
       if (prevSelected.includes(slug)) {
         return prevSelected.filter((selectedId) => selectedId !== slug);
       }
       return [...prevSelected, slug];
-
     });
   };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
@@ -110,6 +115,29 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     fetchDeclarations();
   }, []);
 
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      if (!declaration || !declaration.slug) {
+        toast("La déclaration n'est pas définie.");
+        return;
+      }
+      setLoading(true);
+      try {
+        const response = await axios.get(API.Employe(declaration.slug));
+        const employees = response.data.results;
+        setEmployee(employees);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des employés :', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (declaration && declaration.slug) {
+      fetchEmployees();
+    }
+  }, [declaration]);
+
   const handleMove = useCallback(
     async () => {
       if (!declaration || !declaration.slug) {
@@ -118,8 +146,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
       try {
         const payload = {
-          selected_ids: selected, // IDs des éléments sélectionnés
-          target_declaration: selectedDeclaration?.value, // ID de la déclaration cible
+          selected_ids: selected,
+          target_declaration: selectedDeclaration?.value,
         };
 
         const response = await axios.post(API.move(declaration.slug), payload);
@@ -137,11 +165,26 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     [declaration, selected, selectedDeclaration, router]
   );
 
+  // Gestion de l'ouverture du formulaire d'édition rapide
+  const openQuickEdit = (emp) => {
+    setCurrentEmployee(emp);
+    setQuickEditOpen(true);
+  };
+
+  const closeQuickEdit = () => {
+    setQuickEditOpen(false);
+    setCurrentEmployee(null);
+  };
+
+  const handleUpdateRow = useCallback((updatedEmployee) => {
+    setEmployee((prevData) =>
+      prevData.map((row) => (row.slug === updatedEmployee.slug ? updatedEmployee : row))
+    );
+  }, []);
 
   return (
     <Paper>
       {/* Barre de menu pour les filtres */}
-      {/* Barre d'outils conditionnelle */}
       <Toolbar
         sx={{
           pl: 2,
@@ -161,13 +204,13 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
         {selected.length > 0 && (
           <Stack direction="row" spacing={2}>
-            <Tooltip title="Deplacer">
+            <Tooltip title="Déplacer">
               <IconButton color="primary" onClick={() => setIsDialogOpen(true)}>
                 <Iconify icon="iconamoon:send-fill" />
               </IconButton>
             </Tooltip>
             <Tooltip title="Supprimer">
-              <IconButton color="primary" onClick={confirm.onTrue}>
+              <IconButton color="primary" onClick={() => console.log('Supprimer action')}>
                 <Iconify icon="solar:trash-bin-trash-bold" />
               </IconButton>
             </Tooltip>
@@ -181,11 +224,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               Êtes-vous sûr de vouloir déplacer <strong>{selected.length}</strong> personnes ?
             </Typography>
             <Autocomplete
-              options={options} // Liste des options
-              getOptionLabel={(option) => (option.label ? option.label.toString() : '')} // Comment afficher les options
-              loading={loading} // Affiche le loader si les données sont en cours de chargement
-              value={selectedDeclaration} // Déclaration sélectionnée
-              onChange={(event, newValue) => setSelectedDeclaration(newValue)} // Mise à jour de la sélection
+              options={options}
+              getOptionLabel={(option) => (option.label ? option.label.toString() : '')}
+              loading={loading}
+              value={selectedDeclaration}
+              onChange={(event, newValue) => setSelectedDeclaration(newValue)}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -215,7 +258,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               color="primary"
               onClick={() => {
                 handleMove();
-                // Ajoutez ici la logique pour "Déplacer"
                 setIsDialogOpen(false);
               }}
             >
@@ -226,7 +268,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       </Toolbar>
       {/* Tableau */}
       <TableContainer>
-        {/* Barre des filtres fixes */}
         <Box
           sx={{
             display: 'flex',
@@ -237,11 +278,10 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           }}
         >
           {fixedCategories.map((cat) => {
-            // Calcul du nombre pour chaque catégorie
             const count =
               cat.value === 'All'
-                ? declaration?.employees.length
-                : declaration?.employees.filter((emp) => emp.category === cat.value).length;
+                ? employee.length
+                : employee.filter((emp) => emp?.job.category === cat.value).length;
             return (
               <Button
                 key={cat.value}
@@ -269,45 +309,56 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                   onChange={handleSelectAllClick}
                 />
               </TableCell>
-              <TableCell>Numero du passeport</TableCell>
-              <TableCell>Nom & Prenom</TableCell>
-              <TableCell>N Téléphone</TableCell>
+              <TableCell>Numéro du passeport</TableCell>
+              <TableCell>Nom & Prénom</TableCell>
+              <TableCell>N° Téléphone</TableCell>
               <TableCell>Fonction</TableCell>
               <TableCell>Permis</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-              <TableRow
-                key={`${row.id}-${row.slug}`}
-                hover
-                selected={isSelected(row.slug)}
-                style={{ cursor: 'pointer' }}
-              >
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    color="primary"
-                    checked={isSelected(row.slug)}
-                    onChange={(event) => handleSelectRow(event, row.slug)}
+            {rows
+              ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row) => (
+                <React.Fragment key={`${row.id}-${row.slug}`}>
+                  <TableRow
+                    onClick={() => openQuickEdit(row)}
+                    hover
+                    selected={isSelected(row.slug)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        color="primary"
+                        checked={isSelected(row.slug)}
+                        onChange={(event) => handleSelectRow(event, row.slug)}
+                      />
+                    </TableCell>
+                    <TableCell>{row.passport_number}</TableCell>
+                    <TableCell>
+                      <ListItemText
+                        primary={row.last}
+                        secondary={row.first}
+                        slotProps={{
+                          primary: { typography: 'body2', noWrap: true },
+                          secondary: { mt: 0.5, component: 'span', typography: 'body2' }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>{row.phone}</TableCell>
+                    <TableCell>{row.job.name}</TableCell>
+                    <TableCell>{row.job.permit}</TableCell>
+                  </TableRow>
+                  <EmployeeQuickEditForm
+                    currentEmployee={row}
+                    open={quickEditOpen && currentEmployee?.slug === row.slug}
+                    onClose={closeQuickEdit}
+                    onUpdateRow={handleUpdateRow}
+                    dec_slug={declaration.slug}
                   />
-                </TableCell>
-                <TableCell>{row.passport_number}</TableCell>
-                <TableCell>
-                  <ListItemText
-                    primary={row.last}
-                    secondary={row.first}
-                    slotProps={{
-                      primary: { typography: 'body2', noWrap: true },
-                      secondary: { mt: 0.5, component: 'span', typography: 'body2' }
-                    }} />
-                </TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{row.fonction}</TableCell>
-                <TableCell>{row.permis}</TableCell>
-              </TableRow>
-            ))}
+                </React.Fragment>
+              ))}
           </TableBody>
-          {/* Pagination non affichée en mode impression */}
           {!printMode && (
             <TableFooter>
               <TableRow>

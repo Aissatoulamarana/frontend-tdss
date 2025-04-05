@@ -16,6 +16,8 @@ const cache = {
   userTypes: null,
   job:null,
   job_categories:null,
+  employees: null,
+  jobAgent: null,
 };
 
 const pendingPromises = {};
@@ -63,6 +65,8 @@ export const getProfils = () => fetchAndCache('profils', API.listProfiles , 'res
 export const getUserTypes = () => fetchAndCache('userTypes', API.listUserTypes, 'results');
 export const getJob = () => fetchAndCache('job', API.listFonctions, 'results');
 export const getJobCategories = () => fetchAndCache('job_categories', API.listJobCategory, 'results');
+export const getEmployees = () => fetchAndCache('employees', API.Employe, 'results');
+export const getJobAgent = () => fetchAndCache('jobAgent', API.listFonctionAgent, 'results');
 
 export const clearCache = () => {
   Object.keys(cache).forEach(key => cache[key] = null);

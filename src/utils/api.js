@@ -33,6 +33,11 @@ const API = {
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
 
 
+  Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
+  UpdateEmploye: (declarationSlug, employeeSlug) => `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
+  
+
+
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
   paidFacture: (slug) => `${BASE_URL}factures/${slug}/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
