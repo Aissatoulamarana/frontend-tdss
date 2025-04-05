@@ -50,31 +50,24 @@ export function DeclarationNew({ declaration, type, formData }) {
   const title = type
 
 
-  // Définition des valeurs par défaut
-  const defaultValues = useMemo(() => {
+  const defaultValues = useMemo(() => ({
+    status: declaration?.status || 'brouillon',
+    title: title || declaration?.title,
+    company: declaration?.company || '',
+    employees: formData?.length > 0
+      ? formData
+      : declaration?.employees || [
+        {
+          passport_number: '',
+          first: '',
+          last: '',
+          phone: '',
+          job: '',
+          identifier: '',
+        },
+      ],
+  }), [declaration, formData]);
 
-
-
-    return {
-      status: declaration?.status || 'brouillon',
-      title: title || declaration?.title,
-      company: declaration?.company || '',
-
-      employees: formData?.length > 0
-        ? formData
-        : declaration?.employees || [
-          {
-            passport_number: '',
-            first: '',
-            last: '',
-            phone: '',
-            job: '',
-            identifier: '',
-
-          },
-        ],
-    };
-  }, [declaration, formData]);
 
   console.log("Valeur de type dans DeclarationNew :", type);
 
