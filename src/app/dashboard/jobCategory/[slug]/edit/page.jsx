@@ -1,5 +1,5 @@
 import { CONFIG } from 'src/config-global';
-import { JobCategoryEditView } from 'src/sections/administration/jobCategory/view/job-category-edit-view';
+import { JobCategoryEditView } from 'src/sections/administration/JobCategory/view';
 
 export const metadata = { title: `Update Job Category| Dashboard - ${CONFIG.appName}` }
 
