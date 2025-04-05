@@ -171,7 +171,7 @@ export function DeclarationTableRow({
                 </MenuItem>
               ),
 
-              !['VALIDATED', 'BILLED', 'REJECTED'].includes(row.status) && (
+              !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
                 <MenuItem key="validate"
                   onClick={() => {
                     validateConfirm.onTrue();
@@ -183,7 +183,7 @@ export function DeclarationTableRow({
                 </MenuItem>
               ),
 
-              !['REJECTED', 'BILLED', 'VALIDATED'].includes(row.status) && (
+              !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
                 <MenuItem key="reject"
                   onClick={() => {
                     setOpenRejetDialog(true);
@@ -195,7 +195,7 @@ export function DeclarationTableRow({
                 </MenuItem>
               ),
 
-              !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
+              !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED', 'UNSUBMITTED'].includes(row.status) && (
                 <MenuItem key="facture"
                   onClick={() => {
                     factureConfirm.onTrue();

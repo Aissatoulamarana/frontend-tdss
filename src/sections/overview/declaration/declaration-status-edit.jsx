@@ -40,9 +40,9 @@ export function DeclarationEditStatusDate({ type }) {
         label='Entreprise'
         placeholder="veuillez selectionnez l'entreprise dont vous déclarez"
       >
-        {entreprises.map((entreprise) => (
-          <MenuItem key={entreprise.uuid} value={String(entreprise.uuid)} sx={{ textTransform: 'capitalize' }}>
-            {entreprise.name}
+        {entreprises.map((company) => (
+          <MenuItem key={company.slug} value={company.slug} sx={{ textTransform: 'capitalize' }}>
+            {company.name}
           </MenuItem>
         ))}
       </Field.Select>

@@ -1,5 +1,5 @@
 
-
+import { CONFIG } from 'src/config-global';
 
 import { DeclarationDetailsView } from 'src/sections/overview/declaration/view';
 

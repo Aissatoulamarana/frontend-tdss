@@ -131,7 +131,7 @@ const useStyles = () =>
   );
 
 export function DeclarationPDF({ declaration }) {
-  const { reference, created_on, employees, user } = declaration;
+  const { reference, created_on, employees, } = declaration;
   const styles = useStyles();
 
   // Calcul du nombre d'items pour le QR code
@@ -151,16 +151,16 @@ export function DeclarationPDF({ declaration }) {
         {/* Header : Logo et coordonnées de l'entreprise */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            {user.profile_picture ? (
-              <Image src={user.profile_picture} style={{ width: 60, height: 60 }} />
+            {/* {user?.profile_picture ? (
+              <Image src={user?.profile_picture} style={{ width: 60, height: 60 }} />
             ) : (
-              <Text style={styles.companyName}>{user.profile_name}</Text>
+              <Text style={styles.companyName}>{user?.profile_name}</Text>
             )}
           </View>
           <View style={styles.companyDetails}>
-            <Text style={styles.companyName}>{user.profile_name}</Text>
-            <Text style={styles.companyContact}>Tél : {user.profile_contact}</Text>
-            <Text style={styles.companyContact}>{user.profile_adresse}</Text>
+            <Text style={styles.companyName}>{user?.profile_name}</Text>
+            <Text style={styles.companyContact}>Tél : {user?.profile_contact}</Text>
+            <Text style={styles.companyContact}>{user?.profile_adresse}</Text> */}
           </View>
         </View>
 

@@ -38,7 +38,7 @@ export function JobNewEditForm({ currentJob }) {
 
   useEffect(() => {
     axios
-      .get(API.listCategories())
+      .get(API.listJobCategory())
       .then((response) => {
         console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
         setCategories(response.data.results || response.data); // Adapter si c'est sous `results`
@@ -84,8 +84,8 @@ export function JobNewEditForm({ currentJob }) {
       let response;
       if (currentJob) {
         // Si un job existe, mettre à jour avec PATCH
-        const { id } = currentJob;
-        response = await axios.patch(API.editFonction(id), data, {
+        const { slug } = currentJob;
+        response = await axios.patch(API.editFonction(slug), data, {
           headers: { 'Content-Type': 'application/json' },
         });
         toast.success('Mise à jour réussie!');
@@ -124,7 +124,7 @@ export function JobNewEditForm({ currentJob }) {
               placeholder="Sélectionnez une catégorie..."
             >
               {categories.map((category) => (
-                <MenuItem key={category.id} value={String(category.id)}>
+                <MenuItem key={category.slug} value={category.slug}>
                   {category.name}
                 </MenuItem>
               ))}

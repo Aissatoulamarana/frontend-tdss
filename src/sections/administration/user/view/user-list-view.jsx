@@ -147,7 +147,7 @@ export function UserListView() {
 
   const handleViewRow = useCallback(
     (slug) => {
-      router.push(paths.dashboard.user.account(slug));
+      router.push(paths.dashboard.user.details(slug));
     },
     [router]
   );

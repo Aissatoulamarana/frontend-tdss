@@ -85,6 +85,7 @@ export const paths = {
       list: `${ROOTS.DASHBOARD}/user/list`,
       account: `${ROOTS.DASHBOARD}/user/account`,
       edit: (slug) => `${ROOTS.DASHBOARD}/user/${slug}/edit`,
+      details: (slug) => `${ROOTS.DASHBOARD}/user/${slug}`,
     },
     
     fonction: {

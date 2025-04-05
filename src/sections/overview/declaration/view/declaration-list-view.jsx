@@ -209,8 +209,8 @@ export function DeclarationListView() {
     async (slug) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.validateDeclaration(slug), {
-          action: "validate"
+        const response = await axios.post(API.submitDeclaration(slug), {
+
         });
 
         if (response) {
@@ -219,7 +219,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.id === id ? { ...item, status: 'validée' } : item
+              item.slug === slug ? { ...item, status: 'SUBMITTED' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -240,7 +240,7 @@ export function DeclarationListView() {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
         const response = await axios.post(API.validateDeclaration(slug), {
-          action: "validate"
+
         });
 
         if (response) {
@@ -298,7 +298,6 @@ export function DeclarationListView() {
       try {
         // Appel à l'API backend pour rejeter la déclaration
         const response = await axios.post(API.rejetterDeclaration(slug), {
-          action: "reject",
           reject_reason: motifRejet
         });
         if (response) {

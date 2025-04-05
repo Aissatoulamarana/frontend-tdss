@@ -8,6 +8,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -23,6 +24,7 @@ import { Iconify } from 'src/components/iconify';
 import { JobList } from '../job-list';
 import { JobSearch } from '../job-search';
 import { JobSort } from '../job-sort';
+import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
@@ -35,6 +37,7 @@ export const JOB_SORT_OPTIONS = [
 export function JobListView() {
   const openFilters = useBoolean();
 
+  const router = useRouter();
   const [sortBy, setSortBy] = useState('latest');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -46,6 +49,7 @@ export function JobListView() {
     next: null,
     previous: null,
     currentPage: 1,
+    limit: 10,
   });
 
   useEffect(() => {
@@ -57,7 +61,9 @@ export function JobListView() {
         setPagination({
           count: response.data.count,
           next: response.data.next,
+
           previous: response.data.previous,
+          limit: response.data.limit || 10,
         });
 
         // Extraire uniquement les noms des fonctions
@@ -101,6 +107,32 @@ export function JobListView() {
       }
     },
     [tableData, search]
+  );
+
+  const handlePageChange = useCallback(
+    async (event, page) => {
+      const offset = (page - 1) * pagination.limit;
+      try {
+        const response = await axios.get(`${API.listFonctions()}?limit=${pagination.limit}&offset=${offset}`);
+
+        // Mettez à jour l'état de la pagination et éventuellement la liste des jobs
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+          currentPage: page,
+          limit: pagination.limit,
+        });
+        // Si vous récupérez aussi les jobs, par exemple :
+        setTableData(response.data.results);
+
+      } catch (error) {
+        console.error("Erreur lors du changement de page", error);
+        toast.error('Erreur lors du chargement des données');
+      }
+      router.push(`${paths.dashboard.fonction.list}?page=${page}`);
+    },
+    [pagination.limit, router]
   );
 
   const renderFilters = (
@@ -152,7 +184,7 @@ export function JobListView() {
 
       {notFound && <EmptyContent filled sx={{ py: 10 }} />}
 
-      <JobList jobs={dataFiltered} pagination={pagination} />
+      <JobList jobs={dataFiltered} pagination={pagination} onChangePage={handlePageChange} />
     </DashboardContent>
   );
 }

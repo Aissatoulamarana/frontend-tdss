@@ -57,12 +57,12 @@ export const getProfileTypes = () => fetchAndCache('profileTypes', API.listProfi
 export const getPermissions = () => fetchAndCache('permissions', API.listPermissions);
 export const getAgences = () => fetchAndCache('agences', API.listAgences , 'results');
 export const getDeclarations = () => fetchAndCache('declarations', API.listDeclarations);
-export const getEntreprises = () => fetchAndCache('entreprises', API.listProfiles);
+export const getEntreprises = () => fetchAndCache('entreprises', API.listEntreprises , 'results');
 export const getBanks = () => fetchAndCache('banks', API.listProfiles);
 export const getProfils = () => fetchAndCache('profils', API.listProfiles , 'results');
 export const getUserTypes = () => fetchAndCache('userTypes', API.listUserTypes, 'results');
 export const getJob = () => fetchAndCache('job', API.listFonctions, 'results');
-export const getJobCategories = () => fetchAndCache('job_categories', API.listCategories, 'results');
+export const getJobCategories = () => fetchAndCache('job_categories', API.listJobCategory, 'results');
 
 export const clearCache = () => {
   Object.keys(cache).forEach(key => cache[key] = null);

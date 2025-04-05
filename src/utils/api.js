@@ -24,13 +24,13 @@ const API = {
   listDeclarations: () => `${BASE_URL}/declarations/`, // Liste des déclarations
   createDeclaration: () => `${BASE_URL}/declarations/`, // Création d'une déclaration
   detailsDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Voir les details d'une déclaration
-  validateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/status-update/`, // Validation d'une déclaration
-  soumettreDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/soumettre/`, // Soumettre une déclaration
+  validateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/validate/`, // Validation d'une déclaration
+  submitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/submit/`, // Soumettre une déclaration
   facturerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/facturer/`, // facturer une déclaration
-  rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/status-update/`, // Rejetter une déclaration 
+  rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/reject/`, // Rejetter une déclaration 
   supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
   updateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`,// Modifier une déclaration
-  move: () => `${BASE_URL}/declarations/move-employees/`,// deplacer des employés d'une déclaration à une autre
+  move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
 
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
@@ -76,7 +76,8 @@ const API = {
   createProfile: () => `${BASE_URL}/profiles/`,
   listProfiles: () => `${BASE_URL}/profiles/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
-  listClients: () => `${BASE_URL}/profiles/get-groupes/`,
+  listActiveProfile: () => `${BASE_URL}/profiles/active-profiles/`,
+  listEntreprises: () => `${BASE_URL}/profiles/active-profiles/?type=entreprise`, // Liste des entreprises
   
   listDevises: () => `${BASE_URL}/devises/`,
   listPermits: () => `${BASE_URL}/permits/`,

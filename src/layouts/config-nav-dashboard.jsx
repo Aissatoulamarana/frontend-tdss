@@ -79,6 +79,11 @@ export const navData = [
         path: paths.dashboard.factures.list,
         icon: ICONS.facture,
       },
+      {
+        title: 'Employés',
+        path: paths.dashboard.factures.list,
+        icon: ICONS.facture,
+      },
       // {
       //   title: 'Paiements',
       //   path: paths.dashboard.paiements.list,

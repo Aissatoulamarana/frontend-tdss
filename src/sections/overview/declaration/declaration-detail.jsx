@@ -19,7 +19,7 @@ import { DeclarationToolbar } from './declaration-toolbar';
 
 export function DeclarationDetails({ declaration }) {
   const [currentStatus, setCurrentStatus] = useState(declaration?.status);
-  const statusOptions = [{ value: declaration.status, label: declaration.status }];
+  const statusOptions = [{ value: declaration?.status, label: declaration?.status }];
 
 
   const popover = usePopover();

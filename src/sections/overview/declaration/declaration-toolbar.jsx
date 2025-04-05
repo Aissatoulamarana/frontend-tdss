@@ -34,7 +34,7 @@ export function DeclarationToolbar({
   currentStatus,
   statusOptions,
   onChangeStatus,
-  user,
+
 }) {
   const router = useRouter();
   // États pour contrôler l'ouverture des dialogues share et send
@@ -85,7 +85,7 @@ export function DeclarationToolbar({
   const renderDownload = (
     <NoSsr>
       <PDFDownloadLink
-        document={declaration ? <DeclarationPDF declaration={declaration} user={user} /> : <span />}
+        document={declaration ? <DeclarationPDF declaration={declaration} /> : <span />}
         fileName={declaration?.reference}
         style={{ textDecoration: 'none' }}
       >
@@ -119,10 +119,10 @@ export function DeclarationToolbar({
             </IconButton>
           </Tooltip>
 
-          {renderDownload}
+          {/* {renderDownload}
           <Box sx={{ display: 'none' }}>
             <DeclarationDetailsPrint ref={componentRef} declaration={declaration} />
-          </Box>
+          </Box> */}
 
           <Tooltip title="Print">
             <IconButton onClick={handlePrint}>

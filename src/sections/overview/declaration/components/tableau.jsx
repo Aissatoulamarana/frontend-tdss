@@ -27,11 +27,12 @@ import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import API from 'src/utils/api';
 
 import { Iconify } from 'src/components/iconify';
+import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
 
 const fixedCategories = [
@@ -52,31 +53,31 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false); // État pour la boîte de dialogue
   const [loading, setLoading] = useState(false);
 
-
+  const router = useRouter();
 
   const rows =
     filter === 'All'
-      ? declaration.employees // Affiche tous les éléments si le filtre est 'All'
-      : declaration.employees.filter((row) => row.fonction === filter); // Filtre les éléments selon la fonction si le filtre est différent de 'All'
+      ? declaration?.employees // Affiche tous les éléments si le filtre est 'All'
+      : declaration?.employees.filter((row) => row.fonction === filter); // Filtre les éléments selon la fonction si le filtre est différent de 'All'
 
-  const isSelected = (passport_number) => selected.includes(passport_number);
+  const isSelected = (slug) => selected.includes(slug);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows.map((row) => row.passport_number);
+      const newSelected = rows?.map((row) => row.slug);
       setSelected(newSelected);
     } else {
       setSelected([]);
     }
   };
 
-  const handleSelectRow = (event, passport_number) => {
+  const handleSelectRow = (event, slug) => {
     event.stopPropagation(); // Empêche le clic sur toute la ligne de cocher la case par accident
     setSelected((prevSelected) => {
-      if (prevSelected.includes(passport_number)) {
-        return prevSelected.filter((selectedId) => selectedId !== passport_number);
+      if (prevSelected.includes(slug)) {
+        return prevSelected.filter((selectedId) => selectedId !== slug);
       }
-      return [...prevSelected, passport_number];
+      return [...prevSelected, slug];
 
     });
   };
@@ -94,9 +95,9 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       setLoading(true);
       try {
         const response = await axios.get(API.listDeclarations());
-        const declarations = response.data.map((declaration) => ({
-          value: declaration.reference,
-          label: declaration.reference,
+        const declarations = response.data.results.map((declaration) => ({
+          value: declaration?.reference,
+          label: declaration?.reference,
         }));
         setOptions(declarations);
       } catch (error) {
@@ -109,25 +110,33 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     fetchDeclarations();
   }, []);
 
-  const handleMove = async () => {
-    try {
-      const payload = {
-        selected_ids: selected, // IDs des éléments sélectionnés
-        target_declaration: selectedDeclaration.value, // ID de la déclaration cible
-      };
-
-      const response = await axios.post(API.move(), payload);
-      if (response.status === 200) {
-        toast('Déplacement effectué avec succès !');
-        // Mettez à jour les données localement si nécessaire
-        setSelected([]);
-        setIsDialogOpen(false);
+  const handleMove = useCallback(
+    async () => {
+      if (!declaration || !declaration.slug) {
+        toast("La déclaration n'est pas définie.");
+        return;
       }
-    } catch (error) {
-      console.error('Erreur lors du déplacement :', error);
-      toast("Une erreur s'est produite lors du déplacement.");
-    }
-  };
+      try {
+        const payload = {
+          selected_ids: selected, // IDs des éléments sélectionnés
+          target_declaration: selectedDeclaration?.value, // ID de la déclaration cible
+        };
+
+        const response = await axios.post(API.move(declaration.slug), payload);
+        if (response.status === 200) {
+          toast('Déplacement effectué avec succès !');
+          setSelected([]);
+          setIsDialogOpen(false);
+          router.push(paths.dashboard.declaration.list);
+        }
+      } catch (error) {
+        console.error('Erreur lors du déplacement :', error);
+        toast("Une erreur s'est produite lors du déplacement.");
+      }
+    },
+    [declaration, selected, selectedDeclaration, router]
+  );
+
 
   return (
     <Paper>
@@ -231,8 +240,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             // Calcul du nombre pour chaque catégorie
             const count =
               cat.value === 'All'
-                ? declaration.employees.length
-                : declaration.employees.filter((emp) => emp.category === cat.value).length;
+                ? declaration?.employees.length
+                : declaration?.employees.filter((emp) => emp.category === cat.value).length;
             return (
               <Button
                 key={cat.value}
@@ -255,8 +264,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox
-                  indeterminate={selected.length > 0 && selected.length < rows.length}
-                  checked={rows.length > 0 && selected.length === rows.length}
+                  indeterminate={selected.length > 0 && selected.length < rows?.length}
+                  checked={rows?.length > 0 && selected.length === rows?.length}
                   onChange={handleSelectAllClick}
                 />
               </TableCell>
@@ -268,18 +277,18 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+            {rows?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
               <TableRow
-                key={`${row.id}-${row.passport_number}`}
+                key={`${row.id}-${row.slug}`}
                 hover
-                selected={isSelected(row.passport_number)}
+                selected={isSelected(row.slug)}
                 style={{ cursor: 'pointer' }}
               >
                 <TableCell padding="checkbox">
                   <Checkbox
                     color="primary"
-                    checked={isSelected(row.passport_number)}
-                    onChange={(event) => handleSelectRow(event, row.passport_number)}
+                    checked={isSelected(row.slug)}
+                    onChange={(event) => handleSelectRow(event, row.slug)}
                   />
                 </TableCell>
                 <TableCell>{row.passport_number}</TableCell>
@@ -304,7 +313,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               <TableRow>
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25]}
-                  count={rows.length}
+                  count={rows?.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}

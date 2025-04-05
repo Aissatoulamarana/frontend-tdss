@@ -12,12 +12,12 @@ import { JobItem } from './job-item';
 
 // ----------------------------------------------------------------------
 
-export function JobList({ jobs, pagination }) {
+export function JobList({ jobs, pagination, onChangePage }) {
   const router = useRouter();
 
   /* const handleView = useCallback(
-    (id) => {
-      router.push(paths.dashboard.job.details(id));
+    (slug) => {
+      router.push(paths.dashboard.job.details(slug));
     },
     [router]
   ); */
@@ -29,13 +29,13 @@ export function JobList({ jobs, pagination }) {
     [router]
   );
 
-  // const handleDelete = useCallback((id) => {
-  //   console.info('DELETE', id);
+  // const handleDelete = useCallback((slug) => {
+  //   console.info('DELETE', slug);
   // }, []);
 
   const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(API.deleteFonction(id));
+      const response = await axios.delete(API.deleteFonction(slug));
       if (response) {
         toast.success('fonction supprimée avec succès !');
       } else {
@@ -79,7 +79,7 @@ export function JobList({ jobs, pagination }) {
         <Pagination
           count={totalPages}
           page={pagination.currentPage || 1}
-          onChange={handlePageChange}
+          onChange={onChangePage}
           sx={{
             mt: { xs: 8, md: 8 },
             [`& .${paginationClasses.ul}`]: { justifyContent: 'center' }
