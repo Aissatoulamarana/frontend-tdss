@@ -1,0 +1,15 @@
+// /src/app/dashboard/user/[id]/page.jsx
+import { CONFIG } from 'src/config-global';
+import React from 'react';
+
+import { EmployeeDetailsView } from 'src/sections/overview/employee/view';
+
+export const metadata = { title: `Details Employé | Dashboard - ${CONFIG.appName}` };
+
+
+export default async function EmployeeDetails({ params }) {
+    const { slug } = await params;
+    return (
+        <EmployeeDetailsView slug={slug} />
+    );
+}

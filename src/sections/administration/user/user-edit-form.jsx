@@ -302,19 +302,19 @@ export function UserNewEditForm({ currentUser }) {
               }}
             >
               {/* On a retiré le champ username du formulaire affiché */}
-              <Field.Text name="first_name" label="Prénom" />
-              <Field.Text name="last_name" label="Nom" />
-              <Field.Text name="email" label="Adresse Mail" />
-              <Field.Phone name="phone" label="Numéro de Téléphone" />
+              <Field.Text name="first_name" label="Prénom *" />
+              <Field.Text name="last_name" label="Nom *" />
+              <Field.Text name="email" label="Adresse Mail *" />
+              <Field.Phone name="phone" label="Numéro de Téléphone *" />
 
-              <Field.Select name="profile" label="Profil" >
+              <Field.Select name="profile" label="Profil *" >
                 {profils.map((profil) => (
                   <MenuItem key={profil?.slug} value={profil?.slug}>
                     {profil?.name}
                   </MenuItem>
                 ))}
               </Field.Select>
-              <Field.Select name="location" label="Region" >
+              <Field.Select name="location" label="Region *" >
                 {regions.map((region) => (
                   <MenuItem key={region?.slug} value={region?.slug}>
                     {region?.name}
@@ -322,7 +322,7 @@ export function UserNewEditForm({ currentUser }) {
                 ))
                 }
               </Field.Select>
-              <Field.Select name="agency" label="Agence" >
+              <Field.Select name="agency" label="Agence *" >
                 {agences.map((agence) => (
                   <MenuItem key={agence?.slug} value={agence?.slug}>
                     {agence?.name}
@@ -330,7 +330,7 @@ export function UserNewEditForm({ currentUser }) {
                 ))
                 }
               </Field.Select>
-              <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
+              <Field.Select name="type" label="Role *" inputlabelprops={{ shrink: true }}>
                 {roles?.map((role) => (
                   <MenuItem key={role.slug} value={role.slug}>
                     {role?.name}

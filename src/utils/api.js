@@ -35,6 +35,11 @@ const API = {
 
   Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
   UpdateEmploye: (declarationSlug, employeeSlug) => `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
+  DeleteEmploye: (slug) => `${BASE_URL}/declarations/${slug}/delete-employees/`, // Supprimer un ou plusieurs employés d'une déclaration
+  AddEmploye: (slug) => `${BASE_URL}/declarations/${slug}/add-employees/`, // Ajouter un employé à une déclaration
+  listEmployee: () => `${BASE_URL}/employees/?limit=100&offset=100/`, // liste de tous les employés
+  detailsEmployee: (slug) => `${BASE_URL}/employees/${slug}/`, // details d'un employé
+
   
 
 
@@ -71,7 +76,7 @@ const API = {
  
   
   searchIdentifier: (identifier) => `${BASE_URL}/api/search_identifier/?identifier=${identifier}`,
-  searchPassport: (numero) => `${BASE_URL}/declarations/employees//check-passport/?numero=${numero}`,
+  searchPassport: (numero) => `${BASE_URL}/declarations/employees/check-passport/?numero=${numero}`,
 
   createPermission: () => `${BASE_URL}/permission/`,
   listPermissions: () => `${BASE_URL}/permission/`, // Liste des fonctions

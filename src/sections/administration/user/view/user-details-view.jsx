@@ -24,6 +24,8 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+
+import { paths } from 'src/routes/paths';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 
@@ -69,9 +71,9 @@ export function UserDetailsView({ slug }) {
             <CustomBreadcrumbs
                 heading="Détails de l'utilisateur"
                 links={[
-                    { name: 'Dashboard', href: '/' },
-                    { name: 'Utilisateurs', href: '/users' },
-                    { name: user.username },
+                    { name: 'Dashboard', href: paths.dashboard.root },
+                    { name: 'Utilisateurs', href: paths.dashboard.user.list },
+                    { name: user?.first_name },
                 ]}
                 sx={{ mb: { xs: 4, md: 6 } }}
             />

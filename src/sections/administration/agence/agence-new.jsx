@@ -121,12 +121,12 @@ export function AgenceNew({ currentAgence }) {
                 sm: 'repeat(2, 1fr)',
               }}
             >
-              <Field.Text name="name" label="Nom " placeholder="Veuillez entrez un nom" />
+              <Field.Text name="name" label="Nom *" placeholder="Veuillez entrez un nom" />
 
 
               <Field.Select
                 name="region"
-                label="Région"
+                label="Région *"
                 placeholder="Sélectionnez une région..."
               >
                 {regions.map((region) => (

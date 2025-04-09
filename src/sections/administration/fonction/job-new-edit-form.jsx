@@ -115,12 +115,12 @@ export function JobNewEditForm({ currentJob }) {
           <Stack spacing={3} sx={{ p: 3 }}>
             <Field.Text
               name="name"
-              label="Nom de la fonction"
+              label="Nom de la fonction *"
               placeholder="Ex: Développeur Logiciel..."
             />
             <Field.Select
               name="category"
-              label="Catégorie"
+              label="Catégorie *"
               placeholder="Sélectionnez une catégorie..."
             >
               {categories.map((category) => (

@@ -130,15 +130,15 @@ const useStyles = () =>
     []
   );
 
-export function DeclarationPDF({ declaration }) {
-  const { reference, created_on, employees, } = declaration;
+export function DeclarationPDF({ declaration, employees }) {
+  const { reference, created_on } = declaration;
   const styles = useStyles();
 
   // Calcul du nombre d'items pour le QR code
   const itemsCount = employees ? employees.length : 0;
-  const cadresCount = employees?.filter(employee => employee.category === "Cadre").length || 0;
-  const agentCount = employees?.filter(employee => employee.category === "Agent").length || 0;
-  const ouvrierCount = employees?.filter(employee => employee.category === "Ouvrier").length || 0;
+  const cadresCount = employees?.filter(employee => employee?.job?.category === "Cadre").length || 0;
+  const agentCount = employees?.filter(employee => employee?.job?.category === "Agent de maitrise").length || 0;
+  const ouvrierCount = employees?.filter(employee => employee?.job?.category === "Ouvrier").length || 0;
 
   const qrData = encodeURIComponent(
     `${reference} - ${itemsCount} personnes`
@@ -151,16 +151,20 @@ export function DeclarationPDF({ declaration }) {
         {/* Header : Logo et coordonnées de l'entreprise */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
-            {/* {user?.profile_picture ? (
-              <Image src={user?.profile_picture} style={{ width: 60, height: 60 }} />
-            ) : (
-              <Text style={styles.companyName}>{user?.profile_name}</Text>
-            )}
+            {/* {declaration?.company?.picture ? ( */}
+            <Image
+              src={declaration.company.picture}
+              style={{ width: 60, height: 60 }}
+            />
+            {/* ) : (
+              <Text style={styles.companyName}>{declaration?.company?.name}</Text>
+            )} */}
           </View>
+
           <View style={styles.companyDetails}>
-            <Text style={styles.companyName}>{user?.profile_name}</Text>
-            <Text style={styles.companyContact}>Tél : {user?.profile_contact}</Text>
-            <Text style={styles.companyContact}>{user?.profile_adresse}</Text> */}
+            <Text style={styles.companyName}>{declaration?.company?.name}</Text>
+            <Text style={styles.companyContact}>Tél : {declaration?.company?.contact}</Text>
+            <Text style={styles.companyContact}>{declaration?.company?.adresse}</Text>
           </View>
         </View>
 
@@ -209,8 +213,8 @@ export function DeclarationPDF({ declaration }) {
               <Text style={styles.tableCell}>{item.passport_number}</Text>
               <Text style={styles.tableCell}>{item.first}</Text>
               <Text style={styles.tableCell}>{item.last}</Text>
-              <Text style={styles.tableCell}>{item.fonction}</Text>
-              <Text style={styles.tableCell}>{item.category}</Text>
+              <Text style={styles.tableCell}>{item.job.name}</Text>
+              <Text style={styles.tableCell}>{item.job.category}</Text>
             </View>
           ))}
         </View>

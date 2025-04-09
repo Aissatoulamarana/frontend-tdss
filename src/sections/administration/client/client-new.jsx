@@ -243,7 +243,7 @@ export function ClientNewEditForm({ currentClient }) {
                                 }}
                             >
                                 <Typography variant="h6" sx={{ mb: 2 }}>
-                                    Logo
+                                    Logo *
                                 </Typography>
                                 <Field.UploadAvatar
                                     name="picture"
@@ -284,10 +284,10 @@ export function ClientNewEditForm({ currentClient }) {
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Text name="name" label="Nom du client" fullWidth size="small" />
+                                        <Field.Text name="name" label="Nom du client *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Select name="type" label="Type de Profil" fullWidth size="small">
+                                        <Field.Select name="type" label="Type de Profil *" fullWidth size="small">
                                             {types.map((profiletype) => (
                                                 <MenuItem key={profiletype.slug} value={profiletype.slug}>
                                                     {profiletype.name}
@@ -298,7 +298,7 @@ export function ClientNewEditForm({ currentClient }) {
                                     <Grid item size={{ xs: 8, md: 12 }}>
                                         <Field.Text
                                             name="description"
-                                            label="Description"
+                                            label="Description *"
                                             fullWidth
                                             multiline
                                             rows={3}
@@ -306,13 +306,13 @@ export function ClientNewEditForm({ currentClient }) {
                                         />
                                     </Grid>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Text name="email" label="Email" fullWidth size="small" />
+                                        <Field.Text name="email" label="Email *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Phone name="contact" label="Téléphone" fullWidth size="small" />
+                                        <Field.Phone name="contact" label="Téléphone *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Select name="location" label="Région" fullWidth size="small">
+                                        <Field.Select name="location" label="Région *" fullWidth size="small">
                                             {regions.map((region) => (
                                                 <MenuItem key={region.slug} value={region.slug}>
                                                     {region.name}
@@ -321,7 +321,7 @@ export function ClientNewEditForm({ currentClient }) {
                                         </Field.Select>
                                     </Grid>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Text name="adresse" label="Adresse" fullWidth size="small" />
+                                        <Field.Text name="adresse" label="Adresse *" fullWidth size="small" />
                                     </Grid>
                                 </Grid>
                                 <Box sx={{ textAlign: 'right', mt: 3 }}>
@@ -392,19 +392,19 @@ export function ClientNewEditForm({ currentClient }) {
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item size={{ xs: 12, md: 6 }}>
-                                        <Field.Text name="user_last_name" label="Nom" fullWidth size="small" />
+                                        <Field.Text name="user_last_name" label="Nom *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 12, md: 6 }}>
-                                        <Field.Text name="user_first_name" label="Prénom" fullWidth size="small" />
+                                        <Field.Text name="user_first_name" label="Prénom *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 12, md: 6 }}>
-                                        <Field.Text name="user_email" label="Email" fullWidth size="small" />
+                                        <Field.Text name="user_email" label="Email *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 12, md: 6 }}>
-                                        <Field.Phone name="user_phone" label="Téléphone" fullWidth size="small" />
+                                        <Field.Phone name="user_phone" label="Téléphone *" fullWidth size="small" />
                                     </Grid>
                                     <Grid size={{ xs: 12 }}>
-                                        <Field.Select name="user_type" label="Role" inputlabelprops={{ shrink: true }}>
+                                        <Field.Select name="user_type" label="Role *" inputlabelprops={{ shrink: true }}>
                                             {roles?.map((role) => (
                                                 <MenuItem key={role.slug} value={role.slug}>
                                                     {role?.name}

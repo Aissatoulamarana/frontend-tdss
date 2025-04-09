@@ -19,14 +19,14 @@ export function ShareSendDialog({ open, onClose, onSubmit, title, label }) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
+    <Dialog open={open} onClose={onClose} fullWidth>
+      <DialogTitle mb={2}>{title}</DialogTitle>
+      <DialogContent  >
         <TextField
           label={label}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          maxWidth="sm" // Taille maximale du dialog (xs, sm, md, lg, xl)
+          // maxWidth="sm" // Taille maximale du dialog (xs, sm, md, lg, xl)
           fullWidth // Prend toute la largeur possible dans la limite de maxWidth
 
         />

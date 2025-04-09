@@ -35,10 +35,12 @@ import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
 import { EmployeeQuickEditForm } from './employe-quick-edit-form';
 
+import { paths } from 'src/routes/paths';
+
 const fixedCategories = [
   { label: 'Tous', value: 'All' },
-  { label: 'Cadres', value: 'Cadres' },
-  { label: 'Agent', value: 'Agent' },
+  { label: 'Cadres', value: 'Cadre' },
+  { label: 'Agent', value: 'Agent de maitrise' },
   { label: 'Ouvrier', value: 'Ouvrier' },
 ];
 
@@ -56,6 +58,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   // État pour l'ouverture du formulaire d'édition rapide
   const [quickEditOpen, setQuickEditOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState(null);
+  const [isDialogSup, setIsDialogSup] = useState(false); // État pour la boîte de dialogue
 
   const router = useRouter();
 
@@ -63,7 +66,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   const rows =
     filter === 'All'
       ? employee
-      : employee.filter((row) => row.fonction === filter);
+      : employee.filter((row) => row.job.category === filter);
 
   const isSelected = (slug) => selected.includes(slug);
 
@@ -146,24 +149,54 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
       try {
         const payload = {
-          selected_ids: selected,
-          target_declaration: selectedDeclaration?.value,
+          selected_slugs: selected,
+          target_reference: selectedDeclaration?.value,
         };
 
         const response = await axios.post(API.move(declaration.slug), payload);
         if (response.status === 200) {
-          toast('Déplacement effectué avec succès !');
+          toast.success('Déplacement effectué avec succès !');
+          setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
           setSelected([]);
           setIsDialogOpen(false);
-          router.push(paths.dashboard.declaration.list);
+          // router.push(paths.dashboard.declaration.list);
         }
       } catch (error) {
         console.error('Erreur lors du déplacement :', error);
-        toast("Une erreur s'est produite lors du déplacement.");
+        const errorMessage =
+          error.error || error.details || error.message;
+        toast.error(`Erreur : ${errorMessage}`);
       }
     },
     [declaration, selected, selectedDeclaration, router]
   );
+
+  const handleDeleteRows = async () => {
+    try {
+      const slugs = {
+        slugs: selected,
+      }
+      const response = await axios.post(API.DeleteEmploye(declaration?.slug), slugs);
+      if (response.status === 200) {
+        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
+        setSelected([]);
+        setIsDialogSup(false);
+        console.log('Employé supprimé avec succès:', response.data.message);
+        toast.success('Suppression reussie!');
+        window.location.reload();
+      } else {
+        console.error('Erreur lors de la suppression:', response.error);
+        toast.error(`Erreur : ${response.error}`);
+      }
+    } catch (error) {
+      console.error('Erreur réseau ou serveur:', error);
+
+      const errorMessage =
+        error.error || error.details || error.message;
+      toast.error(`Erreur : ${errorMessage}`);
+    }
+
+  };
 
   // Gestion de l'ouverture du formulaire d'édition rapide
   const openQuickEdit = (emp) => {
@@ -210,7 +243,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               </IconButton>
             </Tooltip>
             <Tooltip title="Supprimer">
-              <IconButton color="primary" onClick={() => console.log('Supprimer action')}>
+              <IconButton color="primary" onClick={() => setIsDialogSup(true)}>
                 <Iconify icon="solar:trash-bin-trash-bold" />
               </IconButton>
             </Tooltip>
@@ -262,6 +295,30 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               }}
             >
               Déplacer
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Boîte de dialogue de suppression */}
+        <Dialog open={isDialogSup} onClose={() => setIsDialogSup(false)}>
+          <DialogTitle>Supprimer</DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              Êtes-vous sûr de vouloir suprimer <strong>{selected.length}</strong> employés ?
+            </Typography>
+
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setIsDialogSup(false)}>Annuler</Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                handleDeleteRows();
+                setIsDialogSup(false);
+              }}
+            >
+              Supprimer
             </Button>
           </DialogActions>
         </Dialog>
@@ -322,10 +379,10 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               .map((row) => (
                 <React.Fragment key={`${row.id}-${row.slug}`}>
                   <TableRow
-                    onClick={() => openQuickEdit(row)}
+
                     hover
                     selected={isSelected(row.slug)}
-                    style={{ cursor: 'pointer' }}
+
                   >
                     <TableCell padding="checkbox">
                       <Checkbox
@@ -337,6 +394,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                     <TableCell>{row.passport_number}</TableCell>
                     <TableCell>
                       <ListItemText
+                        onClick={() => openQuickEdit(row)}
+                        style={{ cursor: 'pointer' }}
                         primary={row.last}
                         secondary={row.first}
                         slotProps={{

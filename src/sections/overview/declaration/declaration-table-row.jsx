@@ -147,68 +147,74 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          <MenuItem
-            onClick={() => {
-              onEditRow();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="solar:pen-bold" />
-            Modifier
-          </MenuItem>
+          {user?.type === 'Admin' && !['VALIDATED', 'BILLED'].includes(row.status) && (
+            <MenuItem
+              onClick={() => {
+                onEditRow();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="solar:pen-bold" />
+              Modifier
+            </MenuItem>
+          )}
 
-          {user?.type !== 'Admin' &&
-            [
-              !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
-                <MenuItem key="submit"
-                  onClick={() => {
-                    submitConfirm.onTrue();
-                    popover.onClose();
-                  }}
-                >
-                  <Iconify icon="mdi:check-bold" />
-                  Soumettre
-                </MenuItem>
-              ),
+          {user?.type === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
+            <MenuItem
+              key="submit"
+              onClick={() => {
+                submitConfirm.onTrue();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="mdi:check-bold" />
+              Soumettre
+            </MenuItem>
+          )}
 
-              !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
-                <MenuItem key="validate"
-                  onClick={() => {
-                    validateConfirm.onTrue();
-                    popover.onClose();
-                  }}
-                >
-                  <Iconify icon="mdi:check-bold" />
-                  Valider
-                </MenuItem>
-              ),
+          {user?.type === 'Superviseur' &&
+            user?.profile === 'AGUIPE' &&
+            !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
+              <MenuItem
+                key="validate"
+                onClick={() => {
+                  validateConfirm.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="mdi:check-bold" />
+                Valider
+              </MenuItem>
+            )}
 
-              !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
-                <MenuItem key="reject"
-                  onClick={() => {
-                    setOpenRejetDialog(true);
-                    popover.onClose();
-                  }}
-                >
-                  <Iconify icon="material-symbols:cancel" />
-                  Rejeter
-                </MenuItem>
-              ),
+          {user?.type === 'Superviseur' &&
+            user?.profile === 'AGUIPE' &&
+            !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
+              <MenuItem
+                key="reject"
+                onClick={() => {
+                  setOpenRejetDialog(true);
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="material-symbols:cancel" />
+                Rejeter
+              </MenuItem>
+            )}
 
-              !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED', 'UNSUBMITTED'].includes(row.status) && (
-                <MenuItem key="facture"
-                  onClick={() => {
-                    factureConfirm.onTrue();
-                    popover.onClose();
-                  }}
-                >
-                  <Iconify icon="mdi:credit-card" />
-                  Facturer
-                </MenuItem>
-              )
-            ].filter(Boolean) // Supprime les valeurs `false` du tableau
-          }
-
+          {user?.type === 'Comptable' &&
+            !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
+              <MenuItem
+                key="facture"
+                onClick={() => {
+                  factureConfirm.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="mdi:credit-card" />
+                Facturer
+              </MenuItem>
+            )}
 
           <Divider sx={{ borderStyle: 'dashed' }} />
 
@@ -224,6 +230,7 @@ export function DeclarationTableRow({
           </MenuItem>
         </MenuList>
       </CustomPopover>
+
       {/* Boîte de dialogue de confirmation pour la suppression */}
       <ConfirmDialog
         open={deleteConfirm.value}

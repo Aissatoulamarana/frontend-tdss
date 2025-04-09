@@ -1,157 +1,157 @@
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import { useEffect, useCallback } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
-import { INVOICE_SERVICE_OPTIONS } from 'src/_mock';
-
+'use client';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z as zod } from 'zod';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
+import { useBoolean } from 'src/hooks/use-boolean';
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+import { toast } from 'sonner';
+import { Form } from 'src/components/hook-form';
 import { Field } from 'src/components/hook-form';
+import { Box, Stack, Divider, MenuItem } from '@mui/material';
+import Button from '@mui/material/Button';
+import LoadingButton from '@mui/lab/LoadingButton';
 import { Iconify } from 'src/components/iconify';
+import { getEntreprises } from 'src/utils/options';
 
-export function DeclarationEdit() {
-  const { control, setValue, watch } = useFormContext();
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' });
-  const values = watch();
+export const NewInvoiceSchema = zod.object({
+  company: zod.string().min(1, { message: "Veuillez selectionner l'entreprise !" }),
+  title: zod.string(),
+  status: zod.string(),
+  reference: zod.string(),
+});
 
-  const totalOnRow = values.items.map((item) => item.quantity * item.price);
-  const subtotal = totalOnRow.reduce((acc, num) => acc + num, 0);
-  const totalAmount = subtotal - values.discount - values.shipping + values.taxes;
+export function DeclarationEdit({ declaration }) {
+  const [entreprises, setEntreprises] = useState([]);
+  const router = useRouter();
+  const loadingSend = useBoolean();
 
+  const methods = useForm({
+    mode: 'all',
+    resolver: zodResolver(NewInvoiceSchema),
+    defaultValues: {
+      company: declaration?.company?.slug || '',
+      status: declaration?.status || '',
+      title: declaration?.title || '',
+      reference: declaration?.reference || '',
+    },
+  });
+
+  const {
+    reset,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = methods;
+
+  // Réinitialiser le formulaire lorsque 'declaration' est chargée ou mise à jour
   useEffect(() => {
-    setValue('totalAmount', totalAmount);
-  }, [setValue, totalAmount]);
+    if (declaration) {
+      reset({
+        company: declaration?.company?.slug,
+        status: declaration?.status,
+        title: declaration?.title,
+        reference: declaration?.reference,
+      });
+    }
+  }, [declaration, reset]);
 
-  const handleAdd = () => {
-    append({
-      fonction: '',
-      nom: '',
-      nationalité: '',
-    });
-  };
+  // Récupération des entreprises pour le select
+  useEffect(() => {
+    getEntreprises().then((data) => setEntreprises(data));
+  }, []);
 
-  const handleRemove = (index) => {
-    remove(index);
-  };
+  const handleUpdate = handleSubmit(async (data) => {
+    loadingSend.onTrue();
 
-  const handleClearService = useCallback(
-    (index) => {
-      setValue(`items[${index}].quantity`, 1);
-      setValue(`items[${index}].price`, 0);
-      setValue(`items[${index}].total`, 0);
-    },
-    [setValue]
-  );
+    try {
+      // Optionnel: simuler un délai
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const handleSelectService = useCallback(
-    (index, option) => {
-      setValue(
-        `items[${index}].price`,
-        INVOICE_SERVICE_OPTIONS.find((fonction) => fonction.name === option)?.price
-      );
-      setValue(
-        `items[${index}].total`,
-        values.items.map((item) => item.quantity * item.price)[index]
-      );
-    },
-    [setValue, values.items]
-  );
+      const { slug } = declaration;
+      // Mise à jour de la déclaration via PATCH
+      await axios.patch(API.updateDeclaration(slug), data, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      toast.success('Mise à jour réussie!');
+
+      // Réinitialiser le formulaire après succès
+      reset();
+      router.push(paths.dashboard.declaration.list);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi au backend:", error);
+      if (error.response) {
+        console.error('Erreur avec le serveur:', error.response.data);
+        toast.error(`Erreur serveur: ${error.response.data?.message || 'Problème interne du serveur'}`);
+      } else if (error.request) {
+        console.error('Erreur avec la requête:', error.request);
+        toast.error("Erreur de requête : Vérifiez votre connexion");
+      } else {
+        console.error('Erreur générale:', error.message);
+        toast.error(`Erreur inconnue: ${error.message}`);
+      }
+    } finally {
+      loadingSend.onFalse();
+    }
+  });
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
-        Informations Personnelles
-      </Typography>
-
-      <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
-        {fields.map((item, index) => (
-          <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%' }}>
-              <Field.Text
-                size="large"
-                name={`items[${index}].nom`}
-                label="Numero declaration"
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: '100%' }}
-              />
-              <Field.Text
-                size="large"
-                name={`items[${index}].nom`}
-                label="Nom & Prénom"
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: '100%' }}
-              />
-
-              <Field.CountrySelect
-                size="large"
-                name="Nationalités"
-                label="Nationalités"
-                placeholder="Selectionnez un pays "
-                sx={{ width: '100%' }}
-              />
-
-              <Field.Select
-                name={`items[${index}].fonction`}
-                size="large"
-                label="Fonction"
-                InputLabelProps={{ shrink: true }}
-                sx={{ width: '80%' }}
-              >
-                <MenuItem
-                  value=""
-                  onClick={() => handleClearService(index)}
-                  sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-                >
-                  None
-                </MenuItem>
-                <Divider sx={{ borderStyle: 'dashed' }} />
-                {INVOICE_SERVICE_OPTIONS.map((fonction) => (
-                  <MenuItem
-                    key={fonction.id}
-                    value={fonction.name}
-                    onClick={() => handleSelectService(index, fonction.name)}
-                  >
-                    {fonction.name}
-                  </MenuItem>
-                ))}
-              </Field.Select>
-            </Stack>
-
-            <Divider flexItem sx={{ borderStyle: 'solid', my: 2 }} />
-
-            <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
-
-            <Button
-              size="small"
-              color="error"
-              startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
-              onClick={() => handleRemove(index)}
-            >
-              Supprimer
-            </Button>
-          </Stack>
-        ))}
-      </Stack>
-
-      <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
-
-      <Stack
-        spacing={3}
-        direction={{ xs: 'column', md: 'row' }}
-        alignItems={{ xs: 'flex-end', md: 'center' }}
-      >
-        <Button
-          size="small"
-          color="primary"
-          startIcon={<Iconify icon="mingcute:add-line" />}
-          onClick={handleAdd}
-          sx={{ flexShrink: 0 }}
+    <Form methods={methods}>
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: '100%' }}>
+        {/* Ne pas passer la prop "value" afin de laisser react-hook-form gérer l'état */}
+        <Field.Text
+          size="large"
+          name="reference"
+          label="Numero declaration"
+          InputLabelProps={{ shrink: true }}
+          sx={{ width: '100%' }}
+          disabled
+        />
+        <Field.Select
+          fullWidth
+          name="company"
+          label="Entreprise"
+          placeholder="Veuillez selectionner l'entreprise dont vous déclarez"
         >
-          Add item
-        </Button>
+          {entreprises.map((company) => (
+            <MenuItem key={company.slug} value={company.slug} sx={{ textTransform: 'capitalize' }}>
+              {company.name}
+            </MenuItem>
+          ))}
+        </Field.Select>
+
+        <Field.Select
+          fullWidth
+          name="status"
+          label="Status"
+          InputLabelProps={{ shrink: true }}
+        >
+          {['REJECTED', 'SUBMITTED', 'VALIDATED', 'UNSUBMITTED'].map((option) => (
+            <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
+              {option}
+            </MenuItem>
+          ))}
+        </Field.Select>
+
+        <Field.Text
+          name="title"
+          label="Titre de la declaration"
+          InputLabelProps={{ shrink: true }}
+        />
       </Stack>
-    </Box>
+
+      <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
+        <LoadingButton
+          size="large"
+          variant="contained"
+          loading={loadingSend.value && isSubmitting}
+          onClick={handleUpdate}
+        >
+          {declaration ? 'Mettre A jour' : 'Créer'}
+        </LoadingButton>
+      </Stack>
+    </Form>
   );
 }

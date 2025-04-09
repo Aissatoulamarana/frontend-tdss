@@ -16,6 +16,7 @@ import axios from 'src/utils/axios';
 
 export function DeclarationDetailsView({ slug }) {
   const [declaration, setDeclaration] = useState(null); // État pour stocker la déclaration
+  const [employee, setEmployee] = useState([]); // État pour stocker les employés
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [loading, setLoading] = useState(true); // État pour gérer le chargement
 
@@ -35,6 +36,29 @@ export function DeclarationDetailsView({ slug }) {
   }, [slug]);
 
 
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      if (!declaration || !declaration.slug) {
+        toast("La déclaration n'est pas définie.");
+        return;
+      }
+      setLoading(true);
+      try {
+        const response = await axios.get(API.Employe(declaration.slug));
+        const employees = response.data.results;
+        setEmployee(employees);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des employés :', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (declaration && declaration.slug) {
+      fetchEmployees();
+    }
+  }, [declaration]);
+
   return (
     <DashboardContent>
       <CustomBreadcrumbs
@@ -47,7 +71,7 @@ export function DeclarationDetailsView({ slug }) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationDetails declaration={declaration} />
+      <DeclarationDetails declaration={declaration} employees={employee} />
     </DashboardContent>
   );
 }

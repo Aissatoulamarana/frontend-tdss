@@ -19,7 +19,7 @@ import { z as zod } from 'zod';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
-import {  getJobAgent} from 'src/utils/options';
+import { getJobAgent } from 'src/utils/options';
 
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
@@ -113,16 +113,17 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             // Ne pas définir manuellement le Content-Type pour laisser le navigateur gérer les délimitations
             const response = await axios.patch(API.UpdateEmploye(dec_slug, currentEmployee.slug), formData);
 
+            if (response) {
+                toast.success('Mise à jour réussie !');
+                window.location.reload();
 
-            toast.success('Mise à jour réussie !');
-            window.location.reload();
-
-            // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
-            const updatedEmployee = { ...currentEmployee, ...modifiedData };
-            console.log("utilisateur  mis à jour :", updatedEmployee);
-            onUpdateRow(updatedEmployee);
-            reset();
-            onClose();
+                // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
+                const updatedEmployee = { ...currentEmployee, ...modifiedData };
+                console.log("utilisateur  mis à jour :", updatedEmployee);
+                onUpdateRow(updatedEmployee);
+                reset();
+                onClose();
+            }
         } catch (error) {
             toast.error('Erreur lors de la mise à jour .');
             console.error('Erreur:', error.response?.data || error.message);

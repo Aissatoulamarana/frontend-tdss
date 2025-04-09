@@ -77,7 +77,7 @@ export function DeclarationListView() {
 
   const { user } = useMockedUser();
   const type_user = user?.type?.toLowerCase().trim();
-  console.log('type_user:', type_user);
+  // console.log('type_user:', type_user);
 
   const router = useRouter();
 
@@ -215,7 +215,7 @@ export function DeclarationListView() {
 
         if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          toast.success('Déclaration validée avec succès !');
+          toast.success('Déclaration soumise avec succès !');
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>

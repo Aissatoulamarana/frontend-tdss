@@ -37,7 +37,7 @@ export function DeclarationEditStatusDate({ type }) {
       <Field.Select
         fullWidth
         name='company'
-        label='Entreprise'
+        label='Entreprise *'
         placeholder="veuillez selectionnez l'entreprise dont vous déclarez"
       >
         {entreprises.map((company) => (
@@ -63,10 +63,10 @@ export function DeclarationEditStatusDate({ type }) {
       </Field.Select>
 
       <Field.Text
-        disabled
-        name="type_dec"
-        label="Type de la declaration"
-        value={type}
+
+        name="title"
+        label="Titre de la declaration *"
+        InputLabelProps={{ shrink: true }}
       />
 
     </Stack>

@@ -131,6 +131,11 @@ export const paths = {
     userType: {
       root: `${ROOTS.DASHBOARD}/userType`,
     },
+
+    employee: {
+      list : `${ROOTS.DASHBOARD}/employee/list`,
+      details:(slug) => `${ROOTS.DASHBOARD}/employee/${slug}`,
+    },
     
     devise: {
       root: `${ROOTS.DASHBOARD}/devise`, 

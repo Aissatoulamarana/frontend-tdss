@@ -10,6 +10,7 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { DeclarationNew } from '../declaration-new';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
+import { DeclarationEdit } from '../declaration-edit';
 
 // ----------------------------------------------------------------------
 
@@ -45,7 +46,7 @@ export function DeclarationEditView({ slug }) {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <DeclarationNew declaration={declaration} />
+      <DeclarationEdit declaration={declaration} />
     </DashboardContent>
   );
 }

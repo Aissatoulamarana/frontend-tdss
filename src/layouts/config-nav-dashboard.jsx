@@ -81,7 +81,7 @@ export const navData = [
       },
       {
         title: 'Employés',
-        path: paths.dashboard.factures.list,
+        path: paths.dashboard.employee.list,
         icon: ICONS.facture,
       },
       // {

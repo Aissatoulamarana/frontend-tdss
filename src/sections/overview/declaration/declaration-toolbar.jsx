@@ -27,6 +27,8 @@ import { ShareSendDialog } from './components/ShareSendDialog';
 import { DeclarationPDF } from './declaration-pdf';
 import DeclarationDetailsPrint from './declaration-print';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 export function DeclarationToolbar({
@@ -34,9 +36,12 @@ export function DeclarationToolbar({
   currentStatus,
   statusOptions,
   onChangeStatus,
+  employees,
 
 }) {
   const router = useRouter();
+
+  const user = useMockedUser();
   // États pour contrôler l'ouverture des dialogues share et send
   const [openShare, setOpenShare] = useState(false);
   const [openSend, setOpenSend] = useState(false);
@@ -44,8 +49,8 @@ export function DeclarationToolbar({
   const view = useBoolean();
 
   const handleEdit = useCallback(() => {
-    router.push(paths.dashboard.declaration.edit(`${declaration?.id}`));
-  }, [declaration?.id, router]);
+    router.push(paths.dashboard.declaration.edit(`${declaration?.slug}`));
+  }, [declaration?.slug, router]);
 
   const componentRef = useRef(null);
 
@@ -59,7 +64,7 @@ export function DeclarationToolbar({
     try {
       // Exemple d'appel à l'API pour partager la déclaration
       await axios.post('/api/declaration/share', {
-        declarationId: declaration?.id,
+        declarationId: declaration?.slug,
         email,
       });
       alert('Déclaration partagée avec succès.');
@@ -73,7 +78,7 @@ export function DeclarationToolbar({
     try {
       // Exemple d'appel à l'API pour envoyer la déclaration par email
       await axios.post('/api/declaration/send', {
-        declarationId: declaration?.id,
+        declarationId: declaration?.slug,
         email,
       });
       alert('Déclaration envoyée avec succès.');
@@ -82,10 +87,13 @@ export function DeclarationToolbar({
     }
   };
 
+
+
+
   const renderDownload = (
     <NoSsr>
       <PDFDownloadLink
-        document={declaration ? <DeclarationPDF declaration={declaration} /> : <span />}
+        document={declaration ? <DeclarationPDF declaration={declaration} employees={employees} /> : ''}
         fileName={declaration?.reference}
         style={{ textDecoration: 'none' }}
       >
@@ -112,17 +120,19 @@ export function DeclarationToolbar({
         alignItems={{ xs: 'flex-end', sm: 'center' }}
         sx={{ mb: { xs: 3, md: 5 } }}
       >
-        <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-          <Tooltip title="Edit">
-            <IconButton onClick={handleEdit}>
-              <Iconify icon="solar:pen-bold" />
-            </IconButton>
-          </Tooltip>
 
-          {/* {renderDownload}
+        <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
+          {user?.type === 'admin' && declaration?.status === 'UNSUBMITTED' && (
+            <Tooltip title="Edit">
+              <IconButton onClick={handleEdit}>
+                <Iconify icon="solar:pen-bold" />
+              </IconButton>
+            </Tooltip>
+          )}
+          {renderDownload}
           <Box sx={{ display: 'none' }}>
-            <DeclarationDetailsPrint ref={componentRef} declaration={declaration} />
-          </Box> */}
+            <DeclarationDetailsPrint ref={componentRef} declaration={declaration} employees={employees} />
+          </Box>
 
           <Tooltip title="Print">
             <IconButton onClick={handlePrint}>

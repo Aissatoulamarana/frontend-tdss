@@ -300,7 +300,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
               <Field.Text
                 size="small"
                 name={`employees[${index}].passport_number`}
-                label="Numéro Passeport"
+                label="Numéro Passeport *"
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 error={typedec === "Nouvelle" && Boolean(values.employees?.[index]?.passportExists)}
@@ -328,7 +328,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
               <Field.Phone
                 size="small"
                 name={`employees[${index}].phone`}
-                label="Numéro de Téléphone"
+                label="Numéro de Téléphone *"
                 placeholder="votre numero de téléphone  "
                 sx={{ width: '100%' }}
                 inputlabelprops={{ shrink: true }}
@@ -337,13 +337,13 @@ export function DeclarationNewEditDetails({ formData, type }) {
               <Field.Text
                 size="small"
                 name={`employees[${index}].last`}
-                label="Nom "
+                label="Nom *"
                 inputlabelprops={{ shrink: true }}
               />
               <Field.Text
                 size="small"
                 name={`employees[${index}].first`}
-                label="Prénom"
+                label="Prénom *"
                 inputlabelprops={{ shrink: true }}
               />
 
@@ -351,7 +351,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
               <Field.Select
                 name={`employees[${index}].job`}
                 size="small"
-                label="Fonction"
+                label="Fonction *"
                 inputlabelprops={{ shrink: true }}
                 sx={{ maxWidth: { md: 160 } }}
               >

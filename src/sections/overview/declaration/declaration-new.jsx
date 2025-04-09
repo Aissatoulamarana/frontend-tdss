@@ -35,8 +35,8 @@ export const NewInvoiceSchema = zod.object({
     })
   ),
 
-  company: zod.string(),
-  title: zod.string(),
+  company: zod.string().min(1, { message: "Veuillez selectionner l'entreprise !" }),
+  title: zod.string().min(1, { message: 'le titre de la déclaration est obligatoire' }),
 });
 
 
@@ -47,12 +47,12 @@ export function DeclarationNew({ declaration, type, formData }) {
   const router = useRouter();
   const loadingSave = useBoolean();
   const loadingSend = useBoolean();
-  const title = type
+
 
 
   const defaultValues = useMemo(() => ({
     status: declaration?.status || 'brouillon',
-    title: title || declaration?.title,
+    title: declaration?.title || '',
     company: declaration?.company || '',
     employees: formData?.length > 0
       ? formData
@@ -166,7 +166,7 @@ export function DeclarationNew({ declaration, type, formData }) {
           loading={loadingSend.value && isSubmitting}
           onClick={handleCreateAndSend}
         >
-          {declaration ? 'Mettre A jour' : 'Soumettre'}
+          {declaration ? 'Mettre A jour' : 'Créer '}
         </LoadingButton>
       </Stack>
     </Form>

@@ -19,11 +19,11 @@ import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/asse
 
 import { Iconify } from 'src/components/iconify';
 
-import { ProfilePostItem } from './profile-post-item';
+// import { ProfilePostItem } from './profile-post-item';
 
 // ----------------------------------------------------------------------
 
-export function ProfileHome({ info, posts }) {
+export function EmployeeInfo({ info, posts }) {
   const fileRef = useRef(null);
 
   const handleAttach = () => {
@@ -36,43 +36,31 @@ export function ProfileHome({ info, posts }) {
 
   const renderAbout = (
     <Card sx={{ overflow: 'visible' }}>
-      <CardHeader
-        title="Description"
-        sx={{ textAlign: 'center', pb: 0 }}
-      />
 
-      {/* Description centrée en haut */}
-      <Box sx={{ p: 3, textAlign: 'center', fontSize: '1.1rem', lineHeight: 1.6 }}>
-        {info?.description}
-      </Box>
-
-      <Divider />
-
-      {/* Infos en grille dynamique */}
       <Box sx={{ p: 3 }}>
 
-        {/* Adresse */}
+        {/* Reference */}
         <Box display="flex" alignItems="center" justifyContent="space-around" flexWrap="wrap">
 
           <Box display="flex" alignItems="center" mx={2}>
-            <Iconify icon="mdi:map-marker" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+            <Iconify icon="mdi:identifier" width={28} sx={{ mr: 1, color: 'primary.main' }} />
             <Box>
-              <Box sx={{ fontWeight: 600 }}>Adresse</Box>
+              <Box sx={{ fontWeight: 600 }}>Numero Reference</Box>
               <Link variant="body2" color="text.secondary">
-                {info?.adresse}
+                {info?.reference}
               </Link>
             </Box>
           </Box>
 
 
-          {/* Email */}
+          {/* Numero Passeport  */}
 
           <Box display="flex" alignItems="center" mx={2}>
-            <Iconify icon="fluent:mail-24-filled" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+            <Iconify icon="mdi:passport" width={28} sx={{ mr: 1, color: 'primary.main' }} />
             <Box>
-              <Box sx={{ fontWeight: 600 }}>Email</Box>
+              <Box sx={{ fontWeight: 600 }}>Numéro Passeport</Box>
               <Box variant="body2" color="text.secondary">
-                {info.email}
+                {info.passport_number}
               </Box>
             </Box>
           </Box>
@@ -85,23 +73,14 @@ export function ProfileHome({ info, posts }) {
             <Box>
               <Box sx={{ fontWeight: 600 }}>Contact</Box>
               <Box variant="body2" color="text.secondary">
-                {info?.contact}
+                {info?.phone}
               </Box>
             </Box>
           </Box>
 
 
-          {/* Région */}
 
-          <Box display="flex" alignItems="center" mx={2}>
-            <Iconify icon="ic:round-location-city" width={28} sx={{ mr: 1, color: 'primary.main' }} />
-            <Box>
-              <Box sx={{ fontWeight: 600 }}>Région</Box>
-              <Link variant="body2" color="text.secondary">
-                {info?.location?.name}
-              </Link>
-            </Box>
-          </Box>
+
 
         </Box>
       </Box>

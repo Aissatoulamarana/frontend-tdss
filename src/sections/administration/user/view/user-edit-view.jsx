@@ -41,7 +41,7 @@ export function UserEditView({ slug }) {
         heading="Modifier"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Utilisateurs', href: paths.dashboard.user.root },
+          { name: 'Utilisateurs', href: paths.dashboard.user.list },
           { name: user?.first_name },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}

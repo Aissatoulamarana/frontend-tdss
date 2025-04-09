@@ -99,14 +99,14 @@ export function JobCategoryNewEditForm({ currentJobCategory }) {
                 <Grid item size={{ xs: 12, }}>
                     <Card sx={{ p: 3, boxShadow: 3, borderRadius: 2, backgroundColor: 'background.paper', maxWidth: 600, mx: 'auto' }}>
                         <Typography variant="h6" sx={{ mb: 3, textAlign: 'left', fontWeight: 'bold' }}>
-                            Informations de la Fonction Professionnelle
+                            Categorie de Fonction
                         </Typography>
                         <Grid container spacing={2}>
                             <Grid item size={{ xs: 8, md: 6 }}>
-                                <Field.Text name="name" label="Libellé" fullWidth size="small" />
+                                <Field.Text name="name" label="Libellé *" fullWidth size="small" />
                             </Grid>
                             <Grid item size={{ xs: 8, md: 6 }}>
-                                <Field.Select name="permit" label="Permit" fullWidth size="small">
+                                <Field.Select name="permit" label="Permit *" fullWidth size="small">
                                     {permits.map((permit) => (
                                         <MenuItem key={permit.slug} value={permit.slug}>
                                             {permit.name}
