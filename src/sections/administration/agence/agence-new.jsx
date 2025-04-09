@@ -98,7 +98,7 @@ export function AgenceNew({ currentAgence }) {
         },
       });
       reset();
-      toast.success(currentAgence ? 'Mis à jour effectué!' : "ajout d'une nouvelle agence reussie !");
+      toast.success(currentAgence ? 'Mis à jour effectué!' : "Ajout d'une nouvelle agence reussie !");
       router.push(paths.dashboard.agence.list);
       console.info('DATA', data);
     } catch (error) {

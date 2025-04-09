@@ -76,6 +76,7 @@ export function UserListView() {
 
 
   const [tableData, setTableData] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
@@ -139,8 +140,8 @@ export function UserListView() {
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
   const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.user.edit(id));
+    (slug) => {
+      router.push(paths.dashboard.user.edit(slug));
     },
     [router]
   );
@@ -166,27 +167,7 @@ export function UserListView() {
     );
   }, []);
 
-  const handleActivate = useCallback(
-    async (id) => {
-      try {
-        // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.activate(id));
-        if (response.data.success) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          console.log('Compte activé avec succès:', response.data.message);
-          toast.success('Compte activé avec succès !');
-          router.push(paths.dashboard.declaration.list);
-        } else {
-          console.error("Erreur lors de l'activation :", response.data.error);
-          toast.error('Une erreur est survenue.');
-        }
-      } catch (error) {
-        console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
-      }
-    },
-    [router]
-  );
+
 
 
   // Fonction pour récupérer les données
@@ -205,6 +186,10 @@ export function UserListView() {
       }
       const response = await axios.get(url);
       setTableData(response.data.results);
+      setRoles([
+        ...new Set(response.data.results.map((role) => role.type.trim()))
+      ]);
+
       setPagination((prev) => ({
         count: response.data.count,
         next: response.data.next,
@@ -317,7 +302,7 @@ export function UserListView() {
           <UserTableToolbar
             filters={filters}
             onResetPage={table.onResetPage}
-            options={{ roles: _roles }}
+            options={{ roles: roles }}
           />
 
           {canReset && (
@@ -381,7 +366,6 @@ export function UserListView() {
                         onDeleteRow={() => handleDeleteRow(row.slug)}
                         onEditRow={() => handleEditRow(row.slug)}
                         onViewRow={() => handleViewRow(row.slug)}
-                        onActivate={() => handleActivate(row.slug)}
                         onUpdateRow={handleUpdateRow}
                       />
                     ))}

@@ -84,11 +84,19 @@ export function DeclarationTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected}>
+      <TableRow hover selected={selected} onClick={onViewRow} sx={{
+        cursor: 'pointer',
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+      }}>
         <TableCell padding="checkbox">
           <Checkbox
             checked={selected}
-            onClick={onSelectRow}
+            onClick={(e) => {
+              e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
+              onSelectRow(e);
+            }}
             slotProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
           />
         </TableCell>
@@ -124,7 +132,13 @@ export function DeclarationTableRow({
           </Label>
         </TableCell>
         <TableCell align="right" sx={{ px: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton
+            color={popover.open ? 'inherit' : 'default'}
+            onClick={(e) => {
+              e.stopPropagation(); // Empêche la propagation vers le TableRow
+              popover.onOpen(e);   // Passe l'événement à la fonction onOpen
+            }}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>

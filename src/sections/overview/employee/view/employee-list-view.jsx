@@ -254,7 +254,7 @@ export function EmployeeListView() {
                     <EmployeeTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage}
-                        options={{ roles: [... new Set(dataFiltered.map((row) => row.job.trim()))] }}
+                        options={{ roles: [... new Set(tableData.map((row) => row.job.trim()))] }}
                     />
 
                     {canReset && (

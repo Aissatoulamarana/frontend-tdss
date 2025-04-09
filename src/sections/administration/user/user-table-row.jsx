@@ -30,7 +30,6 @@ export function UserTableRow({
   onSelectRow,
   onDeleteRow,
   onViewRow,
-  onActivate,
   onUpdateRow
 }) {
   const confirm = useBoolean();
@@ -41,9 +40,14 @@ export function UserTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
+      <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1} onClick={onViewRow} sx={{
+        cursor: 'pointer',
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+      }}>
         <TableCell padding="checkbox">
-          <BpCheckbox id={row.slug} checked={selected} onClick={onSelectRow} />
+          {/* <BpCheckbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
         </TableCell>
 
         <TableCell>
@@ -51,7 +55,7 @@ export function UserTableRow({
             <Avatar alt={row?.first_name} src={row.picture} />
 
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-              <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }}>
+              <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }} underline='hover' >
                 {row.name}
               </Link>
               <Box component="span" sx={{ color: 'text.disabled' }}>
@@ -71,13 +75,13 @@ export function UserTableRow({
           <Label
             variant="soft"
             color={
-              (row.status === 'active' && 'success') ||
-              (row.status === 'pending' && 'warning') ||
-              (row.status === 'banned' && 'error') ||
+              (row.is_active === true && 'success') ||
+              (row.is_active === false && 'warning') ||
+              // (row.status === 'banned' && 'error') ||
               'default'
             }
           >
-            {row.status}
+            {row.is_active === true ? 'Actif' : 'Inactif'}
           </Label>
         </TableCell>
 
@@ -86,13 +90,20 @@ export function UserTableRow({
             <Tooltip title="Quick Edit" placement="top" arrow>
               <IconButton
                 color={quickEdit.value ? 'inherit' : 'default'}
-                onClick={quickEdit.onTrue}
+                // onClick={quickEdit.onTrue}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  quickEdit.onTrue(e);
+                }}
               >
                 <Iconify icon="solar:pen-bold" />
               </IconButton>
             </Tooltip>
 
-            <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+            <IconButton color={popover.open ? 'inherit' : 'default'} onClick={(e) => {
+              e.stopPropagation(); // Empêche la propagation vers le TableRow
+              popover.onOpen(e);   // Passe l'événement à la fonction onOpen
+            }}>
               <Iconify icon="eva:more-vertical-fill" />
             </IconButton>
           </Stack>
@@ -137,15 +148,7 @@ export function UserTableRow({
             <Iconify icon="solar:eye-bold" />
             Voir
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              onActivate();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="solar:pen-bold" />
-            Activer
-          </MenuItem>
+
         </MenuList>
       </CustomPopover>
 

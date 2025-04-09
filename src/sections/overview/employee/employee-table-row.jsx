@@ -41,9 +41,14 @@ export function EmployeeTableRow({
 
     return (
         <>
-            <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
+            <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1} onClick={onViewRow} sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                    bgcolor: 'action.hover',
+                },
+            }}>
                 <TableCell padding="checkbox">
-                    {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
+
                 </TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.reference}</TableCell>
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.passport_number}</TableCell>
@@ -71,18 +76,16 @@ export function EmployeeTableRow({
 
                 <TableCell>
                     <Stack direction="row" alignItems="center">
-                        {/* <Tooltip title="Quick Edit" placement="top" arrow>
-                            <IconButton
-                                color={quickEdit.value ? 'inherit' : 'default'}
-                                onClick={quickEdit.onTrue}
-                            >
-                                <Iconify icon="solar:pen-bold" />
-                            </IconButton>
-                        </Tooltip> */}
-
-                        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                        <IconButton
+                            color={popover.open ? 'inherit' : 'default'}
+                            onClick={(e) => {
+                                e.stopPropagation(); // Empêche la propagation vers le TableRow
+                                popover.onOpen(e);   // Passe l'événement à la fonction onOpen
+                            }}
+                        >
                             <Iconify icon="eva:more-vertical-fill" />
                         </IconButton>
+
                     </Stack>
                 </TableCell>
             </TableRow>

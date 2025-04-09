@@ -41,9 +41,14 @@ export function ClientTableRow({
 
     return (
         <>
-            <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
+            <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1} onClick={onViewRow} sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                    bgcolor: 'action.hover',
+                },
+            }}>
                 <TableCell padding="checkbox">
-                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                    {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
                 </TableCell>
 
                 <TableCell>
@@ -51,7 +56,7 @@ export function ClientTableRow({
                         <Avatar alt={row?.name} src={row.picture} />
 
                         <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-                            <Link color="inherit" onClick={onViewRow} sx={{ cursor: 'pointer' }} underline="hover">
+                            <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }} underline="hover">
                                 {row.name}
                             </Link>
                             <Box component="span" sx={{ color: 'text.disabled' }}>
@@ -86,13 +91,19 @@ export function ClientTableRow({
                         <Tooltip title="Quick Edit" placement="top" arrow>
                             <IconButton
                                 color={quickEdit.value ? 'inherit' : 'default'}
-                                onClick={quickEdit.onTrue}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    quickEdit.onTrue(e);
+                                }}
                             >
                                 <Iconify icon="solar:pen-bold" />
                             </IconButton>
                         </Tooltip>
 
-                        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+                        <IconButton color={popover.open ? 'inherit' : 'default'} onClick={(e) => {
+                            e.stopPropagation(); // Empêche la propagation vers le TableRow
+                            popover.onOpen(e);   // Passe l'événement à la fonction onOpen
+                        }}>
                             <Iconify icon="eva:more-vertical-fill" />
                         </IconButton>
                     </Stack>
