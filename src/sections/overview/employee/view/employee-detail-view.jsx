@@ -68,7 +68,7 @@ export function EmployeeDetailsView({ slug }) {
     }, [slug]);
 
 
-    let displayedTabs = TABS_ENTREPRISE;
+    const displayedTabs = TABS_ENTREPRISE;
 
 
     if (loading) return <div>Chargement...</div>;
