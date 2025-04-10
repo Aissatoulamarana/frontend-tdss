@@ -66,7 +66,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   const rows =
     filter === 'All'
       ? employee
-      : employee.filter((row) => row.job.category === filter);
+      : employee?.filter((row) => row.job.category === filter);
 
   const isSelected = (slug) => selected.includes(slug);
 

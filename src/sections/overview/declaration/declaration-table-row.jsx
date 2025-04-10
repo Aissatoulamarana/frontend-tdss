@@ -161,7 +161,7 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type === 'Admin' && !['VALIDATED', 'BILLED'].includes(row.status) && (
+          {user?.type === 'Admin' && ['UNSUBMITTED', 'REJECTED'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 onEditRow();

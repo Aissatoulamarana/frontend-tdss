@@ -21,7 +21,7 @@ const API = {
   userDelete: (slug) => `${BASE_URL}/users/${slug}/`, // Supprimer un utilisateur
   activateAccount:() => `${BASE_URL}/users/activation/`, // activer le compte d'un utilisateur
 
-  listDeclarations: () => `${BASE_URL}/declarations/`, // Liste des déclarations
+  listDeclarations: () => `${BASE_URL}/declarations/?limit=100&offset=100/`, // Liste des déclarations
   createDeclaration: () => `${BASE_URL}/declarations/`, // Création d'une déclaration
   detailsDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Voir les details d'une déclaration
   validateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/validate/`, // Validation d'une déclaration

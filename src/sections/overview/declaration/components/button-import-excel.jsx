@@ -33,14 +33,22 @@ export function ImportFilesButton({ onImport }) {
         const workbook = new ExcelJS.Workbook();
         await workbook.xlsx.load(data);
 
-        // Lire la première feuille
         const worksheet = workbook.worksheets[0];
         const jsonData = [];
+        let headers = [];
 
         worksheet.eachRow((row, rowNumber) => {
-          if (rowNumber === 1) return; // Ignorer la ligne d'en-tête
-          const rowData = row.values.slice(1); // Ignorer l'index 0 qui est vide
-          jsonData.push(rowData);
+          const rowValues = row.values.slice(1); // Ignorer l'index 0
+          if (rowNumber === 1) {
+            // Enregistre la ligne d'en-tête
+            headers = rowValues.map(header => header.toString().trim());
+          } else {
+            const rowObject = {};
+            rowValues.forEach((value, index) => {
+              rowObject[headers[index]] = value;
+            });
+            jsonData.push(rowObject);
+          }
         });
 
         console.log('Données Excel importées :', jsonData);

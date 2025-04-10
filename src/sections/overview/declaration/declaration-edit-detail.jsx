@@ -9,6 +9,7 @@ import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
+import { toast } from 'react-toastify';
 
 
 import API from 'src/utils/api';
@@ -21,7 +22,7 @@ import { getJobCategories } from 'src/utils/options';
 
 
 export function DeclarationNewEditDetails({ formData, type }) {
-  const { control, setValue, watch } = useFormContext();
+  const { control, setValue, watch, reset } = useFormContext();
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(false);
@@ -143,7 +144,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
             value: (fonction.slug),
             label: fonction.name,
             slug: fonction.slug,
-            category: fonction.category
+
           }));
           console.log('Options mises à jour :', fonctions);
           setOptions(fonctions);
@@ -174,21 +175,68 @@ export function DeclarationNewEditDetails({ formData, type }) {
   );
 
   useEffect(() => {
-    if (formData && formData.length > 0) {
-      formData.forEach((data) => {
-        console.log(data);
+    console.log("Démarrage de l'importation dans DeclarationNewEditDetails");
+    console.log("formData :", formData);
+    console.log("options :", options);
+    console.log("fields.length :", fields.length);
+
+    if (formData && formData.length > 0 && options && options.length > 0) {
+      const firstRow = formData[0];
+      const fonctionImportee = (firstRow["Fonction"] || '').trim();
+      const matchingOption = options.find(
+        (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
+      );
+
+      if (!matchingOption) {
+        toast.warn(
+          `Pas de correspondance trouvée pour "${fonctionImportee}" dans la première ligne.`
+        );
+      }
+
+      // On reset avec le premier employé
+      reset({
+        employees: [
+          {
+            passport_number: (firstRow["Numero"] || '').toString().trim(),
+            last: firstRow["Nom"] || '',
+            job: matchingOption ? matchingOption.value : '',
+            first: firstRow["Prenom"] || '',
+            phone: firstRow["Telephone"]
+              ? `+${String(firstRow["Telephone"])}`
+              : '',
+            passportExists: false,
+          },
+        ],
+      });
+
+      console.log("Premier employé importé via reset");
+
+      // On ajoute les suivants
+      formData.slice(1).forEach((data, index) => {
+        const fonctionImportee = (data["Fonction"] || '').trim();
+        const matchingOption = options.find(
+          (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
+        );
+        if (!matchingOption) {
+          toast.warn(
+            `Pas de correspondance trouvée pour "${fonctionImportee}" à la ligne ${index + 2}.`
+          );
+        }
 
         append({
-          passport_number: data["Numero "]?.trim() || '', // Suppression espace
-          last: data.Nom || '',
-          job: data.Fonction || '',
-          first: data.Prenom || '',
-          phone: `+${String(data.Telephone)}` || '',
+          passport_number: (data["Numero"] || '').toString().trim(),
+          last: data["Nom"] || '',
+          job: matchingOption ? matchingOption.value : '',
+          first: data["Prenom"] || '',
+          phone: data["Telephone"]
+            ? `+${String(data["Telephone"])}`
+            : '',
           passportExists: false,
         });
       });
     }
-  }, [formData, append]);
+  }, [formData, options, reset, append]);
+
 
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
