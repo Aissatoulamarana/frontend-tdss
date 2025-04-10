@@ -6,18 +6,14 @@ import { Grid2 } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import axios from 'src/utils/axios';
 import { useMemo, useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { z as zod } from 'zod';
-import InputAdornment from '@mui/material/InputAdornment';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 
@@ -27,9 +23,7 @@ import API from 'src/utils/api';
 import { fData } from 'src/utils/format-number';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
-import { Label } from 'src/components/label';
 import { toast } from 'src/components/snackbar';
-import { Iconify } from 'src/components/iconify';
 
 import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
 

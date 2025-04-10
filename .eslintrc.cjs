@@ -31,7 +31,16 @@ module.exports = {
     'no-alert': 0,
     'no-return-assign': 0,
     'import/order': 'off',
-    'unused-imports/no-unused-imports': 'off',
+   "unused-imports/no-unused-imports": "warn",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
     'lines-around-directive': 'off',
     'import/no-cycle': 'off',
     'import/no-unresolved': 'off',

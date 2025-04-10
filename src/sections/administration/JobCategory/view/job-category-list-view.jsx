@@ -11,7 +11,6 @@ import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
-import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 
@@ -43,7 +42,6 @@ import {
 } from 'src/components/table';
 
 import { JobCategoryTableRow } from '../job-category-table-row';
-import { JobCategoryTableToolbar } from '../job-category-table-toolbar';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [

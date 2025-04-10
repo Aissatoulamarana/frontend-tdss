@@ -7,14 +7,12 @@ import Typography from '@mui/material/Typography';
 
 import { m } from 'framer-motion';
 
-import { SentIcon } from 'src/assets/icons';
 import { varBounce, MotionContainer } from 'src/components/animate';
 import { paths } from 'src/routes/paths';
 import { useRouter, } from 'src/routes/hooks';
 import { SimpleLayout } from 'src/layouts/simple';
 import { PageAttenteIllustration } from 'src/assets/illustrations';
 
-import { FormHead } from '../../components/form-head';
 import { FormReturnLink } from '../../components/form-return-link';
 
 

@@ -35,7 +35,6 @@ import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
 import { EmployeeQuickEditForm } from './employe-quick-edit-form';
 
-import { paths } from 'src/routes/paths';
 
 const fixedCategories = [
   { label: 'Tous', value: 'All' },

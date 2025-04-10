@@ -1,7 +1,6 @@
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
@@ -19,7 +18,6 @@ import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
 import { UserQuickEditForm } from './user-quick-edit-form';
-import { BpCheckbox } from 'src/components/custom-checkbox/custom-checkbox';
 
 // ----------------------------------------------------------------------
 

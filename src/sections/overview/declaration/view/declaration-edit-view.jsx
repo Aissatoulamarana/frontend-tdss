@@ -7,7 +7,6 @@ import { paths } from 'src/routes/paths';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-import { DeclarationNew } from '../declaration-new';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 import { DeclarationEdit } from '../declaration-edit';

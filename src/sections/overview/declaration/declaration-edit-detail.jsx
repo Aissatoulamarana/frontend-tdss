@@ -9,6 +9,9 @@ import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+
+
 import { toast } from 'react-toastify';
 
 
@@ -17,7 +20,6 @@ import API from 'src/utils/api';
 import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
 
-import { getJobCategories } from 'src/utils/options';
 // ----------------------------------------------------------------------
 
 
@@ -25,6 +27,8 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const { control, setValue, watch, reset } = useFormContext();
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [nextUrl, setNextUrl] = useState(API.listFonctionAgent()); // première page
+  const [previousUrl, setPreviousUrl] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [openModalDoc, setOpenModalDoc] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
@@ -132,34 +136,34 @@ export function DeclarationNewEditDetails({ formData, type }) {
   };
 
 
+  const fetchFonctions = async (url, append = false) => {
+    if (!url) return; // plus rien à charger
+
+    setLoading(true);
+    try {
+      const response = await axios.get(url);
+      const {data} = response;
+
+      const newOptions = data.results.map((fonction) => ({
+        value: fonction.slug,
+        label: fonction.name,
+        slug: fonction.slug,
+      }));
+
+      setOptions((prev) => append ? [...prev, ...newOptions] : newOptions);
+      setNextUrl(data.next);
+      setPreviousUrl(data.previous);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des fonctions :", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchFonctions = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(API.listFonctionAgent());
-        console.log('Données reçues :', response.data); // Vérifie le retour du backend
-
-        if (response.data && response.data.results) {
-          const fonctions = response.data.results.map((fonction) => ({
-            value: (fonction.slug),
-            label: fonction.name,
-            slug: fonction.slug,
-
-          }));
-          console.log('Options mises à jour :', fonctions);
-          setOptions(fonctions);
-        } else {
-          console.error('Aucune fonction reçue');
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des fonctions :', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFonctions();
+    fetchFonctions(API.listFonctionAgent());
   }, []);
+
 
 
 
@@ -175,14 +179,16 @@ export function DeclarationNewEditDetails({ formData, type }) {
   );
 
   useEffect(() => {
-    console.log("Démarrage de l'importation dans DeclarationNewEditDetails");
-    console.log("formData :", formData);
-    console.log("options :", options);
-    console.log("fields.length :", fields.length);
+    if (formData?.length > 0 && options?.length > 0) {
+      const {
+        Fonction: firstFonction = '',
+        Numero: firstNumero = '',
+        Nom: firstNom = '',
+        Prenom: firstPrenom = '',
+        Telephone: firstTelephone = '',
+      } = formData[0];
 
-    if (formData && formData.length > 0 && options && options.length > 0) {
-      const firstRow = formData[0];
-      const fonctionImportee = (firstRow["Fonction"] || '').trim();
+      const fonctionImportee = firstFonction.trim();
       const matchingOption = options.find(
         (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
       );
@@ -193,30 +199,33 @@ export function DeclarationNewEditDetails({ formData, type }) {
         );
       }
 
-      // On reset avec le premier employé
       reset({
         employees: [
           {
-            passport_number: (firstRow["Numero"] || '').toString().trim(),
-            last: firstRow["Nom"] || '',
+            passport_number: firstNumero.toString().trim(),
+            last: firstNom || '',
             job: matchingOption ? matchingOption.value : '',
-            first: firstRow["Prenom"] || '',
-            phone: firstRow["Telephone"]
-              ? `+${String(firstRow["Telephone"])}`
-              : '',
+            first: firstPrenom || '',
+            phone: firstTelephone ? `+${String(firstTelephone)}` : '',
             passportExists: false,
           },
         ],
       });
 
-      console.log("Premier employé importé via reset");
-
-      // On ajoute les suivants
       formData.slice(1).forEach((data, index) => {
-        const fonctionImportee = (data["Fonction"] || '').trim();
+        const {
+          Fonction = '',
+          Numero = '',
+          Nom = '',
+          Prenom = '',
+          Telephone = '',
+        } = data;
+
+        const fonctionImportee = Fonction.trim();
         const matchingOption = options.find(
           (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
         );
+
         if (!matchingOption) {
           toast.warn(
             `Pas de correspondance trouvée pour "${fonctionImportee}" à la ligne ${index + 2}.`
@@ -224,18 +233,17 @@ export function DeclarationNewEditDetails({ formData, type }) {
         }
 
         append({
-          passport_number: (data["Numero"] || '').toString().trim(),
-          last: data["Nom"] || '',
+          passport_number: Numero.toString().trim(),
+          last: Nom || '',
           job: matchingOption ? matchingOption.value : '',
-          first: data["Prenom"] || '',
-          phone: data["Telephone"]
-            ? `+${String(data["Telephone"])}`
-            : '',
+          first: Prenom || '',
+          phone: Telephone ? `+${String(Telephone)}` : '',
           passportExists: false,
         });
       });
     }
   }, [formData, options, reset, append]);
+
 
 
 
@@ -402,27 +410,52 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 label="Fonction *"
                 inputlabelprops={{ shrink: true }}
                 sx={{ maxWidth: { md: 160 } }}
-              >
+                slotProps={{
+                  select: {
+                    MenuProps: {
+                      PaperProps: {
+                        onScroll: (event) => {
+                          const bottom =
+                            event.target.scrollHeight - event.target.scrollTop === event.target.clientHeight;
 
-                <MenuItem
-                  // onClick={() => handleClearService(index)}
-                  sx={{ fontStyle: 'italic', color: 'text.secondary' }}
-                >
+                          if (bottom && nextUrl && !loading) {
+                            fetchFonctions(nextUrl, true); // charger les suivants
+                          }
+
+                          const top = event.target.scrollTop === 0;
+                          if (top && previousUrl && !loading) {
+                            fetchFonctions(previousUrl, true); // charger les précédents
+                          }
+                        },
+                        style: {
+                          maxHeight: 200, // pour activer le scroll
+                        },
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem sx={{ fontStyle: 'italic', color: 'text.secondary' }} value="">
                   None
                 </MenuItem>
-
                 <Divider sx={{ borderStyle: 'dashed' }} />
-
                 {options.map((fonction) => (
                   <MenuItem
-                    key={fonction.slug} // Utilisation de slug
-                    value={fonction.value} // utiliser value et non name
+                    key={fonction.slug}
+                    value={fonction.value}
                     onClick={() => handleSelectService(index, fonction.value)}
                   >
                     {fonction.label}
                   </MenuItem>
                 ))}
+                {loading && (
+                  <MenuItem disabled>
+                    <CircularProgress size={20} />
+                  </MenuItem>
+                )}
               </Field.Select>
+
+
 
             </Stack>
 

@@ -7,7 +7,6 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid2';
-import Stack from '@mui/material/Stack';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
 import { Iconify } from 'src/components/iconify';

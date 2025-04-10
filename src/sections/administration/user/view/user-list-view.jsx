@@ -11,7 +11,6 @@ import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
-import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 
@@ -223,7 +222,7 @@ export function UserListView() {
   // Gestion du changement de page
   // On vérifie si l'utilisateur clique pour aller à la page suivante ou précédente en se basant sur l'index (0 basé)
   const handlePageChange = (event, newPageIndex) => {
-    const currentPage = pagination.currentPage;
+    const {currentPage} = pagination;
     // newPageIndex est 0 basé
     if (newPageIndex + 1 > currentPage) {
       // Si page suivante et si un lien "next" est fourni par le backend

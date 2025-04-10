@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { iconButtonClasses } from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
-import { _contacts, _notifications } from 'src/_mock';
+import { _notifications } from 'src/_mock';
 import { allLangs } from 'src/locales';
 
 import { useBoolean } from 'src/hooks/use-boolean';

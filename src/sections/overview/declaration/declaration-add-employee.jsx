@@ -139,7 +139,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
   // Gestion du changement pour le numéro de passeport
   const handlePassportChange = (e, index) => {
-    const value = e.target.value;
+    const {value} = e.target;
     methods.setValue(`employees[${index}].passport_number`, value);
     debouncedPassportCheck(value);
   };

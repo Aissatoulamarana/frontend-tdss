@@ -1,6 +1,5 @@
 'use client';
 
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -10,7 +9,6 @@ import { useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useState, useCallback } from 'react';
-import { _mock } from 'src/_mock';
 import { varAlpha } from 'src/theme/styles';
 
 import { useRouter, usePathname } from 'src/routes/hooks';

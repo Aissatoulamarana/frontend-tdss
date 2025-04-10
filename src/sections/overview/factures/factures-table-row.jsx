@@ -1,8 +1,5 @@
 'use client';
 
-import { CircularProgress } from '@mui/material';
-import Autocomplete from '@mui/material/Autocomplete';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
@@ -12,9 +9,8 @@ import MenuList from '@mui/material/MenuList';
 import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 

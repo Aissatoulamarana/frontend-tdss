@@ -1,21 +1,13 @@
 import { useRef } from 'react';
 
-import Fab from '@mui/material/Fab';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
 
 import Grid from '@mui/material/Grid2';
-import CardHeader from '@mui/material/CardHeader';
 
-import { fNumber } from 'src/utils/format-number';
 
-import { _socials } from 'src/_mock';
-import { varAlpha } from 'src/theme/styles';
-import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/assets/icons';
 
 import { Iconify } from 'src/components/iconify';
 

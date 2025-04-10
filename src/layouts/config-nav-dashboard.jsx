@@ -3,7 +3,6 @@ import { CONFIG } from 'src/config-global';
 import { paths } from 'src/routes/paths';
 
 import { SvgColor } from 'src/components/svg-color';
-import path from 'path';
 
 // ----------------------------------------------------------------------
 

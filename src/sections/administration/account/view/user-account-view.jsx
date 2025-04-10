@@ -8,15 +8,11 @@ import { paths } from 'src/routes/paths';
 import { useTabs } from 'src/hooks/use-tabs';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { _userAbout, _userPlans, _userPayment, _userInvoices, _userAddressBook } from 'src/_mock';
 
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { AccountGeneral } from '../account-general';
-import { AccountBilling } from '../account-billing';
-import { AccountSocialLinks } from '../account-social-links';
-import { AccountNotifications } from '../account-notifications';
 import { AccountChangePassword } from '../account-change-password';
 import { AccountChangeEmail } from '../account-change-email';
 
