@@ -20,6 +20,7 @@ const API = {
   userDetails: (slug) => `${BASE_URL}/users/${slug}/`, // Détails d'un utilisateur
   userDelete: (slug) => `${BASE_URL}/users/${slug}/`, // Supprimer un utilisateur
   activateAccount:() => `${BASE_URL}/users/activation/`, // activer le compte d'un utilisateur
+  addProfileToUser: () => `${BASE_URL}/users/add-profile/`, // Ajouter un profil à un utilisateur
 
   listDeclarations: () => `${BASE_URL}/declarations/`, // Liste des déclarations
   createDeclaration: () => `${BASE_URL}/declarations/`, // Création d'une déclaration
@@ -82,8 +83,12 @@ const API = {
   listProfiles: () => `${BASE_URL}/profiles/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listActiveProfile: () => `${BASE_URL}/profiles/active-profiles/`,
-  listEntreprises: () => `${BASE_URL}/profiles/active-profiles/?type=entreprise`, // Liste des entreprises
-  
+  // listEntreprises: () => `${BASE_URL}/profiles/active-profiles/?type=entreprise`, // Liste des entreprises
+  listEntreprises: (params = {}) => {
+    const searchParams = new URLSearchParams({ type: 'entreprise', ...params }).toString();
+    return `${BASE_URL}/profiles/active-profiles/?${searchParams}`;
+  }, // Liste des entreprises avec des params
+
   listDevises: () => `${BASE_URL}/devises/`,
   listPermits: () => `${BASE_URL}/permits/`,
 
