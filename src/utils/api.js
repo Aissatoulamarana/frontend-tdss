@@ -21,7 +21,7 @@ const API = {
   userDelete: (slug) => `${BASE_URL}/users/${slug}/`, // Supprimer un utilisateur
   activateAccount:() => `${BASE_URL}/users/activation/`, // activer le compte d'un utilisateur
 
-  listDeclarations: () => `${BASE_URL}/declarations/?limit=100&offset=100/`, // Liste des déclarations
+  listDeclarations: () => `${BASE_URL}/declarations/`, // Liste des déclarations
   createDeclaration: () => `${BASE_URL}/declarations/`, // Création d'une déclaration
   detailsDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Voir les details d'une déclaration
   validateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/validate/`, // Validation d'une déclaration
@@ -31,27 +31,20 @@ const API = {
   supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
   updateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`,// Modifier une déclaration
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
+  unsubmitDeclaration : (slug) =>  `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre 
 
 
   Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
   UpdateEmploye: (declarationSlug, employeeSlug) => `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
   DeleteEmploye: (slug) => `${BASE_URL}/declarations/${slug}/delete-employees/`, // Supprimer un ou plusieurs employés d'une déclaration
   AddEmploye: (slug) => `${BASE_URL}/declarations/${slug}/add-employees/`, // Ajouter un employé à une déclaration
-  listEmployee: () => `${BASE_URL}/employees/?limit=100&offset=100/`, // liste de tous les employés
+  listEmployee: () => `${BASE_URL}/employees/`, // liste de tous les employés
   detailsEmployee: (slug) => `${BASE_URL}/employees/${slug}/`, // details d'un employé
 
   
 
 
-  listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
-  paidFacture: (slug) => `${BASE_URL}factures/${slug}/mark-paid/`, // Paiement d'une facture
-  detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
-  PaidFactures: () => `${BASE_URL}/paid_factures/`, // payer plusieurs factures a la fois 
-  
-  listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
-  
-  createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
-  listFonctions: () => `${BASE_URL}/jobs/`, // Liste des fonctions
+  listFactures: () => `${BASE_URL}/factures/`, // Liste des factures 
   detailsFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // details d'une fonction
   deleteFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // Supprimer une fonction
   editFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // modifier une fonction

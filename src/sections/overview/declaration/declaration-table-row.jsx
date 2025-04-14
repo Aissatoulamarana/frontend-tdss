@@ -32,6 +32,7 @@ export function DeclarationTableRow({
   onFactureRow,
   onRejetRow,
   onSubmitRow,
+  onUnSubmit,
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -41,6 +42,9 @@ export function DeclarationTableRow({
   const factureConfirm = useBoolean();
   // Pour la soumission
   const submitConfirm = useBoolean();
+
+  // Pour la non-soumission 
+  const unsubmitConfirm = useBoolean();
 
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
@@ -160,7 +164,7 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type === 'Admin' && ['UNSUBMITTED', 'REJECTED'].includes(row.status) && (
+          {user?.type === 'Admin' && ['UNSUBMITTED'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 onEditRow();
@@ -215,7 +219,21 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type === 'Comptable' &&
+          {user?.type === 'Agent' &&
+            ['REJECTED'].includes(row.status) && (
+              <MenuItem
+                key="unsubmit"
+                onClick={() => {
+                  unsubmitConfirm.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="mdi:credit-card" />
+                Remettre le statut à non-soumise
+              </MenuItem>
+            )}
+
+          {user?.type === 'Agent' &&
             !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="facture"
@@ -260,6 +278,26 @@ export function DeclarationTableRow({
             }}
           >
             Supprimer
+          </Button>
+        }
+      />
+
+      {/* Exemple de boîte de dialogue de confirmation pour la non-soumission */}
+      <ConfirmDialog
+        open={unsubmitConfirm.value}
+        onClose={unsubmitConfirm.onFalse}
+        title="Remettre le statut à non-soumise"
+        content="Voulez-vous vraiment remettre le statut de cette déclaration à non-soumise ?"
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              unsubmitConfirm.onFalse();
+              onUnSubmit();
+            }}
+          >
+            Oui
           </Button>
         }
       />

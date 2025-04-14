@@ -54,6 +54,7 @@ import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 
 import { useMockedUser } from 'src/auth/hooks';
 
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -81,20 +82,29 @@ export function DeclarationListView() {
 
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'createDate' });
+  const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
+  const [selectedFilter, setSelectedFilter] = useState('title'); // options de recherche 
+  const [count, setCount] = useState();
 
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
 
+  });
 
 
   const filters = useSetState({
     name: '', // mot-clé pour filtrer par numéro ou type de déclaration
     fonction: [],
+    title: '',
+    company: '',
     status: 'all',
     startDate: null,
     endDate: null,
@@ -117,9 +127,37 @@ export function DeclarationListView() {
     filters.state.status !== 'all' ||
     (!!filters.state.startDate && !!filters.state.endDate);
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const notFound = pagination.count === 0 && canReset;;
 
   const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+
+  const useDeclarationCount = (status) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+      const fetchCount = async () => {
+        try {
+          const response = await axios.get(API.listDeclarations(), {
+            params: {
+              status: status,
+              limit: 1,
+              offset: 0,
+            },
+          });
+
+          // On récupère le nombre total à partir du champ "count"
+
+          setCount(response.data.count);
+        } catch (error) {
+          console.error(`Erreur lors de la récupération des déclarations pour le statut ${status}`, error);
+        }
+      };
+
+      fetchCount();
+    }, [status]);
+
+    return count;
+  };
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -127,6 +165,7 @@ export function DeclarationListView() {
       (declaration) => declaration.montant_facture
     );
 
+  // const getPercentByStatus = (status) => (useDeclarationCount(status) / pagination.count) * 100;
   const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
 
   const TABS = [
@@ -134,38 +173,38 @@ export function DeclarationListView() {
       value: 'all',
       label: 'Toutes',
       color: 'default',
-      count: tableData.length,
+      count: count,
     },
     {
       value: 'SUBMITTED',
-      label: 'Soumise',
+      label: 'Soumises',
       color: 'warnning',
-      count: getInvoiceLength('SUBMITTED'),
+      // count: useDeclarationCount('SUBMITTED'),
     },
     {
       value: 'VALIDATED',
       label: 'Validées',
       color: 'success',
-      count: getInvoiceLength('VALIDATED'),
+      // count: useDeclarationCount('VALIDATED'),
     },
     {
       value: 'BILLED',
       label: 'Facturées',
       color: 'primary',
-      count: getInvoiceLength('BILLED'),
+      // count: useDeclarationCount('BILLED'),
     },
     {
       value: 'UNSUBMITTED',
       label: 'Brouillon',
       color: 'warning',
-      count: getInvoiceLength('UNSUBMITTED'),
+      // count: useDeclarationCount('UNSUBMITTED'),
     },
 
     {
       value: 'REJECTED',
       label: 'Rejetées',
       color: 'error',
-      count: getInvoiceLength('REJECTED'),
+      // count: useDeclarationCount('REJECTED'),
     },
 
   ];
@@ -180,8 +219,10 @@ export function DeclarationListView() {
         toast.error(`Erreur : ${response.data.error}`);
       }
     } catch (error) {
+      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      setError(errorMessage)
       console.error('Erreur réseau ou serveur:', error);
-      toast.error('Une erreur est survenue lors de la communication avec le serveur.');
+      toast.error(errorMessage);
     }
   };
 
@@ -199,8 +240,8 @@ export function DeclarationListView() {
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
   const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.declaration.edit(id));
+    (slug) => {
+      router.push(paths.dashboard.declaration.edit(slug));
     },
     [router]
   );
@@ -228,8 +269,43 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
+      }
+    },
+    [router]
+  );
+
+
+  const handleUnSubmitRow = useCallback(
+    async (slug) => {
+      try {
+        // Appel à l'API backend pour valider la déclaration en envoyant l'action
+        const response = await axios.post(API.unsubmitDeclaration(slug), {
+
+        });
+
+        if (response) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          toast.success('Le statut de la déclaration a été remis à non soumis avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.slug === slug ? { ...item, status: 'UNSUBMITTED' } : item
+            )
+          );
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors de la validation:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -258,8 +334,10 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -286,8 +364,10 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -313,8 +393,10 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -336,21 +418,50 @@ export function DeclarationListView() {
     [filters, table]
   );
 
-  useEffect(() => {
-    // Fonction pour récupérer les données
-    const fetchDeclarations = async () => {
-      try {
-        const response = await axios.get(API.listDeclarations());
-        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
-      } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
 
+
+  // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
+  const fetchDeclarations = async () => {
+    setLoading(true);
+    try {
+      const offset = table.page * table.rowsPerPage;
+      const params = {
+        limit: table.rowsPerPage,
+        offset: offset,
+        ...(filters.state.company
+          ? { company: filters.state.company }
+          : filters.state.title
+            ? { title: filters.state.title }
+
+            : {}
+        ),
+
+        ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+      };
+
+      const response = await axios.get(API.listDeclarations(), { params });
+      setTableData(response.data.results);
+      setCount(response.data.count);
+      setPagination({
+        count: response.data.count,
+        next: response.data.next,
+        previous: response.data.previous,
+
+      });
+    } catch (err) {
+      setError(err.message || 'Erreur lors du chargement des données.');
+      const errormessage = err?.message || err?.details || err?.error;
+      toast.error(errormessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
+  useEffect(() => {
     fetchDeclarations();
-  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status]);
 
   if (loading) {
     console.info('Loading declarations...');
@@ -436,7 +547,7 @@ export function DeclarationListView() {
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
-              total={tableData.length}
+              total={pagination.count}
               percent={100}
               chart={{
                 colors: [theme.vars.palette.info.main],
@@ -447,9 +558,9 @@ export function DeclarationListView() {
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Facturée"
-              total={getInvoiceLength('facturée')}
-              percent={getPercentByStatus('facturée')}
+              title="Facturées"
+              total={useDeclarationCount('BILLED')}
+              percent={getPercentByStatus('BILLED')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -460,9 +571,9 @@ export function DeclarationListView() {
 
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="En attente"
-              total={getInvoiceLength('pending')}
-              percent={getPercentByStatus('pending')}
+              title="Brouillon"
+              total={useDeclarationCount('UNSUBMITTED')}
+              percent={getPercentByStatus('UNSUBMITTED')}
               chart={{
                 colors: [theme.vars.palette.warning.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -472,9 +583,9 @@ export function DeclarationListView() {
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Brouillon"
-              total={getInvoiceLength('brouillon')}
-              percent={getPercentByStatus('draft')}
+              title="Rejetées"
+              total={useDeclarationCount('REJECTED')}
+              percent={getPercentByStatus('REJECTED')}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -499,17 +610,17 @@ export function DeclarationListView() {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                      'soft'
-                    }
-                    color={tab.color}
-                  >
-                    {tab.count}
-                  </Label>
-                }
+              // icon={
+              //   <Label
+              //     variant={
+              //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+              //       'soft'
+              //     }
+              //   // color={tab.color}
+              //   >
+              //     {/* {tab.count} */}
+              //   </Label>
+              // }
               />
             ))}
           </Tabs>
@@ -518,8 +629,10 @@ export function DeclarationListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
             options={{
-              fonctions: [...new Set(dataFiltered.map((option) => option.title.trim()))]
+              fonctions: [...new Set(tableData.map((option) => option.title.trim()))],
             }}
           />
 
@@ -527,7 +640,7 @@ export function DeclarationListView() {
             <DeclarationTableFiltersResult
               filters={filters}
               onResetPage={table.onResetPage}
-              totalResults={dataFiltered.length}
+              totalResults={pagination.count}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
@@ -536,11 +649,11 @@ export function DeclarationListView() {
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
-              rowCount={dataFiltered.length}
+              rowCount={pagination.count}
               onSelectAllRows={(checked) => {
                 table.onSelectAllRows(
                   checked,
-                  dataFiltered.map((row) => row.id)
+                  tableData.map((row) => row.slug)
                 );
               }}
               action={
@@ -578,46 +691,47 @@ export function DeclarationListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={dataFiltered.length}
+                  rowCount={pagination.count}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      dataFiltered.map((row) => row.id)
+                      tableData.map((row) => row.slug)
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <DeclarationTableRow
-                        user={user}
-                        key={row.slug}
-                        row={row}
-                        selected={table.selected.includes(row.slug)}
-                        onSelectRow={() => table.onSelectRow(row.slug)}
-                        onViewRow={() => handleViewRow(row.slug)}
-                        onEditRow={() => handleEditRow(row.slug)}
-                        onSubmitRow={() => handleSubmitRow(row.slug)}
-                        onDeleteRow={() => handleDeleteRow(row.slug)}
-                        onValidateRow={() => handleValidateRow(row.slug)}
-                        onFactureRow={() => handleFacturer(row.slug)}
-                        onRejetRow={(rejectReason) => handleRejetter(row.slug, rejectReason)}
-                      />
-                    ))}
 
-                  <TableEmptyRows
-                    height={table.dense ? 56 : 56 + 20}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                  />
+                  {tableData.map((row) => (
+                    <DeclarationTableRow
+                      user={user}
+                      key={row.slug}
+                      row={row}
+                      selected={table.selected.includes(row.slug)}
+                      onSelectRow={() => table.onSelectRow(row.slug)}
+                      onViewRow={() => handleViewRow(row.slug)}
+                      onEditRow={() => handleEditRow(row.slug)}
+                      onSubmitRow={() => handleSubmitRow(row.slug)}
+                      onDeleteRow={() => handleDeleteRow(row.slug)}
+                      onValidateRow={() => handleValidateRow(row.slug)}
+                      onFactureRow={() => handleFacturer(row.slug)}
+                      onRejetRow={(rejectReason) => handleRejetter(row.slug, rejectReason)}
+                      onUnSubmit={() => handleUnSubmitRow(row.slug)}
+                    />
+                  ))}
+
+                  {tableData.length > 0 &&
+                    tableData.length < table.rowsPerPage && (
+                      <TableEmptyRows
+                        height={table.dense ? 56 : 76}
+                        emptyRows={table.rowsPerPage - tableData.length}
+                      />
+                    )}
 
                   <TableNoData notFound={notFound} />
+
                 </TableBody>
               </Table>
             </Scrollbar>
@@ -626,12 +740,14 @@ export function DeclarationListView() {
           <TablePaginationCustom
             page={table.page}
             dense={table.dense}
-            count={dataFiltered.length}
+            count={pagination.count}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
             onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
+
+
         </Card>
       </DashboardContent>
 

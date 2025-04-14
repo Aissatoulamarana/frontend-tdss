@@ -1,3 +1,4 @@
+'use client';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
@@ -13,34 +14,69 @@ import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import Box from '@mui/material/Box';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 
+
 // ----------------------------------------------------------------------
 
-export function DeclarationTableToolbar({ filters, options, dateError, onResetPage }) {
+export function DeclarationTableToolbar({ filters, options, dateError, onResetPage, setSelectedFilter, selectedFilter }) {
   const popover = usePopover();
+  const [titleInput, setTitleInput] = useState('');
+  const [companyInput, setCompanyInput] = useState('');
+
+
+
+  const handleSelectFilter = (filterType) => {
+    onResetPage();
+    filters.setState({ title: '', company: '' });
+    setSelectedFilter(filterType)
+  };
+
+
 
   const handleFilterName = useCallback(
     (event) => {
       onResetPage();
-      filters.setState({ name: event.target.value });
+      const value = event.target.value;
+      filters.setState({ title: '', company: '' });
+      filters.setState({ [selectedFilter]: value })
     },
     [filters, onResetPage]
   );
 
-  const handleFilterService = useCallback(
+
+
+  const handleTitleKeyUp = useCallback(
     (event) => {
-      const newValue =
-        typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value;
-
-      onResetPage();
-      filters.setState({ fonction: newValue });
+      if (event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.title !== value) {
+          onResetPage();
+          filters.setState({ title: event.target.value });
+          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+        }
+      }
     },
     [filters, onResetPage]
   );
+
+
+
+
+  // Pour le champ "Entreprise"
+  const handleCompanyKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      const value = event.target.value;
+      onResetPage();
+      filters.setState({ company: event.target.value });
+      filters.setState((prev) => ({ ...prev, company: companyInput }));
+      // On peut déclencher fetchDeclarations ici ou laisser le useEffect le faire
+    }
+  };
 
   const handleFilterStartDate = useCallback(
     (newValue) => {
@@ -58,38 +94,17 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
     [filters, onResetPage]
   );
 
+
+
   return (
     <>
       <Stack
         spacing={2}
         alignItems={{ xs: 'flex-end', md: 'center' }}
         direction={{ xs: 'column', md: 'row' }}
-        sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
+        sx={{ p: 2.5, pr: { xs: 2.5, md: 1 }, position: 'relative' }}
       >
-        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
-          <InputLabel htmlFor="invoice-filter-service-select-label">Type</InputLabel>
 
-          <Select
-            multiple
-            value={filters.state.fonction}
-            onChange={handleFilterService}
-            input={<OutlinedInput label="fonction" />}
-            renderValue={(selected) => selected.map((value) => value).join(', ')}
-            inputProps={{ id: 'invoice-filter-service-select-label' }}
-            sx={{ textTransform: 'capitalize' }}
-          >
-            {options.fonctions.map((option) => (
-              <MenuItem key={option} value={option}>
-                <Checkbox
-                  disableRipple
-                  size="small"
-                  checked={filters.state.fonction.includes(option)}
-                />
-                {option}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
@@ -124,11 +139,36 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         </LocalizationProvider>
 
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
+          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} >
+            <TextField
+              fullWidth
+              value={titleInput}
+              onChange={(e) => setTitleInput(e.target.value)}
+              onKeyUp={handleTitleKeyUp}
+              placeholder="Rechercher par titre de la déclaration"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                }
+              }}
+            />
+
+          </Box>
+
+
+
+        </Stack>
+
+        <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            value={filters.state.name}
-            onChange={handleFilterName}
-            placeholder="rechercher par nom ou par numéro"
+            onChange={(e) => setCompanyInput(e.target.value)}
+            placeholder="Rechercher par nom de l'entreprise"
+            onKeyDown={handleCompanyKeyDown}
             slotProps={{
               input: {
                 startAdornment: (
@@ -144,6 +184,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </Stack>
+
       </Stack>
       <CustomPopover
         open={popover.open}
