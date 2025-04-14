@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { Form, Field } from 'src/components/hook-form';
 import {
     Box,
     Tabs,
@@ -13,28 +16,53 @@ import {
     Divider,
     IconButton,
     Stack,
+    Select, MenuItem, Pagination,
 
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import WorkIcon from '@mui/icons-material/Work';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import LoadingButton from '@mui/lab/LoadingButton';
+import { toast } from 'sonner';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
+
 import { paths } from 'src/routes/paths';
+
+import { getEntreprises } from 'src/utils/options';
+
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
+import { paths } from 'src/routes/paths';
+
 
 export function UserDetailsView({ slug }) {
     const [user, setUser] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [tabIndex, setTabIndex] = useState(0);
+    // Ajouter un état showSelect pour afficher ou cacher le <Select>.
+    const [showSelect, setShowSelect] = useState(false);
+    const [companies, setCompanies] = useState([]);
+    const [selectedCompany, setSelectedCompany] = useState('');
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [pageSize] = useState(10);
 
+    const router = useRouter();
+    // Ajouter un état  pour charger dynamiquement la liste d'entreprises.
+    // useEffect(() => {
+    //     getEntreprises().then(data => setCompanies(data)); 
+    //     // console.log(`Companies : ${companies}`);
+
+    // }, [slug]); 
     useEffect(() => {
         (async () => {
             try {
@@ -47,7 +75,19 @@ export function UserDetailsView({ slug }) {
             }
         })();
     }, [slug]);
+    // useEffect pour fetch avec pagination + recherche
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            const data = await getEntreprises({ page, page_size: pageSize, search });
+            setCompanies(data);
+        };
+        fetchCompanies();
+    }, [page, pageSize, search]);
 
+    const methods = useForm({
+        mode: 'all',
+    });
+    const { handleSubmit, formState: { isSubmitting } } = methods;
     const handleChange = (_, newIndex) => setTabIndex(newIndex);
 
     if (loading) return <Typography>Chargement...</Typography>;
@@ -65,6 +105,33 @@ export function UserDetailsView({ slug }) {
         mr: 1,
         flexShrink: 0,
     };
+
+    const onSubmit = handleSubmit(async () => {
+
+        try {
+            const formData = {
+                profile: selectedCompany.slug,
+                user: slug,
+            };
+            console.log('formData:', formData);
+
+            const response = await axios.post(API.addProfileToUser(), formData);
+            console.log('Response:', response.data);
+
+            toast.success('Entreprise liée avec succès !');
+
+            // Masquer le formulaire après une liaison réussie
+            setShowSelect(false);
+
+            // Rediriger ou mettre à jour la liste des entreprises liées
+            await router.push(paths.dashboard.user.details(slug));
+            // Forcer une actualisation des données après la redirection
+            router.refresh();
+        } catch (error) {
+            console.error('Erreur complète:', error.response?.data || error.message);
+            toast.error(error.response?.data?.message || 'Erreur lors de la liaison.');
+        }
+    });
 
     return (
         <DashboardContent sx={{ py: 4 }}>
@@ -225,62 +292,62 @@ export function UserDetailsView({ slug }) {
                                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
                                         Entreprises
                                     </Typography>
-                                    <Button variant="outlined" size="small">
+                                    <Button variant="outlined" size="small" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => setShowSelect(!showSelect)}>
                                         Ajouter
                                     </Button>
                                 </Stack>
 
-                                {user.companies && user.companies.length > 0 ? (
+                                {showSelect &&
+                                    (
+                                        <>
+
+                                            {/* autocomplete de la liste des entreprises + le bouton de liaison */}
+                                            <Form methods={methods} fullWidth onSubmit={onSubmit}>
+                                                <Autocomplete
+                                                    sx={{ display: 'flex', justifyContent: 'flex-end' }}
+                                                    size="small"
+                                                    options={companies} // tableau d'objets ou de chaînes
+                                                    getOptionLabel={(option) => (option && option.name) || ''}
+                                                    value={selectedCompany}
+                                                    onChange={(event, newValue) => {
+                                                        setSelectedCompany(newValue);
+                                                    }}
+                                                    inputValue={search}
+                                                    onInputChange={(event, newInputValue) => {
+                                                        setSearch(newInputValue);
+                                                        setPage(1); // reset pagination
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField {...params} label="Rechercher une entreprise" />
+                                                    )}
+                                                />
+                                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                                                    <LoadingButton type="submit" variant="contained" size="small" loading={isSubmitting} disabled={!selectedCompany}>
+                                                        <Iconify icon="eva:checkmark-circle-2-outline" width={20} height={20} sx={{ mr: 1 }} />
+                                                        Lier
+                                                    </LoadingButton>
+                                                </Box>
+                                            </Form>
+                                        </>
+                                    )
+                                }
+
+                                {user.companies && user.companies?.length > 0 ? (
+
                                     <Grid container spacing={3}>
                                         {user.companies.map((company) => (
                                             <Grid item xs={12} sm={6} md={4} key={company.slug}>
                                                 <Card sx={{ p: 2, boxShadow: 4, borderRadius: 2 }}>
-                                                    <Stack spacing={2}>
-                                                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                                            <Stack direction="row" alignItems="center" spacing={1}>
-                                                                <Avatar
-                                                                    alt={company.name}
-                                                                    src={company.picture}
-                                                                    variant="rounded"
-                                                                    sx={{ width: 40, height: 40 }}
-                                                                />
-                                                                <Typography variant="subtitle1" fontWeight={600}>
-                                                                    {company.name}
-                                                                </Typography>
-                                                            </Stack>
-                                                            <IconButton size="small">
-                                                                <Iconify icon="eva:more-vertical-fill" />
-                                                            </IconButton>
-                                                        </Stack>
-
-                                                        <Divider sx={{ borderColor: 'grey.300' }} />
-
-                                                        <Stack spacing={1}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                                <Box sx={iconWrapperStyle}>
-                                                                    <WorkIcon fontSize="small" />
-                                                                </Box>
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    Catégorie: {company.category || '—'}
-                                                                </Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                                <Box sx={iconWrapperStyle}>
-                                                                    <PersonIcon fontSize="small" />
-                                                                </Box>
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    {/* Taille équipe */}
-                                                                </Typography>
-                                                            </Box>
-                                                        </Stack>
-                                                    </Stack>
+                                                    <Typography variant="subtitle1">{company.name}</Typography>
                                                 </Card>
                                             </Grid>
                                         ))}
                                     </Grid>
+
                                 ) : (
                                     <Typography>Aucune entreprise associée.</Typography>
                                 )}
+
                             </>
                         )}
 
@@ -291,3 +358,4 @@ export function UserDetailsView({ slug }) {
         </DashboardContent>
     );
 }
+

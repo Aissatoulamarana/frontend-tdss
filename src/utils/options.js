@@ -60,6 +60,7 @@ export const getPermissions = () => fetchAndCache('permissions', API.listPermiss
 export const getAgences = () => fetchAndCache('agences', API.listAgences , 'results');
 export const getDeclarations = () => fetchAndCache('declarations', API.listDeclarations);
 export const getEntreprises = () => fetchAndCache('entreprises', API.listEntreprises , 'results');
+
 export const getBanks = () => fetchAndCache('banks', API.listProfiles);
 export const getProfils = () => fetchAndCache('profils', API.listProfiles , 'results');
 export const getUserTypes = () => fetchAndCache('userTypes', API.listUserTypes, 'results');

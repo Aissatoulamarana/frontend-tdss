@@ -110,7 +110,8 @@ export const navData = [
             // ],
           },
           {
-            title: 'Categorie de Fonction',
+
+            title: 'Catégories Fonctions',
             path: paths.dashboard.jobCategory.root,
             // icon: ICONS.job,
             // children: [
