@@ -56,7 +56,20 @@ export function FactureTableRow({
     setSelectedBanque(newValue); // Remonte l'objet complet
   };
 
-
+  const statusLabels = {
+    paid: 'Payée',
+    unpaid: 'En attente'
+  }
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'unpaid':
+        return 'warning';
+      case 'paid':
+        return 'success';
+      default:
+        return 'default';
+    }
+  }
 
   const popover = usePopover();
 
@@ -75,7 +88,7 @@ export function FactureTableRow({
           <Checkbox
             checked={selected}
             onClick={onSelectRow}
-            inputProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
+            slotProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
           />
         </TableCell>
 
@@ -85,7 +98,7 @@ export function FactureTableRow({
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.numero_facture}
+                  {row.reference}
                 </Typography>
               }
             />
@@ -96,8 +109,8 @@ export function FactureTableRow({
 
         <TableCell>
           <ListItemText
-            primary={fCurrency(row.amount)}
-            secondary={`GNF ${row.montant_gnf}`}
+            primary={`GNF ${row.amount}`}
+            secondary={`GNF ${row.amount}`}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
               secondary: { mt: 0.5, component: 'span', typography: 'caption' }
@@ -106,8 +119,8 @@ export function FactureTableRow({
 
         <TableCell>
           <ListItemText
-            primary={fDate(row.created_at)}
-            secondary={fTime(row.created_at)}
+            primary={fDate(row.created_on)}
+            secondary={fTime(row.created_on)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
               secondary: { mt: 0.5, component: 'span', typography: 'caption' }
@@ -117,14 +130,9 @@ export function FactureTableRow({
         <TableCell>
           <Label
             variant="soft"
-            color={
-              (row.statut === 'paid' && 'success') ||
-              (row.statut === 'En attente' && 'warning') ||
-              (row.statut === 'Non payée' && 'error') ||
-              'default'
-            }
+            color={getStatusColor(row.status)}
           >
-            {row.statut}
+            {statusLabels[row.status] || 'Inconnu'}
           </Label>
         </TableCell>
 
@@ -233,7 +241,7 @@ export function FactureTableRow({
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
         title="Veuillez fournir les informations suivantes"
-        content={<PayeurForm id={row.id} />}
+        content={<PayeurForm id={row.slug} />}
         action={
           <Button
             variant="contained"

@@ -45,6 +45,8 @@ const API = {
 
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
+  detailsFactures:(slug) => `${BASE_URL}/factures/${slug}`, // details facture
+
   paidFacture: (slug) => `${BASE_URL}factures/${slug}/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
   PaidFactures: () => `${BASE_URL}/paid_factures/`, // payer plusieurs factures a la fois 

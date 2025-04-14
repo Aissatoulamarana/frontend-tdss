@@ -146,8 +146,8 @@ export function FactureListView() {
   ];
 
   const handleDeleteRow = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+    (slug) => {
+      const deleteRow = tableData.filter((row) => row.slug !== slug);
 
       toast.success('Suppression reussie!');
 
@@ -159,7 +159,7 @@ export function FactureListView() {
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.slug));
 
     toast.success('Suppression reussie!');
 
@@ -171,16 +171,10 @@ export function FactureListView() {
     });
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
-  const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.invoice.edit(id));
-    },
-    [router]
-  );
 
   const handleViewRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.factures.details(id));
+    (slug) => {
+      router.push(paths.dashboard.factures.details(slug));
     },
     [router]
   );
@@ -198,7 +192,7 @@ export function FactureListView() {
 
 
   const handlePaidRow = useCallback(
-    async (id) => {
+    async (slug) => {
       if (!selectedBanque) {
         toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
         return;
@@ -213,7 +207,7 @@ export function FactureListView() {
 
       try {
         // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(API.paidFacture(id), data, {
+        const response = await axios.post(API.paidFacture(slug), data, {
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
@@ -238,16 +232,16 @@ export function FactureListView() {
   );
 
   const handlePaid = useCallback(
-    async (id) => {
+    async (slug) => {
       if (!selectedBanque) {
         toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
         return;
       }
 
-      const access_token = sessionStorage.getItem(STORAGE_KEY);
+
       const data = {
         banque_id: selectedBanque?.value,
-        facture_ids: dataFiltered.map((row) => row.id)
+        facture_ids: dataFiltered.map((row) => row.slug)
       }
       console.log("Données envoyées:", data);
       console.log("Token d'accès:", access_token);
@@ -288,7 +282,7 @@ export function FactureListView() {
     const fetchFactures = async () => {
       try {
         const response = await axios.get(API.listFactures()); // Remplacez l'URL par celle de votre backend
-        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
       } catch (err) {
         setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
@@ -320,45 +314,45 @@ export function FactureListView() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        <Stack spacing={4}>
-          <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-            <Grid2 size={{ xs: 6, md: 4 }}>
-              <FactureAnalytic
-                title="Total"
-                total={tableData.length}
-                percent={100}
-                chart={{
-                  colors: [theme.vars.palette.info.main],
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [20, 41, 63, 33, 28, 35, 50, 46],
-                }}
-              />
-            </Grid2>
-            <Grid2 size={{ xs: 6, md: 4 }}>
-              <FactureAnalytic
-                title="Payées"
-                percent={2.6}
-                total={18765}
-                chart={{
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [15, 18, 12, 51, 68, 11, 39, 37],
-                }}
-              />
-            </Grid2>
-            <Grid2 size={{ xs: 6, md: 4 }}>
-              <FactureAnalytic
-                title="En attente"
-                percent={2.6}
-                total={18765}
-                chart={{
-                  colors: [theme.vars.palette.error.main],
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [18, 19, 31, 8, 16, 37, 12, 33],
-                }}
-              />
-            </Grid2>
+        {/* <Stack spacing={4}> */}
+        <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
+          <Grid2 size={{ xs: 6, md: 4 }}>
+            <FactureAnalytic
+              title="Total"
+              total={tableData.length}
+              percent={100}
+              chart={{
+                colors: [theme.vars.palette.info.main],
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                series: [20, 41, 63, 33, 28, 35, 50, 46],
+              }}
+            />
           </Grid2>
-        </Stack>
+          <Grid2 size={{ xs: 6, md: 4 }}>
+            <FactureAnalytic
+              title="Payées"
+              percent={2.6}
+              total={18765}
+              chart={{
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                series: [15, 18, 12, 51, 68, 11, 39, 37],
+              }}
+            />
+          </Grid2>
+          <Grid2 size={{ xs: 6, md: 4 }}>
+            <FactureAnalytic
+              title="En attente"
+              percent={2.6}
+              total={18765}
+              chart={{
+                colors: [theme.vars.palette.error.main],
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                series: [18, 19, 31, 8, 16, 37, 12, 33],
+              }}
+            />
+          </Grid2>
+        </Grid2>
+        {/* </Stack> */}
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Tabs
@@ -414,7 +408,7 @@ export function FactureListView() {
               onSelectAllRows={(checked) => {
                 table.onSelectAllRows(
                   checked,
-                  dataFiltered.map((row) => row.id)
+                  dataFiltered.map((row) => row.slug)
                 );
               }}
               action={
@@ -461,7 +455,7 @@ export function FactureListView() {
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      dataFiltered.map((row) => row.id)
+                      dataFiltered.map((row) => row.slug)
                     )
                   }
                 />
@@ -474,14 +468,14 @@ export function FactureListView() {
                     )
                     .map((row) => (
                       <FactureTableRow
-                        key={row.id}
+                        key={row.slug}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onPaidRow={() => handlePaidRow(row.id)}
+                        selected={table.selected.includes(row.slug)}
+                        onSelectRow={() => table.onSelectRow(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
+                        // onEditRow={() => handleEditRow(row.id)}
+                        onDeleteRow={() => handleDeleteRow(row.slug)}
+                        onPaidRow={() => handlePaidRow(row.slug)}
                         Options={options}
                         setOptions={setOptions}
                         selectedBanque={selectedBanque}
@@ -593,7 +587,7 @@ export function FactureListView() {
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
         title="Veuillez fournir les informations suivantes"
-        content={<PayeurForm id={dataFiltered.map((row) => row.id)} />}
+        content={<PayeurForm id={dataFiltered.map((row) => row.slug)} />}
         action={
           <Button
             variant="contained"
