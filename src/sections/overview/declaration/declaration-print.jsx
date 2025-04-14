@@ -61,7 +61,8 @@ const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => (
     <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
 
     {/* Le tableau filtré */}
-    <FilteredTable declaration={declaration} printMode={true} />
+    {declaration && <FilteredTable declaration={declaration} printMode={true} />}
+
 
     <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
   </Card>

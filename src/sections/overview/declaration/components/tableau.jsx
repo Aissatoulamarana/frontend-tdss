@@ -59,6 +59,13 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   const [currentEmployee, setCurrentEmployee] = useState(null);
   const [isDialogSup, setIsDialogSup] = useState(false); // État pour la boîte de dialogue
 
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+
+  });
+
   const router = useRouter();
 
   // Calcul des lignes selon le filtre
@@ -101,6 +108,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     const fetchDeclarations = async () => {
       setLoading(true);
       try {
+
         const response = await axios.get(API.listDeclarations());
         const declarations = response.data.results.map((declaration) => ({
           value: declaration?.reference,
@@ -125,11 +133,24 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
       setLoading(true);
       try {
-        const response = await axios.get(API.Employe(declaration.slug));
+        const offset = page * rowsPerPage;
+        const params = {
+          limit: rowsPerPage,
+          offset: offset
+        }
+        const response = await axios.get(API.Employe(declaration.slug), { params });
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+
+        });
         const employees = response.data.results;
         setEmployee(employees);
       } catch (error) {
         console.error('Erreur lors de la récupération des employés :', error);
+        const errorMessage = error.message || error.details || error.error;
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -138,7 +159,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     if (declaration && declaration.slug) {
       fetchEmployees();
     }
-  }, [declaration]);
+  }, [declaration, rowsPerPage, page]);
 
   const handleMove = useCallback(
     async () => {
@@ -234,7 +255,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <Typography variant="h6" />
         )}
 
-        {selected.length > 0 && (
+        {selected.length > 0 && declaration.status === 'UNSUBMITTED' && (
           <Stack direction="row" spacing={2}>
             <Tooltip title="Déplacer">
               <IconButton color="primary" onClick={() => setIsDialogOpen(true)}>
@@ -344,7 +365,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                 variant={filter === cat.value ? 'contained' : 'text'}
                 size="small"
                 onClick={() => setFilter(cat.value)}
-                sx={{ flexDirection: 'column', alignItems: 'center', minWidth: 80 }}
+                sx={{ flexDirection: 'column', alignItems: 'center', minWidth: 80, }}
               >
                 <Typography variant="body1">{cat.label}</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
@@ -359,11 +380,13 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                <Checkbox
-                  indeterminate={selected.length > 0 && selected.length < rows?.length}
-                  checked={rows?.length > 0 && selected.length === rows?.length}
-                  onChange={handleSelectAllClick}
-                />
+                {declaration.status === 'UNSUBMITTED' || printMode && (
+                  <Checkbox
+                    indeterminate={selected.length > 0 && selected.length < rows?.length}
+                    checked={rows?.length > 0 && selected.length === rows?.length}
+                    onChange={handleSelectAllClick}
+                  />
+                )}
               </TableCell>
               <TableCell>Numéro du passeport</TableCell>
               <TableCell>Nom & Prénom</TableCell>
@@ -384,11 +407,13 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
                   >
                     <TableCell padding="checkbox">
-                      <Checkbox
-                        color="primary"
-                        checked={isSelected(row.slug)}
-                        onChange={(event) => handleSelectRow(event, row.slug)}
-                      />
+                      {declaration.status === 'UNSUBMITTED' || printMode && (
+                        <Checkbox
+                          color="primary"
+                          checked={isSelected(row.slug)}
+                          onChange={(event) => handleSelectRow(event, row.slug)}
+                        />
+                      )}
                     </TableCell>
                     <TableCell>{row.passport_number}</TableCell>
                     <TableCell>
@@ -407,13 +432,16 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                     <TableCell>{row.job.name}</TableCell>
                     <TableCell>{row.job.permit}</TableCell>
                   </TableRow>
-                  <EmployeeQuickEditForm
-                    currentEmployee={row}
-                    open={quickEditOpen && currentEmployee?.slug === row.slug}
-                    onClose={closeQuickEdit}
-                    onUpdateRow={handleUpdateRow}
-                    dec_slug={declaration.slug}
-                  />
+
+                  {declaration.status === 'UNSUBMITTED' && (
+                    <EmployeeQuickEditForm
+                      currentEmployee={row}
+                      open={quickEditOpen && currentEmployee?.slug === row.slug}
+                      onClose={closeQuickEdit}
+                      onUpdateRow={handleUpdateRow}
+                      dec_slug={declaration.slug}
+                    />
+                  )}
                 </React.Fragment>
               ))}
           </TableBody>

@@ -228,8 +228,8 @@ export function DeclarationTableRow({
                   popover.onClose();
                 }}
               >
-                <Iconify icon="mdi:credit-card" />
-                Remettre le statut à non-soumise
+                <Iconify icon="solar:pen-bold" />
+                Mettre En Edition
               </MenuItem>
             )}
 
