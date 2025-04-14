@@ -67,7 +67,7 @@ export const paths = {
     factures: {
       root: `${ROOTS.DASHBOARD}/factures`,
       list: `${ROOTS.DASHBOARD}/factures/list`,
-      details: (id) => `/dashboard/factures/${id}`,
+      details: (slug) => `/dashboard/factures/${slug}`,
     },
 
     paiements: {

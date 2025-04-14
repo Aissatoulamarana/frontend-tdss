@@ -44,17 +44,17 @@ export function FactureDetails({ facture }) {
 
   const renderTotal = (
     <StyledTableRow>
-        <TableCell colSpan={3} />
-        <TableCell sx={{ color: 'text.primary', fontWeight: 'bold' }}>
-          <Box sx={{ mt: 2 }} />
-          TOTAL
-        </TableCell>
-        <TableCell width={120} sx={{ typography: 'subtitle2' }}>
-          <Box sx={{ mt: 2 }} />
-          {fCurrency(facture?.montant_usd)}
-        </TableCell>
+      <TableCell colSpan={3} />
+      <TableCell sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+        <Box sx={{ mt: 2 }} />
+        TOTAL
+      </TableCell>
+      <TableCell width={120} sx={{ typography: 'subtitle2' }}>
+        <Box sx={{ mt: 2 }} />
+        {`GNF ${facture?.amount}`}
+      </TableCell>
 
-      </StyledTableRow>
+    </StyledTableRow>
   );
 
   const renderFooter = (
@@ -95,7 +95,7 @@ export function FactureDetails({ facture }) {
         </TableHead>
 
         <TableBody>
-          {facture?.details.map((row, index) => (
+          {facture?.details?.map((row, index) => (
             <TableRow key={index}>
               <TableCell>{index + 1}</TableCell>
 
@@ -158,7 +158,7 @@ export function FactureDetails({ facture }) {
             >
               {currentStatus}
             </Label>
-            <Typography variant="h6"> {facture?.numero_facture}</Typography>
+            <Typography variant="h6"> {facture?.reference}</Typography>
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
@@ -167,24 +167,26 @@ export function FactureDetails({ facture }) {
             </Typography>
             <br />
             <Typography variant='h6' >
-              {facture?.client?.company}
+              {facture?.client}
             </Typography>
             <br />
-            Tél : {facture?.client?.phone_number}
+            Tél :
             <br />
-            Adresse :  {facture?.client?.address}
-
+            Adresse :
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date facture : {fDate(facture?.create_date)}
+              Date facture :
+              {/* {fDate(facture?.create_date)} */}
             </Typography>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Declaration N : {facture?.declaration_number}
+              Declaration N :
+              {/* {facture?.declaration_number} */}
             </Typography>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date declaration : {fDate(facture?.dec_date)}
+              Date declaration :
+              {/* {fDate(facture?.dec_date)} */}
             </Typography>
 
           </Stack>

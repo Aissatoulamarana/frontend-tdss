@@ -53,52 +53,54 @@ export function FactureToolbar({
     onAfterPrint: () => console.log('Impression terminée'),
   });
 
-  const handleShareSubmit = async (email) => {
-    try {
-      // Exemple d'appel à l'API pour partager la déclaration
-      await axios.post('/api/declaration/share', {
-        factureId: facture?.id,
-        email,
-      });
-      alert('Déclaration partagée avec succès.');
-    } catch (error) {
-      alert('Erreur lors du partage.');
-    }
-  };
+  // const handleShareSubmit = async (email) => {
+  //   try {
+  //     // Exemple d'appel à l'API pour partager la déclaration
+  //     await axios.post('/api/declaration/share', {
+  //       factureId: facture?.id,
+  //       email,
+  //     });
+  //     alert('Déclaration partagée avec succès.');
+  //   } catch (error) {
+  //     alert('Erreur lors du partage.');
+  //   }
+  // };
 
-  // Fonction à appeler lorsque l'utilisateur soumet l'email pour envoyer
-  const handleSendSubmit = async (email) => {
-    try {
-      // Exemple d'appel à l'API pour envoyer la déclaration par email
-      await axios.post('/api/declaration/send', {
-        factureId: facture?.id,
-        email,
-      });
-      alert('Déclaration envoyée avec succès.');
-    } catch (error) {
-      alert('Erreur lors de l’envoi.');
-    }
-  };
+  // // Fonction à appeler lorsque l'utilisateur soumet l'email pour envoyer
+  // const handleSendSubmit = async (email) => {
+  //   try {
+  //     // Exemple d'appel à l'API pour envoyer la déclaration par email
+  //     await axios.post('/api/declaration/send', {
+  //       factureId: facture?.id,
+  //       email,
+  //     });
+  //     alert('Déclaration envoyée avec succès.');
+  //   } catch (error) {
+  //     alert('Erreur lors de l’envoi.');
+  //   }
+  // };
 
   const renderDownload = (
     <NoSsr>
-      <PDFDownloadLink
-        document={facture ? <FacturePDF facture={facture} /> : <span />}
-        fileName={facture?.numero_facture}
-        style={{ textDecoration: 'none' }}
-      >
-        {({ loading }) => (
-          <Tooltip title="Download">
-            <IconButton>
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                <Iconify icon="eva:cloud-download-fill" />
-              )}
-            </IconButton>
-          </Tooltip>
-        )}
-      </PDFDownloadLink>
+      {facture && (
+        <PDFDownloadLink
+          document={facture ? <FacturePDF facture={facture} /> : <span />}
+          fileName={facture?.numero_facture}
+          style={{ textDecoration: 'none' }}
+        >
+          {({ loading }) => (
+            <Tooltip title="Telecharger">
+              <IconButton>
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <Iconify icon="eva:cloud-download-fill" />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
+        </PDFDownloadLink>
+      )}
     </NoSsr>
   );
 
@@ -111,56 +113,56 @@ export function FactureToolbar({
         sx={{ mb: { xs: 3, md: 5 } }}
       >
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-          <Tooltip title="Edit">
+          {/* <Tooltip title="Edit">
             <IconButton onClick={handleEdit}>
               <Iconify icon="solar:pen-bold" />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
 
           {renderDownload}
           <Box sx={{ display: 'none' }}>
             {/* <DeclarationDetailsPrint ref={componentRef} facture={facture} /> */}
           </Box>
 
-          <Tooltip title="Print">
+          <Tooltip title="Imprimer">
             <IconButton onClick={handlePrint}>
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Send">
+          {/* <Tooltip title="Send">
             <IconButton onClick={() => setOpenSend(true)}>
               <Iconify icon="iconamoon:send-fill" />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
 
-          <Tooltip title="Share">
+          {/* <Tooltip title="Share">
             <IconButton onClick={() => setOpenShare(true)}>
               <Iconify icon="solar:share-bold" />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Stack>
 
 
       </Stack>
 
       {/* Dialog pour l'envoi par email */}
-      <ShareSendDialog
+      {/* <ShareSendDialog
         open={openSend}
         onClose={() => setOpenSend(false)}
         onSubmit={handleSendSubmit}
         title="Envoyer la déclaration"
         label="Saisissez l'email destinataire"
-      />
+      /> */}
 
       {/* Dialog pour partager la déclaration */}
-      <ShareSendDialog
+      {/* <ShareSendDialog
         open={openShare}
         onClose={() => setOpenShare(false)}
         onSubmit={handleShareSubmit}
         title="Partager la déclaration"
         label="Saisissez l'email à partager"
-      />
+      /> */}
 
       <Dialog fullScreen open={view.value}>
         <Box sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>

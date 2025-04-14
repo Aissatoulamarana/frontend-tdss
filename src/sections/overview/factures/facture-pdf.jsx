@@ -92,7 +92,7 @@ export function FacturePDF({ facture }) {
   const styles = useStyles();
 
   // Calcul de la date d'échéance (date de création + 5 ans)
-  const createDate = new Date(facture?.create_date);
+  const createDate = new Date(facture?.created_on);
   let dueDate = null;
   if (!isNaN(createDate.getTime())) {
     dueDate = new Date(createDate);
@@ -114,7 +114,7 @@ export function FacturePDF({ facture }) {
       </View>
       {/* Numéro de facture centré */}
       <View>
-        <Text style={styles.invoiceNumber}>FACTURE {facture?.numero_facture}</Text>
+        <Text style={styles.invoiceNumber}>FACTURE {facture?.reference}</Text>
       </View>
     </View>
   );
@@ -123,7 +123,7 @@ export function FacturePDF({ facture }) {
   const renderClientInfo = (
     <View style={styles.mb40}>
       <Text style={[styles.subtitle2, styles.mb4]}>CLIENT</Text>
-      <Text style={styles.body2}>{facture?.client?.company}</Text>
+      <Text style={styles.body2}>{facture?.client}</Text>
       <Text style={styles.body2}>{facture?.client?.address}</Text>
       <Text style={styles.body2}>{facture?.client?.phone_number}</Text>
     </View>
@@ -165,7 +165,7 @@ export function FacturePDF({ facture }) {
           <Text style={styles.subtitle2}>Total</Text>
         </View>
       </View>
-      {facture?.details.map((item, index) => (
+      {facture?.details?.map((item, index) => (
         <View key={index} style={styles.row}>
           <View style={styles.cell_1}>
             <Text>{index + 1}</Text>
