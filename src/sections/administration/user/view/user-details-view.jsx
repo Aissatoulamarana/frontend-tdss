@@ -34,7 +34,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 
-import { paths } from 'src/routes/paths';
+
 
 import { getEntreprises } from 'src/utils/options';
 
