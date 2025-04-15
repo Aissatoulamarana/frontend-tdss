@@ -88,6 +88,7 @@ const API = {
   
   createProfile: () => `${BASE_URL}/profiles/`,
   listProfiles: () => `${BASE_URL}/profiles/`,
+  detailsProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listActiveProfile: () => `${BASE_URL}/profiles/active-profiles/`,
   // listEntreprises: () => `${BASE_URL}/profiles/active-profiles/?type=entreprise`, // Liste des entreprises
