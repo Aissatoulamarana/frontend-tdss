@@ -20,11 +20,8 @@ import { Iconify } from 'src/components/iconify';
 export function EmployeeTableRow({
     row,
     selected,
-    onEditRow,
-    onSelectRow,
-    onDeleteRow,
     onViewRow,
-    onUpdateRow,
+
 
 }) {
     const confirm = useBoolean();
