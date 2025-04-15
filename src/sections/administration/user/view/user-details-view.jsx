@@ -52,12 +52,6 @@ export function UserDetailsView({ slug }) {
     const [pageSize] = useState(10);
 
     const router = useRouter();
-    // Ajouter un état  pour charger dynamiquement la liste d'entreprises.
-    // useEffect(() => {
-    //     getEntreprises().then(data => setCompanies(data)); 
-    //     // console.log(`Companies : ${companies}`);
-        
-    // }, [slug]); 
     useEffect(() => {
         (async () => {
             try {
@@ -100,9 +94,7 @@ export function UserDetailsView({ slug }) {
         mr: 1,
         flexShrink: 0,
     };
-    
     const onSubmit = handleSubmit(async () => {
-
         try {
             const formData = {
                 profile: selectedCompany.slug,
@@ -118,16 +110,14 @@ export function UserDetailsView({ slug }) {
             // Masquer le formulaire après une liaison réussie
             setShowSelect(false);
 
-            // Rediriger ou mettre à jour la liste des entreprises liées
-            await router.push(paths.dashboard.user.details(slug));
-            // Forcer une actualisation des données après la redirection
-            router.refresh();
+            // Actualiser la liste des entreprises liées sans rechargement manuel
+            const { data } = await axios.get(API.userDetails(slug));
+            setUser(data);
         } catch (error) {
             console.error('Erreur complète:', error.response?.data || error.message);
             toast.error(error.response?.data?.message || 'Erreur lors de la liaison.');
         }
     });
-      
     return (
         <DashboardContent sx={{ py: 4 }}>
             <CustomBreadcrumbs
