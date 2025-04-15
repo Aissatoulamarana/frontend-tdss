@@ -73,13 +73,6 @@ export function FactureTableRow({
 
   const popover = usePopover();
 
-  // useEffect(() => {
-  //   // Récupérer les options lors du chargement du composant
-  //   fetchOptions().then(() => {
-  //     setLoaded(true); // Marquer comme chargé une fois les données récupérées
-  //     console.log(banks);
-  //   });
-  // }, []);
 
   return (
     <>
@@ -173,7 +166,7 @@ export function FactureTableRow({
             onClick={() => {
               confirm.onTrue();
               popover.onClose();
-              setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
+              setOpenSecondDialog(true); // Ouvre la première boîte de dialogue
             }}
           >
             <Iconify icon="mdi:credit-card" />
@@ -241,7 +234,7 @@ export function FactureTableRow({
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
         title="Veuillez fournir les informations suivantes"
-        content={<PayeurForm id={row.slug} />}
+        content={<PayeurForm slug={row.slug} />}
         action={
           <Button
             variant="contained"

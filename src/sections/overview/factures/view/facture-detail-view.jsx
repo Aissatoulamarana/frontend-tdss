@@ -11,7 +11,7 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { FactureDetails } from '../facture-details';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
-import { toast } from 'src/components/snackbar/classes';
+import { toast } from 'src/components/snackbar';
 
 export function FactureDetailsView({ slug }) {
   const [facture, setFacture] = useState(null);

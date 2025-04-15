@@ -12,22 +12,23 @@ import API from 'src/utils/api';
 
 import { Form, Field } from 'src/components/hook-form';
 
+
 // Define the Zod schema
 const NewPayeurSchema = z.object({
-  nom: z.string().min(1, { message: 'Le nom est obligatoire' }),
-  prenom: z.string().min(1, { message: 'Le prénom est obligatoire' }),
-  email: z.string().email({ message: 'Email invalide' }),
-  telephone: z.string().min(1, { message: 'Le téléphone est obligatoire' }),
-  pays: z.string().min(1, { message: 'Selectionnez un pays' }),
-  devise: z.string().min(1, { message: 'La devise est obligatoire' }),
-  numero_compte: z.string().min(1, { message: 'Le numéro de compte est obligatoire' }),
+  last: z.string().min(1, { message: 'Le nom est obligatoire' }),
+  first: z.string().min(1, { message: 'Le prénom est obligatoire' }),
+  email: z.string().email({ message: 'Email est obligatoire' }),
+  phone: z.string().min(1, { message: 'Le téléphone est obligatoire' }),
+  country_origin: z.string().min(1, { message: 'Selectionnez un pays' }),
+  employer: z.string().min(1, { message: "L'employeur est obligatoire" }),
+  job: z.string().min(1, { message: 'La fonction est obligatoire' }),
 
 
 });
 
 
 
-export function PayeurForm({ id }) {
+export function PayeurForm({ slug }) {
   const [devises, setDevises] = useState([]);
   const [loading, setLoading] = useState();
 
@@ -36,14 +37,14 @@ export function PayeurForm({ id }) {
     mode: 'all',
     resolver: zodResolver(NewPayeurSchema),
     defaultValues: {
-      nom: '',
-      prenom: '',
+      last: '',
+      first: '',
       email: '',
-      telephone: '',
-      devise: '',
-      numero_compte: '',
-      pays: '',
-      facture_id: id || '', // Initialise avec id
+      phone: '',
+      employer: '',
+      job: '',
+      country_origin: '',
+      facture_id: slug || '', // Initialise avec id
     },
   });
   // Destructure the properties from the same form instance
@@ -59,11 +60,11 @@ export function PayeurForm({ id }) {
 
 
   useEffect(() => {
-    if (id) {
-      setValue('facture_id', id); // Met à jour facture_id dynamiquement
-      console.log(' id de la facture', id);
+    if (slug) {
+      setValue('facture_id', slug); // Met à jour facture_id dynamiquement
+      console.log(' id de la facture', slug);
     }
-  }, [id, setValue]);
+  }, [slug, setValue]);
 
   // Use useFieldArray with the same control instance
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
@@ -90,21 +91,7 @@ export function PayeurForm({ id }) {
     }
   });
 
-  useEffect(() => {
-    axios
-      .get(API.listDevises())
-      .then((response) => {
-        console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
-        setDevises(response.data.results || response.data); // Adapter si c'est sous `results`
-      })
-      .catch((error) => {
-        console.error("Erreur API :", error);
-        setError("Impossible de récupérer les catégories");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+
 
 
   return (
@@ -118,16 +105,16 @@ export function PayeurForm({ id }) {
         <Stack spacing={3}>
           <TextField
             label="Nom"
-            {...register('nom')}
-            error={Boolean(errors.nom)}
-            helperText={errors.nom?.message}
+            {...register('last')}
+            error={Boolean(errors.last)}
+            helperText={errors.last?.message}
             fullWidth
           />
           <TextField
             label="Prénom"
-            {...register('prenom')}
-            error={Boolean(errors.prenom)}
-            helperText={errors.prenom?.message}
+            {...register('first')}
+            error={Boolean(errors.first)}
+            helperText={errors.first?.message}
             fullWidth
           />
           <TextField
@@ -139,47 +126,35 @@ export function PayeurForm({ id }) {
           />
           <TextField
             label="Téléphone"
-            {...register('telephone')}
-            error={Boolean(errors.telephone)}
-            helperText={errors.telephone?.message}
+            {...register('phone')}
+            error={Boolean(errors.phone)}
+            helperText={errors.phone?.message}
             fullWidth
           />
-          <Field.Select
-            name="devise"
-            label="Devise"
-            placeholder="Sélectionnez la devise avec la quelle vous effectuez le paiement "
-          >
-            {devises.map((devise) => (
-              <MenuItem key={devise.id} value={String(devise.id)}>
-                {devise.name}
-              </MenuItem>
-            ))}
-          </Field.Select>
+
           <TextField
-            select
-            label="Moyen de Paiement"
-            {...register('numero_compte')}
-            error={Boolean(errors.numero_compte)}
-            helperText={errors.numero_compte?.message}
+
+            label="Entreprise"
+            {...register('employer')}
+            error={Boolean(errors.employer)}
+            helperText={errors.employer?.message}
             fullWidth
           >
-            <MenuItem value="Virement">Virement</MenuItem>
-            <MenuItem value="Cheque">Cheque</MenuItem>
-            <MenuItem value="Espèces">Espèces</MenuItem>
+
           </TextField>
 
           <TextField
-            label="Reference"
-            {...register('reference')}
-            error={Boolean(errors.reference)}
-            helperText={errors.reference?.message}
+            label="Fonction"
+            {...register('job')}
+            error={Boolean(errors.job)}
+            helperText={errors.job?.message}
             fullWidth
           />
 
           <Field.CountrySelect
             fullWidth
             size="small"
-            name="pays"
+            name="country_origin"
             label="Nationalité"
             placeholder="Selectionnez un pays"
             sx={{ width: '100%' }}
