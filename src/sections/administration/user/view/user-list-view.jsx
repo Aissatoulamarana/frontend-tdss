@@ -49,8 +49,6 @@ import { UserTableToolbar } from '../user-table-toolbar';
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous' },
   { value: 'actif', label: 'Actif' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'banned', label: 'Rejected' },
   { value: 'inactif', label: 'Inactif' },
 ];
 
@@ -63,7 +61,7 @@ const TABLE_HEAD = [
   { id: '', width: 88 },
 ];
 
-const ROWS_PER_PAGE = 5; // Affichage par défaut
+
 // ----------------------------------------------------------------------
 
 export function UserListView() {
@@ -85,7 +83,7 @@ export function UserListView() {
     count: 0,
     next: null,
     previous: null,
-    currentPage: 1,
+
   });
 
   const dataFiltered = applyFilter({
@@ -99,7 +97,7 @@ export function UserListView() {
   const canReset =
     !!filters.state.name || filters.state.role.length > 0 || filters.state.status !== 'all';
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const notFound = pagination.count === 0 && canReset;
 
   const handleDeleteRow = useCallback(
     (slug) => {
@@ -167,23 +165,17 @@ export function UserListView() {
   }, []);
 
 
-
-
   // Fonction pour récupérer les données
-  const fetchUtilisateurs = async (urlOrPage = 1) => {
+  const fetchUtilisateurs = async () => {
     setLoading(true);
     try {
-      let url;
-      if (typeof urlOrPage === 'string') {
-        // Utilisation directe de l’URL next ou previous
-        url = urlOrPage;
-      } else {
-        // Construit l’URL à partir du numéro de page
-        const page = urlOrPage;
-        const offset = (page - 1) * ROWS_PER_PAGE;
-        url = API.listUsers(`?limit=${ROWS_PER_PAGE}&offset=${offset}`);
-      }
-      const response = await axios.get(url);
+      const offset = table.page * table.rowsPerPage;
+      const url = API.listUsers()
+      const params = {
+        limit: table.rowsPerPage,
+        offset: offset,
+      };
+      const response = await axios.get(url, { params });
       setTableData(response.data.results);
       setRoles([
         ...new Set(response.data.results.map((role) => role.type.trim()))
@@ -193,11 +185,7 @@ export function UserListView() {
         count: response.data.count,
         next: response.data.next,
         previous: response.data.previous,
-        currentPage:
-          typeof urlOrPage === 'string'
-            ? // Si on utilise une URL, on détermine la nouvelle page en fonction de la présence de next ou previous
-            prev.next === url ? prev.currentPage + 1 : prev.currentPage - 1
-            : urlOrPage,
+
       }));
     } catch (err) {
       setError(err.message || 'Erreur lors du chargement des données.');
@@ -209,7 +197,7 @@ export function UserListView() {
   // Chargement initial
   useEffect(() => {
     fetchUtilisateurs();
-  }, []);
+  }, [table.page, table.rowsPerPage]);
 
   if (loading) {
     console.info('Loading utilisateurs...');
@@ -219,23 +207,7 @@ export function UserListView() {
     console.error(`Error: ${error}`);
   }
 
-  // Gestion du changement de page
-  // On vérifie si l'utilisateur clique pour aller à la page suivante ou précédente en se basant sur l'index (0 basé)
-  const handlePageChange = (event, newPageIndex) => {
-    const {currentPage} = pagination;
-    // newPageIndex est 0 basé
-    if (newPageIndex + 1 > currentPage) {
-      // Si page suivante et si un lien "next" est fourni par le backend
-      if (pagination.next) {
-        fetchUtilisateurs(pagination.next);
-      }
-    } else if (newPageIndex + 1 < currentPage) {
-      // Si page précédente et si un lien "previous" est fourni par le backend
-      if (pagination.previous) {
-        fetchUtilisateurs(pagination.previous);
-      }
-    }
-  };
+
 
   return (
     <>
@@ -289,7 +261,7 @@ export function UserListView() {
                       'default'
                     }
                   >
-                    {['actif', 'pending', 'banned', 'inactif'].includes(tab.value)
+                    {['actif', 'inactif'].includes(tab.value)
                       ? tableData.filter((user) => user.status === tab.value).length
                       : tableData.length}
                   </Label>
@@ -307,7 +279,7 @@ export function UserListView() {
           {canReset && (
             <UserTableFiltersResult
               filters={filters}
-              totalResults={dataFiltered.length}
+              totalResults={pagination.count}
               onResetPage={table.onResetPage}
               sx={{ p: 2.5, pt: 0 }}
             />
@@ -317,11 +289,11 @@ export function UserListView() {
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
-              rowCount={dataFiltered.length}
+              rowCount={pagination.count}
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  dataFiltered.map((row) => row.id)
+                  tableData.map((row) => row.slug)
                 )
               }
               action={
@@ -339,23 +311,20 @@ export function UserListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={dataFiltered.length}
+                  rowCount={pagination.count}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      dataFiltered.map((row) => row.id)
+                      tableData.map((row) => row.slug)
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
+                  {tableData
+
                     .map((row) => (
                       <UserTableRow
                         key={row.slug}
@@ -369,10 +338,13 @@ export function UserListView() {
                       />
                     ))}
 
-                  <TableEmptyRows
-                    height={table.dense ? 56 : 56 + 20}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                  />
+                  {tableData.length > 0 &&
+                    tableData.length < table.rowsPerPage && (
+                      <TableEmptyRows
+                        height={table.dense ? 56 : 76}
+                        emptyRows={table.rowsPerPage - tableData.length}
+                      />
+                    )}
 
                   <TableNoData notFound={notFound} />
                 </TableBody>
@@ -381,11 +353,11 @@ export function UserListView() {
           </Box>
 
           <TablePaginationCustom
-            page={pagination.currentPage - 1}
+            page={table.page}
             dense={table.dense}
             count={pagination.count}
-            rowsPerPage={ROWS_PER_PAGE}
-            onPageChange={handlePageChange}
+            rowsPerPage={table.rowsPerPage}
+            onPageChange={table.onChangePage}
             onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
