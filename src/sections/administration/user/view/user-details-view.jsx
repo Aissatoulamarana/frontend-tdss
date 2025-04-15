@@ -268,7 +268,10 @@ export function UserDetailsView({ slug }) {
                                     <Grid container spacing={3}>
                                         {user.companies.map((company) => (
                                             <Grid item xs={12} sm={6} md={4} key={company.slug}>
-                                                <Card sx={{ p: 2, boxShadow: 4, borderRadius: 2 }}>
+                                                <Card
+                                                    sx={{ p: 2, boxShadow: 4, borderRadius: 2, cursor: 'pointer' }}
+                                                    onClick={() => router.push(paths.dashboard.client.details(company.slug))}
+                                                >
                                                     <Stack direction="row" alignItems="center" spacing={1}>
                                                         <Avatar
                                                             alt={company.name}
