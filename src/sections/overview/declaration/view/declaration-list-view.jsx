@@ -32,12 +32,11 @@ import { sumBy } from 'src/utils/helper';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Iconify } from 'src/components/iconify';
-import { Label } from 'src/components/label';
+
 import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
   useTable,
-  emptyRows,
   rowInPage,
   TableNoData,
   getComparator,
@@ -149,8 +148,7 @@ export function DeclarationListView() {
           setTableData(response.data.results)
           setCount(response.data.count);
         } catch (error) {
-          ""
-          console.error("Erreur lors de la récupération des déclarations pour le statut ${status}", error);
+          console.error(`Erreur lors de la récupération des déclarations pour le statut ${status} `, error);
         }
       };
 

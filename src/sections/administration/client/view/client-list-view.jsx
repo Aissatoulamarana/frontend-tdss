@@ -31,7 +31,6 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
     useTable,
-    emptyRows,
     rowInPage,
     TableNoData,
     getComparator,
