@@ -32,6 +32,7 @@ export function DeclarationTableRow({
   onFactureRow,
   onRejetRow,
   onSubmitRow,
+  onUnSubmitRow,
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -42,6 +43,7 @@ export function DeclarationTableRow({
   // Pour la soumission
   const submitConfirm = useBoolean();
 
+  const unsubmitConfirm = useBoolean();
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
   const [motifRejet, setMotifRejet] = useState('');
@@ -160,7 +162,7 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type === 'Admin' && ['UNSUBMITTED', 'REJECTED'].includes(row.status) && (
+          {user?.type === 'Admin' && ['UNSUBMITTED'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 onEditRow();
@@ -169,6 +171,18 @@ export function DeclarationTableRow({
             >
               <Iconify icon="solar:pen-bold" />
               Modifier
+            </MenuItem>
+          )}
+
+          {(user?.type === 'Admin' || user?.type === 'Agent') && ['REJECTED'].includes(row.status) && (
+            <MenuItem
+              onClick={() => {
+                unsubmitConfirm.onTrue();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="solar:pen-bold" />
+              Mettre En Edition
             </MenuItem>
           )}
 
@@ -283,6 +297,26 @@ export function DeclarationTableRow({
           </Button>
         }
       />
+      {/* Exemple de boîte de dialogue de confirmation pour la soumission */}
+      <ConfirmDialog
+        open={unsubmitConfirm.value}
+        onClose={unsubmitConfirm.onFalse}
+        title="Mettre en édition"
+        content="Voulez-vous vraiment mettre cette déclaration en édition ?"
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              unsubmitConfirm.onFalse();
+              onUnSubmitRow();
+            }}
+          >
+            Oui
+          </Button>
+        }
+      />
+
       {/* Exemple de boîte de dialogue de confirmation pour la validation */}
       <ConfirmDialog
         open={validateConfirm.value}

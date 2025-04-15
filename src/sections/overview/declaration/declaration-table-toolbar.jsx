@@ -1,3 +1,4 @@
+'use client';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
@@ -9,11 +10,12 @@ import MenuList from '@mui/material/MenuList';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -21,7 +23,10 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export function DeclarationTableToolbar({ filters, options, dateError, onResetPage }) {
+
   const popover = usePopover();
+  const [titleInput, setTitleInput] = useState('');
+  const [companyInput, setCompanyInput] = useState('');
 
   const handleFilterName = useCallback(
     (event) => {
@@ -30,6 +35,39 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
     },
     [filters, onResetPage]
   );
+
+  const handleTitleKeyUp = useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        const value = event.target.value;
+        console.log('Entrée détectée sur le filtre Titre avec la valeur :', value);
+        if (filters.state.title !== value) {
+          onResetPage();
+          filters.setState({ title: event.target.value });
+          // Mise à jour combinée du state : on réinitialise company et met à jour title
+          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
+  const handleCompanyKeyUp = useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        const value = event.target.value;
+        console.log('Entrée détectée sur le filtre Company avec la valeur :', value);
+        if (filters.state.company !== value) {
+          onResetPage();
+          filters.setState({ company: event.target.value });
+          // Mise à jour combinée du state : on réinitialise company et met à jour title
+          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
 
   const handleFilterService = useCallback(
     (event) => {
@@ -45,7 +83,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ startDate: newValue });
+      filters.setState({ starts_at: newValue });
     },
     [filters, onResetPage]
   );
@@ -53,7 +91,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const handleFilterEndDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ endDate: newValue });
+      filters.setState({ ends_at: newValue });
     },
     [filters, onResetPage]
   );
@@ -66,7 +104,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         direction={{ xs: 'column', md: 'row' }}
         sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
       >
-        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
+        {/* <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
           <InputLabel htmlFor="invoice-filter-service-select-label">Type</InputLabel>
 
           <Select
@@ -89,12 +127,12 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.endDate}
+            value={filters.state.starts_at}
             onChange={handleFilterStartDate}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -104,7 +142,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.endDate}
+            value={filters.state.ends_at}
             onChange={handleFilterEndDate}
             slotProps={{
               textField: {
@@ -124,11 +162,36 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         </LocalizationProvider>
 
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
+          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} >
+            <TextField
+              fullWidth
+              value={titleInput}
+              onChange={(e) => setTitleInput(e.target.value)}
+              onKeyDown={handleTitleKeyUp}
+              placeholder="Rechercher par titre de la déclaration"
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
+                }
+              }}
+            />
+
+          </Box>
+
+
+
+        </Stack>
+
+        <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            value={filters.state.name}
-            onChange={handleFilterName}
-            placeholder="rechercher par nom ou par numéro"
+            onChange={(e) => setCompanyInput(e.target.value)}
+            placeholder="Rechercher par nom de l'entreprise"
+            onKeyDown={handleCompanyKeyUp}
             slotProps={{
               input: {
                 startAdornment: (
@@ -140,10 +203,11 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
+
       </Stack>
       <CustomPopover
         open={popover.open}

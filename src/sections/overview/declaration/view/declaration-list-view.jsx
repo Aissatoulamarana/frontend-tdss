@@ -53,6 +53,7 @@ import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 
 import { useMockedUser } from 'src/auth/hooks';
+import dayjs from 'dayjs';
 
 // ----------------------------------------------------------------------
 
@@ -81,7 +82,7 @@ export function DeclarationListView() {
 
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'createDate' });
+  const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
 
@@ -89,18 +90,25 @@ export function DeclarationListView() {
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
 
+  });
 
 
   const filters = useSetState({
     name: '', // mot-clé pour filtrer par numéro ou type de déclaration
     fonction: [],
     status: 'all',
-    startDate: null,
-    endDate: null,
+    starts_at: null,
+    ends_at: null,
+    company: '',
+    title: '',
   });
 
-  const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
+  const dateError = fIsAfter(filters.state.starts_at, filters.state.ends_at);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -113,13 +121,46 @@ export function DeclarationListView() {
 
   const canReset =
     !!filters.state.type ||
+    !!filters.state.title ||
+    !!filters.state.company ||
     filters.state.fonction.length > 0 ||
     filters.state.status !== 'all' ||
-    (!!filters.state.startDate && !!filters.state.endDate);
+    (!!filters.state.starts_at && !!filters.state.ends_at);
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const notFound = pagination.count === 0 && canReset;
 
   const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+
+  const useDeclarationCount = (status) => {
+    const [count, setCount] = useState(0);
+
+    useEffect(() => {
+      const fetchCount = async () => {
+        try {
+          const response = await axios.get(API.listDeclarations(), {
+            params: {
+              status: status,
+              limit: 1,
+              offset: 0,
+            },
+          });
+
+          // On récupère le nombre total à partir du champ "count"
+          setTableData(response.data.results)
+          setCount(response.data.count);
+        } catch (error) {
+          ""
+          console.error("Erreur lors de la récupération des déclarations pour le statut ${status}", error);
+        }
+      };
+
+      fetchCount();
+    }, [status]);
+
+    return count;
+  };
+
+
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -127,6 +168,7 @@ export function DeclarationListView() {
       (declaration) => declaration.montant_facture
     );
 
+  // const getPercentByStatus = (status) => (useDeclarationCount(status) / pagination.count) * 100;
   const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
 
   const TABS = [
@@ -337,20 +379,61 @@ export function DeclarationListView() {
   );
 
   useEffect(() => {
-    // Fonction pour récupérer les données
+
+    // Fonction pour récupérer les données depuis le backend
     const fetchDeclarations = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(API.listDeclarations());
-        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+        const offset = table.page * table.rowsPerPage;
+        const params = {
+          limit: table.rowsPerPage,
+          offset,
+          // Ajout des filtres textuels
+          ...(filters.state.company
+            ? { company: filters.state.company }
+            : filters.state.title
+              ? { title: filters.state.title }
+              : {}
+          ),
+          // Ajout du filtre statut
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          //  Ajout du filtre de dates si les deux sont renseignées et valides
+          ...(filters.state.starts_at && filters.state.ends_at && !dateError
+            ? {
+              starts_at: dayjs(filters.state.starts_at).format('YYYY-MM-DD HH:mm:ss'),
+              ends_at: dayjs(filters.state.ends_at).format('YYYY-MM-DD HH:mm:ss')
+            }
+            : {}
+          )
+        };
+
+        const response = await axios.get(API.listDeclarations(), { params });
+        setTableData(response.data.results);
+
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+
+        });
       } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
+        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
+        toast.error(error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDeclarations();
-  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [
+    table.page,
+    table.rowsPerPage,
+    filters.state.company,
+    filters.state.title,
+    filters.state.status,
+    filters.state.starts_at,
+    filters.state.ends_at
+  ]); // a chaque changement de ces filtres on fait appel a la fonction de fetchDeclarations
 
   if (loading) {
     console.info('Loading declarations...');
@@ -436,7 +519,7 @@ export function DeclarationListView() {
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
-              total={tableData.length}
+              total={pagination.count}
               percent={100}
               chart={{
                 colors: [theme.vars.palette.info.main],
@@ -499,17 +582,17 @@ export function DeclarationListView() {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                      'soft'
-                    }
-                    color={tab.color}
-                  >
-                    {tab.count}
-                  </Label>
-                }
+              // icon={
+              //   <Label
+              //     variant={
+              //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+              //       'soft'
+              //     }
+              //     color={tab.color}
+              //   >
+              //     {tab.count}
+              //   </Label>
+              // }
               />
             ))}
           </Tabs>
@@ -519,7 +602,7 @@ export function DeclarationListView() {
             dateError={dateError}
             onResetPage={table.onResetPage}
             options={{
-              fonctions: [...new Set(dataFiltered.map((option) => option.title.trim()))]
+              fonctions: [...new Set(tableData.map((option) => option.title.trim()))]
             }}
           />
 
@@ -527,7 +610,7 @@ export function DeclarationListView() {
             <DeclarationTableFiltersResult
               filters={filters}
               onResetPage={table.onResetPage}
-              totalResults={dataFiltered.length}
+              totalResults={pagination.count}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
@@ -536,11 +619,11 @@ export function DeclarationListView() {
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
-              rowCount={dataFiltered.length}
+              rowCount={pagination.count}
               onSelectAllRows={(checked) => {
                 table.onSelectAllRows(
                   checked,
-                  dataFiltered.map((row) => row.id)
+                  tableData.map((row) => row.slug)
                 );
               }}
               action={
@@ -578,23 +661,19 @@ export function DeclarationListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={dataFiltered.length}
+                  rowCount={pagination.count}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      dataFiltered.map((row) => row.id)
+                      tableData.map((row) => row.slug)
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
+                  {tableData
                     .map((row) => (
                       <DeclarationTableRow
                         user={user}
@@ -612,10 +691,14 @@ export function DeclarationListView() {
                       />
                     ))}
 
-                  <TableEmptyRows
-                    height={table.dense ? 56 : 56 + 20}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                  />
+                  {tableData.length > 0 &&
+                    tableData.length < table.rowsPerPage && (
+                      <TableEmptyRows
+                        height={table.dense ? 56 : 76}
+                        emptyRows={table.rowsPerPage - tableData.length}
+                      />
+                    )}
+
 
                   <TableNoData notFound={notFound} />
                 </TableBody>
@@ -626,7 +709,7 @@ export function DeclarationListView() {
           <TablePaginationCustom
             page={table.page}
             dense={table.dense}
-            count={dataFiltered.length}
+            count={pagination.count}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
             onChangeDense={table.onChangeDense}

@@ -92,23 +92,25 @@ export function DeclarationToolbar({
 
   const renderDownload = (
     <NoSsr>
-      <PDFDownloadLink
-        document={declaration ? <DeclarationPDF declaration={declaration} employees={employees} /> : ''}
-        fileName={declaration?.reference}
-        style={{ textDecoration: 'none' }}
-      >
-        {({ loading }) => (
-          <Tooltip title="Download">
-            <IconButton>
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                <Iconify icon="eva:cloud-download-fill" />
-              )}
-            </IconButton>
-          </Tooltip>
-        )}
-      </PDFDownloadLink>
+      {declaration && (
+        <PDFDownloadLink
+          document={declaration ? <DeclarationPDF declaration={declaration} employees={employees} /> : ''}
+          fileName={declaration?.reference}
+          style={{ textDecoration: 'none' }}
+        >
+          {({ loading }) => (
+            <Tooltip title="Telecharger">
+              <IconButton>
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <Iconify icon="eva:cloud-download-fill" />
+                )}
+              </IconButton>
+            </Tooltip>
+          )}
+        </PDFDownloadLink>
+      )}
     </NoSsr>
   );
 
@@ -122,8 +124,8 @@ export function DeclarationToolbar({
       >
 
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-          {user?.type === 'admin' && declaration?.status === 'UNSUBMITTED' && (
-            <Tooltip title="Edit">
+          {user?.type === 'Admin' && declaration?.status === 'UNSUBMITTED' && (
+            <Tooltip title="Modifier">
               <IconButton onClick={handleEdit}>
                 <Iconify icon="solar:pen-bold" />
               </IconButton>
@@ -134,13 +136,13 @@ export function DeclarationToolbar({
             <DeclarationDetailsPrint ref={componentRef} declaration={declaration} employees={employees} />
           </Box>
 
-          <Tooltip title="Print">
+          <Tooltip title="Imprimer">
             <IconButton onClick={handlePrint}>
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Send">
+          {/* <Tooltip title="Send">
             <IconButton onClick={() => setOpenSend(true)}>
               <Iconify icon="iconamoon:send-fill" />
             </IconButton>
@@ -150,7 +152,7 @@ export function DeclarationToolbar({
             <IconButton onClick={() => setOpenShare(true)}>
               <Iconify icon="solar:share-bold" />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Stack>
 
         <TextField
