@@ -26,11 +26,8 @@ import { Label } from 'src/components/label';
 export function EmployeeTableRow({
     row,
     selected,
-    onEditRow,
-    onSelectRow,
-    onDeleteRow,
     onViewRow,
-    onUpdateRow,
+
 
 }) {
     const confirm = useBoolean();

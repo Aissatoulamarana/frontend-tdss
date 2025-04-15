@@ -76,72 +76,36 @@ export function EmployeeListView() {
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
+    const [selectedFilter, setSelectedFilter] = useState('name'); // filtre selectionné
 
-    const filters = useSetState({ name: '', job: [], status: 'all' });
-
-    const dataFiltered = applyFilter({
-        inputData: tableData,
-        comparator: getComparator(table.order, table.orderBy),
-        filters: filters.state,
+    const [pagination, setPagination] = useState({
+        count: 0,
+        next: null,
+        previous: null,
     });
 
-    const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
+    const filters = useSetState({
+        name: '',
+        job: [],
+        status: 'all',
+        passport_number: '',
+        reference: '',
+    });
 
+
+    // Comme le filtrage est effectué côté backend,
+
+    // On affichera directement tableData.
     const canReset =
-        !!filters.state.name || filters.state.job.length > 0 || filters.state.status !== 'all';
-
-    const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
-
-    const handleDeleteRow = useCallback(
-        async (slug) => {
-            try {
-                // Appel à l'API backend pour supprimer l'élément
-                const response = await axios.delete(API.UpdateProfile(slug));
-
-                if (response) {
-                    // Mise à jour des données côté frontend après suppression réussie
-                    const updatedTableData = tableData.filter((row) => row.slug !== slug);
-                    setTableData(updatedTableData);
-
-                    toast.success('Suppression réussie !');
-
-                    // Mise à jour de la pagination ou des données affichées
-                    table.onUpdatePageDeleteRow(dataInPage.length);
-                } else {
-                    console.error("Erreur lors de la suppression :", response.data.error);
-                    toast.error('Une erreur est survenue.');
-                }
-            } catch (error) {
-                console.error('Erreur réseau ou serveur :', error);
-                toast.error('Erreur lors de la communication avec le serveur.');
-            }
-        },
-        [dataInPage.length, table, tableData]
-    );
+        !!filters.state.name ||
+        filters.state.job.length > 0 ||
+        filters.state.status !== 'all' ||
+        !!filters.state.passport_number ||
+        !!filters.state.reference;
 
 
-    const handleDeleteRows = useCallback(() => {
-        const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-
-        toast.success('Suppression reussie!');
-
-        setTableData(deleteRows);
-
-        table.onUpdatePageDeleteRows({
-            totalRowsInPage: dataInPage.length,
-            totalRowsFiltered: dataFiltered.length,
-        });
-    }, [dataFiltered.length, dataInPage.length, table, tableData]);
-
-
-    const handleUpdateRow = useCallback((updatedClient) => {
-        console.log("Mise à jour dans le parent :", updatedClient);
-        setTableData((prevData) =>
-            prevData.map((row) =>
-                row.slug === updatedClient.slug ? updatedClient : row
-            )
-        );
-    }, []);
+    // Pour indiquer l'absence de données, on vérifie le total
+    const notFound = pagination.count === 0 && canReset;
 
 
 
@@ -152,11 +116,6 @@ export function EmployeeListView() {
         [router]
     );
 
-    const handleEditRow = useCallback(
-        (slug) => {
-            router.push(paths.dashboard.client.edit(slug));
-        }, [router]
-    );
 
     const handleFilterStatus = useCallback(
         (event, newValue) => {
@@ -168,11 +127,34 @@ export function EmployeeListView() {
 
 
     useEffect(() => {
-        // Fonction pour récupérer les données
         const fetchEmployee = async () => {
+            setLoading(true);
             try {
-                const response = await axios.get(API.listEmployee());
-                setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+                const offset = table.page * table.rowsPerPage;
+                const url = API.listEmployee();
+                // Construction des params avec des filtres
+
+                const params = {
+                    limit: table.rowsPerPage,
+                    offset: offset,
+                    ...(filters.state.passport_number
+                        ? { passport_number: filters.state.passport_number }
+                        : filters.state.reference
+                            ? { reference: filters.state.reference }
+                            : filters.state.name
+                                ? { name: filters.state.name }
+                                : {}
+                    ),
+                };
+
+
+                const response = await axios.get(url, { params });
+                setTableData(response.data.results);
+                setPagination({
+                    count: response.data.count,
+                    next: response.data.next,
+                    previous: response.data.previous,
+                });
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -181,7 +163,13 @@ export function EmployeeListView() {
         };
 
         fetchEmployee();
-    }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+    }, [
+        table.page,
+        table.rowsPerPage,
+        filters.state.name,
+        filters.state.passport_number,
+        filters.state.reference,
+    ]);
 
     if (loading) {
         console.info('Loading ...');
@@ -200,16 +188,6 @@ export function EmployeeListView() {
                         { name: 'Employés', href: paths.dashboard.employee.list },
                         { name: 'Listes des employés' },
                     ]}
-                    // action={
-                    //     <Button
-                    //         component={RouterLink}
-                    //         href={paths.dashboard.client.new}
-                    //         variant="contained"
-                    //         startIcon={<Iconify icon="mingcute:add-line" />}
-                    //     >
-                    //         Nouvel Profil
-                    //     </Button>
-                    // }
                     sx={{ mb: { xs: 3, md: 5 } }}
                 />
 
@@ -230,21 +208,8 @@ export function EmployeeListView() {
                                 value={tab.value}
                                 label={tab.label}
                                 icon={
-                                    <Label
-                                        variant={
-                                            ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                                            'soft'
-                                        }
-                                        color={
-                                            (tab.value === 'ON' && 'success') ||
-                                            (tab.value === 'pending' && 'warning') ||
-                                            (tab.value === 'banned' && 'error') ||
-                                            'default'
-                                        }
-                                    >
-                                        {['ON', 'pending', 'banned', 'inactif'].includes(tab.value)
-                                            ? tableData.filter((client) => client.status === tab.value).length
-                                            : tableData.length}
+                                    <Label variant="filled" color="default">
+                                        {pagination.count}
                                     </Label>
                                 }
                             />
@@ -253,38 +218,25 @@ export function EmployeeListView() {
 
                     <EmployeeTableToolbar
                         filters={filters}
-                        onResetPage={table.onResetPage}
-                        options={{ roles: [... new Set(tableData.map((row) => row.job.trim()))] }}
+                        onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
+                        // onFilterChange={handleFilterChange}
+                        selectedFilter={selectedFilter}
+                        setSelectedFilter={setSelectedFilter}
+                        options={{
+                            roles: [...new Set(tableData.map((row) => row.job.trim()))],
+                        }}
                     />
 
                     {canReset && (
                         <EmployeeTableFiltersResult
                             filters={filters}
-                            totalResults={dataFiltered.length}
+                            totalResults={pagination.count}
                             onResetPage={table.onResetPage}
                             sx={{ p: 2.5, pt: 0 }}
                         />
                     )}
 
                     <Box sx={{ position: 'relative' }}>
-                        {/* <TableSelectedAction
-                            dense={table.dense}
-                            numSelected={table.selected.length}
-                            rowCount={dataFiltered.length}
-                            onSelectAllRows={(checked) =>
-                                table.onSelectAllRows(
-                                    checked,
-                                    dataFiltered.map((row) => row.slug)
-                                )
-                            }
-                            action={
-                                <Tooltip title="Supprimer">
-                                    <IconButton color="primary" onClick={confirm.onTrue}>
-                                        <Iconify icon="solar:trash-bin-trash-bold" />
-                                    </IconButton>
-                                </Tooltip>
-                            }
-                        /> */}
 
                         <Scrollbar>
                             <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
@@ -292,40 +244,37 @@ export function EmployeeListView() {
                                     order={table.order}
                                     orderBy={table.orderBy}
                                     headLabel={TABLE_HEAD}
-                                    rowCount={dataFiltered.length}
+                                    rowCount={pagination.count}
                                     numSelected={table.selected.length}
                                     onSort={table.onSort}
                                     onSelectAllRows={(checked) =>
                                         table.onSelectAllRows(
                                             checked,
-                                            dataFiltered.map((row) => row.slug)
+                                            tableData.map((row) => row.slug)
                                         )
                                     }
                                 />
 
                                 <TableBody>
-                                    {dataFiltered
-                                        .slice(
-                                            table.page * table.rowsPerPage,
-                                            table.page * table.rowsPerPage + table.rowsPerPage
-                                        )
+                                    {tableData
                                         .map((row) => (
                                             <EmployeeTableRow
                                                 key={row.slug}
                                                 row={row}
                                                 selected={table.selected.includes(row.slug)}
                                                 onSelectRow={() => table.onSelectRow(row.slug)}
-                                                onDeleteRow={() => handleDeleteRow(row.slug)}
-                                                onEditRow={() => handleEditRow(row.slug)}
                                                 onViewRow={() => handleViewRow(row.slug)}
-                                                onUpdateRow={handleUpdateRow}
                                             />
                                         ))}
 
-                                    <TableEmptyRows
-                                        height={table.dense ? 56 : 56 + 20}
-                                        emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                                    />
+                                    {tableData.length > 0 &&
+                                        tableData.length < table.rowsPerPage && (
+                                            <TableEmptyRows
+                                                height={table.dense ? 56 : 76}
+                                                emptyRows={table.rowsPerPage - tableData.length}
+                                            />
+                                        )}
+
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
@@ -335,13 +284,14 @@ export function EmployeeListView() {
 
                     <TablePaginationCustom
                         page={table.page}
-                        dense={table.dense}
-                        count={dataFiltered.length}
-                        rowsPerPage={table.rowsPerPage}
                         onPageChange={table.onChangePage}
-                        onChangeDense={table.onChangeDense}
+                        rowsPerPage={table.rowsPerPage}
                         onRowsPerPageChange={table.onChangeRowsPerPage}
+                        dense={table.dense}
+                        count={pagination.count}
+                        onChangeDense={table.onChangeDense}
                     />
+
                 </Card>
             </DashboardContent>
 
