@@ -49,8 +49,7 @@ import { ClientTableToolbar } from '../client-table-toolbar';
 const STATUS_OPTIONS = [
     { value: 'all', label: 'Tous' },
     { value: 'ON', label: 'Actif' },
-    { value: 'pending', label: 'Pending' },
-    { value: 'banned', label: 'Rejected' },
+
     { value: 'inactif', label: 'Inactif' },
 ];
 
@@ -77,6 +76,12 @@ export function ClientListView() {
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
 
+    const [pagination, setPagination] = useState({
+        count: 0,
+        next: null,
+        previous: null,
+    });
+
     const filters = useSetState({ name: '', type: [], status: 'all' });
 
     const dataFiltered = applyFilter({
@@ -90,7 +95,8 @@ export function ClientListView() {
     const canReset =
         !!filters.state.name || filters.state.type.length > 0 || filters.state.status !== 'all';
 
-    const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+    const notFound = pagination.count === 0 && canReset;
+
 
     const handleDeleteRow = useCallback(
         async (slug) => {
@@ -171,8 +177,18 @@ export function ClientListView() {
         // Fonction pour récupérer les données
         const fetchClient = async () => {
             try {
-                const response = await axios.get(API.listProfiles());
+                const offset = table.page * table.rowsPerPage;
+                const params = {
+                    limit: table.rowsPerPage,
+                    offset: offset
+                }
+                const response = await axios.get(API.listProfiles(), { params });
                 setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+                setPagination({
+                    count: response.data.count,
+                    next: response.data.next,
+                    previous: response.data.previous,
+                })
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -181,7 +197,7 @@ export function ClientListView() {
         };
 
         fetchClient();
-    }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+    }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
     if (loading) {
         console.info('Loading ...');
@@ -242,7 +258,7 @@ export function ClientListView() {
                                             'default'
                                         }
                                     >
-                                        {['ON', 'pending', 'banned', 'inactif'].includes(tab.value)
+                                        {['ON', 'inactif'].includes(tab.value)
                                             ? tableData.filter((client) => client.status === tab.value).length
                                             : tableData.length}
                                     </Label>
@@ -254,13 +270,13 @@ export function ClientListView() {
                     <ClientTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage}
-                        options={{ roles: [... new Set(dataFiltered.map((row) => row.type.trim()))] }}
+                        options={{ roles: [... new Set(tableData.map((row) => row.type.trim()))] }}
                     />
 
                     {canReset && (
                         <ClientTableFiltersResult
                             filters={filters}
-                            totalResults={dataFiltered.length}
+                            totalResults={pagination.count}
                             onResetPage={table.onResetPage}
                             sx={{ p: 2.5, pt: 0 }}
                         />
@@ -270,11 +286,11 @@ export function ClientListView() {
                         <TableSelectedAction
                             dense={table.dense}
                             numSelected={table.selected.length}
-                            rowCount={dataFiltered.length}
+                            rowCount={pagination.count}
                             onSelectAllRows={(checked) =>
                                 table.onSelectAllRows(
                                     checked,
-                                    dataFiltered.map((row) => row.slug)
+                                    tableData.map((row) => row.slug)
                                 )
                             }
                             action={
@@ -292,23 +308,20 @@ export function ClientListView() {
                                     order={table.order}
                                     orderBy={table.orderBy}
                                     headLabel={TABLE_HEAD}
-                                    rowCount={dataFiltered.length}
+                                    rowCount={pagination.count}
                                     numSelected={table.selected.length}
                                     onSort={table.onSort}
                                     onSelectAllRows={(checked) =>
                                         table.onSelectAllRows(
                                             checked,
-                                            dataFiltered.map((row) => row.slug)
+                                            tableData.map((row) => row.slug)
                                         )
                                     }
                                 />
 
                                 <TableBody>
-                                    {dataFiltered
-                                        .slice(
-                                            table.page * table.rowsPerPage,
-                                            table.page * table.rowsPerPage + table.rowsPerPage
-                                        )
+                                    {tableData
+
                                         .map((row) => (
                                             <ClientTableRow
                                                 key={row.slug}
@@ -322,10 +335,13 @@ export function ClientListView() {
                                             />
                                         ))}
 
-                                    <TableEmptyRows
-                                        height={table.dense ? 56 : 56 + 20}
-                                        emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                                    />
+                                    {tableData.length > 0 &&
+                                        tableData.length < table.rowsPerPage && (
+                                            <TableEmptyRows
+                                                height={table.dense ? 56 : 76}
+                                                emptyRows={table.rowsPerPage - tableData.length}
+                                            />
+                                        )}
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
@@ -336,7 +352,7 @@ export function ClientListView() {
                     <TablePaginationCustom
                         page={table.page}
                         dense={table.dense}
-                        count={dataFiltered.length}
+                        count={pagination.count}
                         rowsPerPage={table.rowsPerPage}
                         onPageChange={table.onChangePage}
                         onChangeDense={table.onChangeDense}
