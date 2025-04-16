@@ -86,6 +86,11 @@ export function FactureListView() {
   const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
   const [openSecondDialog, setOpenSecondDialog] = useState(false);
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+  });
 
   const filters = useSetState({
     name: '',
@@ -112,7 +117,8 @@ export function FactureListView() {
     filters.state.statut !== 'all' ||
     (!!filters.state.startDate && !!filters.state.endDate);
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const notFound = pagination.count === 0 && canReset;
+
 
   const getInvoiceLength = (statut) => tableData.filter((item) => item.statut === statut).length;
 
@@ -193,27 +199,14 @@ export function FactureListView() {
 
   const handlePaidRow = useCallback(
     async (slug) => {
-      if (!selectedBanque) {
-        toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
-        return;
-      }
-
-      const access_token = sessionStorage.getItem(STORAGE_KEY);
-      const data = {
-        banque_id: selectedBanque?.value
-      }
-      console.log("Données envoyées:", data);
-      console.log("Token d'accès:", access_token);
+      // if (!selectedBanque) {
+      //   toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
+      //   return;
+      // }
 
       try {
         // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(API.paidFacture(slug), data, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
-          },
-
-        });
+        const response = await axios.post(API.paidFacture(slug));
 
         if (response.data.success) {
           console.log('Facture payée:', response.data.message);
@@ -228,7 +221,7 @@ export function FactureListView() {
         alert('Erreur lors de la communication avec le serveur.');
       }
     },
-    [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
+    [router,] // S'assurer de la dépendance à selectedBanque
   );
 
   const handlePaid = useCallback(
@@ -243,18 +236,11 @@ export function FactureListView() {
         banque_id: selectedBanque?.value,
         facture_ids: dataFiltered.map((row) => row.slug)
       }
-      console.log("Données envoyées:", data);
-      console.log("Token d'accès:", access_token);
+
 
       try {
         // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(API.PaidFactures(), data, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${access_token}` // 🔥 Envoi du token
-          },
-
-        });
+        const response = await axios.post(API.PaidFactures(), data);
 
         if (response.data.success) {
           console.log('Factures payées:', response.data.message);
@@ -281,17 +267,28 @@ export function FactureListView() {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
       try {
-        const response = await axios.get(API.listFactures()); // Remplacez l'URL par celle de votre backend
+        const offset = table.page * table.rowsPerPage;
+        const params = {
+          limit: table.rowsPerPage,
+          offset: offset,
+        }
+        const response = await axios.get(API.listFactures(), { params }); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous
+        })
       } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
+        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
+        toast(error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchFactures();
-  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading factures...');
@@ -388,14 +385,14 @@ export function FactureListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ services: dataFiltered.map((option) => option.name) }}
+            options={{ services: tableData.map((option) => option.name) }}
           />
 
           {canReset && (
             <FactureTableFilters
               filters={filters}
               onResetPage={table.onResetPage}
-              totalResults={dataFiltered.length}
+              totalResults={pagination.count}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
@@ -404,11 +401,11 @@ export function FactureListView() {
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
-              rowCount={dataFiltered.length}
+              rowCount={pagination.count}
               onSelectAllRows={(checked) => {
                 table.onSelectAllRows(
                   checked,
-                  dataFiltered.map((row) => row.slug)
+                  tableData.map((row) => row.slug)
                 );
               }}
               action={
@@ -449,23 +446,20 @@ export function FactureListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={dataFiltered.length}
+                  rowCount={pagination.count}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      dataFiltered.map((row) => row.slug)
+                      tableData.map((row) => row.slug)
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
+                  {tableData
+
                     .map((row) => (
                       <FactureTableRow
                         key={row.slug}
@@ -483,10 +477,13 @@ export function FactureListView() {
                       />
                     ))}
 
-                  <TableEmptyRows
-                    height={table.dense ? 56 : 56 + 20}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                  />
+                  {tableData.length > 0 &&
+                    tableData.length < table.rowsPerPage && (
+                      <TableEmptyRows
+                        height={table.dense ? 56 : 76}
+                        emptyRows={table.rowsPerPage - tableData.length}
+                      />
+                    )}
 
                   <TableNoData notFound={notFound} />
                 </TableBody>
@@ -497,7 +494,7 @@ export function FactureListView() {
           <TablePaginationCustom
             page={table.page}
             dense={table.dense}
-            count={dataFiltered.length}
+            count={pagination.count}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
             onChangeDense={table.onChangeDense}

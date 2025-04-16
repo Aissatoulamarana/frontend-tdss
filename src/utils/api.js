@@ -45,9 +45,7 @@ const API = {
 
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
-  detailsFactures:(slug) => `${BASE_URL}/factures/${slug}`, // details facture
-
-  paidFacture: (slug) => `${BASE_URL}factures/${slug}/mark-paid/`, // Paiement d'une facture
+  paidFacture: () => `${BASE_URL}/factures/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
   PaidFactures: () => `${BASE_URL}/paid_factures/`, // payer plusieurs factures a la fois 
   
@@ -71,7 +69,7 @@ const API = {
   listRegions: () => `${BASE_URL}/regions/`,
 
   createAgence: () => `${BASE_URL}/agency/`,
-  listAgences: () => `${BASE_URL}/regions/agencies/`,
+  listAgences: () => `${BASE_URL}/regions/agencies/?limit=100&offset=100/`,
 
   // activate: (id) => `${BASE_URL}/activate-user/${id}/`,
   banni: (id) => `${BASE_URL}/banni-user/${id}/`,
@@ -87,7 +85,7 @@ const API = {
   listProfilesTypes: () => `${BASE_URL}/profiles/types/`,
   
   createProfile: () => `${BASE_URL}/profiles/`,
-  listProfiles: () => `${BASE_URL}/profiles/`,
+  listProfiles: () => `${BASE_URL}/profiles/?limit=100&offset=100/`,
   detailsProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listActiveProfile: () => `${BASE_URL}/profiles/active-profiles/`,
