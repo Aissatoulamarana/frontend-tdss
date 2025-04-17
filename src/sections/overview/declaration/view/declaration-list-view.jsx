@@ -245,6 +245,36 @@ export function DeclarationListView() {
     [router]
   );
 
+  const handleUnSubmitRow = useCallback(
+    async (slug) => {
+      try {
+        // Appel à l'API backend pour valider la déclaration en envoyant l'action
+        const response = await axios.post(API.unsubmitDeclaration(slug), {
+
+        });
+
+        if (response) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          toast.success('Déclaration mise en édition avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.slug === slug ? { ...item, status: 'UNSUBMITTED' } : item
+            )
+          );
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors de la mise en edition:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error('Erreur lors de la communication avec le serveur.');
+      }
+    },
+    [router]
+  );
+
   const handleSubmitRow = useCallback(
     async (slug) => {
       try {
@@ -682,6 +712,7 @@ export function DeclarationListView() {
                         onViewRow={() => handleViewRow(row.slug)}
                         onEditRow={() => handleEditRow(row.slug)}
                         onSubmitRow={() => handleSubmitRow(row.slug)}
+                        onUnSubmitRow={() => handleUnSubmitRow(row.slug)}
                         onDeleteRow={() => handleDeleteRow(row.slug)}
                         onValidateRow={() => handleValidateRow(row.slug)}
                         onFactureRow={() => handleFacturer(row.slug)}

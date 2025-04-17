@@ -119,13 +119,12 @@ export function UserTableRow({
         <MenuList>
           <MenuItem
             onClick={() => {
-              confirm.onTrue();
+              onViewRow();
               popover.onClose();
             }}
-            sx={{ color: 'error.main' }}
           >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Supprimer
+            <Iconify icon="solar:eye-bold" />
+            Voir
           </MenuItem>
 
           <MenuItem
@@ -137,15 +136,20 @@ export function UserTableRow({
             <Iconify icon="solar:pen-bold" />
             Modifier
           </MenuItem>
-          <MenuItem
+
+
+          {/* <MenuItem
             onClick={() => {
-              onViewRow();
+              confirm.onTrue();
               popover.onClose();
             }}
+            sx={{ color: 'error.main' }}
           >
-            <Iconify icon="solar:eye-bold" />
-            Voir
-          </MenuItem>
+            <Iconify icon="solar:trash-bin-trash-bold" />
+            Supprimer
+          </MenuItem> */}
+
+
 
         </MenuList>
       </CustomPopover>

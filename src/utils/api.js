@@ -27,11 +27,13 @@ const API = {
   detailsDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Voir les details d'une déclaration
   validateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/validate/`, // Validation d'une déclaration
   submitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/submit/`, // Soumettre une déclaration
+  unsubmitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/unsubmit/`, // mettre le statut rejet en statut non-soumise d'une déclaration
   facturerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/facturer/`, // facturer une déclaration
   rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/reject/`, // Rejetter une déclaration 
   supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
   updateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`,// Modifier une déclaration
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
+
 
 
   Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
@@ -85,7 +87,7 @@ const API = {
   listProfilesTypes: () => `${BASE_URL}/profiles/types/`,
   
   createProfile: () => `${BASE_URL}/profiles/`,
-  listProfiles: () => `${BASE_URL}/profiles/?limit=100&offset=100/`,
+  listProfiles: () => `${BASE_URL}/profiles/?limit=200&offset=200/`,
   detailsProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   listActiveProfile: () => `${BASE_URL}/profiles/active-profiles/`,

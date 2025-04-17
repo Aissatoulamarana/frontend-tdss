@@ -44,12 +44,13 @@ import {
 import { UserTableFiltersResult } from '../user-table-filters-result';
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
+import { fabClasses } from '@mui/material';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous' },
-  { value: 'actif', label: 'Actif' },
-  { value: 'inactif', label: 'Inactif' },
+  // { value: 'is_active', label: 'Actif' },
+  // { value: 'is_active', label: 'Inactif' },
 ];
 
 const TABLE_HEAD = [
@@ -104,7 +105,7 @@ export function UserListView() {
       try {
         const response = axios.delete(API.userDelete(slug));
 
-        if (response) {
+        if (response.data.success) {
           const updatedTableData = tableData.filter((row) => row.slug !== slug);
           setTableData(updatedTableData)
 
@@ -115,9 +116,11 @@ export function UserListView() {
           console.error('Erreur lors de la suppression ',)
           toast.error('Une erreur est survenue.');
         }
-      } catch (e) {
+      } catch (error) {
         console.error('Erreur réseau ou serveur :', error)
-        toast.error('Erreur lors de la communication avec le serveur');
+        const errorMessage =
+          error.error || error.details || error.message;
+        toast.error(`Erreur : ${errorMessage}`);
       }
     },
     [dataInPage.length, table, tableData]
@@ -255,9 +258,9 @@ export function UserListView() {
                       'soft'
                     }
                     color={
-                      (tab.value === 'active' && 'success') ||
-                      (tab.value === 'pending' && 'warning') ||
-                      (tab.value === 'banned' && 'error') ||
+                      (tab.value === true && 'success') ||
+                      (tab.value === false && 'warning') ||
+
                       'default'
                     }
                   >
@@ -286,7 +289,7 @@ export function UserListView() {
           )}
 
           <Box sx={{ position: 'relative' }}>
-            <TableSelectedAction
+            {/* <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
               rowCount={pagination.count}
@@ -303,7 +306,7 @@ export function UserListView() {
                   </IconButton>
                 </Tooltip>
               }
-            />
+            /> */}
 
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>

@@ -50,7 +50,7 @@ export function AccountView() {
         heading="Profil"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Utilisateurs', href: paths.dashboard.user.root },
+          { name: 'Utilisateurs', href: paths.dashboard.user.list },
           { name: 'Profil' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}

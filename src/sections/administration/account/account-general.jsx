@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +22,9 @@ import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import { useMockedUser } from 'src/auth/hooks';
 import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
 
+
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -51,17 +54,29 @@ export function AccountGeneral() {
   const [profils, setProfils] = useState([]);
   const [agences, setAgences] = useState([]);
 
-  const defaultValues = {
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
-    email: user?.email || '',
-    picture: user?.picture || null,
-    phone: user?.phone || '',
-    type: user?.type || '',
-    profile: user?.profile || '',
-    location: user?.location || '',
-    agency: user?.agency || '',
-  };
+  const defaultValues = useMemo(() => {
+    const currentRegion = regions?.find(region => region.name === user?.location);
+    const currentRole = roles?.find(role => role.name === user?.type);
+    const currentProfil = profils?.find(profil => profil.name === user?.profile);
+    const currentAgence = agences?.find(agence => agence.name === user?.agency);
+
+    return {
+      first_name: user?.first_name || '',
+      last_name: user?.last_name || '',
+      email: user?.email || '',
+      picture: user?.picture || '',
+      phone: user?.phone || '',
+      type: user?.type === 'Admin'
+        ? currentRole?.slug || user?.type?.slug || ''
+        : currentRole || user?.type || '',
+      profile: user?.type === 'Admin'
+        ? currentProfil?.slug || user?.profile?.slug || ''
+        : currentProfil || user?.profile || '',
+      location: currentRegion ? currentRegion.slug : user?.location?.slug || '',
+      agency: currentAgence ? currentAgence.slug : user?.agency?.slug || '',
+    };
+  }, [regions, roles, profils, agences, user]);
+
 
   const methods = useForm({
     mode: 'all',
@@ -70,6 +85,7 @@ export function AccountGeneral() {
   });
 
   const {
+    reset,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
@@ -77,8 +93,11 @@ export function AccountGeneral() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      toast.success('Update success!');
-      console.info('DATA', data);
+      const response = await axios.patch(API.me())
+      if (response.data) {
+        toast.success('Mise à jour reussie!');
+        console.info('DATA', data);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -90,6 +109,11 @@ export function AccountGeneral() {
     getUserTypes().then(data => setRoles(data));
     getProfils().then(data => setProfils(data));
   })
+
+  // Pour mettre à jour les valeurs du formulaire dès que currentClient change
+  useEffect(() => {
+    reset(defaultValues);
+  }, [user, defaultValues, reset]);
 
   return (
     <Form methods={methods} onSubmit={onSubmit}>
@@ -152,13 +176,25 @@ export function AccountGeneral() {
               <Field.Text name="email" label="Adresse Mail" />
               <Field.Phone name="phone" label="Numéro de Téléphone" />
 
-              <Field.Select name="profile" label="Profil" >
-                {profils.map((profil) => (
-                  <MenuItem key={profil?.slug} value={profil?.slug}>
-                    {profil?.name}
-                  </MenuItem>
-                ))}
-              </Field.Select>
+              {user.type === 'Admin' ? (
+                <Field.Select name="profile" label="Profil">
+                  {profils.map((profil) => (
+                    <MenuItem key={profil?.slug} value={profil?.slug}>
+                      {profil?.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              ) : (
+                <Field.Text
+                  name="profile"
+                  label="Profil"
+                  disabled
+
+                  inputlabelprops={{ shrink: true }}
+                />
+              )}
+
+
               <Field.Select name="location" label="Region" >
                 {regions.map((region) => (
                   <MenuItem key={region?.slug} value={region?.slug}>
@@ -175,13 +211,23 @@ export function AccountGeneral() {
                 ))
                 }
               </Field.Select>
-              <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
-                {roles?.map((role) => (
-                  <MenuItem key={role.slug} value={role.slug}>
-                    {role?.name}
-                  </MenuItem>
-                ))}
-              </Field.Select>
+              {user.type === 'Admin' ? (
+                <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
+                  {roles?.map((role) => (
+                    <MenuItem key={role.slug} value={role.slug}>
+                      {role?.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              ) : (
+                <Field.Text
+                  name="type"
+                  label="Role"
+                  disabled
+                  inputlabelprops={{ shrink: true }}
+                />
+              )}
+
             </Box>
 
             <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>

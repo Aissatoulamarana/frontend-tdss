@@ -36,7 +36,7 @@ export function TableRowCom({
         <>
             <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
                 <TableCell padding="checkbox">
-                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                    {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
                 </TableCell>
 
                 <TableCell>
@@ -136,7 +136,7 @@ export function TableRowComDevise({
         <>
             <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
                 <TableCell padding="checkbox">
-                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                    {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
                 </TableCell>
                 {/* name, sign, value */}
                 <TableCell sx={{ width: "30%", whiteSpace: 'nowrap' }}>{row.name}</TableCell>
@@ -211,7 +211,7 @@ export function TableRowComPermit({
         <>
             <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
                 <TableCell padding="checkbox">
-                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                    {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
                 </TableCell>
                 {/* name, sign, value */}
                 <TableCell sx={{ width: "25%", whiteSpace: 'nowrap' }}>{row.name}</TableCell>

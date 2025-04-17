@@ -41,10 +41,10 @@ export function JobCategoryTableRow({
         <>
             <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
                 <TableCell padding="checkbox">
-                    <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} />
+                    {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
                 </TableCell>
 
-                <TableCell>
+                <TableCell sx={{ whiteSpace: 'nowrap' }}>
                     <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
                         <Link color="inherit" onClick={onViewRow} sx={{ cursor: 'pointer' }} underline="hover">
                             {row.name}
@@ -54,8 +54,8 @@ export function JobCategoryTableRow({
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.permit}</TableCell>
 
                 {/* <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.status}</TableCell> */}
-                
-                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+
+                <TableCell >
                     <Label
                         variant="soft"
                         color={
@@ -64,20 +64,25 @@ export function JobCategoryTableRow({
                             'default'
                         }
                     >
-                        {row.status === 'ON' ? 'Actif' : 'Inactif' }
+                        {row.status === 'ON' ? 'Actif' : 'Inactif'}
                     </Label>
-                    <Tooltip title="Quick Edit" placement="top" arrow>
-                        <IconButton
-                            color={quickEdit.value ? 'inherit' : 'default'}
-                            onClick={quickEdit.onTrue}
-                        >
-                            <Iconify icon="solar:pen-bold" />
-                        </IconButton>
-                    </Tooltip>
+                </TableCell>
+
+                <TableCell>
+                    <Stack direction="row" alignItems="center">
+                        <Tooltip title="Quick Edit" placement="top" arrow>
+                            <IconButton
+                                color={quickEdit.value ? 'inherit' : 'default'}
+                                onClick={quickEdit.onTrue}
+                            >
+                                <Iconify icon="solar:pen-bold" />
+                            </IconButton>
+                        </Tooltip>
 
                         <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
                             <Iconify icon="eva:more-vertical-fill" />
                         </IconButton>
+                    </Stack>
                 </TableCell>
             </TableRow>
 

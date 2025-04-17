@@ -47,9 +47,9 @@ import { ClientTableToolbar } from '../client-table-toolbar';
 
 const STATUS_OPTIONS = [
     { value: 'all', label: 'Tous' },
-    { value: 'ON', label: 'Actif' },
+    // { value: 'ON', label: 'Actif' },
 
-    { value: 'inactif', label: 'Inactif' },
+    // { value: 'inactif', label: 'Inactif' },
 ];
 
 const TABLE_HEAD = [
@@ -209,11 +209,11 @@ export function ClientListView() {
         <>
             <DashboardContent maxWidth="xl">
                 <CustomBreadcrumbs
-                    heading="Listes des Profils"
+                    heading="Listes des structures"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Profil', href: paths.dashboard.client.root },
-                        { name: 'Listes des profils' },
+                        { name: 'Structures', href: paths.dashboard.client.root },
+                        { name: 'Listes des Structures' },
                     ]}
                     action={
                         <Button
@@ -222,7 +222,7 @@ export function ClientListView() {
                             variant="contained"
                             startIcon={<Iconify icon="mingcute:add-line" />}
                         >
-                            Nouvel Profil
+                            Nouvelle
                         </Button>
                     }
                     sx={{ mb: { xs: 3, md: 5 } }}

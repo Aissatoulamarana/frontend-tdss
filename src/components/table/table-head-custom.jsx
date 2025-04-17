@@ -38,7 +38,7 @@ export function TableHeadCustom({
       <TableRow>
         {onSelectAllRows && (
           <TableCell padding="checkbox">
-            <BpCheckbox
+            {/* <BpCheckbox
 
               indeterminate={!!numSelected && numSelected < rowCount}
               checked={!!rowCount && numSelected === rowCount}
@@ -47,7 +47,7 @@ export function TableHeadCustom({
                 name: 'select-all-rows',
                 'aria-label': 'select all rows',
               }}
-            />
+            /> */}
           </TableCell>
         )}
 

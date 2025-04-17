@@ -18,9 +18,9 @@ export function AgenceItem({ agence, onView, onEdit, onDelete }) {
         <>
             <Card sx={{ position: 'relative', p: 2 }}>
                 {/* Options du Popover */}
-                <IconButton onClick={popover.onOpen} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                {/* <IconButton onClick={popover.onOpen} sx={{ position: 'absolute', top: 8, right: 8 }}>
                     <Iconify icon="eva:more-vertical-fill" />
-                </IconButton>
+                </IconButton> */}
 
                 <Stack sx={{ p: 3, pb: 2 }}>
                     {/* Nom de l'agence */}

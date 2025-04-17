@@ -54,6 +54,7 @@ const TABLE_HEAD = [
     { id: 'name', label: 'Nom ' },
     { id: 'permit', label: 'Permit' },
     { id: 'status', label: 'Status' },
+    { id: '', width: 88 },
 ];
 
 // ----------------------------------------------------------------------
@@ -165,7 +166,7 @@ export function JobCategoryListView() {
         const fetchJobCategory = async () => {
             try {
                 const response = await axios.get(API.listJobCategory());
-                setTableData(response.data.results); 
+                setTableData(response.data.results);
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -187,11 +188,11 @@ export function JobCategoryListView() {
         <>
             <DashboardContent maxWidth="xl">
                 <CustomBreadcrumbs
-                    heading="Fonctions Professionnelles"
+                    heading="Categories de fonction"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Fonctions Professionnelles', href: paths.dashboard.jobCategory.root },
-                        { name: 'Listes des Fonctions Professionnelles' },
+                        { name: 'Categories de fonction ', href: paths.dashboard.jobCategory.root },
+                        { name: 'Listes des categories de fonction' },
                     ]}
                     action={
                         <Button
@@ -200,7 +201,7 @@ export function JobCategoryListView() {
                             variant="contained"
                             startIcon={<Iconify icon="mingcute:add-line" />}
                         >
-                            Nouvelle Fonction Professionnelle
+                            Nouvelle
                         </Button>
                     }
                     sx={{ mb: { xs: 3, md: 5 } }}

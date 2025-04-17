@@ -245,7 +245,7 @@ export function DeclarationTableRow({
 
           <Divider sx={{ borderStyle: 'dashed' }} />
 
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               deleteConfirm.onTrue();
               popover.onClose();
@@ -254,7 +254,7 @@ export function DeclarationTableRow({
           >
             <Iconify icon="solar:trash-bin-trash-bold" />
             Supprimer
-          </MenuItem>
+          </MenuItem> */}
         </MenuList>
       </CustomPopover>
 

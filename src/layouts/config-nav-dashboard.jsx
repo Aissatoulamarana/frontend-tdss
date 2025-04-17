@@ -129,7 +129,7 @@ export const navData = [
             // ],
           },
           {
-            title: 'Profils',
+            title: 'Structures',
             path: paths.dashboard.client.root,
             icon: ICONS.tour,
           },
