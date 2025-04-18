@@ -108,31 +108,31 @@ export function PayeurForm({ slug }) {
         <Stack spacing={3}>
           <Field.Text
             label="Nom"
-            name={"payer_data.last"}
+            name="payer_data.last"
           />
 
           <Field.Text
             label="Prénom"
-            name={'payer_data.first'}
+            name='payer_data.first'
 
           />
 
           <Field.Text
             label="Email"
-            name={'payer_data.email'}
+            name='payer_data.email'
 
           />
 
 
           <Field.Text
             label="Téléphone"
-            name={'payer_data.phone'}
+            name='payer_data.phone'
 
           />
 
           <Field.Text
             label="Adresse"
-            name={'payer_data.address'}
+            name='payer_data.address'
 
           />
 

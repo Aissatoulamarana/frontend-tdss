@@ -240,15 +240,11 @@ export function ClientNewEditForm({ currentClient }) {
                 ));
             }
 
-            s
             if (data.details) messages.push(data.details);
             if (data.error) messages.push(data.error);
             if (data.message) messages.push(data.message);
 
-
             const errorMessage = messages.join(' ');
-
-            console.error("Erreur lors de l'envoi au backend :", messages);
             toast.error(errorMessage);
         }
 
