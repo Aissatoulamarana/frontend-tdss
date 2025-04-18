@@ -78,11 +78,11 @@ export function FactureTableRow({
     <>
       <TableRow hover selected={selected}>
         <TableCell padding="checkbox">
-          <Checkbox
+          {/* <Checkbox
             checked={selected}
             onClick={onSelectRow}
             slotProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
-          />
+          /> */}
         </TableCell>
 
         <TableCell>

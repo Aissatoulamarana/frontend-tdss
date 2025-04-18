@@ -18,6 +18,7 @@ const cache = {
   job_categories:null,
   employees: null,
   jobAgent: null,
+  countries: null,
 };
 
 const pendingPromises = {};
@@ -54,7 +55,7 @@ const fetchAndCache = async (cacheKey, apiCall, dataPath = 'data') => {
 export const getRegions = () => fetchAndCache('regions', API.listRegions, 'results');
 export const getPermits = () => fetchAndCache('permits', API.listPermits, 'results');
 export const getCategories = () => fetchAndCache('categories', API.listCategories);
-export const getDevises = () => fetchAndCache('devises', API.listDevises);
+export const getDevises = () => fetchAndCache('devises', API.listDevises, 'results');
 export const getProfileTypes = () => fetchAndCache('profileTypes', API.listProfilesTypes, 'results');
 export const getPermissions = () => fetchAndCache('permissions', API.listPermissions);
 export const getAgences = () => fetchAndCache('agences', API.listAgences , 'results');
@@ -67,6 +68,7 @@ export const getJob = () => fetchAndCache('job', API.listFonctions, 'results');
 export const getJobCategories = () => fetchAndCache('job_categories', API.listJobCategory, 'results');
 export const getEmployees = () => fetchAndCache('employees', API.Employe, 'results');
 export const getJobAgent = () => fetchAndCache('jobAgent', API.listFonctionAgent, 'results');
+export const getCountries = () => fetchAndCache('countries', API.listCountry, 'results');
 
 export const clearCache = () => {
   Object.keys(cache).forEach(key => cache[key] = null);
