@@ -224,39 +224,39 @@ export function FactureListView() {
     [router,] // S'assurer de la dépendance à selectedBanque
   );
 
-  const handlePaid = useCallback(
-    async (slug) => {
-      if (!selectedBanque) {
-        toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
-        return;
-      }
+  // const handlePaid = useCallback(
+  //   async (slug) => {
+  //     if (!selectedBanque) {
+  //       toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
+  //       return;
+  //     }
 
 
-      const data = {
-        banque_id: selectedBanque?.value,
-        facture_ids: dataFiltered.map((row) => row.slug)
-      }
+  //     const data = {
+  //       banque_id: selectedBanque?.value,
+  //       facture_ids: dataFiltered.map((row) => row.slug)
+  //     }
 
 
-      try {
-        // Appel à l'API backend pour valider la déclaration
-        const response = await axios.post(API.PaidFactures(), data);
+  //     try {
+  //       // Appel à l'API backend pour valider la déclaration
+  //       const response = await axios.post(API.PaidFactures(), data);
 
-        if (response.data.success) {
-          console.log('Factures payées:', response.data.message);
-          toast.success('Factures payées avec succès !');
-          router.push(paths.dashboard.factures.list);
-        } else {
-          console.error('Erreur lors du paiement:', response.data.error);
-          toast.error('Une erreur est survenue.');
-        }
-      } catch (error) {
-        console.error('Erreur réseau ou serveur:', error);
-        alert('Erreur lors de la communication avec le serveur.');
-      }
-    },
-    [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
-  );
+  //       if (response.data.success) {
+  //         console.log('Factures payées:', response.data.message);
+  //         toast.success('Factures payées avec succès !');
+  //         router.push(paths.dashboard.factures.list);
+  //       } else {
+  //         console.error('Erreur lors du paiement:', response.data.error);
+  //         toast.error('Une erreur est survenue.');
+  //       }
+  //     } catch (error) {
+  //       console.error('Erreur réseau ou serveur:', error);
+  //       alert('Erreur lors de la communication avec le serveur.');
+  //     }
+  //   },
+  //   [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
+  // );
 
 
   const handleChangeBanque = (event, newValue) => {

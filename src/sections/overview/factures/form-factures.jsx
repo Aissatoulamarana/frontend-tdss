@@ -3,94 +3,99 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Stack, Button, MenuItem, TextField, Typography } from '@mui/material';
 import axios from 'src/utils/axios';
-import React, { useEffect, useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
-
+import { toast } from 'sonner';
 import API from 'src/utils/api';
-
-
+import { getDevises, getCountries } from 'src/utils/options';
 import { Form, Field } from 'src/components/hook-form';
 
-
-// Define the Zod schema
+// Définition du schéma Zod sans payment_method
 const NewPayeurSchema = z.object({
-  last: z.string().min(1, { message: 'Le nom est obligatoire' }),
-  first: z.string().min(1, { message: 'Le prénom est obligatoire' }),
-  email: z.string().email({ message: 'Email est obligatoire' }),
-  phone: z.string().min(1, { message: 'Le téléphone est obligatoire' }),
-  country_origin: z.string().min(1, { message: 'Selectionnez un pays' }),
-  employer: z.string().min(1, { message: "L'employeur est obligatoire" }),
-  job: z.string().min(1, { message: 'La fonction est obligatoire' }),
-
-
+  payer_data: z.object({
+    last: z.string().min(1, { message: 'Le nom est obligatoire' }),
+    first: z.string().min(1, { message: 'Le prénom est obligatoire' }),
+    email: z.string().email({ message: 'Email invalide' }),
+    phone: z.string().min(1, { message: 'Le téléphone est obligatoire' }),
+    country_origin: z.string(),
+    address: z.string().min(1, { message: 'L’adresse est obligatoire' })
+  }),
+  payment_data: z.object({
+    document: z
+      .any()
+      .refine(file => file instanceof File && file.type === 'application/pdf', {
+        message: 'Le fichier doit être un PDF'
+      }),
+    payment_method: z.string().min(1, { message: 'Le mode de paiement est requis' }),
+    devise: z.string().min(1, { message: 'La devise est requise' }),
+    comment: z.string().optional()
+  })
 });
-
-
 
 export function PayeurForm({ slug }) {
   const [devises, setDevises] = useState([]);
-  const [loading, setLoading] = useState();
+  const [countries, setCountries] = useState([]);
 
-  // Create a single form instance
-  const methods = useForm({
-    mode: 'all',
-    resolver: zodResolver(NewPayeurSchema),
-    defaultValues: {
+  const paymentTypes = [
+    { id: 'Virement', label: 'Virement' },
+    { id: 'Espèces', label: 'Espèces' },
+    { id: 'Chèques', label: 'Chèques' }
+  ];
+
+  const defaultValues = useMemo(() => ({
+    payer_data: {
       last: '',
       first: '',
       email: '',
       phone: '',
-      employer: '',
-      job: '',
       country_origin: '',
-      facture_id: slug || '', // Initialise avec id
+      address: ''
     },
+    payment_data: {
+      document: null,
+      devise: '',
+      comment: '',
+      payment_method: ''
+    }
+  }))
+
+  // Initialisation du formulaire
+  const methods = useForm({
+    mode: 'all',
+    resolver: zodResolver(NewPayeurSchema),
+    defaultValues,
   });
-  // Destructure the properties from the same form instance
+
   const {
-    register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-    setValue,
     control,
+    formState: { errors, isSubmitting },
+    reset
   } = methods;
 
-
-
+  // Récupération des devises au montage
   useEffect(() => {
-    if (slug) {
-      setValue('facture_id', slug); // Met à jour facture_id dynamiquement
-      console.log(' id de la facture', slug);
-    }
-  }, [slug, setValue]);
-
-  // Use useFieldArray with the same control instance
-  const { fields, append, remove } = useFieldArray({ control, name: 'items' });
+    getDevises().then(setDevises);
+    getCountries().then(setCountries);
+  }, []);
 
 
-  const onSubmit = handleSubmit(async (data) => {
-    data.facture_id = id; // ✅ Forcer l'ajout si besoin
 
-    console.log("Données envoyées:", data); // Vérification
-
-    if (!data.facture_id) {
-      console.error("Erreur : facture_id est manquant !");
-      return;
-    }
-
+  const onSubmit = handleSubmit(async data => {
     try {
-      const response = await axios.post(API.CreatePayeur(), data, {
+
+      const response = await axios.post(API.paidFacture(slug), data, {
         headers: { 'Content-Type': 'application/json' },
       });
-      console.log('Réponse du backend:', response.data);
       reset();
+      if (response.data) {
+        toast.success('Mise à jour réussie!');
+      }
     } catch (error) {
-      console.error("Erreur lors de l'envoi au backend:", error);
+      console.error("Erreur lors de l'envoi au backend :", error);
     }
   });
-
 
 
 
@@ -99,74 +104,102 @@ export function PayeurForm({ slug }) {
       <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
         Information du Payeur
       </Typography>
-      {/* Wrap your form with FormProvider */}
-
       <Form methods={methods} onSubmit={onSubmit}>
         <Stack spacing={3}>
-          <TextField
+          <Field.Text
             label="Nom"
-            {...register('last')}
-            error={Boolean(errors.last)}
-            helperText={errors.last?.message}
-            fullWidth
+            name={"payer_data.last"}
           />
-          <TextField
+
+          <Field.Text
             label="Prénom"
-            {...register('first')}
-            error={Boolean(errors.first)}
-            helperText={errors.first?.message}
-            fullWidth
+            name={'payer_data.first'}
+
           />
-          <TextField
+
+          <Field.Text
             label="Email"
-            {...register('email')}
-            error={Boolean(errors.email)}
-            helperText={errors.email?.message}
-            fullWidth
+            name={'payer_data.email'}
+
           />
-          <TextField
+
+
+          <Field.Text
             label="Téléphone"
-            {...register('phone')}
-            error={Boolean(errors.phone)}
-            helperText={errors.phone?.message}
-            fullWidth
+            name={'payer_data.phone'}
+
           />
 
-          <TextField
+          <Field.Text
+            label="Adresse"
+            name={'payer_data.address'}
 
-            label="Entreprise"
-            {...register('employer')}
-            error={Boolean(errors.employer)}
-            helperText={errors.employer?.message}
-            fullWidth
-          >
-
-          </TextField>
-
-          <TextField
-            label="Fonction"
-            {...register('job')}
-            error={Boolean(errors.job)}
-            helperText={errors.job?.message}
-            fullWidth
           />
 
-          <Field.CountrySelect
+
+          <Field.Select
             fullWidth
             size="small"
-            name="country_origin"
+            name="payer_data.country_origin"
             label="Nationalité"
-            placeholder="Selectionnez un pays"
-            sx={{ width: '100%' }}
+            placeholder="Sélectionnez un pays"
             inputlabelprops={{ shrink: true }}
+          >
+            {countries.map((c) => (
+              <MenuItem key={c.slug} value={c.slug} >
+                {d.name}
+              </MenuItem>
+            ))}
+          </Field.Select>
+
+          <Field.Select
+            name="payment_data.devise"
+            label="Devise"
+          >
+            {devises.map((d) => (
+              <MenuItem key={d.slug} value={d.slug}>
+                {d.name}
+              </MenuItem>
+            ))}
+          </Field.Select>
+
+          <Field.Upload
+            name="payment_data.document"
+            control={control}
+            render={({ field }) => (
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => field.onChange(e.target.files?.[0])}
+              />
+            )}
+          />
+
+
+          <Field.Select
+            name="payment_data.payment_method"
+            label="Mode de Paiement"
+          >
+            {paymentTypes.map((t) => (
+              <MenuItem key={t.id} value={t.id}>
+                {t.label}
+              </MenuItem>
+            ))}
+          </Field.Select>
+
+          <Field.Text
+            label="Commentaire"
+            name="payment_data.comment"
+            multiline
+            rows={3}
+            fullWidth
           />
 
           <Button type="submit" variant="contained" disabled={isSubmitting}>
-            Enregistrer
+            Payer
           </Button>
         </Stack>
       </Form>
-
     </Box>
   );
 }
