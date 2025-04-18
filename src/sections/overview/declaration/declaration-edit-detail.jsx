@@ -4,12 +4,15 @@ import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+
 
 
 import { toast } from 'react-toastify';
@@ -19,6 +22,8 @@ import API from 'src/utils/api';
 
 import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
+import { useBoolean } from 'src/hooks/use-boolean';
+
 
 // ----------------------------------------------------------------------
 
@@ -33,6 +38,12 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const [openModalDoc, setOpenModalDoc] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [data, setData] = useState();
+  const renewalModal = useBoolean();
+  const [loadingRenew, setLoadingRenew] = useState(false);
+
+  const [typeEm, setTypeEm] = useState('NEW');
+
+  const [passportInput, setPassportInput] = useState('');
 
 
   const typedec = type?.trim();
@@ -42,6 +53,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const values = watch();
 
   const handleAdd = () => {
+    setTypeEm('NEW');
     append({
       passport_number: '',
       last: '',
@@ -50,21 +62,54 @@ export function DeclarationNewEditDetails({ formData, type }) {
       phone: '',
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
-      recto: null,
-      verso: null,
-      signature: null,
-      empreinte: null,
-      attestation: null,
-      certificat: null,
-      contrat: null,
-      dossierCriminel: null,
-      dossierMedical: null,
-      diplomes: null,
-      cv: null,
-      passeport: null,
-      planPanafricanisation: null,
+      // recto: null,
+      // verso: null,
+      // signature: null,
+      // empreinte: null,
+      // attestation: null,
+      // certificat: null,
+      // contrat: null,
+      // dossierCriminel: null,
+      // dossierMedical: null,
+      // diplomes: null,
+      // cv: null,
+      // passeport: null,
+      // planPanafricanisation: null,
     });
   };
+
+  const handleRenew = () => {
+    setTypeEm('RENEW');
+    renewalModal.onTrue(); // Ouvre la modale
+  };
+
+
+  const handleConfirmRenew = async () => {
+    try {
+      const response = await axios.post(API.searchPassport(passportInput));
+      const data = response.data.data;
+
+      if (!data) {
+        toast.error("Aucun utilisateur trouvé pour ce passeport");
+        return;
+      }
+
+      append({
+        passport_number: data.passport_number,
+        last: data.last,
+        first: data.first,
+        phone: data.phone,
+        job: '', // champ libre
+        passportExists: true,
+        locked: true,
+      });
+
+      setOpenModalRenew(false);
+    } catch (err) {
+      toast.error("Erreur lors de la récupération des données");
+    }
+  };
+
 
   const handleRemove = (index) => {
     remove(index);
@@ -142,7 +187,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
     setLoading(true);
     try {
       const response = await axios.get(url);
-      const {data} = response;
+      const { data } = response;
 
       const newOptions = data.results.map((fonction) => ({
         value: fonction.slug,
@@ -339,6 +384,29 @@ export function DeclarationNewEditDetails({ formData, type }) {
         Informations Personnelles
       </Typography>
 
+
+      {/* Renewal Modal */}
+      <Dialog open={renewalModal.value} onClose={renewalModal.off} fullWidth>
+        <DialogTitle>Renouvellement – saisir le passeport</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Numéro de passeport"
+            fullWidth
+            value={passportInput}
+            onChange={e => setPassportInput(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={renewalModal.off}>Annuler</Button>
+          <LoadingButton onClick={handleConfirmRenew} loading={loadingRenew}>
+            Valider
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
+
+
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
         {fields.map((item, index) => (
           <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
@@ -461,7 +529,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
 
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              {typedec !== "Duplicata" && (
+              {/* {typedec !== "Duplicata" && (
                 <Button onClick={handleOpenModal} variant="outlined">
                   {typedec === "Renouvellement" ? "Ancien Permis" : "Données Biométriques"}
                 </Button>
@@ -469,7 +537,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
               <Button onClick={handleOpenModalDoc} variant="outlined">
                 Joindre Documents
-              </Button>
+              </Button> */}
             </Stack>
 
             {/* Modal pour les documents */}
@@ -668,7 +736,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
       <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
       <Stack
-        spacing={3}
+        spacing={2} sx={{ mb: 2 }}
         direction={{ xs: 'column', md: 'row' }}
         alignItems={{ xs: 'flex-end', md: 'center' }}
       >
@@ -679,7 +747,17 @@ export function DeclarationNewEditDetails({ formData, type }) {
           onClick={handleAdd}
           sx={{ flexShrink: 0 }}
         >
-          Add Item
+          Nouveau
+        </Button>
+
+        <Button
+          size="small"
+          color="primary"
+          startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={handleRenew}
+          sx={{ flexShrink: 0 }}
+        >
+          Renouvellement
         </Button>
       </Stack>
 

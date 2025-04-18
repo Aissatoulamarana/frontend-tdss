@@ -497,45 +497,14 @@ export function DeclarationListView() {
             type_user !== 'admin' && ( //  Cache le bouton si type_user est "admin"
               <>
                 <Button
+                  component={RouterLink}
+                  href={paths.dashboard.declaration.new}
                   variant="contained"
                   startIcon={<Iconify icon="mingcute:add-line" />}
-                  onClick={handleClick} // Ouvre le popover au clic
-                  sx={{ mb: { xs: 3, md: 5 } }}
                 >
                   Ajouter
                 </Button>
-                <Popover
-                  id={id}
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  }}
-                >
-                  <MenuItem
-                    component={RouterLink}
-                    href={paths.dashboard.declaration.new}
-                    onClick={handleClose}
-                  >
-                    Nouvelle
-                  </MenuItem>
-                  <MenuItem
-                    component={RouterLink}
-                    href={paths.dashboard.declaration.renew}
-                    onClick={handleClose}
-                  >
-                    Renouvellement
-                  </MenuItem>
-                  <MenuItem
-                    component={RouterLink}
-                    href={paths.dashboard.declaration.duplica}
-                    onClick={handleClose}
-                  >
-                    Duplicata
-                  </MenuItem>
-                </Popover>
+
               </>
             )
           }
