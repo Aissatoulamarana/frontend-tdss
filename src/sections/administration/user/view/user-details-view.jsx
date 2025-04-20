@@ -14,10 +14,6 @@ import {
     Avatar,
     Card,
     Stack,
-<<<<<<< HEAD
-
-=======
->>>>>>> Detail_User
 
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
