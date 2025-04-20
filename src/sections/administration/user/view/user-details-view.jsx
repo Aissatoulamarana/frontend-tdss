@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { Form, Field } from 'src/components/hook-form';
+import { Form } from 'src/components/hook-form';
 import {
     Box,
     Tabs,
@@ -13,10 +13,7 @@ import {
     Button,
     Avatar,
     Card,
-    Divider,
-    IconButton,
     Stack,
-    Select, MenuItem, Pagination,
 
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
@@ -221,6 +218,53 @@ export function UserDetailsView({ slug }) {
                                     </Box>
                                 ))}
                             </Stack>
+                        )}
+
+                        {tabIndex === 1 && (
+                            user.profile ? (
+                                <Stack spacing={3}>
+                                    {[
+                                        { icon: <PersonIcon />, label: "Nom d'utilisateur", value: user.profile.name },
+                                        { icon: <EmailIcon />, label: 'Email', value: user.profile.email },
+                                        { icon: <PhoneIcon />, label: 'Contact', value: user.profile.contact },
+                                    ].map((f) => (
+                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Box sx={iconWrapperStyle}>{f.icon}</Box>
+                                            <Box>
+                                                <Typography variant="subtitle2" color="text.secondary">
+                                                    {f.label}
+                                                </Typography>
+                                                <Typography variant="body1">{f.value}</Typography>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            ) : (
+                                <Typography>Aucun profil associé.</Typography>
+                            )
+                        )}
+
+                        {tabIndex === 2 && (
+                            user.agency ? (
+                                <Stack spacing={3}>
+                                    {[
+                                        { icon: <WorkIcon />, label: "Nom de l'agence", value: user.agency.name },
+                                        { icon: <LocationOnIcon />, label: 'Région', value: user.agency.region?.name },
+                                    ].map((f) => (
+                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Box sx={iconWrapperStyle}>{f.icon}</Box>
+                                            <Box>
+                                                <Typography variant="subtitle2" color="text.secondary">
+                                                    {f.label}
+                                                </Typography>
+                                                <Typography variant="body1">{f.value || '—'}</Typography>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            ) : (
+                                <Typography>Aucune agence associée.</Typography>
+                            )
                         )}
 
                         {tabIndex === 3 && (
