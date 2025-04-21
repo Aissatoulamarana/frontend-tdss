@@ -200,7 +200,7 @@ export function DeclarationTableRow({
           )}
 
           {user?.type === 'Superviseur' &&
-            user?.profile === 'AGUIPE' &&
+            user?.profile === 'AGUIPEE' &&
             !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="validate"
@@ -215,7 +215,7 @@ export function DeclarationTableRow({
             )}
 
           {user?.type === 'Superviseur' &&
-            user?.profile === 'AGUIPE' &&
+            user?.profile === 'AGUIPEE' &&
             !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="reject"
