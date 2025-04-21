@@ -38,9 +38,9 @@ export function PayeurForm({ slug }) {
   const [countries, setCountries] = useState([]);
 
   const paymentTypes = [
-    { id: 'Virement', label: 'Virement' },
-    { id: 'Espèces', label: 'Espèces' },
-    { id: 'Chèques', label: 'Chèques' }
+    { id: 'TRANSFER', label: 'Virement' },
+    { id: 'DEPOSIT', label: 'Espèces' },
+    { id: 'CHEQUE', label: 'Chèques' }
   ];
 
   const defaultValues = useMemo(() => ({
@@ -80,22 +80,56 @@ export function PayeurForm({ slug }) {
     getCountries().then(setCountries);
   }, []);
 
-
-
-  const onSubmit = handleSubmit(async data => {
-    try {
-
-      const response = await axios.post(API.paidFacture(slug), data, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      reset();
-      if (response.data) {
-        toast.success('Mise à jour réussie!');
+  function toFormData(obj, form = new FormData()) {
+    Object.entries(obj).forEach(([key, value]) => {
+      if (value instanceof File) {
+        form.append(key, value);
+      } else if (typeof value === 'object' && value !== null && !(value instanceof File)) {
+        form.append(key, JSON.stringify(value)); // <- clé ici
+      } else {
+        form.append(key, value ?? '');
       }
+    });
+    return form;
+  }
+
+
+
+  const onSubmit = handleSubmit(async (data) => {
+    try {
+      const formData = new FormData();
+
+      // On prépare les données sans le fichier
+      const payload = {
+        payer_data: data.payer_data,
+        payment_data: {
+          ...data.payment_data,
+          document: undefined, // on retire le fichier de l'objet
+        },
+      };
+
+      formData.append('data', JSON.stringify(payload)); // un seul champ JSON
+
+      // Ajout du fichier
+      if (data.payment_data?.document instanceof File) {
+        formData.append('document', data.payment_data.document);
+      }
+
+      const response = await axios.post(API.paidFacture(slug), formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      reset();
+      toast.success('Mise à jour réussie!');
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend :", error);
     }
   });
+
+
+
 
 
 
@@ -147,7 +181,7 @@ export function PayeurForm({ slug }) {
           >
             {countries.map((c) => (
               <MenuItem key={c.slug} value={c.slug} >
-                {d.name}
+                {c.name}
               </MenuItem>
             ))}
           </Field.Select>
