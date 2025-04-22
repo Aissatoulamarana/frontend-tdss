@@ -217,10 +217,37 @@ export function ClientNewEditForm({ currentClient }) {
             toast.success('Création réussie avec succès !');
             reset();
             router.push(paths.dashboard.client.root);
-        } catch (error) {
-            toast.error("Erreur lors de la création de l'utilisateur.");
-            console.error('Erreur:', error.response?.data || error.message);
+        } catch (err) {
+
+            const data = err.response?.data || err;
+
+
+            const messages = [];
+
+
+            if (data.phone) {
+                messages.push(...(
+                    Array.isArray(data.phone)
+                        ? data.phone
+                        : [data.phone]
+                ));
+            }
+            if (data.email) {
+                messages.push(...(
+                    Array.isArray(data.email)
+                        ? data.email
+                        : [data.email]
+                ));
+            }
+
+            if (data.details) messages.push(data.details);
+            if (data.error) messages.push(data.error);
+            if (data.message) messages.push(data.message);
+
+            const errorMessage = messages.join(' ');
+            toast.error(errorMessage);
         }
+
     });
 
 
@@ -280,14 +307,14 @@ export function ClientNewEditForm({ currentClient }) {
                                 }}
                             >
                                 <Typography variant="h6" sx={{ mb: 3, textAlign: 'left', fontWeight: 'bold' }}>
-                                    Informations du Client
+                                    Informations de la Structure
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Text name="name" label="Nom du client *" fullWidth size="small" />
+                                        <Field.Text name="name" label="Nom  *" fullWidth size="small" />
                                     </Grid>
                                     <Grid item size={{ xs: 8, md: 6 }}>
-                                        <Field.Select name="type" label="Type de Profil *" fullWidth size="small">
+                                        <Field.Select name="type" label="Type de structure *" fullWidth size="small">
                                             {types.map((profiletype) => (
                                                 <MenuItem key={profiletype.slug} value={profiletype.slug}>
                                                     {profiletype.name}

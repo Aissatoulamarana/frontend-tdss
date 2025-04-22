@@ -47,9 +47,9 @@ const API = {
 
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
-  paidFacture: () => `${BASE_URL}/factures/mark-paid/`, // Paiement d'une facture
+  paidFacture: (slug) => `${BASE_URL}/factures/${slug}/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
-  PaidFactures: () => `${BASE_URL}/paid_factures/`, // payer plusieurs factures a la fois 
+  // PaidFactures: (slug) => `${BASE_URL}/paid_factures/${slug}/`, // payer plusieurs factures a la fois 
   
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   
@@ -99,6 +99,8 @@ const API = {
 
   listDevises: () => `${BASE_URL}/devises/`,
   listPermits: () => `${BASE_URL}/permits/`,
+
+  listCountry:() => `${BASE_URL}/payments/countries/`,
 
   // job-category
   createJobCategory: () => `${BASE_URL}/jobs/job-category/`,

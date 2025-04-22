@@ -9,8 +9,8 @@ import { uploadClasses } from '../classes';
 
 export function SingleFilePreview({ file, sx, className, ...other }) {
   const fileName = typeof file === 'string' ? file : file.name;
-
   const previewUrl = typeof file === 'string' ? file : URL.createObjectURL(file);
+  const isPDF = file?.type === 'application/pdf';
 
   return (
     <Box
@@ -26,17 +26,27 @@ export function SingleFilePreview({ file, sx, className, ...other }) {
       }}
       {...other}
     >
-      <Box
-        component="img"
-        alt={fileName}
-        src={previewUrl}
-        sx={{
-          width: 1,
-          height: 1,
-          borderRadius: 1,
-          objectFit: 'cover',
-        }}
-      />
+      {isPDF ? (
+        <iframe
+          src={previewUrl}
+          title={fileName}
+          width="100%"
+          height="100%"
+          style={{ border: 'none', borderRadius: 8 }}
+        />
+      ) : (
+        <Box
+          component="img"
+          alt={fileName}
+          src={previewUrl}
+          sx={{
+            width: 1,
+            height: 1,
+            borderRadius: 1,
+            objectFit: 'cover',
+          }}
+        />
+      )}
     </Box>
   );
 }

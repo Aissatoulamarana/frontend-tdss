@@ -95,7 +95,7 @@ export const navData = [
   /**
    * Management
    */
-  ...(type !== 'agent'
+  ...(type === 'admin'
     ? [
       {
         subheader: 'Administration',

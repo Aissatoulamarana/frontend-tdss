@@ -159,19 +159,39 @@ export function UserNewEditForm({ currentUser }) {
       toast.success(currentUser ? 'Mis à jour effectué!' : "Création d'un utilisateur réussie !");
       router.push(paths.dashboard.user.list);
       console.info('DATA', response);
-    } catch (error) {
-      console.error(error);
-      // Extraire le message d'erreur dans une chaîne de caractères
-      const errorMessage =
-        error
-          (typeof error === 'string' ? error : JSON.stringify(error));
+    } catch (err) {
 
-      // Mette à jour l'état si nécessaire
-      setError(errorMessage);
+      const data = err.response?.data || err;
 
-      // Afficher l'erreur en utilisant la chaîne extraite
+      const messages = [];
+
+      if (data.phone) {
+        messages.push(...(
+          Array.isArray(data.phone)
+            ? data.phone
+            : [data.phone]
+        ));
+      }
+      if (data.email) {
+        messages.push(...(
+          Array.isArray(data.email)
+            ? data.email
+            : [data.email]
+        ));
+      }
+
+
+      if (data.details) messages.push(data.details);
+      if (data.error) messages.push(data.error);
+      if (data.message) messages.push(data.message);
+
+
+      const errorMessage = messages.join(' ');
+
+      console.error("Erreur lors de l'envoi au backend :", messages);
       toast.error(errorMessage);
     }
+
   });
 
 

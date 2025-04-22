@@ -15,7 +15,6 @@ import {
     Card,
     Stack,
 
-
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import TextField from '@mui/material/TextField';
@@ -165,7 +164,7 @@ export function UserDetailsView({ slug }) {
                             <Tab label="Détails" />
                             <Tab label="Profil" />
                             <Tab label="Agences" />
-                            <Tab label="Entreprises" />
+                            {(user.type?.name === 'Enteprise') && <Tab label="Entreprises" />}
                         </Tabs>
                     </Card>
 
@@ -226,6 +225,53 @@ export function UserDetailsView({ slug }) {
                                     </Box>
                                 ))}
                             </Stack>
+                        )}
+
+                        {tabIndex === 1 && (
+                            user.profile ? (
+                                <Stack spacing={3}>
+                                    {[
+                                        { icon: <PersonIcon />, label: "Nom d'utilisateur", value: user.profile.name },
+                                        { icon: <EmailIcon />, label: 'Email', value: user.profile.email },
+                                        { icon: <PhoneIcon />, label: 'Contact', value: user.profile.contact },
+                                    ].map((f) => (
+                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Box sx={iconWrapperStyle}>{f.icon}</Box>
+                                            <Box>
+                                                <Typography variant="subtitle2" color="text.secondary">
+                                                    {f.label}
+                                                </Typography>
+                                                <Typography variant="body1">{f.value}</Typography>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            ) : (
+                                <Typography>Aucun profil associé.</Typography>
+                            )
+                        )}
+
+                        {tabIndex === 2 && (
+                            user.agency ? (
+                                <Stack spacing={3}>
+                                    {[
+                                        { icon: <WorkIcon />, label: "Nom de l'agence", value: user.agency.name },
+                                        { icon: <LocationOnIcon />, label: 'Région', value: user.agency.region?.name },
+                                    ].map((f) => (
+                                        <Box key={f.label} sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Box sx={iconWrapperStyle}>{f.icon}</Box>
+                                            <Box>
+                                                <Typography variant="subtitle2" color="text.secondary">
+                                                    {f.label}
+                                                </Typography>
+                                                <Typography variant="body1">{f.value || '—'}</Typography>
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            ) : (
+                                <Typography>Aucune agence associée.</Typography>
+                            )
                         )}
 
                         {tabIndex === 3 && (
