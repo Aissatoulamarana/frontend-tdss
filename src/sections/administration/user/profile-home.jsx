@@ -65,7 +65,7 @@ export function ProfileHome({ info, posts }) {
             <Box>
               <Box sx={{ fontWeight: 600 }}>Email</Box>
               <Box variant="body2" color="text.secondary">
-                {info.email}
+                {info?.email}
               </Box>
             </Box>
           </Box>
