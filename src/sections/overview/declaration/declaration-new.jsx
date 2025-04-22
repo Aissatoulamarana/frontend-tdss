@@ -146,7 +146,7 @@ export function DeclarationNew({ declaration, type, formData }) {
     <Form methods={methods}>
       <Card>
         <DeclarationEditStatusDate type={type} />
-        <DeclarationNewEditDetails formData={formData} type={type} />
+        <DeclarationNewEditDetails formData={formData}  />
       </Card>
 
       <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>

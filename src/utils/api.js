@@ -69,7 +69,7 @@ const API = {
  
   
   searchIdentifier: (identifier) => `${BASE_URL}/api/search_identifier/?identifier=${identifier}`,
-  searchPassport: (numero) => `${BASE_URL}/declarations/employees/check-passport/?numero=${numero}`,
+  searchPassport: (passport_number) => `${BASE_URL}/employees/passport/${passport_number}`,
 
   createPermission: () => `${BASE_URL}/permission/`,
   listPermissions: () => `${BASE_URL}/permission/`, // Liste des fonctions

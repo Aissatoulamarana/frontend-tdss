@@ -86,8 +86,8 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
   const handleConfirmRenew = async () => {
     try {
-      const response = await axios.post(API.searchPassport(passportInput));
-      const data = response.data.data;
+      const response = await axios.get(API.searchPassport(passportInput));
+      const data = response.data;
 
       if (!data) {
         toast.error("Aucun utilisateur trouvé pour ce passeport");
@@ -99,12 +99,12 @@ export function DeclarationNewEditDetails({ formData, type }) {
         last: data.last,
         first: data.first,
         phone: data.phone,
-        job: '', // champ libre
+        job: data.job.slug, // champ libre
         passportExists: true,
         locked: true,
       });
 
-      setOpenModalRenew(false);
+      renewalModal.onFalse(); // Ferme la modale
     } catch (err) {
       toast.error("Erreur lors de la récupération des données");
     }
@@ -128,7 +128,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
   const handleCloseModalDoc = () => {
 
-    setOpenModalDoc(false);
+    renewalModal.onFalse();
 
   };
   // Ferme le modal et réinitialise le stepper
@@ -296,10 +296,10 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const checkPassportExistence = async (numero, index) => {
     if (!numero) return;
     try {
-      const response = await axios.post(API.searchPassport(numero));
-      setData(response.data.data)
+      const response = await axios.get(API.searchPassport(numero));
+      setData(response.data)
       console.log('les informations du detenteur de ce passport ', response.data.data)
-      if (response.data.exists) {
+      if (response.data) {
         setValue(`employees[${index}].passportExists`, true);
       } else {
         setValue(`employees[${index}].passportExists`, false);
@@ -399,7 +399,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={renewalModal.off}>Annuler</Button>
+          <Button onClick={renewalModal.onFalse}>Annuler</Button>
           <LoadingButton onClick={handleConfirmRenew} loading={loadingRenew}>
             Valider
           </LoadingButton>
@@ -427,10 +427,10 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 label="Numéro Passeport *"
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
-                error={typedec === "Nouvelle" && Boolean(values.employees?.[index]?.passportExists)}
+                error={typeEm === "New" && Boolean(values.employees?.[index]?.passportExists)}
                 helperText={
                   values.employees?.[index]?.passportExists
-                    ? typedec === "Nouvelle"
+                    ? typeEm === "NEW"
                       ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
                       : "✅ Ce passeport existe déjà, il est bien enregistré."
                     : ""
@@ -438,16 +438,13 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 sx={{
                   "& .MuiFormHelperText-root": {
                     color: values.employees?.[index]?.passportExists
-                      ? typedec === "Nouvelle"
+                      ? typedec === "NEW"
                         ? "error.main"
                         : "success.main"
                       : "error.main"
                   }
                 }}
               />
-
-
-
 
               <Field.Phone
                 size="small"
