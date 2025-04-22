@@ -17,6 +17,7 @@ import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ProfileCover } from '../../user/profile-cover';
 import { ProfileHome } from '../../user/profile-home';
+import { ProfileUsers } from '../../user/profile-users';
 
 // Définir les onglets pour chaque type
 const TABS_ADMIN = [
@@ -42,6 +43,7 @@ const TABS_ENTREPRISE = [
 
 export function ClientDetailsView({ slug }) {
     const [profil, setProfil] = useState();
+    const [user, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -59,7 +61,7 @@ export function ClientDetailsView({ slug }) {
             try {
                 const response = await axios.get(API.UpdateProfile(slug));
                 setProfil(response.data);
-                console.log(response.data);
+                // console.log(response.data);
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -69,7 +71,22 @@ export function ClientDetailsView({ slug }) {
 
         fetchProfil();
     }, [slug]);
+    // recuperation des utilisateurs du profil
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get(API.detailsProfile(slug));
+                setUsers(response.data.users);
+                console.log('Details profiles :', response.data.users);
+            } catch (err) {
+                setError(err.message || 'Erreur lors du chargement des données.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
+        fetchUsers();
+    }, [slug]);
     // Sélectionner le tableau d'onglets en fonction du type
     let displayedTabs = [];
     if (profil?.type?.name === 'Banque') {
@@ -132,6 +149,7 @@ export function ClientDetailsView({ slug }) {
             </Card>
 
             {tabs.value === 'profile' && <ProfileHome info={profil} />}
+            {tabs.value === 'utilisateurs' && <ProfileUsers info={user} />}
         </DashboardContent>
     );
 }
