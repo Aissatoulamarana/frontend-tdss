@@ -157,7 +157,7 @@ export function UserDetailsView({ slug }) {
                             <Tab label="Détails" />
                             <Tab label="Profil" />
                             <Tab label="Agences" />
-                            <Tab label="Entreprises" />
+                            {(user.type?.name === 'Enteprise') && <Tab label="Entreprises" />}
                         </Tabs>
                     </Card>
 
