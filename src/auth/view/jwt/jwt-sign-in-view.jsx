@@ -7,7 +7,12 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
-import { useState } from 'react';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import { useState , useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 import { useSearchParams } from 'src/routes/hooks';
@@ -49,6 +54,8 @@ export function JwtSignInView() {
   const [errorMsg, setErrorMsg] = useState('');
   const password = useBoolean();
 
+  const [openChangePwd, setOpenChangePwd] = useState(!!activated);
+
   const defaultValues = {
     email: '',
     password: '',
@@ -69,6 +76,10 @@ export function JwtSignInView() {
       setErrorMsg(''); // Réinitialise le message d'erreur
       await signInWithPassword({ email: data.email, password: data.password });
       await checkUserSession?.();
+      if (activated) {
+              setOpenChangePwd(true);
+              return; // on arrête la redirection automatique
+            }
       router.push(paths.dashboard.root);
     } catch (error) {
       console.error('Sign in error dans la vue :', error);
@@ -138,6 +149,9 @@ export function JwtSignInView() {
     </Box>
   );
 
+ 
+  
+
   return (
     <Box
       sx={{
@@ -173,9 +187,46 @@ export function JwtSignInView() {
         </Alert>
       )}
 
+         {/* ——— Boîte de dialogue “Pensez à changer votre mot de passe” ——— */}
+    <Dialog
+      open={openChangePwd}
+      onClose={() => {
+        setOpenChangePwd(false);
+         router.push(paths.dashboard.root);
+       }}
+     >
+       <DialogTitle>Bienvenue !</DialogTitle>
+       <DialogContent>
+         Votre compte vient d’être activé. Pour votre sécurité, pensez à changer
+        votre mot de passe dans les paramètres de votre compte.
+       </DialogContent>
+      <DialogActions>
+        <Button
+         onClick={() => {
+             setOpenChangePwd(false);
+             router.push(paths.dashboard.user.account);
+            
+           }}
+         >
+           Changer mon mot de passe
+         </Button>
+         <Button
+           onClick={() => {
+             setOpenChangePwd(false);
+             router.push(paths.dashboard.root);
+          }}
+         color="inherit"
+        >
+           Plus tard
+         </Button>
+       </DialogActions>
+    </Dialog>
+
       <Form methods={methods} onSubmit={onSubmit}>
         {renderForm}
       </Form>
+
+     
     </Box>
   );
 }
