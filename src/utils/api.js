@@ -33,6 +33,7 @@ const API = {
   supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
   updateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`,// Modifier une déclaration
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
+  unsubmitDeclaration : (slug) =>  `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre 
 
 
 
@@ -44,8 +45,6 @@ const API = {
   detailsEmployee: (slug) => `${BASE_URL}/employees/${slug}/`, // details d'un employé
 
   
-
-
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
   paidFacture: (slug) => `${BASE_URL}/factures/${slug}/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
@@ -55,6 +54,8 @@ const API = {
   
   createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
   listFonctions: () => `${BASE_URL}/jobs/`, // Liste des fonctions
+
+
   detailsFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // details d'une fonction
   deleteFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // Supprimer une fonction
   editFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // modifier une fonction
@@ -79,7 +80,7 @@ const API = {
  
   
   searchIdentifier: (identifier) => `${BASE_URL}/api/search_identifier/?identifier=${identifier}`,
-  searchPassport: (numero) => `${BASE_URL}/declarations/employees/check-passport/?numero=${numero}`,
+  searchPassport: (passport_number) => `${BASE_URL}/employees/passport/${passport_number}`,
 
   createPermission: () => `${BASE_URL}/permission/`,
   listPermissions: () => `${BASE_URL}/permission/`, // Liste des fonctions

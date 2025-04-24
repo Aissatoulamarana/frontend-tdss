@@ -33,6 +33,8 @@ export function DeclarationTableRow({
   onRejetRow,
   onSubmitRow,
   onUnSubmitRow,
+
+
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -43,7 +45,11 @@ export function DeclarationTableRow({
   // Pour la soumission
   const submitConfirm = useBoolean();
 
+
+  // Pour la non-soumission 
   const unsubmitConfirm = useBoolean();
+
+
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
   const [motifRejet, setMotifRejet] = useState('');
@@ -229,7 +235,21 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type === 'Comptable' &&
+          {user?.type === 'Agent' &&
+            ['REJECTED'].includes(row.status) && (
+              <MenuItem
+                key="unsubmit"
+                onClick={() => {
+                  unsubmitConfirm.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="solar:pen-bold" />
+                Mettre En Edition
+              </MenuItem>
+            )}
+
+          {user?.type === 'Agent' &&
             !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="facture"
@@ -274,6 +294,26 @@ export function DeclarationTableRow({
             }}
           >
             Supprimer
+          </Button>
+        }
+      />
+
+      {/* Exemple de boîte de dialogue de confirmation pour la non-soumission */}
+      <ConfirmDialog
+        open={unsubmitConfirm.value}
+        onClose={unsubmitConfirm.onFalse}
+        title="Remettre le statut à non-soumise"
+        content="Voulez-vous vraiment remettre le statut de cette déclaration à non-soumise ?"
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              unsubmitConfirm.onFalse();
+              onUnSubmitRow();
+            }}
+          >
+            Oui
           </Button>
         }
       />

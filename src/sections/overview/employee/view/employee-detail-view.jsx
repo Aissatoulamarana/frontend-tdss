@@ -46,14 +46,15 @@ export function EmployeeDetailsView({ slug }) {
                 const response = await axios.get(API.detailsEmployee(slug));
                 setEmployee(response.data);
                 const { declaration } = response.data;
-                const { job } = response.data;
+                // const { job } = response.data;
 
                 // On enveloppe dans un tableau si declaration n'est pas déjà un tableau.
                 setDeclarations(Array.isArray(declaration) ? declaration : [declaration]);
 
                 // console.log('les données de la declaration', response.data.declaration)
-                setJob(Array.isArray(job) ? job : [job]);
-                // console.log(response.data);
+                // setJob(Array.isArray(job) ? job : [job]);
+
+                setJob(response.data.job)
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {

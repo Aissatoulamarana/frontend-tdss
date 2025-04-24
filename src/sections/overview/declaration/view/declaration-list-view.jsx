@@ -54,6 +54,7 @@ import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 import { useMockedUser } from 'src/auth/hooks';
 import dayjs from 'dayjs';
 
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -88,6 +89,8 @@ export function DeclarationListView() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
+  const [selectedFilter, setSelectedFilter] = useState('title'); // options de recherche 
+  const [count, setCount] = useState();
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -100,6 +103,8 @@ export function DeclarationListView() {
   const filters = useSetState({
     name: '', // mot-clé pour filtrer par numéro ou type de déclaration
     fonction: [],
+    title: '',
+    company: '',
     status: 'all',
     starts_at: null,
     ends_at: null,
@@ -126,7 +131,9 @@ export function DeclarationListView() {
     filters.state.status !== 'all' ||
     (!!filters.state.starts_at && !!filters.state.ends_at);
 
-  const notFound = pagination.count === 0 && canReset;
+
+  const notFound = pagination.count === 0 && canReset;;
+
 
   const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
 
@@ -145,10 +152,13 @@ export function DeclarationListView() {
           });
 
           // On récupère le nombre total à partir du champ "count"
+
           setTableData(response.data.results)
+         
           setCount(response.data.count);
         } catch (error) {
-          console.error(`Erreur lors de la récupération des déclarations pour le statut ${status} `, error);
+          console.error(`Erreur lors de la récupération des déclarations pour le statut ${status}`, error);
+
         }
       };
 
@@ -157,7 +167,6 @@ export function DeclarationListView() {
 
     return count;
   };
-
 
 
   const getTotalAmount = (status) =>
@@ -174,38 +183,38 @@ export function DeclarationListView() {
       value: 'all',
       label: 'Toutes',
       color: 'default',
-      count: tableData.length,
+      count: count,
     },
     {
       value: 'SUBMITTED',
-      label: 'Soumise',
+      label: 'Soumises',
       color: 'warnning',
-      count: getInvoiceLength('SUBMITTED'),
+      // count: useDeclarationCount('SUBMITTED'),
     },
     {
       value: 'VALIDATED',
       label: 'Validées',
       color: 'success',
-      count: getInvoiceLength('VALIDATED'),
+      // count: useDeclarationCount('VALIDATED'),
     },
     {
       value: 'BILLED',
       label: 'Facturées',
       color: 'primary',
-      count: getInvoiceLength('BILLED'),
+      // count: useDeclarationCount('BILLED'),
     },
     {
       value: 'UNSUBMITTED',
       label: 'Brouillon',
       color: 'warning',
-      count: getInvoiceLength('UNSUBMITTED'),
+      // count: useDeclarationCount('UNSUBMITTED'),
     },
 
     {
       value: 'REJECTED',
       label: 'Rejetées',
       color: 'error',
-      count: getInvoiceLength('REJECTED'),
+      // count: useDeclarationCount('REJECTED'),
     },
 
   ];
@@ -220,8 +229,10 @@ export function DeclarationListView() {
         toast.error(`Erreur : ${response.data.error}`);
       }
     } catch (error) {
+      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      setError(errorMessage)
       console.error('Erreur réseau ou serveur:', error);
-      toast.error('Une erreur est survenue lors de la communication avec le serveur.');
+      toast.error(errorMessage);
     }
   };
 
@@ -239,41 +250,13 @@ export function DeclarationListView() {
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
   const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.declaration.edit(id));
+    (slug) => {
+      router.push(paths.dashboard.declaration.edit(slug));
     },
     [router]
   );
 
-  const handleUnSubmitRow = useCallback(
-    async (slug) => {
-      try {
-        // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.unsubmitDeclaration(slug), {
-
-        });
-
-        if (response) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
-          toast.success('Déclaration mise en édition avec succès !');
-          // Mise à jour locale du statut dans tableData
-          setTableData((prevData) =>
-            prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'UNSUBMITTED' } : item
-            )
-          );
-          router.push(paths.dashboard.declaration.list);
-        } else {
-          console.error('Erreur lors de la mise en edition:', response.data.error);
-          toast.error('Une erreur est survenue.');
-        }
-      } catch (error) {
-        console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
-      }
-    },
-    [router]
-  );
+ 
 
   const handleSubmitRow = useCallback(
     async (slug) => {
@@ -298,8 +281,43 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
+      }
+    },
+    [router]
+  );
+
+
+  const handleUnSubmitRow = useCallback(
+    async (slug) => {
+      try {
+        // Appel à l'API backend pour valider la déclaration en envoyant l'action
+        const response = await axios.post(API.unsubmitDeclaration(slug), {
+
+        });
+
+        if (response) {
+          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+          toast.success('Le statut de la déclaration a été remis à non soumis avec succès !');
+          // Mise à jour locale du statut dans tableData
+          setTableData((prevData) =>
+            prevData.map((item) =>
+              item.slug === slug ? { ...item, status: 'UNSUBMITTED' } : item
+            )
+          );
+          router.push(paths.dashboard.declaration.list);
+        } else {
+          console.error('Erreur lors de la validation:', response.data.error);
+          toast.error('Une erreur est survenue.');
+        }
+      } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -328,8 +346,10 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -356,8 +376,10 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -383,8 +405,10 @@ export function DeclarationListView() {
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage)
         console.error('Erreur réseau ou serveur:', error);
-        toast.error('Erreur lors de la communication avec le serveur.');
+        toast.error(errorMessage);
       }
     },
     [router]
@@ -405,6 +429,7 @@ export function DeclarationListView() {
     },
     [filters, table]
   );
+
 
   useEffect(() => {
 
@@ -452,16 +477,10 @@ export function DeclarationListView() {
       }
     };
 
-    fetchDeclarations();
-  }, [
-    table.page,
-    table.rowsPerPage,
-    filters.state.company,
-    filters.state.title,
-    filters.state.status,
-    filters.state.starts_at,
-    filters.state.ends_at
-  ]); // a chaque changement de ces filtres on fait appel a la fonction de fetchDeclarations
+
+
+  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status]);
+
 
   if (loading) {
     console.info('Loading declarations...');
@@ -497,45 +516,14 @@ export function DeclarationListView() {
             type_user !== 'admin' && ( //  Cache le bouton si type_user est "admin"
               <>
                 <Button
+                  component={RouterLink}
+                  href={paths.dashboard.declaration.new}
                   variant="contained"
                   startIcon={<Iconify icon="mingcute:add-line" />}
-                  onClick={handleClick} // Ouvre le popover au clic
-                  sx={{ mb: { xs: 3, md: 5 } }}
                 >
                   Ajouter
                 </Button>
-                <Popover
-                  id={id}
-                  open={open}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                  }}
-                >
-                  <MenuItem
-                    component={RouterLink}
-                    href={paths.dashboard.declaration.new}
-                    onClick={handleClose}
-                  >
-                    Nouvelle
-                  </MenuItem>
-                  <MenuItem
-                    component={RouterLink}
-                    href={paths.dashboard.declaration.renew}
-                    onClick={handleClose}
-                  >
-                    Renouvellement
-                  </MenuItem>
-                  <MenuItem
-                    component={RouterLink}
-                    href={paths.dashboard.declaration.duplica}
-                    onClick={handleClose}
-                  >
-                    Duplicata
-                  </MenuItem>
-                </Popover>
+
               </>
             )
           }
@@ -558,9 +546,9 @@ export function DeclarationListView() {
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Facturée"
-              total={getInvoiceLength('facturée')}
-              percent={getPercentByStatus('facturée')}
+              title="Facturées"
+              total={useDeclarationCount('BILLED')}
+              percent={getPercentByStatus('BILLED')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -571,9 +559,9 @@ export function DeclarationListView() {
 
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="En attente"
-              total={getInvoiceLength('pending')}
-              percent={getPercentByStatus('pending')}
+              title="Brouillon"
+              total={useDeclarationCount('UNSUBMITTED')}
+              percent={getPercentByStatus('UNSUBMITTED')}
               chart={{
                 colors: [theme.vars.palette.warning.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -583,9 +571,9 @@ export function DeclarationListView() {
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Brouillon"
-              total={getInvoiceLength('brouillon')}
-              percent={getPercentByStatus('draft')}
+              title="Rejetées"
+              total={useDeclarationCount('REJECTED')}
+              percent={getPercentByStatus('REJECTED')}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -616,9 +604,11 @@ export function DeclarationListView() {
               //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
               //       'soft'
               //     }
-              //     color={tab.color}
+
+              //   // color={tab.color}
               //   >
-              //     {tab.count}
+              //     {/* {tab.count} */}
+
               //   </Label>
               // }
               />
@@ -629,8 +619,12 @@ export function DeclarationListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
             options={{
-              fonctions: [...new Set(tableData.map((option) => option.title.trim()))]
+
+              fonctions: [...new Set(tableData.map((option) => option.title.trim()))],
+
             }}
           />
 
@@ -701,6 +695,7 @@ export function DeclarationListView() {
                 />
 
                 <TableBody>
+
                   {tableData
                     .map((row) => (
                       <DeclarationTableRow
@@ -730,6 +725,7 @@ export function DeclarationListView() {
 
 
                   <TableNoData notFound={notFound} />
+
                 </TableBody>
               </Table>
             </Scrollbar>
@@ -744,6 +740,8 @@ export function DeclarationListView() {
             onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
+
+
         </Card>
       </DashboardContent>
 

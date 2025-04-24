@@ -20,15 +20,19 @@ import { Iconify } from 'src/components/iconify';
 export function EmployeeTableRow({
     row,
     selected,
+<<<<<<< HEAD
+=======
+
+>>>>>>> declaration
     onViewRow,
 
 
 }) {
-    const confirm = useBoolean();
+
 
     const popover = usePopover();
 
-    const quickEdit = useBoolean();
+
 
     return (
         <>
@@ -45,7 +49,6 @@ export function EmployeeTableRow({
                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.passport_number}</TableCell>
                 <TableCell>
                     <Stack spacing={2} direction="row" alignItems="center">
-                        {/* <Avatar alt={row?.last} src={row.picture} /> */}
 
                         <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
                             <Link color="inherit" onClick={onViewRow} sx={{ cursor: 'pointer' }} underline="hover">
@@ -80,9 +83,6 @@ export function EmployeeTableRow({
                     </Stack>
                 </TableCell>
             </TableRow>
-
-
-            {/* <ClientQuickEditForm currentClient={row} open={quickEdit.value} onClose={quickEdit.onFalse} onUpdateRow={onUpdateRow} /> */}
 
             <CustomPopover
                 open={popover.open}

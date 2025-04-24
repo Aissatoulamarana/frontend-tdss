@@ -16,6 +16,9 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export function EmployeeJob({ info, posts }) {
+
+  const JobArray = Array.isArray(info) ? info : [info];
+
   const fileRef = useRef(null);
 
   const handleAttach = () => {

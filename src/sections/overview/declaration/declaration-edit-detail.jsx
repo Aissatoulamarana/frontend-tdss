@@ -4,22 +4,27 @@ import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
 import { useState, useEffect, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+
 
 import API from 'src/utils/api';
 
 import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
+import { useBoolean } from 'src/hooks/use-boolean';
+
 
 // ----------------------------------------------------------------------
 
 
-export function DeclarationNewEditDetails({ formData, type }) {
+export function DeclarationNewEditDetails({ formData }) {
   const { control, setValue, watch, reset } = useFormContext();
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,9 +34,14 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const [openModalDoc, setOpenModalDoc] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [data, setData] = useState();
+  const renewalModal = useBoolean();
+  const [loadingRenew, setLoadingRenew] = useState(false);
 
 
-  const typedec = type?.trim();
+  const [passportInput, setPassportInput] = useState('');
+
+
+  // const typedec = type?.trim();
 
   const { fields, append, remove } = useFieldArray({ control, name: 'employees' });
 
@@ -44,23 +54,60 @@ export function DeclarationNewEditDetails({ formData, type }) {
       job: '',
       first: '',
       phone: '',
+      type:'NEW',
+      locked:false,
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
-      recto: null,
-      verso: null,
-      signature: null,
-      empreinte: null,
-      attestation: null,
-      certificat: null,
-      contrat: null,
-      dossierCriminel: null,
-      dossierMedical: null,
-      diplomes: null,
-      cv: null,
-      passeport: null,
-      planPanafricanisation: null,
+      // recto: null,
+      // verso: null,
+      // signature: null,
+      // empreinte: null,
+      // attestation: null,
+      // certificat: null,
+      // contrat: null,
+      // dossierCriminel: null,
+      // dossierMedical: null,
+      // diplomes: null,
+      // cv: null,
+      // passeport: null,
+      // planPanafricanisation: null,
     });
   };
+
+  const handleRenew = () => {
+   
+    renewalModal.onTrue(); // Ouvre la modale
+  };
+
+
+  const handleConfirmRenew = async () => {
+    try {
+      const response = await axios.get(API.searchPassport(passportInput));
+      const data = response.data;
+
+      if (!data) {
+        toast.error("Aucun utilisateur trouvé pour ce passeport");
+        return;
+      }
+
+      append({
+        passport_number: data.passport_number,
+        last: data.last,
+        first: data.first,
+        phone: data.phone,
+        type: 'RENEWAL', 
+        reference: data.reference,
+        job: data.job.slug, // champ libre
+        passportExists: true,
+        locked: true,
+      });
+
+      renewalModal.onFalse(); // Ferme la modale
+    } catch (err) {
+      toast.error("Erreur lors de la récupération des données");
+    }
+  };
+
 
   const handleRemove = (index) => {
     remove(index);
@@ -79,7 +126,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
   const handleCloseModalDoc = () => {
 
-    setOpenModalDoc(false);
+    renewalModal.onFalse();
 
   };
   // Ferme le modal et réinitialise le stepper
@@ -138,7 +185,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
     setLoading(true);
     try {
       const response = await axios.get(url);
-      const {data} = response;
+      const { data } = response;
 
       const newOptions = data.results.map((fonction) => ({
         value: fonction.slug,
@@ -247,10 +294,9 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const checkPassportExistence = async (numero, index) => {
     if (!numero) return;
     try {
-      const response = await axios.post(API.searchPassport(numero));
-      setData(response.data.data)
-      console.log('les informations du detenteur de ce passport ', response.data.data)
-      if (response.data.exists) {
+      const response = await axios.get(API.searchPassport(numero));
+      setData(response.data)
+      if (response.data) {
         setValue(`employees[${index}].passportExists`, true);
       } else {
         setValue(`employees[${index}].passportExists`, false);
@@ -273,10 +319,15 @@ export function DeclarationNewEditDetails({ formData, type }) {
   const handlePassportChange = (e, index) => {
     const numero = e.target.value;
     setValue(`employees[${index}].passport_number`, numero);
-    debouncedPassportCheck(numero, index);
   };
 
-
+  const handlePassportBlur = (e, index) => {
+        const numero = e.target.value;
+        if (numero) {
+          // appel direct (ou debouncedPassportCheck si vous préférez laisser un très léger délai)
+          checkPassportExistence(numero, index);
+      }
+      };
 
   //  Créer la fonction qui vérifie l'identifier
   const checkIdentifier = async (identifier, index) => {
@@ -290,7 +341,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
       setValue(`employees[${index}].first`, person.prenom);
       setValue(`employees[${index}].phone`, person.telephone);
       setValue(`employees[${index}].job`, person.fonction);
-      debouncedPassportCheck(person.numero, index);
+      // debouncedPassportCheck(person.numero, index);
     } catch (error) {
       console.error("Erreur lors de la récupération des données:", error);
     }
@@ -324,9 +375,9 @@ export function DeclarationNewEditDetails({ formData, type }) {
   ];
 
   // Si le type est "Duplicata", on ne garde que "Certificat de perte" et "CV"
-  const filteredDocuments = typedec === "Duplicata"
-    ? [{ label: "Certificat de perte", key: "certificatPerte" }, { label: "CV", key: "cv" }]
-    : allDocuments;
+  // const filteredDocuments = typedec === "Duplicata"
+  //   ? [{ label: "Certificat de perte", key: "certificatPerte" }, { label: "CV", key: "cv" }]
+  //   : allDocuments;
 
 
   return (
@@ -335,11 +386,34 @@ export function DeclarationNewEditDetails({ formData, type }) {
         Informations Personnelles
       </Typography>
 
+
+      {/* Renewal Modal */}
+      <Dialog open={renewalModal.value} onClose={renewalModal.off} fullWidth>
+        <DialogTitle>Renouvellement – saisir le passeport</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Numéro de passeport"
+            fullWidth
+            value={passportInput}
+            onChange={e => setPassportInput(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={renewalModal.onFalse}>Annuler</Button>
+          <LoadingButton onClick={handleConfirmRenew} loading={loadingRenew}>
+            Valider
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
+
+
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
         {fields.map((item, index) => (
           <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
-              {typedec === 'Renouvellement' || typedec === 'Duplicata' && (
+              {/* {typedec === 'Renouvellement' || typedec === 'Duplicata' && (
                 <Field.Text
                   size="small"
                   name={`employees[${index}].identifier`}
@@ -347,35 +421,30 @@ export function DeclarationNewEditDetails({ formData, type }) {
                   inputlabelprops={{ shrink: true }}
                   onChange={(e) => handleIdentifierChange(e, index)}
                 />
-              )}
+              )} */}
 
               <Field.Text
                 size="small"
+                disabled={values.employees[index].locked}
                 name={`employees[${index}].passport_number`}
                 label="Numéro Passeport *"
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
-                error={typedec === "Nouvelle" && Boolean(values.employees?.[index]?.passportExists)}
+                onBlur={(e) => handlePassportBlur(e, index)}
+                error={values.employees[index].passportExists && !values.employees[index].locked}
                 helperText={
-                  values.employees?.[index]?.passportExists
-                    ? typedec === "Nouvelle"
-                      ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
-                      : "✅ Ce passeport existe déjà, il est bien enregistré."
-                    : ""
-                }
-                sx={{
-                  "& .MuiFormHelperText-root": {
-                    color: values.employees?.[index]?.passportExists
-                      ? typedec === "Nouvelle"
-                        ? "error.main"
-                        : "success.main"
-                      : "error.main"
-                  }
-                }}
+                      values.employees[index].passportExists
+                       ? values.employees[index].locked
+                         ? "✅ Ce passeport existe déjà, il est bien enregistré."
+                        : "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
+                        : ""
+                   }
+                   FormHelperTextProps={{
+                        sx: {
+                          color: values.employees[index].locked ? 'success.main' : 'error.main'
+                       }
+                      }}
               />
-
-
-
 
               <Field.Phone
                 size="small"
@@ -384,6 +453,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 placeholder="votre numero de téléphone  "
                 sx={{ width: '100%' }}
                 inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
               />
 
               <Field.Text
@@ -391,12 +461,14 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 name={`employees[${index}].last`}
                 label="Nom *"
                 inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
               />
               <Field.Text
                 size="small"
                 name={`employees[${index}].first`}
                 label="Prénom *"
                 inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
               />
 
 
@@ -457,7 +529,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
 
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
-              {typedec !== "Duplicata" && (
+              {/* {typedec !== "Duplicata" && (
                 <Button onClick={handleOpenModal} variant="outlined">
                   {typedec === "Renouvellement" ? "Ancien Permis" : "Données Biométriques"}
                 </Button>
@@ -465,11 +537,11 @@ export function DeclarationNewEditDetails({ formData, type }) {
 
               <Button onClick={handleOpenModalDoc} variant="outlined">
                 Joindre Documents
-              </Button>
+              </Button> */}
             </Stack>
 
             {/* Modal pour les documents */}
-            <Modal open={openModalDoc} onClose={handleCloseModalDoc}>
+            {/* <Modal open={openModalDoc} onClose={handleCloseModalDoc}>
               <Box
                 sx={{
                   width: '60%',
@@ -509,10 +581,10 @@ export function DeclarationNewEditDetails({ formData, type }) {
                           type="file"
                           onChange={handleUploadDoc(`items[${index}].${doc.key}`)}
                         />
-                      </IconButton>
+                      </IconButton> */}
 
                       {/* Icône pour voir le fichier s'il est téléchargé */}
-                      {watch(`items[${index}].${doc.key}`) && (
+                      {/* {watch(`items[${index}].${doc.key}`) && (
                         <IconButton
                           color="primary"
                           component="a"
@@ -528,11 +600,11 @@ export function DeclarationNewEditDetails({ formData, type }) {
                 </Stack>
 
               </Box>
-            </Modal>
+            </Modal> */}
 
 
             {/* Modal pour les données biométriques */}
-            <Modal open={openModal} onClose={handleCloseModal}>
+            {/* <Modal open={openModal} onClose={handleCloseModal}>
 
               <Box
                 sx={{
@@ -547,9 +619,9 @@ export function DeclarationNewEditDetails({ formData, type }) {
                   transform: 'translate(15%, 60%)',
                 }}
 
-              >
+              > */}
                 {/* Condition : Si Renouvellement -> Upload seul, sinon Stepper */}
-                {typedec === "Renouvellement" ? (
+                {/* {typedec === "Renouvellement" ? (
                   <>
                     <Typography variant="h6" align="center" gutterBottom>
                       Upload de l'Ancien Permis
@@ -588,10 +660,10 @@ export function DeclarationNewEditDetails({ formData, type }) {
                       <Box sx={{ mt: 2 }}>
                         <Typography variant="h6" align="center">
                           {['Recto', 'Verso', 'Signature', 'Empreinte'][activeStep]}
-                        </Typography>
+                        </Typography> */}
 
                         {/* Utilisation du composant UploadWithPreview pour chaque étape */}
-                        {activeStep === 0 && (
+                        {/* {activeStep === 0 && (
                           <Field.UploadAvatar
                             name={`items[${index}].recto`}
                             maxSize={3145728}
@@ -645,7 +717,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
                   </>
                 )}
               </Box>
-            </Modal>
+            </Modal> */}
             <Button
               size="small"
               color="error"
@@ -664,7 +736,7 @@ export function DeclarationNewEditDetails({ formData, type }) {
       <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
       <Stack
-        spacing={3}
+        spacing={2} sx={{ mb: 2 }}
         direction={{ xs: 'column', md: 'row' }}
         alignItems={{ xs: 'flex-end', md: 'center' }}
       >
@@ -675,7 +747,17 @@ export function DeclarationNewEditDetails({ formData, type }) {
           onClick={handleAdd}
           sx={{ flexShrink: 0 }}
         >
-          Add Item
+          Nouveau
+        </Button>
+
+        <Button
+          size="small"
+          color="primary"
+          startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={handleRenew}
+          sx={{ flexShrink: 0 }}
+        >
+          Renouvellement
         </Button>
       </Stack>
 

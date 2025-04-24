@@ -31,12 +31,15 @@ export const NewInvoiceSchema = zod.object({
       phone: zod.string().min(1, { message: "Entrez votre numero de téléphone " }),
       first: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       last: zod.string().min(1, { message: 'Entrez votre nom ' }),
+      type: zod.string().min(1),
+      reference: zod.string().optional(),
 
     })
   ),
 
   company: zod.string().min(1, { message: "Veuillez selectionner l'entreprise !" }),
   title: zod.string().min(1, { message: 'le titre de la déclaration est obligatoire' }),
+ 
 });
 
 
@@ -64,6 +67,8 @@ export function DeclarationNew({ declaration, type, formData }) {
           phone: '',
           job: '',
           identifier: '',
+          type:  'NEW',
+          reference: '', 
         },
       ],
   }), [declaration, formData]);
@@ -146,7 +151,7 @@ export function DeclarationNew({ declaration, type, formData }) {
     <Form methods={methods}>
       <Card>
         <DeclarationEditStatusDate type={type} />
-        <DeclarationNewEditDetails formData={formData} type={type} />
+        <DeclarationNewEditDetails formData={formData}  />
       </Card>
 
       <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>

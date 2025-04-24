@@ -28,9 +28,7 @@ import { toast } from 'src/components/snackbar';
 import {
     useTable,
     emptyRows,
-    rowInPage,
     TableNoData,
-    getComparator,
     TableEmptyRows,
     TableHeadCustom,
     TablePaginationCustom,
@@ -39,11 +37,11 @@ import {
 import { EmployeeTableFiltersResult } from '../employee-filter-results';
 import { EmployeeTableRow } from '../employee-table-row';
 import { EmployeeTableToolbar } from '../employee-table-toolbar';
+
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
     { value: 'all', label: 'Tous' },
-
 ];
 
 const TABLE_HEAD = [
@@ -53,8 +51,6 @@ const TABLE_HEAD = [
     { id: 'declaration', label: 'Nombre declaration' },
     { id: 'phoneNumber', label: 'Numéro de téléphone' },
     { id: 'job', label: 'Fonction' },
-
-    // { id: 'status', label: 'Status' },
     { id: '', width: 88 },
 ];
 
@@ -62,22 +58,34 @@ const TABLE_HEAD = [
 
 export function EmployeeListView() {
     const table = useTable();
-
     const router = useRouter();
-
     const confirm = useBoolean();
 
     const [tableData, setTableData] = useState([]);
+<<<<<<< HEAD
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
     const [selectedFilter, setSelectedFilter] = useState('name'); // filtre selectionné
 
+=======
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [page, setPage] = useState(0);
+    const [loading, setLoading] = useState(true); // état de chargement
+    const [error, setError] = useState(null); // état d'erreur
+    const [selectedFilter, setSelectedFilter] = useState('name'); // options de recherche 
+
+    // Pagination : ici, count est le nombre total d'éléments filtrés côté backend
+>>>>>>> declaration
     const [pagination, setPagination] = useState({
         count: 0,
         next: null,
         previous: null,
     });
 
+<<<<<<< HEAD
+=======
+    // États des filtres (remarquez que passport_number et reference sont ajoutés)
+>>>>>>> declaration
     const filters = useSetState({
         name: '',
         job: [],
@@ -86,9 +94,14 @@ export function EmployeeListView() {
         reference: '',
     });
 
+<<<<<<< HEAD
 
     // Comme le filtrage est effectué côté backend,
 
+=======
+    // Comme le filtrage est effectué côté backend,
+    // on ne passe plus par applyFilter pour obtenir dataFiltered.
+>>>>>>> declaration
     // On affichera directement tableData.
     const canReset =
         !!filters.state.name ||
@@ -96,13 +109,19 @@ export function EmployeeListView() {
         filters.state.status !== 'all' ||
         !!filters.state.passport_number ||
         !!filters.state.reference;
+<<<<<<< HEAD
 
 
     // Pour indiquer l'absence de données, on vérifie le total
     const notFound = pagination.count === 0 && canReset;
 
+=======
+>>>>>>> declaration
 
+    // Pour indiquer l'absence de données, on vérifie le total
+    const notFound = pagination.count === 0 && canReset;
 
+    // Navigation vers le détail d'un employé
     const handleViewRow = useCallback(
         (slug) => {
             router.push(paths.dashboard.employee.details(slug));
@@ -110,7 +129,11 @@ export function EmployeeListView() {
         [router]
     );
 
+<<<<<<< HEAD
 
+=======
+    // Gestion de la sélection du status dans les Tabs
+>>>>>>> declaration
     const handleFilterStatus = useCallback(
         (event, newValue) => {
             table.onResetPage();
@@ -119,15 +142,35 @@ export function EmployeeListView() {
         [filters, table]
     );
 
+    // Gestion du changement de filtre dans la zone de recherche
+    const handleFilterChange = useCallback(
+        (event) => {
+            onResetPage(); // réinitialise la page quand le filtre change
+            const value = event.target.value;
+            // On réinitialise d'abord les trois filtres pour n'en mettre qu'un
+            filters.setState({ name: '', passport_number: '', reference: '' });
+            // On ne met à jour que le filtre sélectionné
+            filters.setState({ [selectedFilter]: value });
+        },
+        [selectedFilter, filters, /*onResetPage*/] // Assurez-vous que onResetPage est défini ou importé
+    );
 
+    // ----------------------------------------------------------
     useEffect(() => {
         const fetchEmployee = async () => {
             setLoading(true);
             try {
                 const offset = table.page * table.rowsPerPage;
+<<<<<<< HEAD
                 const url = API.listEmployee();
                 // Construction des params avec des filtres
 
+=======
+                // URL sans query string
+                const url = `https://test.tdss.com.gn/api/employees/`;
+
+                // Construction de l'objet params pour Axios
+>>>>>>> declaration
                 const params = {
                     limit: table.rowsPerPage,
                     offset: offset,
@@ -164,6 +207,12 @@ export function EmployeeListView() {
         filters.state.passport_number,
         filters.state.reference,
     ]);
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> declaration
 
     if (loading) {
         console.info('Loading ...');
@@ -172,6 +221,7 @@ export function EmployeeListView() {
     if (error) {
         console.error(`Error: ${error}`);
     }
+
     return (
         <>
             <DashboardContent maxWidth="xl">
@@ -196,6 +246,7 @@ export function EmployeeListView() {
                         }}
                     >
                         {STATUS_OPTIONS.map((tab) => (
+<<<<<<< HEAD
                             <Tab
                                 key={tab.value}
                                 iconPosition="end"
@@ -207,13 +258,29 @@ export function EmployeeListView() {
                                     </Label>
                                 }
                             />
+=======
+                            <Tab key={tab.value} value={tab.value} label={tab.label} />
+>>>>>>> declaration
                         ))}
                     </Tabs>
 
+                    {/* <EmployeeTableToolbar
+                        filters={filters}
+<<<<<<< HEAD
+                        onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
+                        // onFilterChange={handleFilterChange}
+=======
+                        onResetPage={table.onResetPage}
+                        onFilterChange={handleFilterChange} // Par exemple, pour le champ de recherche
+                        options={{
+                            roles: [...new Set(tableData.map((row) => row.job.trim()))],
+                        }}
+                    /> */}
                     <EmployeeTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
-                        // onFilterChange={handleFilterChange}
+                        onFilterChange={handleFilterChange}
+>>>>>>> declaration
                         selectedFilter={selectedFilter}
                         setSelectedFilter={setSelectedFilter}
                         options={{
@@ -224,6 +291,10 @@ export function EmployeeListView() {
                     {canReset && (
                         <EmployeeTableFiltersResult
                             filters={filters}
+<<<<<<< HEAD
+=======
+                            // On utilise pagination.count pour le nombre total de résultats filtrés côté backend
+>>>>>>> declaration
                             totalResults={pagination.count}
                             onResetPage={table.onResetPage}
                             sx={{ p: 2.5, pt: 0 }}
@@ -231,7 +302,10 @@ export function EmployeeListView() {
                     )}
 
                     <Box sx={{ position: 'relative' }}>
+<<<<<<< HEAD
 
+=======
+>>>>>>> declaration
                         <Scrollbar>
                             <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                                 <TableHeadCustom
@@ -250,6 +324,7 @@ export function EmployeeListView() {
                                 />
 
                                 <TableBody>
+<<<<<<< HEAD
                                     {tableData
                                         .map((row) => (
                                             <EmployeeTableRow
@@ -269,6 +344,25 @@ export function EmployeeListView() {
                                             />
                                         )}
 
+=======
+                                    {tableData.map((row) => (
+                                        <EmployeeTableRow
+                                            key={row.slug}
+                                            row={row}
+                                            selected={table.selected.includes(row.slug)}
+                                            onViewRow={() => handleViewRow(row.slug)}
+                                        />
+                                    ))}
+
+                                    {tableData.length > 0 &&
+                                        tableData.length < table.rowsPerPage && (
+                                            <TableEmptyRows
+                                                height={table.dense ? 56 : 76}
+                                                emptyRows={table.rowsPerPage - tableData.length}
+                                            />
+                                        )}
+
+>>>>>>> declaration
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
@@ -278,11 +372,19 @@ export function EmployeeListView() {
 
                     <TablePaginationCustom
                         page={table.page}
+<<<<<<< HEAD
                         onPageChange={table.onChangePage}
                         rowsPerPage={table.rowsPerPage}
                         onRowsPerPageChange={table.onChangeRowsPerPage}
                         dense={table.dense}
                         count={pagination.count}
+=======
+                        onPageChange={table.onChangePage}          // Gestionnaire pour changer de page
+                        rowsPerPage={table.rowsPerPage}
+                        onRowsPerPageChange={table.onChangeRowsPerPage} // Gestionnaire pour changer le nombre d'éléments par page
+                        dense={table.dense}
+                        count={pagination.count}                   // Utilisation du nombre total pour le calcul du nombre de pages
+>>>>>>> declaration
                         onChangeDense={table.onChangeDense}
                     />
 
@@ -295,7 +397,7 @@ export function EmployeeListView() {
                 title="Supprimer"
                 content={
                     <>
-                        Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> items?
+                        Êtes-vous sûr de vouloir supprimer <strong>{table.selected.length}</strong> items ?
                     </>
                 }
                 action={
@@ -305,7 +407,6 @@ export function EmployeeListView() {
                         onClick={() => {
                             handleDeleteRows();
                             confirm.onFalse();
-
                         }}
                     >
                         Supprimer
@@ -314,40 +415,4 @@ export function EmployeeListView() {
             />
         </>
     );
-}
-
-function applyFilter({ inputData, comparator, filters }) {
-    const { name, status, job } = filters;
-
-    const stabilizedThis = inputData?.map((el, index) => [el, index]);
-
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) return order;
-        return a[1] - b[1];
-    });
-
-    inputData = stabilizedThis.map((el) => el[0]);
-
-    if (name) {
-        inputData = inputData?.filter((employee) =>
-            employee?.reference?.toLowerCase().includes(name.toLowerCase()) ||
-            employee?.last?.toLowerCase().includes(name.toLowerCase()) ||
-            employee?.first?.toLowerCase().includes(name.toLowerCase()) ||
-            employee?.passport_number?.toLowerCase().includes(name.toLowerCase()) ||
-            employee?.job?.toLowerCase().includes(name.toLowerCase()) ||
-            employee?.phone?.toLowerCase().includes(name.toLowerCase())
-        );
-    }
-
-
-    if (status !== 'all') {
-        inputData = inputData?.filter((employee) => employee?.status === status);
-    }
-
-    if (job.length) {
-        inputData = inputData?.filter((employee) => job?.includes(employee.job));
-    }
-
-    return inputData;
 }
