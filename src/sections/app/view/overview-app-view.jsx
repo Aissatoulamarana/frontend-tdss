@@ -3,13 +3,16 @@
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/material/styles';
+import { useState , useEffect } from 'react';
 import { _appAuthors, _appRelated, _appInvoices, _appInstalled } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { svgColorClasses } from 'src/components/svg-color';
 
 import { useMockedUser } from 'src/auth/hooks';
-
+import { useSearchParams } from 'src/routes/hooks';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 import { AppAreaInstalled } from '../app-area-installed';
 import { AppCurrentDownload } from '../app-current-download';
 import { AppNewInvoice } from '../app-new-invoice';
@@ -18,13 +21,34 @@ import { AppTopInstalledCountries } from '../app-top-installed-countries';
 import { AppTopRelated } from '../app-top-related';
 import { AppWidget } from '../app-widget';
 import { AppWidgetSummary } from '../app-widget-summary';
+import Dialog from '@mui/material/Dialog';
+import Button from '@mui/material/Button';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+
 
 // ----------------------------------------------------------------------
 
 export function OverviewAppView() {
   const { user } = useMockedUser();
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const activated = searchParams.get("activated");
+
+  const [openChangePwd, setOpenChangePwd] = useState(false);
+
   const theme = useTheme();
+
+  useEffect(() => {
+    if (searchParams.get('activated') === 'true') {
+      setOpenChangePwd(true);
+      // On nettoie la query pour ne pas réouvrir au reload
+      const { activated, ...rest } = Object.fromEntries(searchParams.entries());
+      router.replace({ pathname: router.pathname, query: rest });
+    }
+  }, [searchParams, router]);
 
   return (
     <DashboardContent maxWidth="xl">
@@ -189,6 +213,43 @@ export function OverviewAppView() {
           </Box>
         </Grid>
       </Grid>
+
+
+         {/* ——— Boîte de dialogue “Pensez à changer votre mot de passe” ——— */}
+    <Dialog
+      open={openChangePwd}
+      onClose={() => {
+        setOpenChangePwd(false);
+         router.push(paths.dashboard.root);
+       }}
+     >
+       <DialogTitle>Bienvenue !</DialogTitle>
+       <DialogContent>
+         Votre compte vient d’être activé. Pour votre sécurité, pensez à changer
+        votre mot de passe dans les paramètres de votre compte.
+       </DialogContent>
+      <DialogActions>
+        <Button
+         onClick={() => {
+             setOpenChangePwd(false);
+             router.push(paths.dashboard.user.account);
+            
+           }}
+         >
+           Changer mon mot de passe
+         </Button>
+         <Button
+           onClick={() => {
+             setOpenChangePwd(false);
+            router.push(paths.dashboard.root);
+          }}
+         color="inherit"
+        >
+           Plus tard
+         </Button>
+       </DialogActions>
+    </Dialog>
+
     </DashboardContent>
   );
 }

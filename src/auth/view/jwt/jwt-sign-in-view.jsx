@@ -54,7 +54,7 @@ export function JwtSignInView() {
   const [errorMsg, setErrorMsg] = useState('');
   const password = useBoolean();
 
-  const [openChangePwd, setOpenChangePwd] = useState(!!activated);
+
 
   const defaultValues = {
     email: '',
@@ -76,11 +76,15 @@ export function JwtSignInView() {
       setErrorMsg(''); // Réinitialise le message d'erreur
       await signInWithPassword({ email: data.email, password: data.password });
       await checkUserSession?.();
+      // dans JwtSignInView → onSubmit
       if (activated) {
-              setOpenChangePwd(true);
-              return; // on arrête la redirection automatique
-            }
+        window.location.href = `${paths.dashboard.root}?activated=true`;
+        return;
+      }
+
+      // si pas d’activation on redirige simplement
       router.push(paths.dashboard.root);
+
     } catch (error) {
       console.error('Sign in error dans la vue :', error);
       setErrorMsg(typeof error === 'string' ? error : error.message || 'Authentication failed');
@@ -187,40 +191,7 @@ export function JwtSignInView() {
         </Alert>
       )}
 
-         {/* ——— Boîte de dialogue “Pensez à changer votre mot de passe” ——— */}
-    <Dialog
-      open={openChangePwd}
-      onClose={() => {
-        setOpenChangePwd(false);
-         router.push(paths.dashboard.root);
-       }}
-     >
-       <DialogTitle>Bienvenue !</DialogTitle>
-       <DialogContent>
-         Votre compte vient d’être activé. Pour votre sécurité, pensez à changer
-        votre mot de passe dans les paramètres de votre compte.
-       </DialogContent>
-      <DialogActions>
-        <Button
-         onClick={() => {
-             setOpenChangePwd(false);
-             router.push(paths.dashboard.user.account);
-            
-           }}
-         >
-           Changer mon mot de passe
-         </Button>
-         <Button
-           onClick={() => {
-             setOpenChangePwd(false);
-             router.push(paths.dashboard.root);
-          }}
-         color="inherit"
-        >
-           Plus tard
-         </Button>
-       </DialogActions>
-    </Dialog>
+      
 
       <Form methods={methods} onSubmit={onSubmit}>
         {renderForm}
