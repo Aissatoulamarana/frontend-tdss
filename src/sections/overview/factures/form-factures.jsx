@@ -1,239 +1,203 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Stack, Button, MenuItem, TextField, Typography } from '@mui/material';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Button,
+  MenuItem,
+  Box
+} from '@mui/material';
 import axios from 'src/utils/axios';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
+import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import API from 'src/utils/api';
 import { getDevises, getCountries } from 'src/utils/options';
-import { Form, Field } from 'src/components/hook-form';
+import { Form, Field , schemaHelper } from 'src/components/hook-form';
 
-// Définition du schéma Zod sans payment_method
 const NewPayeurSchema = z.object({
-  payer_data: z.object({
-    last: z.string().min(1, { message: 'Le nom est obligatoire' }),
-    first: z.string().min(1, { message: 'Le prénom est obligatoire' }),
-    email: z.string().email({ message: 'Email invalide' }),
-    phone: z.string().min(1, { message: 'Le téléphone est obligatoire' }),
-    country_origin: z.string(),
-    address: z.string().min(1, { message: 'L’adresse est obligatoire' })
-  }),
-  payment_data: z.object({
-    document: z
-      .any()
-      .refine(file => file instanceof File && file.type === 'application/pdf', {
-        message: 'Le fichier doit être un PDF'
-      }),
-    payment_method: z.string().min(1, { message: 'Le mode de paiement est requis' }),
-    devise: z.string().min(1, { message: 'La devise est requise' }),
-    comment: z.string().optional()
-  })
+  payer_last: z.string().min(1, { message: 'Le nom est obligatoire' }),
+  payer_first: z.string().min(1, { message: 'Le prénom est obligatoire' }),
+  payer_email: z.string().email({ message: 'Email invalide' }),
+  payer_phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
+  payer_country_origin: z.string(),
+  payer_address: z.string().min(1, { message: 'L’adresse est obligatoire' }),
+  payment_document: z
+    .any()
+    .refine(file => file instanceof File && file.type === 'application/pdf', {
+      message: 'Le fichier doit être un PDF'
+    }),
+  payment_devise: z.string().min(1, { message: 'La devise est requise' }),
+  payment_payment_method: z.string().min(1, { message: 'Le mode de paiement est requis' }),
+  payment_comment: z.string().optional()
 });
 
-export function PayeurForm({ slug }) {
+export function PayeurForm({ slug, open, onClose }) {
   const [devises, setDevises] = useState([]);
   const [countries, setCountries] = useState([]);
 
   const paymentTypes = [
     { id: 'TRANSFER', label: 'Virement' },
-    { id: 'DEPOSIT', label: 'Espèces' },
-    { id: 'CHEQUE', label: 'Chèques' }
+    { id: 'DEPOSIT',  label: 'Espèces' },
+    { id: 'CHEQUE',   label: 'Chèques' }
   ];
 
   const defaultValues = useMemo(() => ({
-    payer_data: {
-      last: '',
-      first: '',
-      email: '',
-      phone: '',
-      country_origin: '',
-      address: ''
-    },
-    payment_data: {
-      document: null,
-      devise: '',
-      comment: '',
-      payment_method: ''
-    }
-  }))
+    payer_last: '',
+    payer_first: '',
+    payer_email: '',
+    payer_phone: '',
+    payer_country_origin: '',
+    payer_address: '',
+    payment_document: null,
+    payment_devise: '',
+    payment_payment_method: '',
+    payment_comment: ''
+  }), []);
 
-  // Initialisation du formulaire
   const methods = useForm({
     mode: 'all',
     resolver: zodResolver(NewPayeurSchema),
-    defaultValues,
+    defaultValues
   });
 
   const {
     handleSubmit,
     control,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
     reset
   } = methods;
 
-  // Récupération des devises au montage
   useEffect(() => {
     getDevises().then(setDevises);
     getCountries().then(setCountries);
   }, []);
 
-  function toFormData(obj, form = new FormData()) {
-    Object.entries(obj).forEach(([key, value]) => {
-      if (value instanceof File) {
-        form.append(key, value);
-      } else if (typeof value === 'object' && value !== null && !(value instanceof File)) {
-        form.append(key, JSON.stringify(value)); // <- clé ici
-      } else {
-        form.append(key, value ?? '');
-      }
-    });
-    return form;
-  }
-
-
-
-  const onSubmit = handleSubmit(async (data) => {
+  const onSubmit = handleSubmit(async data => {
     try {
       const formData = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'payment_document' && value instanceof File) {
+          formData.append(key, value);
+        } 
+        // else if (key !== 'payment_document') {
+        //   formData.append(key, value as string);
+        // }
+      });
 
-      // On prépare les données sans le fichier
-      const payload = {
-        payer_data: data.payer_data,
-        payment_data: {
-          ...data.payment_data,
-          document: undefined, // on retire le fichier de l'objet
-        },
-      };
-
-      formData.append('data', JSON.stringify(payload)); // un seul champ JSON
-
-      // Ajout du fichier
-      if (data.payment_data?.document instanceof File) {
-        formData.append('document', data.payment_data.document);
-      }
-
-      const response = await axios.post(API.paidFacture(slug), formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      await axios.post(API.paidFacture(slug), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
 
       reset();
-      toast.success('Mise à jour réussie!');
+      toast.success('Mise à jour réussie !');
+      onClose();
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend :", error);
+      toast.error('Une erreur est survenue.');
     }
   });
 
-
-
-
-
-
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
+    <Dialog fullWidth maxWidth="sm" open={open} onClose={onClose}>
+      <DialogTitle sx={{ color: 'text.disabled' }}>
         Information du Payeur
-      </Typography>
+      </DialogTitle>
+
       <Form methods={methods} onSubmit={onSubmit}>
-        <Stack spacing={3}>
-          <Field.Text
-            label="Nom"
-            name={"payer_data.last"}
-          />
+        <DialogContent dividers>
+          <Box sx={{ mt: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Nom" name="payer_last" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Prénom" name="payer_first" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Email" name="payer_email" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Phone label="Téléphone" name="payer_phone" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Adresse" name="payer_address" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Select
+                  fullWidth
+                  size="small"
+                  name="payer_country_origin"
+                  label="Nationalité"
+                  placeholder="Sélectionnez un pays"
+                  inputlabelprops={{ shrink: true }}
+                >
+                  {countries.map(c => (
+                    <MenuItem key={c.slug} value={c.slug}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Select name="payment_devise" label="Devise">
+                  {devises.map(d => (
+                    <MenuItem key={d.slug} value={d.slug}>
+                      {d.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Select name="payment_payment_method" label="Mode de Paiement">
+                  {paymentTypes.map(t => (
+                    <MenuItem key={t.id} value={t.id}>
+                      {t.label}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Upload
+                  name="payment_document"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={e => field.onChange(e.target.files?.[0])}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Field.Text
+                  label="Commentaire"
+                  name="payment_comment"
+                  multiline
+                  rows={3}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
 
-          <Field.Text
-            label="Prénom"
-            name={'payer_data.first'}
-
-          />
-
-          <Field.Text
-            label="Email"
-            name={'payer_data.email'}
-
-          />
-
-
-          <Field.Text
-            label="Téléphone"
-            name={'payer_data.phone'}
-
-          />
-
-          <Field.Text
-            label="Adresse"
-            name={'payer_data.address'}
-
-          />
-
-
-          <Field.Select
-            fullWidth
-            size="small"
-            name="payer_data.country_origin"
-            label="Nationalité"
-            placeholder="Sélectionnez un pays"
-            inputlabelprops={{ shrink: true }}
-          >
-            {countries.map((c) => (
-              <MenuItem key={c.slug} value={c.slug} >
-                {c.name}
-              </MenuItem>
-            ))}
-          </Field.Select>
-
-          <Field.Select
-            name="payment_data.devise"
-            label="Devise"
-          >
-            {devises.map((d) => (
-              <MenuItem key={d.slug} value={d.slug}>
-                {d.name}
-              </MenuItem>
-            ))}
-          </Field.Select>
-
-          <Field.Upload
-            name="payment_data.document"
-            control={control}
-            render={({ field }) => (
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => field.onChange(e.target.files?.[0])}
-              />
-            )}
-          />
-
-
-          <Field.Select
-            name="payment_data.payment_method"
-            label="Mode de Paiement"
-          >
-            {paymentTypes.map((t) => (
-              <MenuItem key={t.id} value={t.id}>
-                {t.label}
-              </MenuItem>
-            ))}
-          </Field.Select>
-
-          <Field.Text
-            label="Commentaire"
-            name="payment_data.comment"
-            multiline
-            rows={3}
-            fullWidth
-          />
-
+        <DialogActions sx={{ pr: 3, pb: 2 }}>
+          <Button variant="outlined" onClick={onClose}>
+            Retour
+          </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
             Payer
           </Button>
-        </Stack>
+        </DialogActions>
       </Form>
-    </Box>
+    </Dialog>
   );
 }
