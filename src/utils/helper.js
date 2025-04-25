@@ -123,3 +123,25 @@ export const merge = (target, ...sources) => {
 
   return merge(target, ...sources);
 };
+
+
+// utils.js (à placer quelque part dans votre code)
+export function buildPayeurFormData(data) {
+  const formData = new FormData();
+
+  // 1) Sérialise tes sous‑objets
+  formData.append('payer_data', JSON.stringify(data.payer_data));
+  formData.append(
+    'payment_data',
+    JSON.stringify({
+      payment_method: data.payment_data.payment_method,
+      devise:         data.payment_data.devise,
+      comment:        data.payment_data.comment
+    })
+  );
+
+  // 2) Ajoute le PDF à part
+  formData.append('document', data.payment_data.document);
+
+  return formData;
+}
