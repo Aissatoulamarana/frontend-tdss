@@ -51,6 +51,7 @@ const API = {
   // PaidFactures: (slug) => `${BASE_URL}/paid_factures/${slug}/`, // payer plusieurs factures a la fois 
   
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
+  detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
   
   createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
   listFonctions: () => `${BASE_URL}/jobs/`, // Liste des fonctions

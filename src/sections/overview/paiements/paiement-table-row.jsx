@@ -37,12 +37,14 @@ export function PaiementTableRow({
     <>
       <TableRow hover selected={selected}>
         <TableCell padding="checkbox">
-          <Checkbox
+          {/* <Checkbox
             checked={selected}
             onClick={onSelectRow}
             inputProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
-          />
+          /> */}
         </TableCell>
+        <TableCell>{row.reference}</TableCell>
+
 
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
@@ -66,7 +68,7 @@ export function PaiementTableRow({
             />
           </Stack>
         </TableCell>
-        <TableCell>{row.declaration_number}</TableCell>
+        {/* <TableCell>{row.declaration_number}</TableCell> */}
 
 
 
@@ -78,7 +80,7 @@ export function PaiementTableRow({
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.type}
+                  {row.payment_method}
                 </Typography>
               }
               secondary={
@@ -95,13 +97,13 @@ export function PaiementTableRow({
             />
           </Stack>
         </TableCell>
-        <TableCell>{row.bank_name}</TableCell>
+        <TableCell>{row.payer}</TableCell>
 
         <TableCell>
           <ListItemText
             primary={
               <Typography variant='body2'>
-                {fCurrency(row.montantUsd)}
+                {`GNF ${row.amount}`}
               </Typography>
             }
             secondary={
@@ -128,7 +130,7 @@ export function PaiementTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
-      <CustomPopover
+      {/* <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
         onClose={popover.onClose}
@@ -145,38 +147,9 @@ export function PaiementTableRow({
             Voir
           </MenuItem>
 
-          {/*  <MenuItem
-            onClick={() => {
-              onEditRow();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="solar:pen-bold" />
-            Modifier
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              onEditRow();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="mdi:credit-card" />
-            Payer
-          </MenuItem>
-
-           <MenuItem
-            onClick={() => {
-              confirm.onTrue();
-              popover.onClose();
-            }}
-            sx={{ color: 'error.main' }}
-          >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Supprimer
-          </MenuItem>
-           */}
+          
         </MenuList>
-      </CustomPopover>
+      </CustomPopover> */}
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}

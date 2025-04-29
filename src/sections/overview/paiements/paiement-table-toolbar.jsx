@@ -20,7 +20,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function PaiementTableToolbar({ filters, options, dateError, onResetPage }) {
+export function PaiementTableToolbar({ filters, dateError, onResetPage }) {
   const popover = usePopover();
 
   const handleFilterName = useCallback(
@@ -31,17 +31,7 @@ export function PaiementTableToolbar({ filters, options, dateError, onResetPage 
     [filters, onResetPage]
   );
 
-  const handleFilterService = useCallback(
-    (event) => {
-      const newValue =
-        typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value;
-
-      onResetPage();
-      filters.setState({ service: newValue });
-    },
-    [filters, onResetPage]
-  );
-
+ 
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
@@ -66,28 +56,7 @@ export function PaiementTableToolbar({ filters, options, dateError, onResetPage 
         direction={{ xs: 'column', md: 'row' }}
         sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
       >
-        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
-          <InputLabel htmlFor="invoice-filter-service-select-label">
-            Type de Déclarations
-          </InputLabel>
-
-          <Select
-            multiple
-            value={filters.state.service} // Ajout de la prop `value`
-            onChange={handleFilterService}
-            input={<OutlinedInput label="service" />}
-            renderValue={(selected) => selected.join(', ')}
-            inputProps={{ id: 'invoice-filter-service-select-label' }}
-            sx={{ textTransform: 'capitalize' }}
-          >
-            {options?.services?.map((option) => (
-              <MenuItem key={option} value={option}>
-                <Checkbox checked={filters.state.service.includes(option)} disableRipple />
-                {option}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
@@ -137,9 +106,9 @@ export function PaiementTableToolbar({ filters, options, dateError, onResetPage 
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </Stack>
       <CustomPopover

@@ -73,6 +73,7 @@ export const paths = {
     paiements: {
       root: `${ROOTS.DASHBOARD}/paiements`,
       list: `${ROOTS.DASHBOARD}/paiements/list`,
+      details: (slug) => `/dashboard/paiements/${slug}`,
     },
     penalite: {
       root: `${ROOTS.DASHBOARD}/penalite`,

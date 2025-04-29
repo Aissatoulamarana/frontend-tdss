@@ -13,15 +13,7 @@ export function PaiementTableFiltersResult({ filters, totalResults, onResetPage,
     filters.setState({ name: '' });
   }, [filters, onResetPage]);
 
-  const handleRemoveService = useCallback(
-    (inputValue) => {
-      const newValue = filters.state.service.filter((item) => item !== inputValue);
-
-      onResetPage();
-      filters.setState({ service: newValue });
-    },
-    [filters, onResetPage]
-  );
+ 
 
   const handleRemoveStatus = useCallback(() => {
     onResetPage();
@@ -34,13 +26,7 @@ export function PaiementTableFiltersResult({ filters, totalResults, onResetPage,
   }, [filters, onResetPage]);
 
   return (
-    <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
-      <FiltersBlock label="Service:" isShow={!!filters.state.service.length}>
-        {filters.state.service.map((item) => (
-          <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveService(item)} />
-        ))}
-      </FiltersBlock>
-
+    <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>      
       <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
         <Chip
           {...chipProps}

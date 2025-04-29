@@ -1,6 +1,6 @@
 'use client';
 
-import { Grid2 } from '@mui/material';
+import  Grid  from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -54,10 +54,11 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+  {id:'reference', label: 'Reference Paiement'},
   { id: 'invoiceNumber', label: 'Numero Facture' },
-  { id: 'numero', label: 'Numero Déclaration' },
-  { id: 'type', label: 'Type Déclaration' },
-  { id: 'status', label: 'Banque' },
+  // { id: 'numero', label: 'Numero Déclaration' },
+  { id: 'type', label: 'Methode de Paiement' },
+  { id: 'status', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
 
@@ -78,11 +79,14 @@ export function PaiementListView() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
+    const [pagination, setPagination] = useState({
+      count: 0,
+      next: null,
+      previous: null,
+    });
 
   const filters = useSetState({
     name: '',
-    service: [],
-    status: 'all',
     startDate: null,
     endDate: null,
   });
@@ -104,7 +108,7 @@ export function PaiementListView() {
     filters.state.status !== 'all' ||
     (!!filters.state.startDate && !!filters.state.endDate);
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const notFound = pagination.count === 0 && canReset;
 
   const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
 
@@ -126,42 +130,10 @@ export function PaiementListView() {
 
   ];
 
-  const handleDeleteRow = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
-
-      toast.success('Suppression reussie!');
-
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage.length);
-    },
-    [dataInPage.length, table, tableData]
-  );
-
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-
-    toast.success('Suppression reussie!');
-
-    setTableData(deleteRows);
-
-    table.onUpdatePageDeleteRows({
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
-
-  const handleEditRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.invoice.edit(id));
-    },
-    [router]
-  );
-
+  
   const handleViewRow = useCallback(
-    (id) => {
-      router.push(paths.dashboard.invoice.details(id));
+    (slug) => {
+      router.push(paths.dashboard.paiements.details(slug));
     },
     [router]
   );
@@ -178,17 +150,27 @@ export function PaiementListView() {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
       try {
-        const response = await axios.get(API.listPaiments()); // Remplacez l'URL par celle de votre backend
-        setTableData(response.data); // Assurez-vous que votre API renvoie un tableau
+        const offset = table.page * table.rowsPerPage;
+        const limit = table.rowsPerPage;
+        const params = {
+          offset, limit}
+        const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
+        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+        })
       } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
+        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
+        toast.error(error)
       } finally {
         setLoading(false);
       }
     };
 
     fetchFactures();
-  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading factures...');
@@ -205,15 +187,15 @@ export function PaiementListView() {
           heading="Listes des Paiements"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Paiements', href: paths.dashboard.paiements.root },
-            { name: 'Listes' },
+            { name: 'Paiements', href: paths.dashboard.paiements.list },
+            { name: 'Listes des paiements' },
           ]}
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        <Stack spacing={4}>
-          <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-            <Grid2 size={{ xs: 6, md: 4 }}>
+        {/* <Stack spacing={4}> */}
+          <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
+            <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total"
                 total={tableData.length}
@@ -224,8 +206,8 @@ export function PaiementListView() {
                   series: [20, 41, 63, 33, 28, 35, 50, 46],
                 }}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 6, md: 4 }}>
+            </Grid>
+            <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En Dollars"
                 percent={2.6}
@@ -235,8 +217,8 @@ export function PaiementListView() {
                   series: [15, 18, 12, 51, 68, 11, 39, 37],
                 }}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 6, md: 4 }}>
+            </Grid>
+            <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En GNF"
                 percent={2.6}
@@ -247,9 +229,9 @@ export function PaiementListView() {
                   series: [18, 19, 31, 8, 16, 37, 12, 33],
                 }}
               />
-            </Grid2>
-          </Grid2>
-        </Stack>
+            </Grid>
+          </Grid>
+        {/* </Stack> */}
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Tabs
@@ -292,50 +274,13 @@ export function PaiementListView() {
             <PaiementTableFiltersResult
               filters={filters}
               onResetPage={table.onResetPage}
-              totalResults={dataFiltered.length}
+              totalResults={pagination.count}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
 
           <Box sx={{ position: 'relative' }} lg={12}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={dataFiltered.length}
-              onSelectAllRows={(checked) => {
-                table.onSelectAllRows(
-                  checked,
-                  dataFiltered.map((row) => row.id)
-                );
-              }}
-              action={
-                <Stack direction="row">
-                  <Tooltip title="Envoyer">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Telecharger">
-                    <IconButton color="primary">
-                      <Iconify icon="eva:download-outline" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Imprimer">
-                    <IconButton color="primary">
-                      <Iconify icon="solar:printer-minimalistic-bold" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Payer">
-                    <IconButton color="primary" onClick={confirm.onTrue}>
-                      <Iconify icon="mdi:credit-card" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-              }
-            />
+          
 
             <Scrollbar sx={{ minHeight: 444, minWidth: 1000 }}>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
@@ -343,40 +288,35 @@ export function PaiementListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={dataFiltered.length}
+                  rowCount={pagination.count}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      dataFiltered.map((row) => row.id)
+                      tableData.map((row) => row.slug)
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
+                  {tableData
                     .map((row) => (
                       <PaiementTableRow
-                        key={row.id}
+                        key={row.slug}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
+                        selected={table.selected.includes(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
+                        
                       />
                     ))}
-
+               {tableData.length > 0 && 
+                tableData.lenght < table.rowsPerPage && (
                   <TableEmptyRows
                     height={table.dense ? 56 : 56 + 20}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
+                    emptyRows={table.rowsPerPage - tableData.length}
                   />
-
+                )}
                   <TableNoData notFound={notFound} />
                 </TableBody>
               </Table>
@@ -386,7 +326,7 @@ export function PaiementListView() {
           <TablePaginationCustom
             page={table.page}
             dense={table.dense}
-            count={dataFiltered.length}
+            count={pagination.count}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
             onChangeDense={table.onChangeDense}
@@ -395,34 +335,13 @@ export function PaiementListView() {
         </Card>
       </DashboardContent>
 
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title="Payer"
-        content={
-          <>
-            Etes vous sûr de vouloir payer <strong> {table.selected.length} </strong> paiements?
-          </>
-        }
-        action={
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
-            }}
-          >
-            Payer
-          </Button>
-        }
-      />
+     
     </>
   );
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, status, service, startDate, endDate } = filters;
+  const { name,  startDate, endDate } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -437,21 +356,14 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   if (name) {
     inputData = inputData.filter(
       (paiement) =>
-        paiement.numero_facture.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        paiement.declaration_number.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        paiement.bank_name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+        paiement.reference.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        paiement.payer.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        paiement.payment_method.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
-  if (status !== 'all') {
-    inputData = inputData.filter((facture) => facture.statut === status);
-  }
+ 
 
-  if (service.length) {
-    inputData = inputData.filter((invoice) =>
-      invoice.items.some((filterItem) => service.includes(filterItem.service))
-    );
-  }
 
   if (!dateError) {
     if (startDate && endDate) {
