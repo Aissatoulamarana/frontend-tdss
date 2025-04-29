@@ -14,6 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import TextField from '@mui/material/TextField';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { useRouter } from 'src/routes/hooks';
@@ -36,8 +37,9 @@ export const employeSchema = zod.object({
   last: zod.string().min(1, { message: 'le nom est obligatoire' }),
   passport_number: zod.string().min(1, { message: 'le numero de passeport est obligatoire' }),
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-  job: zod.string().min(1, { message: 'le type est requis!' }),
-  type: zod.string().default('NEW')
+  job: zod.string().min(1, { message: 'la fonction est requise!' }),
+  type: zod.string().default('NEW'),
+  reference: zod.string().optional(),
 });
 
 // Schéma global pour le formulaire qui attend un tableau d'employés
@@ -47,8 +49,11 @@ const formSchema = zod.object({
 
 export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const [options, setOptions] = useState([]);
+  const [passportInput, setPassportInput] = useState('');
+  const [loadingRenew, setLoadingRenew] = useState(false);
   const router = useRouter();
   const loadingSend = useBoolean();
+  const renewalModal = useBoolean();
 
   // Utilisation du schéma global pour la validation
   const methods = useForm({
@@ -59,6 +64,9 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       ],
     },
   });
+
+  const { watch, setValue } = methods;
+  const values = watch();
 
   // useFieldArray pour gérer le tableau 'employees'
   const { fields, append, remove } = useFieldArray({ control: methods.control, name: 'employees' });
@@ -75,13 +83,21 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       const { slug } = declaration;
       // On enveloppe les employés dans un objet, selon l'attente du backend
-      const payload = data.employees;
+      const employeesFiltered = data.employees.map((emp) => {
+        if(emp.type === 'RENEWAL'){
+          return emp;
+        }
+        const {reference, ...rest} = emp;
+        return rest;
+      } )
+      const payload = employeesFiltered;
       const response = await axios.post(API.AddEmploye(slug), payload, {
         headers: { 'Content-Type': 'application/json' },
       });
       toast.success('Employés ajoutés avec succès!');
       reset();
       onClose();
+      window.location.reload(); // Recharger la page pour voir les changements
       router.push(paths.dashboard.declaration.details(declaration.slug));
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend:", error);
@@ -115,15 +131,50 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     remove(index);
   };
 
+   const handleRenew = () => {
+     
+      renewalModal.onTrue(); // Ouvre la modale
+    };
+  
+  
+    const handleConfirmRenew = async () => {
+      try {
+        const response = await axios.get(API.searchPassport(passportInput));
+        const data = response.data;
+  
+        if (!data) {
+          toast.error("Aucun utilisateur trouvé pour ce passeport");
+          return;
+        }
+  
+        append({
+          passport_number: data.passport_number,
+          last: data.last,
+          first: data.first,
+          phone: data.phone,
+          type: 'RENEWAL', 
+          reference: data.reference,
+          job: data.job.slug, // champ libre
+          passportExists: true,
+          locked: true,
+        });
+  
+        renewalModal.onFalse(); // Ferme la modale
+      } catch (err) {
+        toast.error("Erreur lors de la récupération des données");
+      }
+    };
+
   // Exemple de vérification du numéro de passeport avec debounce
-  const checkPassportExistence = async (numero) => {
+  const checkPassportExistence = async (numero, index) => {
     if (!numero) return;
     try {
-      const response = await axios.post(API.searchPassport(numero));
-      if (response.data.exists) {
-        toast.error('❌ Ce numéro de passeport existe déjà.');
+      const response = await axios.get(API.searchPassport(numero));
+      setData(response.data)
+      if (response.data) {
+        setValue(`employees[${index}].passportExists`, true);
       } else {
-        toast.success("✅ Ce passeport n'existe pas");
+        setValue(`employees[${index}].passportExists`, false);
       }
     } catch (error) {
       console.error('Erreur lors de la recherche du passeport', error);
@@ -137,12 +188,22 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     []
   );
 
-  // Gestion du changement pour le numéro de passeport
-  const handlePassportChange = (e, index) => {
-    const {value} = e.target;
-    methods.setValue(`employees[${index}].passport_number`, value);
-    debouncedPassportCheck(value);
+  const handlePassportBlur = (e, index) => {
+    const numero = e.target.value;
+    if (numero) {
+      // appel direct (ou debouncedPassportCheck si vous préférez laisser un très léger délai)
+      checkPassportExistence(numero, index);
+  }
   };
+
+  // Gestion du changement pour le numéro de passeport
+    const handlePassportChange = (e, index) => {
+      const {value} = e.target;
+      methods.setValue(`employees[${index}].passport_number`, value);
+      
+    };
+  
+  
 
   useEffect(() => {
     const fetchFonctions = async () => {
@@ -184,6 +245,28 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
             <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
               Informations Personnelles
             </Typography>
+
+             {/* Renewal Modal */}
+                  <Dialog open={renewalModal.value} onClose={renewalModal.off} fullWidth>
+                    <DialogTitle>Renouvellement – saisir le passeport</DialogTitle>
+                    <DialogContent>
+                      <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Numéro de passeport"
+                        fullWidth
+                        value={passportInput}
+                        onChange={e => setPassportInput(e.target.value)}
+                      />
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={renewalModal.onFalse}>Annuler</Button>
+                      <LoadingButton onClick={handleConfirmRenew} loading={loadingRenew}>
+                        Valider
+                      </LoadingButton>
+                    </DialogActions>
+                  </Dialog>
+
             <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
               {fields.map((item, index) => (
                 <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
@@ -192,8 +275,23 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                       size="small"
                       name={`employees[${index}].passport_number`}
                       label="Numéro Passeport"
+                      disabled={values.employees[index].locked}
                       inputlabelprops={{ shrink: true }}
+                      onBlur={(e) => handlePassportBlur(e, index)}
                       onChange={(e) => handlePassportChange(e, index)}
+                      error={values.employees[index].passportExists && !values.employees[index].locked}
+                      helperText={
+                            values.employees[index].passportExists
+                             ? values.employees[index].locked
+                               ? "✅ Ce passeport existe déjà, il est bien enregistré."
+                              : "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
+                              : ""
+                         }
+                         FormHelperTextProps={{
+                              sx: {
+                                color: values.employees[index].locked ? 'success.main' : 'error.main'
+                             }
+                            }}
                     />
                     <Field.Phone
                       size="small"
@@ -202,18 +300,21 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                       placeholder="votre numero de téléphone"
                       sx={{ width: '100%' }}
                       inputlabelprops={{ shrink: true }}
+                      disabled={values.employees[index].locked}
                     />
                     <Field.Text
                       size="small"
                       name={`employees[${index}].last`}
                       label="Nom"
                       inputlabelprops={{ shrink: true }}
+                      disabled={values.employees[index].locked}
                     />
                     <Field.Text
                       size="small"
                       name={`employees[${index}].first`}
                       label="Prénom"
                       inputlabelprops={{ shrink: true }}
+                      disabled={values.employees[index].locked}
                     />
                     <Field.Select
                       name={`employees[${index}].job`}
@@ -253,8 +354,18 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                 onClick={handleAdd}
                 sx={{ flexShrink: 0 }}
               >
-                Add Item
+                Nouveau
               </Button>
+
+              <Button
+          size="small"
+          color="primary"
+          startIcon={<Iconify icon="mingcute:add-line" />}
+          onClick={handleRenew}
+          sx={{ flexShrink: 0 }}
+        >
+          Renouvellement
+        </Button>
             </Stack>
           </Box>
         </DialogContent>

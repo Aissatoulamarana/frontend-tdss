@@ -68,7 +68,7 @@ export function DeclarationNew({ declaration, type, formData }) {
           job: '',
           identifier: '',
           type:  'NEW',
-          reference: '', 
+          // reference: '', 
         },
       ],
   }), [declaration, formData]);
