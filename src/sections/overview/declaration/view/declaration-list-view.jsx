@@ -152,7 +152,7 @@ export function DeclarationListView() {
 
           // On récupère le nombre total à partir du champ "count"
 
-          setTableData(response.data.results)
+          // setTableData(response.data.results)
          
           setCount(response.data.count);
         } catch (error) {
@@ -430,7 +430,7 @@ export function DeclarationListView() {
   );
 
 
- 
+  useEffect(() => {
   // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
   const fetchDeclarations = async () => {
     setLoading(true);
@@ -469,7 +469,7 @@ export function DeclarationListView() {
   };
 
   // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
-  useEffect(() => {
+ 
     fetchDeclarations();
 
   }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status]);
@@ -502,7 +502,7 @@ export function DeclarationListView() {
           heading="Listes des Déclarations"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Déclaration', href: paths.dashboard.declaration.root },
+            { name: 'Déclaration', href: paths.dashboard.declaration.list },
             { name: 'Listes des déclarations' },
           ]}
           action={

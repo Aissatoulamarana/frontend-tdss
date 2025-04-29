@@ -55,6 +55,8 @@ import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -73,6 +75,8 @@ const TABLE_HEAD = [
 export function FactureListView() {
   const theme = useTheme();
 
+  const { user } = useMockedUser();
+  
   const router = useRouter();
 
   const table = useTable({ defaultOrderBy: 'createDate' });
@@ -120,7 +124,7 @@ export function FactureListView() {
   const notFound = pagination.count === 0 && canReset;
 
 
-  const getInvoiceLength = (statut) => tableData.filter((item) => item.statut === statut).length;
+  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
 
   const getTotalAmount = (statut) =>
     sumBy(
@@ -141,13 +145,13 @@ export function FactureListView() {
       value: 'paid',
       label: 'Payées',
       color: 'success',
-      count: getInvoiceLength('paid'),
+      count: getInvoiceLength('PAID'),
     },
     {
       value: 'En attente',
       label: 'En attente',
       color: 'warning',
-      count: getInvoiceLength('En attente'),
+      count: getInvoiceLength('unpaid'),
     },
   ];
 
@@ -463,6 +467,7 @@ export function FactureListView() {
                     .map((row) => (
                       <FactureTableRow
                         key={row.slug}
+                        user={user}
                         row={row}
                         selected={table.selected.includes(row.slug)}
                         onSelectRow={() => table.onSelectRow(row.slug)}

@@ -24,12 +24,14 @@ import { Label } from 'src/components/label';
 
 import { PayeurForm } from './form-factures';
 
+
 // import { fetchOptions, banks } from 'src/utils/options';
 
 // ----------------------------------------------------------------------
 
 export function FactureTableRow({
   row,
+  user,
   selected,
   onSelectRow,
   onViewRow,
@@ -57,14 +59,14 @@ export function FactureTableRow({
   };
 
   const statusLabels = {
-    paid: 'Payée',
+    PAID: 'Payée',
     unpaid: 'En attente'
   }
   const getStatusColor = (status) => {
     switch (status) {
       case 'unpaid':
         return 'warning';
-      case 'paid':
+      case 'PAID':
         return 'success';
       default:
         return 'default';
@@ -72,11 +74,17 @@ export function FactureTableRow({
   }
 
   const popover = usePopover();
+  const payeurForm = useBoolean();
 
 
   return (
     <>
-      <TableRow hover selected={selected}>
+      <TableRow hover selected={selected}onClick={onViewRow} sx={{
+        cursor: 'pointer',
+        '&:hover': {
+          bgcolor: 'action.hover',
+        },
+      }}>
         <TableCell padding="checkbox">
           {/* <Checkbox
             checked={selected}
@@ -130,7 +138,13 @@ export function FactureTableRow({
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton 
+          color={popover.open ? 'inherit' : 'default'} 
+          onClick={(e) => {
+            popover.onOpen(e);
+            e.stopPropagation(); // Empêche la propagation de l'événement de clic
+          }}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -152,7 +166,7 @@ export function FactureTableRow({
             Voir
           </MenuItem>
 
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               onEditRow();
               popover.onClose();
@@ -160,21 +174,28 @@ export function FactureTableRow({
           >
             <Iconify icon="solar:pen-bold" />
             Modifier
-          </MenuItem>
-          {/* {row.status === 'paid' && ( */}
+          </MenuItem> */}
+
+          {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && (
           <MenuItem
+          color={payeurForm.value ? 'inherit' : 'default'}
             onClick={() => {
-              confirm.onTrue();
+              // confirm.onTrue();
               popover.onClose();
-              setOpenSecondDialog(true); // Ouvre la première boîte de dialogue
+              payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
             }}
           >
             <Iconify icon="mdi:credit-card" />
             Payer
           </MenuItem>
-          {/* )} */}
+          )}  
         </MenuList>
+
+       
+
       </CustomPopover>
+
+      <PayeurForm slug={row.slug} open={payeurForm.value} onclose={payeurForm.onFalse} />
       {/* <ConfirmDialog
         fullWidth
         open={openFirstDialog}
@@ -230,7 +251,7 @@ export function FactureTableRow({
           </Button>
         }
       /> */}
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={openSecondDialog}
         onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
         title="Veuillez fournir les informations suivantes"
@@ -247,7 +268,7 @@ export function FactureTableRow({
             Payer
           </Button>
         }
-      />
+      /> */}
     </>
   );
 }

@@ -104,8 +104,6 @@ export function PaiementListView() {
 
   const canReset =
     !!filters.state.name ||
-    filters.state.service.length > 0 ||
-    filters.state.status !== 'all' ||
     (!!filters.state.startDate && !!filters.state.endDate);
 
   const notFound = pagination.count === 0 && canReset;
@@ -235,8 +233,8 @@ export function PaiementListView() {
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Tabs
-            value={filters?.state?.status || []}
-            onChange={handleFilterStatus}
+            // value={filters?.state?.status || []}
+            // onChange={handleFilterStatus}
             sx={{
               px: 2.5,
               boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
