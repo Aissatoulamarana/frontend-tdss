@@ -9,8 +9,7 @@ import {
   Grid,
   Button,
   MenuItem,
-  Box,
-  Stack
+  Box
 } from '@mui/material';
 import axios from 'src/utils/axios';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -112,95 +111,85 @@ export function PayeurForm({ slug, open, onClose }) {
       </DialogTitle>
 
       <Form methods={methods} onSubmit={onSubmit}>
-        <Stack spacing={3}>
-          <Field.Text
-            label="Nom"
-            name={"payer_data.last"}
-          />
 
-          <Field.Text
-            label="Prénom"
-            name={'payer_data.first'}
+        <DialogContent dividers>
+          <Box sx={{ mt: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Nom" name="payer_last" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Prénom" name="payer_first" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Email" name="payer_email" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Phone label="Téléphone" name="payer_phone" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Text label="Adresse" name="payer_address" />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Select
+                  fullWidth
+                  size="small"
+                  name="payer_country_origin"
+                  label="Nationalité"
+                  placeholder="Sélectionnez un pays"
+                  inputlabelprops={{ shrink: true }}
+                >
+                  {countries.map(c => (
+                    <MenuItem key={c.slug} value={c.slug}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Select name="payment_devise" label="Devise">
+                  {devises.map(d => (
+                    <MenuItem key={d.slug} value={d.slug}>
+                      {d.name}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Select name="payment_payment_method" label="Mode de Paiement">
+                  {paymentTypes.map(t => (
+                    <MenuItem key={t.id} value={t.id}>
+                      {t.label}
+                    </MenuItem>
+                  ))}
+                </Field.Select>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Field.Upload
+                  name="payment_document"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={e => field.onChange(e.target.files?.[0])}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <Field.Text
+                  label="Commentaire"
+                  name="payment_comment"
+                  multiline
+                  rows={3}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
 
-          />
-
-          <Field.Text
-            label="Email"
-            name={'payer_data.email'}
-
-          />
-
-
-          <Field.Text
-            label="Téléphone"
-            name={'payer_data.phone'}
-
-          />
-
-          <Field.Text
-            label="Adresse"
-            name={'payer_data.address'}
-
-          />
-
-
-          <Field.Select
-            fullWidth
-            size="small"
-            name="payer_data.country_origin"
-            label="Nationalité"
-            placeholder="Sélectionnez un pays"
-            inputlabelprops={{ shrink: true }}
-          >
-            {countries.map((c) => (
-              <MenuItem key={c.slug} value={c.slug} >
-                {c.name}
-              </MenuItem>
-            ))}
-          </Field.Select>
-
-          <Field.Select
-            name="payment_data.devise"
-            label="Devise"
-          >
-            {devises.map((d) => (
-              <MenuItem key={d.slug} value={d.slug}>
-                {d.name}
-              </MenuItem>
-            ))}
-          </Field.Select>
-
-          <Field.Upload
-            name="payment_data.document"
-            control={control}
-            render={({ field }) => (
-              <input
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => field.onChange(e.target.files?.[0])}
-              />
-            )}
-          />
-
-
-          <Field.Select
-            name="payment_data.payment_method"
-            label="Mode de Paiement"
-          >
-            {paymentTypes.map((t) => (
-              <MenuItem key={t.id} value={t.id}>
-                {t.label}
-              </MenuItem>
-            ))}
-          </Field.Select>
-
-          <Field.Text
-            label="Commentaire"
-            name="payment_data.comment"
-            multiline
-            rows={3}
-            fullWidth
-          />
 
         <DialogActions sx={{ pr: 3, pb: 2 }}>
           <Button variant="outlined" onClick={onClose}>
@@ -210,7 +199,6 @@ export function PayeurForm({ slug, open, onClose }) {
             Payer
           </Button>
         </DialogActions>
-        </Stack>
       </Form>
     </Dialog>
   );
