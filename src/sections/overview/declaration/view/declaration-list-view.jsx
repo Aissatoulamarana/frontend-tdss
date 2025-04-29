@@ -430,53 +430,47 @@ export function DeclarationListView() {
   );
 
 
-  useEffect(() => {
+ 
+  // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
+  const fetchDeclarations = async () => {
+    setLoading(true);
+    try {
+      const offset = table.page * table.rowsPerPage;
+      const params = {
+        limit: table.rowsPerPage,
+        offset: offset,
+        ...(filters.state.company
+          ? { company: filters.state.company }
+          : filters.state.title
+            ? { title: filters.state.title }
 
-    // Fonction pour récupérer les données depuis le backend
-    const fetchDeclarations = async () => {
-      setLoading(true);
-      try {
-        const offset = table.page * table.rowsPerPage;
-        const params = {
-          limit: table.rowsPerPage,
-          offset,
-          // Ajout des filtres textuels
-          ...(filters.state.company
-            ? { company: filters.state.company }
-            : filters.state.title
-              ? { title: filters.state.title }
-              : {}
-          ),
-          // Ajout du filtre statut
-          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-          //  Ajout du filtre de dates si les deux sont renseignées et valides
-          ...(filters.state.starts_at && filters.state.ends_at && !dateError
-            ? {
-              starts_at: dayjs(filters.state.starts_at).format('YYYY-MM-DD HH:mm:ss'),
-              ends_at: dayjs(filters.state.ends_at).format('YYYY-MM-DD HH:mm:ss')
-            }
             : {}
-          )
-        };
+        ),
 
-        const response = await axios.get(API.listDeclarations(), { params });
-        setTableData(response.data.results);
+        ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+      };
 
-        setPagination({
-          count: response.data.count,
-          next: response.data.next,
-          previous: response.data.previous,
+      const response = await axios.get(API.listDeclarations(), { params });
+      setTableData(response.data.results);
+      setCount(response.data.count);
+      setPagination({
+        count: response.data.count,
+        next: response.data.next,
+        previous: response.data.previous,
 
-        });
-      } catch (err) {
-        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
-        toast.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      });
+    } catch (err) {
+      setError(err.message || 'Erreur lors du chargement des données.');
+      const errormessage = err?.message || err?.details || err?.error;
+      toast.error(errormessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
+  // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
+  useEffect(() => {
+    fetchDeclarations();
 
   }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status]);
 
