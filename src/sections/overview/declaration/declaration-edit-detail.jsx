@@ -750,7 +750,7 @@ export function DeclarationNewEditDetails({ formData }) {
           Nouveau
         </Button>
 
-        <Button
+        {/* <Button
           size="small"
           color="primary"
           startIcon={<Iconify icon="mingcute:add-line" />}
@@ -758,7 +758,7 @@ export function DeclarationNewEditDetails({ formData }) {
           sx={{ flexShrink: 0 }}
         >
           Renouvellement
-        </Button>
+        </Button> */}
       </Stack>
 
     </Box>
