@@ -132,7 +132,7 @@ export function EmployeeListView() {
             // On ne met à jour que le filtre sélectionné
             filters.setState({ [selectedFilter]: value });
         },
-        [selectedFilter, filters, /*onResetPage*/] // Assurez-vous que onResetPage est défini ou importé
+        [selectedFilter, filters, ] // Assurez-vous que onResetPage est défini ou importé
     );
 
     // ----------------------------------------------------------

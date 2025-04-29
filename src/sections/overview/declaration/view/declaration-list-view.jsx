@@ -108,8 +108,7 @@ export function DeclarationListView() {
     status: 'all',
     starts_at: null,
     ends_at: null,
-    company: '',
-    title: '',
+    
   });
 
   const dateError = fIsAfter(filters.state.starts_at, filters.state.ends_at);

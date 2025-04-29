@@ -8,18 +8,16 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-<<<<<<< HEAD
+
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import { useCallback, useRef, useState, useEffect } from 'react';
 
 
-=======
-import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip';
-import { useCallback, useState } from 'react';
->>>>>>> declaration
+
+
+
 
 import { usePopover } from 'src/components/custom-popover';
 
@@ -28,7 +26,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-<<<<<<< HEAD
+
 export function EmployeeTableToolbar({
     filters,
     onResetPage,
@@ -43,13 +41,6 @@ export function EmployeeTableToolbar({
     const [filterBoxWidth, setFilterBoxWidth] = useState(null);
     const inputRef = useRef();
 
-=======
-export function EmployeeTableToolbar({ filters, options, onResetPage, selectedFilter,
-    setSelectedFilter }) {
-
-    const popover = usePopover();
-    const [showOptions, setShowOptions] = useState(false);
->>>>>>> declaration
 
     const handleFocus = (event) => {
         setShowOptions(true);
@@ -60,13 +51,7 @@ export function EmployeeTableToolbar({ filters, options, onResetPage, selectedFi
         setShowOptions(false);
     };
 
-<<<<<<< HEAD
-    const handleSelectFilter = (filterType) => {
-        onResetPage();
-        filters.setState({ name: '', passport_number: '', reference: '' });
-        setSelectedFilter(filterType);
-        setShowOptions(false);
-=======
+
     // Change le type de filtre et ferme le menu
     const handleSelectFilter = (filterType) => {
         onResetPage();
@@ -74,14 +59,14 @@ export function EmployeeTableToolbar({ filters, options, onResetPage, selectedFi
         filters.setState({ name: '', passport_number: '', reference: '' });
         setSelectedFilter(filterType);
         handleCloseOptions();
->>>>>>> declaration
+
     };
 
     // Le placeholder du TextField change selon le filtre sélectionné
     const getPlaceholder = () => {
         switch (selectedFilter) {
             case 'passport_number':
-<<<<<<< HEAD
+
                 return 'Recherche par Passport Number';
             case 'reference':
                 return 'Recherche par Reference';
@@ -104,15 +89,7 @@ export function EmployeeTableToolbar({ filters, options, onResetPage, selectedFi
         },
         [selectedFilter, filters, onResetPage, inputValue]
     );
-=======
-                return 'Recherche par Numéro Passeport';
-            case 'reference':
-                return 'Recherche par Reference';
-            default:
-                return 'Recherche par Nom Ou Prénom';
-        }
-    };
->>>>>>> declaration
+
 
     const handleFilterName = useCallback(
         (event) => {
@@ -178,74 +155,7 @@ export function EmployeeTableToolbar({ filters, options, onResetPage, selectedFi
 
 
                 <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
-<<<<<<< HEAD
-                    <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} ref={inputRef}>
-                        <TextField
-                            fullWidth
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            onFocus={handleFocus}
-                            onKeyDown={handleFilterChange}
-                            placeholder={getPlaceholder()}
-                            slotProps={{
-                                input: {
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                                        </InputAdornment>
-                                    ),
-                                }
-                            }}
-                        />
-                        {showOptions && (
-                            <Paper
-                                sx={{
-                                    position: 'absolute',
-                                    top: '100%',
-                                    left: 0,
-                                    mt: 1,
-                                    zIndex: 1300,
-                                    width: '100%',
-                                    backgroundColor: 'background.paper',
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    flexWrap: 'wrap',
-                                    gap: 1,
-                                    p: 1,
-                                }}
-                            >
-                                <Chip
-                                    label="Nom"
-                                    color={selectedFilter === 'name' ? 'primary' : 'default'}
-                                    onClick={() => handleSelectFilter('name')}
-                                />
-                                <Chip
-                                    label="Passport Number"
-                                    color={selectedFilter === 'passport_number' ? 'primary' : 'default'}
-                                    onClick={() => handleSelectFilter('passport_number')}
-                                />
-                                <Chip
-                                    label="Reference"
-                                    color={selectedFilter === 'reference' ? 'primary' : 'default'}
-                                    onClick={() => handleSelectFilter('reference')}
-                                />
-                                {selectedFilter !== 'name' && (
-                                    <Chip
-                                        label="X"
-                                        size="small"
-                                        onClick={() => {
-                                            setSelectedFilter('name');
-                                            filters.setState({ name: '', passport_number: '', reference: '' });
-                                            handleCloseOptions();
-                                        }}
-                                    />
-                                )}
-                            </Paper>
-                        )}
-                    </Box>
-                </Stack>
 
-=======
                     <TextField
                         fullWidth
                         value={filters.state.selectedFilter}
@@ -309,7 +219,7 @@ export function EmployeeTableToolbar({ filters, options, onResetPage, selectedFi
                         )}
                     </Paper>
                 )}
->>>>>>> declaration
+
             </Stack>
 
         </>
