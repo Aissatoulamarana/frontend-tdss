@@ -110,12 +110,15 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       try {
         const offset = page * rowsPerPage;
         const params = {
-          limit: rowsPerPage,
-          offset: offset
+          limit: 100,
+          offset: offset,
+          status: 'UNSUBMITTED',
 
         };
         const response = await axios.get(API.listDeclarations(), { params });
-        const declarations = response.data.results.map((declaration) => ({
+        const declarations = response.data.results
+        .filter((d) => d.reference !== declaration?.reference)
+        .map((declaration) => ({
           value: declaration?.reference,
           label: declaration?.reference,
         }));
@@ -234,7 +237,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   }, []);
 
   return (
-    <Paper>
+    <>
       {/* Barre de menu pour les filtres */}
       <Toolbar
         sx={{
@@ -466,7 +469,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           />
         </Box>
       )}
-    </Paper>
+    </>
   );
 };
 

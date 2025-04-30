@@ -26,7 +26,7 @@ export function DeclarationDetails({ declaration, employees }) {
 
   const [open, setOpen] = useState(false);
   const [currentStatus, setCurrentStatus] = useState('');
-  const statusOptions = [{ value: declaration?.status, label: declaration?.status }];
+  // const statusOptions = [{ value: declaration?.status, label: declaration?.status }];
 
   const user = useMockedUser();
 
@@ -42,6 +42,39 @@ export function DeclarationDetails({ declaration, employees }) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const statusLabels = {
+    UNSUBMITTED: 'Non soumise',
+    SUBMITTED: 'Soumise',
+    REJECTED: 'Rejetée',
+    VALIDATED: 'Validée',
+    BILLED: 'Facturée',
+  };
+
+  // Ajoute la couleur correspondante au statut
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'VALIDATED':
+        return 'success';
+      case 'SUBMITTED':
+        return 'info';
+      case 'UNSUBMITTED':
+        return 'warning';
+      case 'REJECTED':
+        return 'error';
+      case 'BILLED':
+        return 'primary';
+      default:
+        return 'default';
+    }
+  };
+
+  const statusOptions = [
+    {
+      value: declaration?.status,
+      label: statusLabels[declaration.status] || declaration.status
+    }
+  ];
+  
 
   useEffect(() => {
     if (declaration?.status) {
@@ -101,19 +134,9 @@ export function DeclarationDetails({ declaration, employees }) {
             sx={{ width: 48, height: 48 }}
           />
           <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
-            <Label
-              variant="soft"
-              color={
-                (currentStatus === 'BILLED' && 'success') ||
-                (currentStatus === 'SUBMITTED' && 'success') ||
-                (currentStatus === 'VALIDATED' && 'success') ||
-                (currentStatus === 'UNSUBMITTED' && 'warning') ||
-                (currentStatus === 'REJECTED' && 'error') ||
-                'default'
-              }
-            >
-              {currentStatus}
-            </Label>
+            <Label variant="soft" color={getStatusColor(currentStatus)}>
+                        {statusLabels[currentStatus] || 'Inconnu'}
+             </Label>
 
             <Typography variant="h6"> {declaration?.reference}</Typography>
           </Stack>

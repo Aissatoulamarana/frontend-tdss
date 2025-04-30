@@ -31,8 +31,8 @@ export const NewInvoiceSchema = zod.object({
       phone: zod.string().min(1, { message: "Entrez votre numero de téléphone " }),
       first: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       last: zod.string().min(1, { message: 'Entrez votre nom ' }),
-      type: zod.string().min(1),
-      reference: zod.string().optional(),
+      // type: zod.string().min(1),
+      // reference: zod.string().optional(),
 
     })
   ),
@@ -67,7 +67,7 @@ export function DeclarationNew({ declaration, type, formData }) {
           phone: '',
           job: '',
           identifier: '',
-          type:  'NEW',
+          // type:  'NEW',
           // reference: '', 
         },
       ],
@@ -96,6 +96,7 @@ export function DeclarationNew({ declaration, type, formData }) {
 
     try {
       let response;
+      let slug;
 
       // Simuler un délai pour des actions asynchrones (optionnel)
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -116,11 +117,13 @@ export function DeclarationNew({ declaration, type, formData }) {
         toast.success('Déclaration créée avec succès');
       }
 
+      slug = response.data.slug;
+
       // Réinitialiser le formulaire après succès
       reset();
 
       // Rediriger l'utilisateur après la soumission
-      router.push(paths.dashboard.declaration.list);
+      router.push(paths.dashboard.declaration.details(slug));
 
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend:", error);

@@ -20,6 +20,8 @@ import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import {toast} from 'src/components/snackbar';
+
 
 // ----------------------------------------------------------------------
 
@@ -40,6 +42,8 @@ export function DeclarationNewEditDetails({ formData }) {
 
   const [passportInput, setPassportInput] = useState('');
 
+  const MAX_EMPLOYEES = 20;
+
 
   // const typedec = type?.trim();
 
@@ -48,13 +52,17 @@ export function DeclarationNewEditDetails({ formData }) {
   const values = watch();
 
   const handleAdd = () => {
+    if (fields.length >= MAX_EMPLOYEES) {
+      toast.error(`Vous ne pouvez pas ajouter plus de ${MAX_EMPLOYEES} employés.`);
+      return;
+    }
     append({
       passport_number: '',
       last: '',
       job: '',
       first: '',
       phone: '',
-      type:'NEW',
+      // type:'NEW',
       locked:false,
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
@@ -237,7 +245,7 @@ export function DeclarationNewEditDetails({ formData }) {
       );
 
       if (!matchingOption) {
-        toast.warn(
+        toast.warning(
           `Pas de correspondance trouvée pour "${fonctionImportee}" dans la première ligne.`
         );
       }
@@ -270,7 +278,7 @@ export function DeclarationNewEditDetails({ formData }) {
         );
 
         if (!matchingOption) {
-          toast.warn(
+          toast.warning(
             `Pas de correspondance trouvée pour "${fonctionImportee}" à la ligne ${index + 2}.`
           );
         }
@@ -745,6 +753,7 @@ export function DeclarationNewEditDetails({ formData }) {
           color="primary"
           startIcon={<Iconify icon="mingcute:add-line" />}
           onClick={handleAdd}
+          disabled={fields.length >= MAX_EMPLOYEES}
           sx={{ flexShrink: 0 }}
         >
           Nouveau
@@ -759,6 +768,9 @@ export function DeclarationNewEditDetails({ formData }) {
         >
           Renouvellement
         </Button> */}
+         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          {fields.length} / {MAX_EMPLOYEES} employés ajoutés
+        </Typography>
       </Stack>
 
     </Box>
