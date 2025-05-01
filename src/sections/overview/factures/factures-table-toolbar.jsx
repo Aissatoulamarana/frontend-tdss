@@ -18,6 +18,8 @@ import { useCallback } from 'react';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 
+import dayjs from 'dayjs';
+
 // ----------------------------------------------------------------------
 
 export function FactureTableToolbar({ filters, options, dateError, onResetPage }) {
@@ -45,7 +47,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ startDate: newValue });
+      filters.setState({ date_before: newValue });
     },
     [filters, onResetPage]
   );
@@ -53,7 +55,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterEndDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ endDate: newValue });
+      filters.setState({ date_after: newValue });
     },
     [filters, onResetPage]
   );
@@ -90,7 +92,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.endDate}
+            value={filters.state.date_before}
             onChange={handleFilterStartDate}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -100,13 +102,13 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.endDate}
+            value={filters.state.date_after}
             onChange={handleFilterEndDate}
             slotProps={{
               textField: {
                 fullWidth: true,
                 error: dateError,
-                helperText: dateError ? 'End date must be later than start date' : null,
+                helperText: dateError ? 'La date de fin doit être postérieure à la date de début.' : null,
               },
             }}
             sx={{

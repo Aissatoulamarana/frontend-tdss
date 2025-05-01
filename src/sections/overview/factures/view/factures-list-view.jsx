@@ -56,6 +56,7 @@ import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
 
 import { useMockedUser } from 'src/auth/hooks';
+import dayjs from 'dayjs';
 
 // ----------------------------------------------------------------------
 
@@ -99,12 +100,12 @@ export function FactureListView() {
   const filters = useSetState({
     name: '',
     service: [],
-    statut: 'all',
-    startDate: null,
-    endDate: null,
+    status: 'all',
+    date_before: null,
+    date_after: null,
   });
 
-  const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
+  const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -118,37 +119,37 @@ export function FactureListView() {
   const canReset =
     !!filters.state.name ||
     filters.state.service.length > 0 ||
-    filters.state.statut !== 'all' ||
-    (!!filters.state.startDate && !!filters.state.endDate);
+    filters.state.status !== 'all' ||
+    (!!filters.state.date_before && !!filters.state.date_after);
 
   const notFound = pagination.count === 0 && canReset;
 
 
   const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
 
-  const getTotalAmount = (statut) =>
+  const getTotalAmount = (status) =>
     sumBy(
-      tableData.filter((item) => item.statut === statut),
-      (facture) => facture.montantusd
+      tableData.filter((item) => item.status === status),
+      (facture) => facture.amount
     );
 
-  const getPercentByStatus = (statut) => (getInvoiceLength(statut) / tableData.length) * 100;
+  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
       color: 'default',
-      count: tableData.length,
+      count: pagination.count,
     },
     {
-      value: 'paid',
+      value: 'PAID',
       label: 'Payées',
       color: 'success',
       count: getInvoiceLength('PAID'),
     },
     {
-      value: 'En attente',
+      value: 'unpaid',
       label: 'En attente',
       color: 'warning',
       count: getInvoiceLength('unpaid'),
@@ -192,7 +193,7 @@ export function FactureListView() {
   const handleFilterStatus = useCallback(
     (event, newValue) => {
       table.onResetPage();
-      filters.setState({ statut: newValue });
+      filters.setState({ status: newValue });
     },
     [filters, table]
   );
@@ -271,11 +272,20 @@ export function FactureListView() {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
       try {
+        setLoading(true); // Démarre le chargement
         const offset = table.page * table.rowsPerPage;
         const params = {
           limit: table.rowsPerPage,
           offset: offset,
-        }
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.date_before && filters.state.date_after && !dateError
+            ? {
+                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
+                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD ')
+              }
+            : {}
+          )
+        };
         const response = await axios.get(API.listFactures(), { params }); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
         setPagination({
@@ -292,7 +302,7 @@ export function FactureListView() {
     };
 
     fetchFactures();
-  }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage, filters.state.status , filters.state.date_before, filters.state.date_after]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading factures...');
@@ -357,7 +367,7 @@ export function FactureListView() {
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Tabs
-            value={filters?.state?.statut || []}
+            value={filters?.state?.status || []}
             onChange={handleFilterStatus}
             sx={{
               px: 2.5,
@@ -373,7 +383,7 @@ export function FactureListView() {
                 icon={
                   <Label
                     variant={
-                      ((tab.value === 'all' || tab.value === filters.state.statut) && 'filled') ||
+                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
                       'soft'
                     }
                     color={tab.color}
@@ -608,7 +618,7 @@ export function FactureListView() {
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, statut, service, startDate, endDate } = filters;
+  const { name, status, service, startDate, endDate } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -628,8 +638,8 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
     );
   }
 
-  if (statut !== 'all') {
-    inputData = inputData.filter((facture) => facture.statut === statut);
+  if (status !== 'all') {
+    inputData = inputData.filter((facture) => facture.status === status);
   }
 
   if (service.length) {
