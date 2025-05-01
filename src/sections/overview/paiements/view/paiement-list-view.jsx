@@ -51,6 +51,8 @@ import { PaiementTableFiltersResult } from '../paiement-table-filters';
 import { PaiementTableRow } from '../paiement-table-row';
 import { PaiementTableToolbar } from '../paiement-table-toolbar';
 
+import dayjs from 'dayjs';
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -58,7 +60,7 @@ const TABLE_HEAD = [
   { id: 'invoiceNumber', label: 'Numero Facture' },
   // { id: 'numero', label: 'Numero Déclaration' },
   { id: 'type', label: 'Methode de Paiement' },
-  { id: 'status', label: 'Entreprise' },
+  { id: 'payer', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
 
@@ -87,8 +89,9 @@ export function PaiementListView() {
 
   const filters = useSetState({
     name: '',
-    startDate: null,
-    endDate: null,
+    date_before: null,
+    date_after: null,
+    payment_method: [],
   });
 
   const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
@@ -104,9 +107,9 @@ export function PaiementListView() {
 
   const canReset =
     !!filters.state.name ||
-    filters.state.service.length > 0 ||
-    filters.state.status !== 'all' ||
-    (!!filters.state.startDate && !!filters.state.endDate);
+    filters?.state?.payment_method?.length > 0 ||
+ 
+    (!!filters.state.date_before && !!filters.state.date_after);
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -125,7 +128,7 @@ export function PaiementListView() {
       value: 'all',
       label: 'Toutes',
       color: 'default',
-      count: tableData.length,
+      count: pagination.count,
     },
 
   ];
@@ -138,22 +141,26 @@ export function PaiementListView() {
     [router]
   );
 
-  const handleFilterStatus = useCallback(
-    (event, newValue) => {
-      table.onResetPage();
-      filters.setState({ status: newValue });
-    },
-    [filters, table]
-  );
+ 
 
   useEffect(() => {
     // Fonction pour récupérer les données
-    const fetchFactures = async () => {
+    const fetchPaiements = async () => {
       try {
         const offset = table.page * table.rowsPerPage;
         const limit = table.rowsPerPage;
         const params = {
-          offset, limit}
+          offset, limit,
+          ...(filters.state.name && { name: filters.state.name }),
+          ...(filters.state.date_before && filters.state.date_after && !dateError
+                      ? {
+                        date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
+                        date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD ')
+                      }
+                      : {}
+                    ),
+          ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
+        };
         const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
         setPagination({
@@ -169,11 +176,11 @@ export function PaiementListView() {
       }
     };
 
-    fetchFactures();
-  }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+    fetchPaiements();
+  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.name, filters.state.payment_method]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
-    console.info('Loading factures...');
+    console.info('Loading paiement...');
   }
 
   if (error) {
@@ -234,40 +241,34 @@ export function PaiementListView() {
         {/* </Stack> */}
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-          <Tabs
-            value={filters?.state?.status || []}
-            onChange={handleFilterStatus}
-            sx={{
-              px: 2.5,
-              boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
-            }}
-          >
-            {TABS.map((tab) => (
-              <Tab
-                key={tab.value}
-                value={tab.value}
-                label={tab.label}
-                iconPosition="end"
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                      'soft'
-                    }
-                    color={tab.color}
-                  >
-                    {tab.count}
-                  </Label>
-                }
-              />
-            ))}
-          </Tabs>
-
+        <Tabs
+  sx={{
+    px: 2.5,
+    boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+  }}
+>
+  {TABS.map(({ value, label, color, count }) => (
+    <Tab
+      key={value}
+      value={value}
+      label={label}
+      iconPosition="end"
+      icon={
+        <Label
+          variant={value === 'all' ? 'filled' : 'soft'}
+          color={color}
+        >
+          {count}
+        </Label>
+      }
+    />
+  ))}
+</Tabs>
           <PaiementTableToolbar
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ services: dataFiltered?.map((option) => option.name) }}
+            options={{ payment_method: ['TRANSFERT', 'CHEQUE', 'DEPOSIT'] }}
           />
 
           {canReset && (

@@ -15,11 +15,7 @@ export function PaiementTableFiltersResult({ filters, totalResults, onResetPage,
 
  
 
-  const handleRemoveStatus = useCallback(() => {
-    onResetPage();
-    filters.setState({ status: 'all' });
-  }, [filters, onResetPage]);
-
+  
   const handleRemoveDate = useCallback(() => {
     onResetPage();
     filters.setState({ startDate: null, endDate: null });
@@ -27,14 +23,14 @@ export function PaiementTableFiltersResult({ filters, totalResults, onResetPage,
 
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>      
-      <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
+      {/* <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
         <Chip
           {...chipProps}
           label={filters.state.status}
           onDelete={handleRemoveStatus}
           sx={{ textTransform: 'capitalize' }}
         />
-      </FiltersBlock>
+      </FiltersBlock> */}
 
       <FiltersBlock
         label="Date:"
