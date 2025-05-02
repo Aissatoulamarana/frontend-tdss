@@ -11,6 +11,11 @@ export function ClientTableFiltersResult({ filters, onResetPage, totalResults, s
         filters?.setState({ name: '' });
     }, [filters, onResetPage]);
 
+    const handleRemoveLocation = useCallback(() => {
+        onResetPage();
+        filters?.setState({ location: '' });
+    }, [filters, onResetPage]);
+
     const handleRemoveStatus = useCallback(() => {
         onResetPage();
         filters?.setState({ status: 'all' });
@@ -46,6 +51,9 @@ export function ClientTableFiltersResult({ filters, onResetPage, totalResults, s
                 {filters?.state?.type?.map((item) => (
                     <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveRole(item)} />
                 ))}
+            </FiltersBlock>
+            <FiltersBlock label="Location:" isShow={!!filters?.state?.location}>
+                <Chip {...chipProps} label={filters?.state?.location} onDelete={handleRemoveLocation} />
             </FiltersBlock>
 
             <FiltersBlock label="Keyword:" isShow={!!filters?.state?.name}>
