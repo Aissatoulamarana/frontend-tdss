@@ -3,15 +3,19 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
+import IconButton from '@mui/material/IconButton';
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
+import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
+import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 
+import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 
@@ -22,26 +26,30 @@ import API from 'src/utils/api';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
     useTable,
     emptyRows,
+    rowInPage,
     TableNoData,
+    getComparator,
     TableEmptyRows,
     TableHeadCustom,
+    TableSelectedAction,
     TablePaginationCustom,
 } from 'src/components/table';
 
 import { EmployeeTableFiltersResult } from '../employee-filter-results';
 import { EmployeeTableRow } from '../employee-table-row';
 import { EmployeeTableToolbar } from '../employee-table-toolbar';
-
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
     { value: 'all', label: 'Tous' },
+
 ];
 
 const TABLE_HEAD = [
@@ -51,6 +59,8 @@ const TABLE_HEAD = [
     { id: 'declaration', label: 'Nombre declaration' },
     { id: 'phoneNumber', label: 'Numéro de téléphone' },
     { id: 'job', label: 'Fonction' },
+
+    // { id: 'status', label: 'Status' },
     { id: '', width: 88 },
 ];
 
@@ -58,30 +68,21 @@ const TABLE_HEAD = [
 
 export function EmployeeListView() {
     const table = useTable();
+
     const router = useRouter();
+
     const confirm = useBoolean();
 
     const [tableData, setTableData] = useState([]);
-
-   
-
-
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [page, setPage] = useState(0);
-    const [loading, setLoading] = useState(true); // état de chargement
-    const [error, setError] = useState(null); // état d'erreur
-    const [selectedFilter, setSelectedFilter] = useState('name'); // options de recherche 
-
-    // Pagination : ici, count est le nombre total d'éléments filtrés côté backend
+    const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+    const [error, setError] = useState(null); // État pour gérer les erreurs
+    const [selectedFilter, setSelectedFilter] = useState('name'); // filtre selectionné
 
     const [pagination, setPagination] = useState({
         count: 0,
         next: null,
         previous: null,
     });
-
-
-    // États des filtres (remarquez que passport_number et reference sont ajoutés)
 
     const filters = useSetState({
         name: '',
@@ -90,6 +91,9 @@ export function EmployeeListView() {
         passport_number: '',
         reference: '',
     });
+
+
+    // Comme le filtrage est effectué côté backend,
 
     // On affichera directement tableData.
     const canReset =
@@ -103,7 +107,8 @@ export function EmployeeListView() {
     // Pour indiquer l'absence de données, on vérifie le total
     const notFound = pagination.count === 0 && canReset;
 
-    // Navigation vers le détail d'un employé
+
+
     const handleViewRow = useCallback(
         (slug) => {
             router.push(paths.dashboard.employee.details(slug));
@@ -111,8 +116,6 @@ export function EmployeeListView() {
         [router]
     );
 
-
-    // Gestion de la sélection du status dans les Tabs
 
     const handleFilterStatus = useCallback(
         (event, newValue) => {
@@ -122,30 +125,14 @@ export function EmployeeListView() {
         [filters, table]
     );
 
-    // Gestion du changement de filtre dans la zone de recherche
-    const handleFilterChange = useCallback(
-        (event) => {
-            onResetPage(); // réinitialise la page quand le filtre change
-            const value = event.target.value;
-            // On réinitialise d'abord les trois filtres pour n'en mettre qu'un
-            filters.setState({ name: '', passport_number: '', reference: '' });
-            // On ne met à jour que le filtre sélectionné
-            filters.setState({ [selectedFilter]: value });
-        },
-        [selectedFilter, filters, ] // Assurez-vous que onResetPage est défini ou importé
-    );
 
-    // ----------------------------------------------------------
     useEffect(() => {
         const fetchEmployee = async () => {
             setLoading(true);
             try {
                 const offset = table.page * table.rowsPerPage;
-
                 const url = API.listEmployee();
-                // Construction des params avec des filtre
-
-                // Construction de l'objet params pour Axios
+                // Construction des params avec des filtres
 
                 const params = {
                     limit: table.rowsPerPage,
@@ -184,7 +171,6 @@ export function EmployeeListView() {
         filters.state.reference,
     ]);
 
-
     if (loading) {
         console.info('Loading ...');
     }
@@ -192,7 +178,6 @@ export function EmployeeListView() {
     if (error) {
         console.error(`Error: ${error}`);
     }
-
     return (
         <>
             <DashboardContent maxWidth="xl">
@@ -217,30 +202,24 @@ export function EmployeeListView() {
                         }}
                     >
                         {STATUS_OPTIONS.map((tab) => (
-
-
-                            <Tab key={tab.value} value={tab.value} label={tab.label} />
-
+                            <Tab
+                                key={tab.value}
+                                iconPosition="end"
+                                value={tab.value}
+                                label={tab.label}
+                                icon={
+                                    <Label variant="filled" color="default">
+                                        {pagination.count}
+                                    </Label>
+                                }
+                            />
                         ))}
                     </Tabs>
 
-                    {/* <EmployeeTableToolbar
-                        filters={filters}
-
-                        onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
-                        // onFilterChange={handleFilterChange}
-
-                        onResetPage={table.onResetPage}
-                        onFilterChange={handleFilterChange} // Par exemple, pour le champ de recherche
-                        options={{
-                            roles: [...new Set(tableData.map((row) => row.job.trim()))],
-                        }}
-                    /> */}
                     <EmployeeTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
-                        onFilterChange={handleFilterChange}
-
+                        // onFilterChange={handleFilterChange}
                         selectedFilter={selectedFilter}
                         setSelectedFilter={setSelectedFilter}
                         options={{
@@ -277,7 +256,6 @@ export function EmployeeListView() {
                                 />
 
                                 <TableBody>
-
                                     {tableData
                                         .map((row) => (
                                             <EmployeeTableRow
@@ -297,13 +275,6 @@ export function EmployeeListView() {
                                             />
                                         )}
 
-                                    {tableData.length > 0 &&
-                                        tableData.length < table.rowsPerPage && (
-                                            <TableEmptyRows
-                                                height={table.dense ? 56 : 76}
-                                                emptyRows={table.rowsPerPage - tableData.length}
-                                            />
-                                        )}
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
@@ -313,12 +284,11 @@ export function EmployeeListView() {
 
                     <TablePaginationCustom
                         page={table.page}
-
-                        onPageChange={table.onChangePage}          // Gestionnaire pour changer de page
+                        onPageChange={table.onChangePage}
                         rowsPerPage={table.rowsPerPage}
-                        onRowsPerPageChange={table.onChangeRowsPerPage} // Gestionnaire pour changer le nombre d'éléments par page
+                        onRowsPerPageChange={table.onChangeRowsPerPage}
                         dense={table.dense}
-                        count={pagination.count}                   // Utilisation du nombre total pour le calcul du nombre de pages
+                        count={pagination.count}
                         onChangeDense={table.onChangeDense}
                     />
 
@@ -331,7 +301,7 @@ export function EmployeeListView() {
                 title="Supprimer"
                 content={
                     <>
-                        Êtes-vous sûr de vouloir supprimer <strong>{table.selected.length}</strong> items ?
+                        Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> items?
                     </>
                 }
                 action={
@@ -341,6 +311,7 @@ export function EmployeeListView() {
                         onClick={() => {
                             handleDeleteRows();
                             confirm.onFalse();
+
                         }}
                     >
                         Supprimer
@@ -349,4 +320,40 @@ export function EmployeeListView() {
             />
         </>
     );
+}
+
+function applyFilter({ inputData, comparator, filters }) {
+    const { name, status, job } = filters;
+
+    const stabilizedThis = inputData?.map((el, index) => [el, index]);
+
+    stabilizedThis.sort((a, b) => {
+        const order = comparator(a[0], b[0]);
+        if (order !== 0) return order;
+        return a[1] - b[1];
+    });
+
+    inputData = stabilizedThis.map((el) => el[0]);
+
+    if (name) {
+        inputData = inputData?.filter((employee) =>
+            employee?.reference?.toLowerCase().includes(name.toLowerCase()) ||
+            employee?.last?.toLowerCase().includes(name.toLowerCase()) ||
+            employee?.first?.toLowerCase().includes(name.toLowerCase()) ||
+            employee?.passport_number?.toLowerCase().includes(name.toLowerCase()) ||
+            employee?.job?.toLowerCase().includes(name.toLowerCase()) ||
+            employee?.phone?.toLowerCase().includes(name.toLowerCase())
+        );
+    }
+
+
+    if (status !== 'all') {
+        inputData = inputData?.filter((employee) => employee?.status === status);
+    }
+
+    if (job.length) {
+        inputData = inputData?.filter((employee) => job?.includes(employee.job));
+    }
+
+    return inputData;
 }
