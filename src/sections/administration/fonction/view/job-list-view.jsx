@@ -52,20 +52,32 @@ export function JobListView() {
     limit: 10,
   });
 
+
+  const filters = useSetState({
+    name: ''
+  });
+
+
   useEffect(() => {
     const fetchFonctions = async () => {
       try {
-        const response = await axios.get(API.listFonctions()); // Remplacez par votre endpoint réel
+        const params ={
+          limit: pagination.limit,
+          offset: (pagination.currentPage - 1) * pagination.limit,
+          ...(filters.state.name && { name: filters.state.name }), // Ajoutez d'autres filtres si nécessaire
+          ...(filters.state.name?.trim() && { name: filters.state.name.trim() }),
+
+        }
+        const response = await axios.get(API.listFonctions(), {params}); // Remplacez par votre endpoint réel
         const fonctions = response.data.results || []; // Assurez-vous que c'est bien un tableau
         setTableData(fonctions);
-        setPagination({
-          count: response.data.count,
-          next: response.data.next,
-
-          previous: response.data.previous,
-          limit: response.data.limit || 10,
-        });
-
+        setPagination((prev) => ({
+                   ...prev,
+                   count: response.data.count,
+                    next: response.data.next,
+                    previous: response.data.previous,
+                    limit: response.data.limit || prev.limit,
+                  }));
         // Extraire uniquement les noms des fonctions
         const nomsFonctions = fonctions.map(fonction => fonction.name);
         setOptions(nomsFonctions);
@@ -79,12 +91,8 @@ export function JobListView() {
     };
 
     fetchFonctions();
-  }, []);
+  }, [filters.state, pagination.currentPage, pagination.limit]);
 
-
-  const filters = useSetState({
-    name: ''
-  });
 
   const dataFiltered = applyFilter({ inputData: tableData, filters: filters.state, sortBy });
 
@@ -96,44 +104,48 @@ export function JobListView() {
 
   const handleSearch = useCallback(
     (inputValue) => {
-      search.setState({ query: inputValue });
-
-      if (inputValue) {
-        const results = tableData.filter((job) =>
-          job.name.toLowerCase().includes(inputValue.toLowerCase())
-        );
-
-        search.setState({ results });
-      }
+      filters.setState({ name: inputValue });
+      setPagination((prev) => ({ ...prev, currentPage: 1 }));
+     
     },
-    [tableData, search]
+    [filters]
   );
 
   const handlePageChange = useCallback(
     async (event, page) => {
       const offset = (page - 1) * pagination.limit;
+  
       try {
-        const response = await axios.get(`${API.listFonctions()}?limit=${pagination.limit}&offset=${offset}`);
-
-        // Mettez à jour l'état de la pagination et éventuellement la liste des jobs
-        setPagination({
+        // Build params object
+        const params = {
+          limit: pagination.limit,
+          offset,
+          // only include `name` if non-empty
+          ...(filters.state.name?.trim() && { name: filters.state.name.trim() }),
+        };
+  
+        // Axios will append ?limit=…&offset=…&name=… for you
+        const response = await axios.get(API.listFonctions(), { params });
+  
+        setPagination((prev) => ({
+          ...prev,
           count: response.data.count,
           next: response.data.next,
           previous: response.data.previous,
           currentPage: page,
-          limit: pagination.limit,
-        });
-        // Si vous récupérez aussi les jobs, par exemple :
+        }));
+  
         setTableData(response.data.results);
-
-      } catch (error) {
-        console.error("Erreur lors du changement de page", error);
+      } catch (err) {
+        console.error("Erreur lors du changement de page", err);
         toast.error('Erreur lors du chargement des données');
       }
+  
       router.push(`${paths.dashboard.fonction.list}?page=${page}`);
     },
-    [pagination.limit, router]
+    [pagination.limit, filters.state.name, router]
   );
+  
 
   const renderFilters = (
     <Stack
@@ -184,7 +196,7 @@ export function JobListView() {
 
       {notFound && <EmptyContent filled sx={{ py: 10 }} />}
 
-      <JobList jobs={dataFiltered} pagination={pagination} onChangePage={handlePageChange} />
+      <JobList jobs={tableData} pagination={pagination} onChangePage={handlePageChange} />
     </DashboardContent>
   );
 }

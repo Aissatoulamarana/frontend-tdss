@@ -39,15 +39,30 @@ export function JobSearch({ search, onSearch }) {
       autoHighlight
       popupIcon={null}
       options={search.state.results}
-      onInputChange={(event, newValue) => onSearch(newValue)}
+      onInputChange={(event, newValue, reason) => {
+        if (reason === 'input') {
+          // on met juste à jour l'input local
+          search.setState({ query: newValue });
+        }
+      }}
       getOptionLabel={(option) => option.name}
-      noOptionsText={<SearchNotFound query={search.state.query} />}
-      isOptionEqualToValue={(option, value) => option.id === value.id}
+      // noOptionsText={<SearchNotFound query={search.state.query} />}
+      // isOptionEqualToValue={(option, value) => option.id === value.id}
       renderInput={(params) => (
         <TextField
           {...params}
-          placeholder="Search..."
-          onKeyUp={handleKeyUp}
+          placeholder="recherche..."
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              // 1) navigation vers la fiche
+              const match = search.state.results.find((j) => j.name === e.target.value);
+              if (match) {
+                handleClick(match.id);
+              }
+              // 2) on envoie la query au parent
+              onSearch(e.target.value.trim());
+            }
+          }}
           slotProps={{
             input: {
               ...params.InputProps,
