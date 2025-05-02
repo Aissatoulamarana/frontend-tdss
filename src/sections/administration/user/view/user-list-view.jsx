@@ -45,6 +45,8 @@ import { UserTableFiltersResult } from '../user-table-filters-result';
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { fabClasses } from '@mui/material';
+
+import { getUserTypes } from 'src/utils/options';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
@@ -78,7 +80,7 @@ export function UserListView() {
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
-  const filters = useSetState({ name: '', role: [], status: 'all' });
+  const filters = useSetState({ name: '', type: '', status: 'all' });
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -96,7 +98,7 @@ export function UserListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name || filters.state.role.length > 0 || filters.state.status !== 'all';
+    !!filters.state.name || filters.state.type || filters.state.status !== 'all';
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -177,12 +179,14 @@ export function UserListView() {
       const params = {
         limit: table.rowsPerPage,
         offset: offset,
+        ...(filters.state.name && { name: filters.state.name }),
+        ...(filters.state.type && { type: filters.state.type }),
       };
       const response = await axios.get(url, { params });
       setTableData(response.data.results);
-      setRoles([
-        ...new Set(response.data.results.map((role) => role.type.trim()))
-      ]);
+      // setRoles([
+      //   ...new Set(response.data.results.map((role) => role.type.trim()))
+      // ]);
 
       setPagination((prev) => ({
         count: response.data.count,
@@ -200,7 +204,7 @@ export function UserListView() {
   // Chargement initial
   useEffect(() => {
     fetchUtilisateurs();
-  }, [table.page, table.rowsPerPage]);
+  }, [table.page, table.rowsPerPage , filters.state.name, filters.state.type]);
 
   if (loading) {
     console.info('Loading utilisateurs...');
@@ -210,6 +214,9 @@ export function UserListView() {
     console.error(`Error: ${error}`);
   }
 
+useEffect(() => {
+  getUserTypes().then(data => setRoles(data));
+})
 
 
   return (
@@ -394,7 +401,7 @@ export function UserListView() {
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { name, status, role } = filters;
+  const { name, status, type } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -416,8 +423,8 @@ function applyFilter({ inputData, comparator, filters }) {
     inputData = inputData.filter((user) => user.status === status);
   }
 
-  if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role));
+  if (type.length) {
+    inputData = inputData.filter((user) => type.includes(user.type));
   }
 
   return inputData;

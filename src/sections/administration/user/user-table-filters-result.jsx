@@ -16,12 +16,11 @@ export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx 
     filters.setState({ status: 'all' });
   }, [filters, onResetPage]);
 
-  const handleRemoveRole = useCallback(
-    (inputValue) => {
-      const newValue = filters.state.role.filter((item) => item !== inputValue);
+  const handleRemoveRole = useCallback(() => {
+      // const newValue = filters.state.type.filter((item) => item !== inputValue);
 
       onResetPage();
-      filters.setState({ role: newValue });
+      filters.setState({ type: '' });
     },
     [filters, onResetPage]
   );
@@ -42,10 +41,10 @@ export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx 
         />
       </FiltersBlock>
 
-      <FiltersBlock label="Role:" isShow={!!filters.state.role.length}>
-        {filters.state.role.map((item) => (
-          <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveRole(item)} />
-        ))}
+      <FiltersBlock label="Role:" isShow={!!filters.state.type}>
+      
+          <Chip {...chipProps} label={filters.state.type} onDelete={ handleRemoveRole} />
+      
       </FiltersBlock>
 
       <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
