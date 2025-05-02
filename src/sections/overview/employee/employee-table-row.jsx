@@ -20,10 +20,6 @@ import { Iconify } from 'src/components/iconify';
 export function EmployeeTableRow({
     row,
     selected,
-<<<<<<< HEAD
-=======
-
->>>>>>> declaration
     onViewRow,
 
 

@@ -78,6 +78,7 @@ export function PaiementListView() {
 
   const confirm = useBoolean();
 
+  const [currentTab, setCurrentTab] = useState('all');
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
@@ -242,6 +243,8 @@ export function PaiementListView() {
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
         <Tabs
+         value={currentTab}
+         onChange={(event, newValue) => setCurrentTab(newValue)}
   sx={{
     px: 2.5,
     boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,

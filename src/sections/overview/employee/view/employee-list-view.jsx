@@ -62,30 +62,18 @@ export function EmployeeListView() {
     const confirm = useBoolean();
 
     const [tableData, setTableData] = useState([]);
-<<<<<<< HEAD
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
     const [selectedFilter, setSelectedFilter] = useState('name'); // filtre selectionné
 
-=======
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [page, setPage] = useState(0);
-    const [loading, setLoading] = useState(true); // état de chargement
-    const [error, setError] = useState(null); // état d'erreur
-    const [selectedFilter, setSelectedFilter] = useState('name'); // options de recherche 
 
-    // Pagination : ici, count est le nombre total d'éléments filtrés côté backend
->>>>>>> declaration
     const [pagination, setPagination] = useState({
         count: 0,
         next: null,
         previous: null,
     });
 
-<<<<<<< HEAD
-=======
-    // États des filtres (remarquez que passport_number et reference sont ajoutés)
->>>>>>> declaration
+
     const filters = useSetState({
         name: '',
         job: [],
@@ -94,14 +82,7 @@ export function EmployeeListView() {
         reference: '',
     });
 
-<<<<<<< HEAD
 
-    // Comme le filtrage est effectué côté backend,
-
-=======
-    // Comme le filtrage est effectué côté backend,
-    // on ne passe plus par applyFilter pour obtenir dataFiltered.
->>>>>>> declaration
     // On affichera directement tableData.
     const canReset =
         !!filters.state.name ||
@@ -109,14 +90,6 @@ export function EmployeeListView() {
         filters.state.status !== 'all' ||
         !!filters.state.passport_number ||
         !!filters.state.reference;
-<<<<<<< HEAD
-
-
-    // Pour indiquer l'absence de données, on vérifie le total
-    const notFound = pagination.count === 0 && canReset;
-
-=======
->>>>>>> declaration
 
     // Pour indiquer l'absence de données, on vérifie le total
     const notFound = pagination.count === 0 && canReset;
@@ -129,11 +102,9 @@ export function EmployeeListView() {
         [router]
     );
 
-<<<<<<< HEAD
 
-=======
     // Gestion de la sélection du status dans les Tabs
->>>>>>> declaration
+
     const handleFilterStatus = useCallback(
         (event, newValue) => {
             table.onResetPage();
@@ -161,16 +132,9 @@ export function EmployeeListView() {
             setLoading(true);
             try {
                 const offset = table.page * table.rowsPerPage;
-<<<<<<< HEAD
+
                 const url = API.listEmployee();
                 // Construction des params avec des filtres
-
-=======
-                // URL sans query string
-                const url = `https://test.tdss.com.gn/api/employees/`;
-
-                // Construction de l'objet params pour Axios
->>>>>>> declaration
                 const params = {
                     limit: table.rowsPerPage,
                     offset: offset,
@@ -207,12 +171,7 @@ export function EmployeeListView() {
         filters.state.passport_number,
         filters.state.reference,
     ]);
-<<<<<<< HEAD
-=======
 
-
-
->>>>>>> declaration
 
     if (loading) {
         console.info('Loading ...');
@@ -246,7 +205,6 @@ export function EmployeeListView() {
                         }}
                     >
                         {STATUS_OPTIONS.map((tab) => (
-<<<<<<< HEAD
                             <Tab
                                 key={tab.value}
                                 iconPosition="end"
@@ -258,43 +216,30 @@ export function EmployeeListView() {
                                     </Label>
                                 }
                             />
-=======
-                            <Tab key={tab.value} value={tab.value} label={tab.label} />
->>>>>>> declaration
+
+                           
+
                         ))}
                     </Tabs>
 
                     {/* <EmployeeTableToolbar
                         filters={filters}
-<<<<<<< HEAD
+
                         onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
                         // onFilterChange={handleFilterChange}
-=======
+
                         onResetPage={table.onResetPage}
                         onFilterChange={handleFilterChange} // Par exemple, pour le champ de recherche
                         options={{
                             roles: [...new Set(tableData.map((row) => row.job.trim()))],
                         }}
                     /> */}
-                    <EmployeeTableToolbar
-                        filters={filters}
-                        onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
-                        onFilterChange={handleFilterChange}
->>>>>>> declaration
-                        selectedFilter={selectedFilter}
-                        setSelectedFilter={setSelectedFilter}
-                        options={{
-                            roles: [...new Set(tableData.map((row) => row.job.trim()))],
-                        }}
-                    />
+                  
 
                     {canReset && (
                         <EmployeeTableFiltersResult
                             filters={filters}
-<<<<<<< HEAD
-=======
                             // On utilise pagination.count pour le nombre total de résultats filtrés côté backend
->>>>>>> declaration
                             totalResults={pagination.count}
                             onResetPage={table.onResetPage}
                             sx={{ p: 2.5, pt: 0 }}
@@ -302,10 +247,8 @@ export function EmployeeListView() {
                     )}
 
                     <Box sx={{ position: 'relative' }}>
-<<<<<<< HEAD
 
-=======
->>>>>>> declaration
+
                         <Scrollbar>
                             <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                                 <TableHeadCustom
@@ -324,7 +267,7 @@ export function EmployeeListView() {
                                 />
 
                                 <TableBody>
-<<<<<<< HEAD
+
                                     {tableData
                                         .map((row) => (
                                             <EmployeeTableRow
@@ -344,25 +287,10 @@ export function EmployeeListView() {
                                             />
                                         )}
 
-=======
-                                    {tableData.map((row) => (
-                                        <EmployeeTableRow
-                                            key={row.slug}
-                                            row={row}
-                                            selected={table.selected.includes(row.slug)}
-                                            onViewRow={() => handleViewRow(row.slug)}
-                                        />
-                                    ))}
 
-                                    {tableData.length > 0 &&
-                                        tableData.length < table.rowsPerPage && (
-                                            <TableEmptyRows
-                                                height={table.dense ? 56 : 76}
-                                                emptyRows={table.rowsPerPage - tableData.length}
-                                            />
-                                        )}
 
->>>>>>> declaration
+                                   
+
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
@@ -372,19 +300,13 @@ export function EmployeeListView() {
 
                     <TablePaginationCustom
                         page={table.page}
-<<<<<<< HEAD
+
                         onPageChange={table.onChangePage}
                         rowsPerPage={table.rowsPerPage}
                         onRowsPerPageChange={table.onChangeRowsPerPage}
                         dense={table.dense}
                         count={pagination.count}
-=======
-                        onPageChange={table.onChangePage}          // Gestionnaire pour changer de page
-                        rowsPerPage={table.rowsPerPage}
-                        onRowsPerPageChange={table.onChangeRowsPerPage} // Gestionnaire pour changer le nombre d'éléments par page
-                        dense={table.dense}
-                        count={pagination.count}                   // Utilisation du nombre total pour le calcul du nombre de pages
->>>>>>> declaration
+
                         onChangeDense={table.onChangeDense}
                     />
 
