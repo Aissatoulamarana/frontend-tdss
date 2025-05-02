@@ -96,7 +96,7 @@ export function DeclarationNew({ declaration, type, formData }) {
 
     try {
       let response;
-      let slug;
+      //  slug;
 
       // Simuler un délai pour des actions asynchrones (optionnel)
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -117,7 +117,7 @@ export function DeclarationNew({ declaration, type, formData }) {
         toast.success('Déclaration créée avec succès');
       }
 
-      slug = response.data.slug;
+      const slug = response.data.slug;
 
       // Réinitialiser le formulaire après succès
       reset();
