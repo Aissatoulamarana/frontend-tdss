@@ -448,6 +448,13 @@ export function DeclarationListView() {
         ),
 
         ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+         ...(filters.state.starts_at && filters.state.ends_at && !dateError
+                              ? {
+                                starts_at: dayjs(filters.state.dstarts_at).format('YYYY-MM-DD '),
+                                ends_at: dayjs(filters.state.ends_at).format('YYYY-MM-DD ')
+                              }
+                              : {}
+                            ),
       };
 
       const response = await axios.get(API.listDeclarations(), { params });
@@ -472,7 +479,7 @@ export function DeclarationListView() {
  
     fetchDeclarations();
 
-  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status]);
+  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status, filters.state.starts_at, filters.state.ends_at]);
 
 
   if (loading) {
