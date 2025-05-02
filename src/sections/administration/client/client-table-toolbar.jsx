@@ -8,7 +8,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { useCallback } from 'react';
+import { useCallback , useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -18,10 +18,36 @@ import { Iconify } from 'src/components/iconify';
 export function ClientTableToolbar({ filters, options, onResetPage }) {
     const popover = usePopover();
 
+    const [inputValue, setInputValue] = useState('');
+
     const handleFilterName = useCallback(
         (event) => {
             onResetPage();
             filters?.setState({ name: event.target.value });
+        },
+        [filters, onResetPage]
+    );
+
+    const handleKeyUp = useCallback(
+        (event) => {
+          if (event.key === 'Enter') {
+            const value = event.target.value;
+            console.log('Entrée détectée sur le filtre Titre avec la valeur :', value);
+            if (filters.state.name !== value) {
+              onResetPage();
+              filters.setState({ name: event.target.value });
+             
+             
+            }
+          }
+        },
+        [filters, onResetPage]
+      );
+
+    const handleFilterLocation = useCallback(
+        (event) => {
+            onResetPage();
+            filters?.setState({ location: event.target.value });
         },
         [filters, onResetPage]
     );
@@ -48,22 +74,46 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                 <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
                     <InputLabel htmlFor="user-filter-role-select-label">Type</InputLabel>
                     <Select
-                        multiple
+                        // multiple
                         value={filters.state.type}
                         onChange={handleFilterRole}
                         input={<OutlinedInput label="Type" />}
-                        renderValue={(selected) => selected.map((value) => value).join(', ')}
+                        // renderValue={(selected) => selected.map((value) => value).join(', ')}
                         inputProps={{ id: 'user-filter-role-select-label' }}
-                        MenuProps={{ PaperProps: { sx: { maxHeight: 240 } } }}
+                        MenuProps={{ PaperProps: { sx: { maxHeight: 240 , padding:1} } }}
                     >
                         {options?.roles?.map((option) => (
-                            <MenuItem key={option} value={option}>
-                                <Checkbox
+                            <MenuItem key={option.slug} value={option.name}>
+                                {/* <Checkbox
                                     disableRipple
                                     size="small"
                                     checked={filters?.state?.type?.includes(option)}
-                                />
-                                {option}
+                                /> */}
+                                {option.name}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
+                    <InputLabel htmlFor="user-filter-location-select-label">Région</InputLabel>
+                    <Select
+                        // multiple
+                        value={filters.state.location}
+                        onChange={handleFilterLocation}
+                        input={<OutlinedInput label="Région" />}
+                        // renderValue={(selected) => selected.map((value) => value).join(', ')}
+                        inputProps={{ id: 'user-filter-location-select-label' }}
+                        MenuProps={{ PaperProps: { sx: { maxHeight: 240, padding:1 } } }}
+                    >
+                        {options?.regions?.map((option) => (
+                            <MenuItem key={option.slug} value={option.name}>
+                                {/* <Checkbox
+                                    disableRipple
+                                    size="small"
+                                    checked={filters?.state?.location?.includes(option)}
+                                /> */}
+                                {option.name}
                             </MenuItem>
                         ))}
                     </Select>
@@ -72,9 +122,10 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                 <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
                     <TextField
                         fullWidth
-                        value={filters?.state?.name}
-                        onChange={handleFilterName}
-                        placeholder="recherche..."
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyUp}
+                        placeholder="recherche par nom..."
                         slotProps={{
                             input: {
                                 startAdornment: (

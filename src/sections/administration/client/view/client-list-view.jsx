@@ -43,6 +43,8 @@ import {
 import { ClientTableFiltersResult } from '../client-table-filters-result';
 import { ClientTableRow } from '../client-table-row';
 import { ClientTableToolbar } from '../client-table-toolbar';
+
+import { getRegions , getProfileTypes} from 'src/utils/options';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
@@ -71,6 +73,8 @@ export function ClientListView() {
 
     const confirm = useBoolean();
 
+    const [regions, setRegions] = useState([]);
+    const [profileTypes, setProfileTypes] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [loading, setLoading] = useState(true); // État pour indiquer le chargement
     const [error, setError] = useState(null); // État pour gérer les erreurs
@@ -81,7 +85,7 @@ export function ClientListView() {
         previous: null,
     });
 
-    const filters = useSetState({ name: '', type: [], status: 'all' });
+    const filters = useSetState({ name: '', type: [], location:'', status: 'all' });
 
     const dataFiltered = applyFilter({
         inputData: tableData,
@@ -92,7 +96,10 @@ export function ClientListView() {
     const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
     const canReset =
-        !!filters.state.name || filters.state.type.length > 0 || filters.state.status !== 'all';
+        !!filters.state.name || 
+        !!filters.state.location ||
+        filters.state.type.length > 0 || 
+        filters.state.status !== 'all';
 
     const notFound = pagination.count === 0 && canReset;
 
@@ -179,7 +186,10 @@ export function ClientListView() {
                 const offset = table.page * table.rowsPerPage;
                 const params = {
                     limit: table.rowsPerPage,
-                    offset: offset
+                    offset: offset,
+                    ...(filters.state.name && { name: filters.state.name }),
+                    ...(filters.state.type.length && { type: filters.state.type.join(',') }),
+                    ...(filters.state.location && { location: filters.state.location }),
                 }
                 const response = await axios.get(API.listProfiles(), { params });
                 setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
@@ -196,7 +206,12 @@ export function ClientListView() {
         };
 
         fetchClient();
-    }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+    }, [table.page, table.rowsPerPage , filters.state.name, filters.state.type, filters.state.location]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+useEffect(() => {
+    getRegions().then((data) => setRegions(data));
+    getProfileTypes().then((data) => setProfileTypes(data));
+})
 
     if (loading) {
         console.info('Loading ...');
@@ -269,7 +284,8 @@ export function ClientListView() {
                     <ClientTableToolbar
                         filters={filters}
                         onResetPage={table.onResetPage}
-                        options={{ roles: [... new Set(tableData.map((row) => row.type.trim()))] }}
+                        options={{ roles: profileTypes , regions: regions}}
+
                     />
 
                     {canReset && (
