@@ -3,8 +3,12 @@ import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useState, useCallback, useEffect } from 'react';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useState, useCallback, useEffect } from 'react';
 import { fDate } from 'src/utils/format-time';
 
 import { usePopover } from 'src/components/custom-popover';
@@ -26,6 +30,7 @@ export function DeclarationDetails({ declaration, employees }) {
 
   const [open, setOpen] = useState(false);
   const [currentStatus, setCurrentStatus] = useState('');
+  const [openDialog, setOpenDialog] = useState(true); // État pour le modal
   // const statusOptions = [{ value: declaration?.status, label: declaration?.status }];
 
   const user = useMockedUser();
@@ -74,6 +79,10 @@ export function DeclarationDetails({ declaration, employees }) {
       label: statusLabels[declaration?.status] || declaration?.status
     }
   ];
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
   
 
   useEffect(() => {
@@ -83,7 +92,42 @@ export function DeclarationDetails({ declaration, employees }) {
   }, [declaration?.status]);
 
   return (
+
     <>
+{declaration?.status === 'REJECTED' && (
+      <Dialog
+            open={openDialog}
+            onClose={() => { }}
+            sx={{
+              '& .MuiDialog-paper': {
+                width: '40%', // Réduction de la largeur
+                borderRadius: '12px', // Coins arrondis pour un look plus moderne
+                padding: '5px' // Ajout de padding
+              }
+            }}
+          >
+            <DialogTitle sx={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>
+              Motif de rejet
+            </DialogTitle>
+            <DialogContent sx={{ fontSize: '14px', textAlign: 'center' }}>
+              Cette declaration a été rejetée.
+              <br />  
+              Motif : {declaration?.reject_reason}
+            </DialogContent>
+            <DialogActions sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={handleCloseDialog}
+                variant="contained"
+                color="primary"
+                sx={{ borderRadius: '8px', padding: '6px 20px', fontSize: '14px' }}
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
+          )}
+
+
       <DeclarationToolbar
         declaration={declaration}
         currentStatus={currentStatus || ''}
