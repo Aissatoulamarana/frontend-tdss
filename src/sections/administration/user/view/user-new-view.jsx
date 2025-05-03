@@ -17,7 +17,7 @@ export function UserCreateView() {
         heading="Creer un nouvel utilisateur"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Utilisateur', href: paths.dashboard.user.root },
+          { name: 'Utilisateurs', href: paths.dashboard.user.list },
           { name: 'Nouvel utilisateur' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
