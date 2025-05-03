@@ -71,14 +71,14 @@ export function DeclarationDetails({ declaration, employees }) {
   const statusOptions = [
     {
       value: declaration?.status,
-      label: statusLabels[declaration.status] || declaration.status
+      label: statusLabels[declaration?.status] || declaration?.status
     }
   ];
   
 
   useEffect(() => {
     if (declaration?.status) {
-      setCurrentStatus(declaration.status);
+      setCurrentStatus(declaration?.status);
     }
   }, [declaration?.status]);
 
