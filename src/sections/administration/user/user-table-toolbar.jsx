@@ -73,7 +73,7 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
             MenuProps={{ PaperProps: { sx: { maxHeight: 240 } } }}
           >
             {options.roles.map((option) => (
-              <MenuItem key={option.slug} value={option.name}>
+              <MenuItem key={option.slug} value={option.slug}>
                 {/* <Checkbox
                   disableRipple
                   size="small"
