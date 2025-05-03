@@ -249,7 +249,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type === 'Agent' &&
+          {user?.type === 'Comptable' &&
             !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="facture"
