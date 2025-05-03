@@ -83,7 +83,7 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                         MenuProps={{ PaperProps: { sx: { maxHeight: 240 , padding:1} } }}
                     >
                         {options?.roles?.map((option) => (
-                            <MenuItem key={option.slug} value={option.name}>
+                            <MenuItem key={option.slug} value={option.code}>
                                 {/* <Checkbox
                                     disableRipple
                                     size="small"
@@ -107,7 +107,7 @@ export function ClientTableToolbar({ filters, options, onResetPage }) {
                         MenuProps={{ PaperProps: { sx: { maxHeight: 240, padding:1 } } }}
                     >
                         {options?.regions?.map((option) => (
-                            <MenuItem key={option.slug} value={option.name}>
+                            <MenuItem key={option.slug} value={option.code}>
                                 {/* <Checkbox
                                     disableRipple
                                     size="small"
