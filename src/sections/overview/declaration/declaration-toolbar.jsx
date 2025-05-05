@@ -45,6 +45,7 @@ export function DeclarationToolbar({
   // États pour contrôler l'ouverture des dialogues share et send
   const [openShare, setOpenShare] = useState(false);
   const [openSend, setOpenSend] = useState(false);
+  const logoUrl = declaration?.company.picture;
 
   const view = useBoolean();
 
@@ -94,8 +95,8 @@ export function DeclarationToolbar({
     <NoSsr>
       {declaration && (
         <PDFDownloadLink
-          document={declaration ? <DeclarationPDF declaration={declaration} employees={employees} /> : ''}
-          fileName={declaration?.reference}
+          document={declaration ? <DeclarationPDF declaration={declaration} employees={employees}  logoUrl={logoUrl}/> : ''}
+          fileName={declaration?.number}
           style={{ textDecoration: 'none' }}
         >
           {({ loading }) => (

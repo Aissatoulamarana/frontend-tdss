@@ -25,7 +25,7 @@ const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => (
         sx={{ width: 48, height: 48 }}
       />
       <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-        <Typography variant="h6">{declaration?.reference}</Typography>
+        <Typography variant="h6">{declaration?.number}</Typography>
       </Box>
 
       <Box
@@ -39,7 +39,7 @@ const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => (
           <Typography variant="subtitle2" sx={{ mb: 1 }}>
             Numero de la declaration
             <br />
-            {declaration?.reference}
+            {declaration?.number}
           </Typography>
         </Stack>
 

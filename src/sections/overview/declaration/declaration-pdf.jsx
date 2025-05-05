@@ -1,14 +1,14 @@
+// DeclarationPDF.jsx
+import React, { useMemo } from 'react';
 import {
+  Document,
   Page,
   View,
   Text,
-  Font,
   Image,
-  Document,
   StyleSheet,
+  Font,
 } from '@react-pdf/renderer';
-import React, { useMemo } from 'react';
-
 import { fDate } from 'src/utils/format-time';
 
 // Enregistrement de la police Roboto
@@ -20,209 +20,210 @@ Font.register({
   ],
 });
 
-// Création des styles avec useMemo pour éviter des recalculs inutiles
 const useStyles = () =>
   useMemo(
     () =>
       StyleSheet.create({
         page: {
-          fontSize: 9,
+          padding: 36,
           fontFamily: 'Roboto',
-          padding: 30,
-          backgroundColor: '#ffffff',
+          fontSize: 10,
+          backgroundColor: '#fff',
         },
-        header: {
+        headerRow: {
           flexDirection: 'row',
-          justifyContent: 'space-between',
           alignItems: 'center',
-          borderBottomWidth: 1,
-          borderBottomColor: '#cccccc',
-          paddingBottom: 10,
-          marginBottom: 20,
+          marginBottom: 8,
         },
-        logoContainer: {
+        logo: {
+          width: 60,
+          height: 60,
+        },
+        companyInfo: {
           flex: 1,
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-        },
-        companyDetails: {
-          flex: 2,
-          justifyContent: 'center',
+          marginLeft: 12,
           alignItems: 'flex-end',
-          textAlign: 'right',
         },
         companyName: {
           fontSize: 16,
           fontWeight: 'bold',
-          paddingBottom: 5
         },
-        companyContact: {
-          fontSize: 10,
-          paddingBottom: 5
+        companyDetails: {
+          fontSize: 9,
+          color: '#333',
+          lineHeight: 1.4,
+        },
+        line: {
+          borderBottomWidth: 1,
+          borderColor: '#ccc',
+          marginVertical: 8,
+        },
+        declarationTitle: {
+          textAlign: 'center',
+          fontSize: 18,
+          fontWeight: 'bold',
+          marginVertical: 4,
         },
         date: {
-          textAlign: 'right',
-          fontSize: 10,
-          marginBottom: 10,
-        },
-        declarationNumber: {
-          fontSize: 20,
-          fontWeight: 'bold',
           textAlign: 'center',
-          marginVertical: 10,
-        },
-        totalText: {
           fontSize: 10,
-          fontWeight: 'bold',
-          textAlign: 'right',
-          marginBottom: 10,
         },
-        rowContainer: {
-          flexDirection: 'row', // Affiche les éléments en ligne
-          justifyContent: 'space-between', // Espaces égaux entre les éléments
-          marginBottom: 10, // Espace entre les lignes
+        statsRow: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginVertical: 12,
+        },
+        statBox: {
+          flex: 1,
+          padding: 8,
           alignItems: 'center',
-        },
-        countText: {
-          fontSize: 10,
-          textAlign: 'center',
-        },
-
-
-        table: {
-          display: 'table',
-          width: 'auto',
-          marginVertical: 10,
           borderWidth: 1,
-          borderColor: '#cccccc',
+          borderColor: '#ddd',
+          borderRadius: 4,
+          marginHorizontal: 4,
+        },
+        statLabel: {
+          fontSize: 8,
+          color: '#555',
+        },
+        statValue: {
+          fontSize: 14,
+          fontWeight: 'bold',
+          marginTop: 2,
+        },
+        table: {
+          width: '100%',
+          borderWidth: 1,
+          borderColor: '#ddd',
+          borderRadius: 4,
+          overflow: 'hidden',
+          marginBottom: 20,
         },
         tableRow: {
           flexDirection: 'row',
           borderBottomWidth: 1,
-          borderColor: '#cccccc',
+          borderColor: '#ddd',
         },
         tableHeader: {
-          backgroundColor: '#f5f5f5',
+          backgroundColor: '#f7f7f7',
         },
-        tableCell: {
-          padding: 8,
+        headerCell: {
           flex: 1,
+          padding: 6,
           fontSize: 9,
+          fontWeight: 'bold',
+          borderRightWidth: 1,
+          borderColor: '#ddd',
         },
-        cellSmall: {
-          flex: 0.3,
+        cell: {
+          flex: 1,
+          padding: 6,
+          fontSize: 9,
+          borderRightWidth: 1,
+          borderColor: '#ddd',
         },
-        signatureContainer: {
-          marginTop: 30,
+        noBorderRight: {
+          borderRightWidth: 0,
+        },
+        footerRow: {
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
         },
         signatureText: {
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: 'bold',
         },
         qr: {
-          width: 60,
-          height: 60,
+          width: 80,
+          height: 80,
         },
       }),
     []
   );
 
-export function DeclarationPDF({ declaration, employees }) {
-  const { reference, created_on } = declaration;
+export  function DeclarationPDF({ declaration, employees, logoUrl }) {
   const styles = useStyles();
+  const { company, number, created_on, reference } = declaration;
 
-  // Calcul du nombre d'items pour le QR code
-  const itemsCount = employees ? employees.length : 0;
-  const cadresCount = employees?.filter(employee => employee?.job?.category === "Cadre").length || 0;
-  const agentCount = employees?.filter(employee => employee?.job?.category === "Agent de maitrise").length || 0;
-  const ouvrierCount = employees?.filter(employee => employee?.job?.category === "Ouvrier").length || 0;
+  // Stats
+  const total = employees?.length || 0;
+  const cadres = employees?.filter(e => e.job.category === 'Cadre').length;
+  const agents = employees?.filter(e => e.job.category === 'Agent de maitrise').length;
+  const ouvriers = employees?.filter(e => e.job.category === 'Ouvrier').length;
 
-  const qrData = encodeURIComponent(
-    `${reference} - ${itemsCount} personnes`
-  );
+  const qrData = encodeURIComponent(`${reference} - ${number} - ${total} personnes`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header : Logo et coordonnées de l'entreprise */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            {/* {declaration?.company?.picture ? ( */}
-            <Image
-              src={declaration.company.picture}
-              style={{ width: 60, height: 60 }}
-            />
-            {/* ) : (
-              <Text style={styles.companyName}>{declaration?.company?.name}</Text>
-            )} */}
-          </View>
-
-          <View style={styles.companyDetails}>
-            <Text style={styles.companyName}>{declaration?.company?.name}</Text>
-            <Text style={styles.companyContact}>Tél : {declaration?.company?.contact}</Text>
-            <Text style={styles.companyContact}>{declaration?.company?.adresse}</Text>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          {logoUrl && <Image src={{ uri: logoUrl }} style={styles.logo} />}
+          <View style={styles.companyInfo}>
+            <Text style={styles.companyName}>{company.name}</Text>
+            <Text style={styles.companyDetails}>{company.adresse}</Text>
+            <Text style={styles.companyDetails}>{company.location}</Text>
+            <Text style={styles.companyDetails}>Tél : {company.contact}</Text>
+            <Text style={styles.companyDetails}>{company.email}</Text>
           </View>
         </View>
 
-        {/* Date */}
+        <View style={styles.line} />
+
+        {/* Titre + date */}
+        <Text style={styles.declarationTitle}>DÉCLARATION N° {number}</Text>
         <Text style={styles.date}>{fDate(created_on)}</Text>
 
-        {/* Numéro de déclaration */}
-        <Text style={styles.declarationNumber}>{reference}</Text>
+        <View style={styles.line} />
 
-        {/* Total des personnes déclarées */}
-        <View style={styles.rowContainer}>
-          <Text style={styles.countText}>Total</Text>
-          <Text style={styles.countText}>Cadres</Text>
-          <Text style={styles.countText}>Agents</Text>
-          <Text style={styles.countText}>Ouvriers</Text>
-        </View>
-
-        <View style={styles.rowContainer}>
-          <Text style={styles.countText}>{itemsCount}</Text>
-          <Text style={styles.countText}>{cadresCount}</Text>
-          <Text style={styles.countText}>{agentCount}</Text>
-          <Text style={styles.countText}>{ouvrierCount}</Text>
-        </View>
-
-
-
-        {/* Tableau des déclarations */}
-        <View style={styles.table}>
-          {/* En-tête du tableau */}
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <Text style={[styles.tableCell, styles.cellSmall]}>N°</Text>
-            <Text style={styles.tableCell}>Passeport</Text>
-            <Text style={styles.tableCell}>Nom</Text>
-            <Text style={styles.tableCell}>Prénom</Text>
-            <Text style={styles.tableCell}>Fonction</Text>
-
-            <Text style={styles.tableCell}>Catégorie</Text>
-          </View>
-
-          {/* Lignes du tableau */}
-          {employees?.map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-              <Text style={[styles.tableCell, styles.cellSmall]}>
-                {index + 1}
-              </Text>
-              <Text style={styles.tableCell}>{item.passport_number}</Text>
-              <Text style={styles.tableCell}>{item.first}</Text>
-              <Text style={styles.tableCell}>{item.last}</Text>
-              <Text style={styles.tableCell}>{item.job.name}</Text>
-              <Text style={styles.tableCell}>{item.job.category}</Text>
+        {/* Statistiques */}
+        <View style={styles.statsRow}>
+          {[
+            { label: 'Total', value: total },
+            { label: 'Cadres', value: cadres },
+            { label: 'Agents', value: agents },
+            { label: 'Ouvriers', value: ouvriers },
+          ].map((stat, i) => (
+            <View key={i} style={styles.statBox}>
+              <Text style={styles.statLabel}>{stat.label}</Text>
+              <Text style={styles.statValue}>{stat.value}</Text>
             </View>
           ))}
         </View>
 
-        {/* Signature et QR code */}
-        <View style={styles.signatureContainer}>
-          <Text style={styles.signatureText}>L'employé :</Text>
-          <Image src={qrUrl} style={styles.qr} />
+        {/* Tableau */}
+        <View style={styles.table}>
+          <View style={[styles.tableRow, styles.tableHeader]}>
+            {['N°', 'Passeport', 'Nom', 'Prénom', 'Telephone', 'Fonction', 'Catégorie'].map((h, i) => (
+              <Text
+                key={i}
+                style={[styles.headerCell, i === 5 && styles.noBorderRight]}
+              >
+                {h}
+              </Text>
+            ))}
+          </View>
+          {employees?.map((emp, i) => (
+            <View key={i} style={styles.tableRow}>
+              <Text style={styles.cell}>{i + 1}</Text>
+              <Text style={styles.cell}>{emp.passport_number}</Text>
+              <Text style={styles.cell}>{emp.first}</Text>
+              <Text style={styles.cell}>{emp.last}</Text>
+              <Text style={styles.cell}>{emp.phone}</Text>
+              <Text style={styles.cell}>{emp.job.name}</Text>
+              <Text style={[styles.cell, styles.noBorderRight]}>
+                {emp.job.category}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footerRow}>
+          <Text style={styles.signatureText}>Signature de l'employé</Text>
+          <Image src={{ uri: qrUrl }} style={styles.qr} />
         </View>
       </Page>
     </Document>

@@ -62,11 +62,11 @@ export function DeclarationDetailsView({ slug }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={declaration?.reference}
+        heading={declaration?.number}
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Declarations', href: paths.dashboard.declaration.list },
-          { name: declaration?.reference },
+          { name: declaration?.number },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
