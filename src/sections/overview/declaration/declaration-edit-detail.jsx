@@ -38,6 +38,7 @@ export function DeclarationNewEditDetails({ formData }) {
   const [data, setData] = useState();
   const renewalModal = useBoolean();
   const [loadingRenew, setLoadingRenew] = useState(false);
+  
 
 
   const [passportInput, setPassportInput] = useState('');
@@ -301,18 +302,21 @@ export function DeclarationNewEditDetails({ formData }) {
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
   const checkPassportExistence = async (numero, index) => {
     if (!numero) return;
+  
     try {
-      const response = await axios.get(API.searchPassport(numero));
-      setData(response.data)
-      if (response.data) {
-        setValue(`employees[${index}].passportExists`, true);
-      } else {
-        setValue(`employees[${index}].passportExists`, false);
-      }
+      const { data } = await axios.get(API.searchPassport(numero));
+      // s’il y a un passport_number dans la réponse, alors il existe
+      setValue(`employees[${index}].passportExists`, !!data.passport_number);
     } catch (error) {
-      console.error('Erreur lors de la recherche du passeport', error);
+      if (error.response?.status === 404) {
+        // pas trouvé → passportExists = false
+        setValue(`employees[${index}].passportExists`, false);
+      } else {
+        console.error('Erreur lors de la recherche du passeport', error);
+      }
     }
   };
+  
 
   // Création de la version debounce de la fonction
   // On utilise ici 500ms de délai après la dernière saisie
@@ -439,19 +443,19 @@ export function DeclarationNewEditDetails({ formData }) {
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 onBlur={(e) => handlePassportBlur(e, index)}
-                error={values.employees[index].passportExists && !values.employees[index].locked}
+                error={values.employees[index].passportExists}       // true = duplication
                 helperText={
-                      values.employees[index].passportExists
-                       ? values.employees[index].locked
-                         ? "✅ Ce passeport existe déjà, il est bien enregistré."
-                        : "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
-                        : ""
-                   }
-                   FormHelperTextProps={{
-                        sx: {
-                          color: values.employees[index].locked ? 'success.main' : 'error.main'
-                       }
-                      }}
+                  values.employees[index].passportExists
+                    ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
+                    : ""
+                }
+                FormHelperTextProps={{
+                  sx: {
+                    color: values.employees[index].passportExists
+                      ? 'error.main'     // bordure/texte en rouge si existe déjà
+                      : 'success.main',  // vert sinon
+                  },
+                }}
               />
 
               <Field.Phone

@@ -30,6 +30,8 @@ import { toast } from 'sonner';
 import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
+import { ImportFilesButton } from 'src/sections/overview/declaration/components/button-import-excel';
+
 
 // Schéma pour un employé individuel
 export const employeSchema = zod.object({
@@ -49,6 +51,7 @@ const formSchema = zod.object({
 
 export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const [options, setOptions] = useState([]);
+  const [data, setData] = useState();
   const [passportInput, setPassportInput] = useState('');
   const [loadingRenew, setLoadingRenew] = useState(false);
   const router = useRouter();
@@ -64,6 +67,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       ],
     },
   });
+
+ 
 
   const { watch, setValue } = methods;
   const values = watch();
@@ -124,6 +129,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       job: '',
       first: '',
       phone: '',
+      locked: false,
+      passportExists: false,
     });
   };
 
@@ -167,19 +174,21 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
   // Exemple de vérification du numéro de passeport avec debounce
   const checkPassportExistence = async (numero, index) => {
-    if (!numero) return;
-    try {
-      const response = await axios.get(API.searchPassport(numero));
-      setData(response.data)
-      if (response.data) {
-        setValue(`employees[${index}].passportExists`, true);
-      } else {
-        setValue(`employees[${index}].passportExists`, false);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la recherche du passeport', error);
-    }
-  };
+     if (!numero) return;
+   
+     try {
+       const { data } = await axios.get(API.searchPassport(numero));
+       // s’il y a un passport_number dans la réponse, alors il existe
+       setValue(`employees[${index}].passportExists`, !!data.passport_number);
+     } catch (error) {
+       if (error.response?.status === 404 || response.details) {
+         // pas trouvé → passportExists = false
+         setValue(`employees[${index}].passportExists`, false);
+       } else {
+         console.error('Erreur lors de la recherche du passeport', error);
+       }
+     }
+   };
 
   const debouncedPassportCheck = useCallback(
     debounce((numero) => {
@@ -225,6 +234,30 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     fetchFonctions();
   }, []);
 
+  const handleImportData = (importedData) => {
+    const mappedEmployees = importedData.map((row) => {
+      const jobSlug = (() => {
+        const findByValue = options.find((opt) => opt.value === row.Fonction);
+        const findByLabel = options.find((opt) => opt.label === row.Fonction);
+        return findByValue?.value || findByLabel?.value || '';
+      })();
+
+      return {
+        passport_number: row.Numero || '',
+        phone: row.Telephone ? `+${String(row.Telephone)}` : '',
+        last: row.Nom || '',
+        first: row.Prenom || '',
+        job: jobSlug,
+        type: 'NEW',
+        reference: undefined,
+        passportExists: false,
+        locked: false,
+      };
+    });
+
+    reset({ employees: mappedEmployees });
+  };
+
   return (
     <Dialog
       fullWidth
@@ -240,6 +273,9 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     >
       <Form methods={methods} onSubmit={handleAddEmployee}>
         <DialogTitle>Ajout d'autres employés</DialogTitle>
+          <div style={{ marginBottom: '20px', marginRight: '20px' }}>
+                <ImportFilesButton onImport={handleImportData} />
+              </div>
         <DialogContent>
           <Box sx={{ p: 3 }}>
             <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
