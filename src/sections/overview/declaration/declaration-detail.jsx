@@ -182,7 +182,7 @@ export function DeclarationDetails({ declaration, employees }) {
                         {statusLabels[currentStatus] || 'Inconnu'}
              </Label>
 
-            <Typography variant="h6"> {declaration?.reference}</Typography>
+            <Typography variant="h6"> {declaration?.number}</Typography>
           </Stack>
           <Box
             gridColumn={{ xs: '1', sm: 'span 2' }}
@@ -195,7 +195,7 @@ export function DeclarationDetails({ declaration, employees }) {
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Numero de la declaration
                 <br />
-                {declaration?.reference}
+                {declaration?.number}
               </Typography>
             </Stack>
 
@@ -216,7 +216,7 @@ export function DeclarationDetails({ declaration, employees }) {
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
 
-        {declaration && (<FilteredTable declaration={declaration} />)}
+        {declaration && (<FilteredTable declaration={declaration} employees={employees} />)}
 
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
       </Card>

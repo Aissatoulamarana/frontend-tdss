@@ -114,7 +114,7 @@ export function DeclarationTableRow({
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.reference}
+                  {row.number}
                 </Typography>
               }
             />
@@ -235,7 +235,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type === 'Agent' &&
+          {/* {user?.type === 'Agent' &&
             ['REJECTED'].includes(row.status) && (
               <MenuItem
                 key="unsubmit"
@@ -247,7 +247,7 @@ export function DeclarationTableRow({
                 <Iconify icon="solar:pen-bold" />
                 Mettre En Edition
               </MenuItem>
-            )}
+            )} */}
 
           {user?.type === 'Comptable' &&
             !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (

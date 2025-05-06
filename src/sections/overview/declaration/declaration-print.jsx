@@ -1,70 +1,71 @@
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
-import { Stack } from '@mui/material';
-// DeclarationDetailsPrint.js
 import React, { forwardRef } from 'react';
-
+import { Box, Card, Divider, Typography, Stack } from '@mui/material';
 import { fDate } from 'src/utils/format-time';
+import FilteredTablePrint from './components/tableau-print';
 
-import FilteredTable from './components/tableau';
-
-const DeclarationDetailsPrint = forwardRef(({ declaration }, ref) => (
-  <Card ref={ref} sx={{ pt: 5, px: 5 }}>
+const DeclarationDetailsPrint = forwardRef(({ declaration, employees }, ref) => (
+  <Card
+    ref={ref}
+    sx={{
+      position: 'relative',
+      pt: 3,
+      px: 3,
+      pb: 6,
+      boxShadow: 'none',
+      '@media print': { m: 0, boxShadow: 'none', border: 'none' }
+    }}
+  >
+    {/* Logo et infos de la compagnie */}
     <Box
-      rowGap={5}
-      display="grid"
-      alignItems="center"
-      gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        mb: 2,
+        '& img': { width: 50, height: 50, mr: 2 }
+      }}
     >
-      <Box
-        component="img"
-        alt="logo"
-        src={declaration?.company?.picture}
-        sx={{ width: 48, height: 48 }}
-      />
-      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-        <Typography variant="h6">{declaration?.reference}</Typography>
-      </Box>
-
-      <Box
-        gridColumn={{ xs: '1', sm: 'span 2' }}
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mt={3}
-      >
-        <Stack sx={{ typography: 'body2' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Numero de la declaration
-            <br />
-            {declaration?.reference}
-          </Typography>
-        </Stack>
-
-        <Stack sx={{ typography: 'body2' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Date de creation
-          </Typography>
-          {fDate(declaration?.created_on)}
-        </Stack>
-
-        <Stack sx={{ typography: 'body2' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Montant Total
-          </Typography>
-          {declaration?.total_amount} GNF
-        </Stack>
+      <Box component="img" alt="logo" src={declaration?.company.picture} />
+      <Box sx={{ flex: 1, textAlign: 'right' }}>
+        <Typography variant="h6">{declaration?.company.name}</Typography>
+        <Typography variant="body2">{declaration?.company.adresse}</Typography>
+        <Typography variant="body2">{declaration?.company.location}</Typography>
+        <Typography variant="body2">{declaration?.company.contact}</Typography>
+        <Typography variant="body2">{declaration?.company.email}</Typography>
+        
       </Box>
     </Box>
-    <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
 
-    {/* Le tableau filtré */}
-    {declaration && <FilteredTable declaration={declaration} printMode={true} />}
+    {/* Titre de la déclaration en grand */}
+    <Typography
+      variant="h4"
+      sx={{
+        textAlign: 'center',
+        fontWeight: 'bold',
+        mb: 2,
+        '@media print': { fontSize: '1.5rem' }
+      }}
+    >
+      DÉCLARATION N° {declaration?.number}
+    </Typography>
 
+    <Divider />
 
-    <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
+    {/* Date et Référence */}
+    <Stack direction="row" justifyContent="space-between" sx={{ my: 2 }}>
+      <Typography variant="subtitle2">
+        Date : {fDate(declaration?.created_on)}
+      </Typography>
+      <Typography variant="subtitle2">
+        Réf. : {declaration?.number}
+      </Typography>
+    </Stack>
+
+    <FilteredTablePrint employees={employees} />
+
+    {/* Pied de page fixe */}
+    {/* <Typography className="printFooter">
+      Déclaration n° {declaration?.number}
+    </Typography> */}
   </Card>
 ));
 

@@ -40,7 +40,7 @@ export function DeclarationEditView({ slug }) {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Déclarations', href: paths.dashboard.declaration.list },
-          { name: declaration?.reference },
+          { name: declaration?.number },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
