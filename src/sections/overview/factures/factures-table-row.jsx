@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency , fGNF } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -99,7 +99,7 @@ export function FactureTableRow({
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.reference}
+                  {row.number}
                 </Typography>
               }
             />
@@ -110,8 +110,8 @@ export function FactureTableRow({
 
         <TableCell>
           <ListItemText
-            primary={`GNF ${row.amount}`}
-            secondary={`GNF ${row.amount}`}
+            primary={fCurrency(row.amount / 9200)}
+            secondary={fGNF(row.amount)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
               secondary: { mt: 0.5, component: 'span', typography: 'caption' }

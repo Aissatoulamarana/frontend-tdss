@@ -8,9 +8,14 @@ import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-r
 // ----------------------------------------------------------------------
 
 export function FactureTableFilters({ filters, totalResults, onResetPage, sx }) {
-  const handleRemoveKeyword = useCallback(() => {
+  const handleRemoveNumber = useCallback(() => {
     onResetPage();
-    filters.setState({ name: '' });
+    filters.setState({ number: '' });
+  }, [filters, onResetPage]);
+
+  const handleRemoveNumberDec = useCallback(() => {
+    onResetPage();
+    filters.setState({ declaration_number: '' });
   }, [filters, onResetPage]);
 
   const handleRemoveService = useCallback(
@@ -61,8 +66,11 @@ export function FactureTableFilters({ filters, totalResults, onResetPage, sx }) 
         />
       </FiltersBlock>
 
-      <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
-        <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
+      <FiltersBlock label="Numero Facture:" isShow={!!filters.state.number}>
+        <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />
+      </FiltersBlock>
+      <FiltersBlock label="Numero Declaration:" isShow={!!filters.state.declaration_number}>
+        <Chip {...chipProps} label={filters.state.declaration_number} onDelete={handleRemoveNumberDec} />
       </FiltersBlock>
     </FiltersResult>
   );

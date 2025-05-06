@@ -47,6 +47,24 @@ export function fCurrency(inputValue, options) {
 
 // ----------------------------------------------------------------------
 
+export function fGNF(inputValue, options) {
+  const number = processInput(inputValue);
+  if (number === null) return '';
+
+  const fm = new Intl.NumberFormat('fr-GN', {
+    style: 'currency',
+    currency: 'GNF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0, // Pas de décimales pour le GNF généralement
+    ...options,
+  }).format(number);
+
+  return fm;
+}
+
+
+// ----------------------------------------------------------------------
+
 export function fPercent(inputValue, options) {
   const locale = formatNumberLocale() || DEFAULT_LOCALE;
 
