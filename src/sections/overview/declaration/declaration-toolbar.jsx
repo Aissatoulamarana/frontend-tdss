@@ -13,7 +13,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
 import axios from 'src/utils/axios';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 import { useRouter } from 'src/routes/hooks';
@@ -45,7 +45,13 @@ export function DeclarationToolbar({
   // États pour contrôler l'ouverture des dialogues share et send
   const [openShare, setOpenShare] = useState(false);
   const [openSend, setOpenSend] = useState(false);
+  // const [logoData, setLogoData] = useState(null);
   const logoUrl = declaration?.company.picture;
+  const proxyBase = 'https://api.allorigins.win/raw?url=';
+  const proxiedLogoUrl = logoUrl
+  ? proxyBase + encodeURIComponent(logoUrl)
+  : null;
+
 
   const view = useBoolean();
 
@@ -88,14 +94,13 @@ export function DeclarationToolbar({
     }
   };
 
-
-
+ 
 
   const renderDownload = (
     <NoSsr>
       {declaration && (
         <PDFDownloadLink
-          document={declaration ? <DeclarationPDF declaration={declaration} employees={employees}  logoUrl={logoUrl}/> : ''}
+          document={declaration ? <DeclarationPDF declaration={declaration} employees={employees}  logoUrl={proxiedLogoUrl}/> : ''}
           fileName={declaration?.number}
           style={{ textDecoration: 'none' }}
         >

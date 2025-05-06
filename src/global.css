@@ -58,3 +58,25 @@ input[type='number']::-webkit-inner-spin-button {
   margin: 0;
   -webkit-appearance: none;
 }
+
+@media print {
+  /* Empêche la répétition de thead sur chaque page */
+  thead {
+    display: table-row-group !important;
+  }
+
+  /* Un peu de style pour le premier header */
+  .printTableHead th {
+    background-color: #f0f0f0 !important;
+    -webkit-print-color-adjust: exact; /* pour que le gris s’imprime */
+  }
+
+  /* Pied de page fixe en bas de chaque Card */
+  .printFooter {
+    position: absolute;
+    bottom: 20px;
+    width: calc(100% - 32px); /* selon le padding */
+    text-align: center;
+    font-weight: bold;
+  }
+}

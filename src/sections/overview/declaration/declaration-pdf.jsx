@@ -29,6 +29,7 @@ const useStyles = () =>
           fontFamily: 'Roboto',
           fontSize: 10,
           backgroundColor: '#fff',
+          paddingBottom: 60,
         },
         headerRow: {
           flexDirection: 'row',
@@ -97,7 +98,7 @@ const useStyles = () =>
           borderColor: '#ddd',
           borderRadius: 4,
           overflow: 'hidden',
-          marginBottom: 20,
+          marginBottom: 20,  
         },
         tableRow: {
           flexDirection: 'row',
@@ -121,6 +122,9 @@ const useStyles = () =>
           fontSize: 9,
           borderRightWidth: 1,
           borderColor: '#ddd',
+        },
+        firtColumn: {
+          flex: 0.5,
         },
         noBorderRight: {
           borderRightWidth: 0,
@@ -146,6 +150,8 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
   const styles = useStyles();
   const { company, number, created_on, reference } = declaration;
 
+
+
   // Stats
   const total = employees?.length || 0;
   const cadres = employees?.filter(e => e.job.category === 'Cadre').length;
@@ -155,12 +161,18 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
   const qrData = encodeURIComponent(`${reference} - ${number} - ${total} personnes`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
+  const typeLabels = {
+    NEW:      'Nouveau',
+    RENEWAL:  'Renouvellement',
+    // ajoute d’autres cas si nécessaire
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.headerRow}>
-          {logoUrl && <Image src={{ uri: logoUrl }} style={styles.logo} />}
+          {logoUrl && <Image src={ logoUrl} style={styles.logo} />}
           <View style={styles.companyInfo}>
             <Text style={styles.companyName}>{company.name}</Text>
             <Text style={styles.companyDetails}>{company.adresse}</Text>
@@ -196,25 +208,28 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
         {/* Tableau */}
         <View style={styles.table}>
           <View style={[styles.tableRow, styles.tableHeader]}>
-            {['N°', 'Passeport', 'Nom', 'Prénom', 'Telephone', 'Fonction', 'Catégorie'].map((h, i) => (
+            {['N°', 'Passeport', 'Nom', 'Prénom',  'Fonction', 'Catégorie', 'Type'].map((h, i) => (
               <Text
                 key={i}
-                style={[styles.headerCell, i === 5 && styles.noBorderRight]}
+                style={[
+                  styles.headerCell, 
+                  i === 0 && styles.firtColumn,
+                  i === 6 && styles.noBorderRight]}
               >
                 {h}
               </Text>
             ))}
           </View>
           {employees?.map((emp, i) => (
-            <View key={i} style={styles.tableRow}>
-              <Text style={styles.cell}>{i + 1}</Text>
+            <View key={i} style={styles.tableRow} wrap={false}>
+              <Text style={[styles.cell, styles.firtColumn]}>{i + 1}</Text>
               <Text style={styles.cell}>{emp.passport_number}</Text>
               <Text style={styles.cell}>{emp.first}</Text>
               <Text style={styles.cell}>{emp.last}</Text>
-              <Text style={styles.cell}>{emp.phone}</Text>
               <Text style={styles.cell}>{emp.job.name}</Text>
+              <Text style={styles.cell}>{emp.job.category}</Text>
               <Text style={[styles.cell, styles.noBorderRight]}>
-                {emp.job.category}
+                {typeLabels[emp.type] || emp.type}
               </Text>
             </View>
           ))}
@@ -222,7 +237,7 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
 
         {/* Footer */}
         <View style={styles.footerRow}>
-          <Text style={styles.signatureText}>Signature de l'employé</Text>
+          <Text style={styles.signatureText}>Signature de l'employeur</Text>
           <Image src={{ uri: qrUrl }} style={styles.qr} />
         </View>
       </Page>

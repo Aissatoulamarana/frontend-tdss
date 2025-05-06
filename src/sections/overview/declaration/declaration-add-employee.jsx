@@ -212,27 +212,23 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       
     };
   
-  
 
-  useEffect(() => {
-    const fetchFonctions = async () => {
-      try {
-        const response = await axios.get(API.listFonctionAgent());
-        if (response.data && response.data.results) {
-          const fonctions = response.data.results.map((fonction) => ({
-            value: fonction.slug,
-            label: fonction.name,
-          }));
-          setOptions(fonctions);
-        } else {
-          console.error('Aucune fonction reçue');
+    useEffect(() => {
+      const fetchFonctions = async () => {
+        try {
+          const response = await axios.get(API.listFonctionAgent());
+          const fonctions = response.data?.results.map(f => ({ value: f.slug, label: f.name }));
+          setOptions(fonctions || []);
+        } catch (err) {
+          console.error('Erreur fetch fonctions:', err);
         }
-      } catch (error) {
-        console.error('Erreur lors de la récupération des fonctions :', error);
+      };
+  
+      if (declaration?.status === 'UNSUBMITTED') {
+        fetchFonctions();
       }
-    };
-    fetchFonctions();
-  }, []);
+    }, [declaration?.status]);
+  
 
   const handleImportData = (importedData) => {
     const mappedEmployees = importedData.map((row) => {

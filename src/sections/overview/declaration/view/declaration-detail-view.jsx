@@ -25,7 +25,6 @@ export function DeclarationDetailsView({ slug }) {
       try {
         const response = await axios.get(API.detailsDeclaration(slug)); // Remplacez par votre API
         setDeclaration(response.data); // Mettez à jour l'état avec les données de la déclaration
-        console.log('Données de la déclaration:', response.data); // Affichez les données dans la console
       } catch (error) {
         setError(error.message || 'Erreur lors du chargement des données'); // Gérer les erreurs
       } finally {
@@ -37,36 +36,42 @@ export function DeclarationDetailsView({ slug }) {
 
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      if (!declaration || !declaration.slug) {
-        toast("La déclaration n'est pas définie.");
-        return;
-      }
+    const fetchAllEmployees = async () => {
+      if (!declaration?.slug) return;
       setLoading(true);
       try {
-        const response = await axios.get(API.Employe(declaration.slug));
-        const employees = response.data.results;
-        setEmployee(employees);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des employés :', error);
+        // 1. Premier appel : on récupère count + résultats paginés
+        const { data: { count, results } } = await axios.get(
+          API.Employe(declaration.slug)
+        );
+        let allEmployees = results;
+        // 2. Si on n’a pas tout, on refait un appel en demandant limit = count
+        if (count > results.length) {
+          const { data: { results: fullResults } } = await axios.get(
+            API.Employe(declaration.slug),
+            { params: { limit: count, offset: 0 } }
+          );
+          allEmployees = fullResults;
+        }
+        setEmployee(allEmployees);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
-    if (declaration && declaration.slug) {
-      fetchEmployees();
-    }
+    fetchAllEmployees();
   }, [declaration]);
+  
 
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={declaration?.number}
+        heading={`DÉCLARATION N° ${declaration?.number}`}
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Declarations', href: paths.dashboard.declaration.list },
-          { name: declaration?.number },
+          { name: `DÉCLARATION N° ${declaration?.number}` },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />

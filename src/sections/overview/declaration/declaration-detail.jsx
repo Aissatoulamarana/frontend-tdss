@@ -216,7 +216,7 @@ export function DeclarationDetails({ declaration, employees }) {
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
 
-        {declaration && (<FilteredTable declaration={declaration} />)}
+        {declaration && (<FilteredTable declaration={declaration} employees={employees} />)}
 
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
       </Card>
