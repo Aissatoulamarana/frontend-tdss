@@ -2,16 +2,12 @@
 
 import  Grid  from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
-import Tooltip from '@mui/material/Tooltip';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 
@@ -29,20 +25,16 @@ import { fIsAfter, fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
   useTable,
-  emptyRows,
   rowInPage,
   TableNoData,
   getComparator,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
   TablePaginationCustom,
 } from 'src/components/table';
 
@@ -87,15 +79,18 @@ export function PaiementListView() {
       next: null,
       previous: null,
     });
+  const [selectedFilter, setSelectedFilter] = useState('facture_number');
 
   const filters = useSetState({
     name: '',
     date_before: null,
     date_after: null,
     payment_method: [],
+    facture_number: '',
+    number: '',
   });
 
-  const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
+  const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -111,8 +106,10 @@ export function PaiementListView() {
 
     filters?.state?.payment_method?.length > 0 ||
  
-    (!!filters.state.date_before && !!filters.state.date_after);
+    (!!filters.state.date_before && !!filters.state.date_after) ||
 
+    !!filters.state.facture_number ||
+    !!filters.state.number;
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -154,7 +151,6 @@ export function PaiementListView() {
         const limit = table.rowsPerPage;
         const params = {
           offset, limit,
-          ...(filters.state.name && { name: filters.state.name }),
           ...(filters.state.date_before && filters.state.date_after && !dateError
                       ? {
                         date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
@@ -163,9 +159,11 @@ export function PaiementListView() {
                       : {}
                     ),
           ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
+          ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
+          ...(filters.state.number && { number: filters.state.number }),
         };
         const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
-        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+        setTableData(response.data.results); 
         setPagination({
           count: response.data.count,
           next: response.data.next,
@@ -180,7 +178,7 @@ export function PaiementListView() {
     };
 
     fetchPaiements();
-  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.name, filters.state.payment_method]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading paiement...');
@@ -191,8 +189,7 @@ export function PaiementListView() {
   }
 
   return (
-    <>
-      <DashboardContent maxWidth="xl">
+    <DashboardContent maxWidth="xl">
         <CustomBreadcrumbs
           heading="Listes des Paiements"
           links={[
@@ -276,6 +273,8 @@ export function PaiementListView() {
             dateError={dateError}
             onResetPage={table.onResetPage}
             options={{ payment_method: ['TRANSFERT', 'CHEQUE', 'DEPOSIT'] }}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
           />
 
           {canReset && (
@@ -342,9 +341,6 @@ export function PaiementListView() {
           />
         </Card>
       </DashboardContent>
-
-     
-    </>
   );
 }
 
