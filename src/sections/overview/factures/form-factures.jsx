@@ -94,7 +94,7 @@ export function PayeurForm({ slug, open, onClose }) {
       await axios.post(API.paidFacture(slug), formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-
+      console.log('Données envoyées ' , formData);
       reset();
       toast.success('Mise à jour réussie !');
       onClose();

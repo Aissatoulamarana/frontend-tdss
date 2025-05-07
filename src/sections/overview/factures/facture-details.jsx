@@ -12,7 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useState } from 'react';
 
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency , fGNF , fEuro } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
 
 import { usePopover } from 'src/components/custom-popover';
@@ -36,26 +36,54 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 
 export function FactureDetails({ facture }) {
-  const [currentStatus, setCurrentStatus] = useState(facture?.statut);
+  // const [currentStatus, setCurrentStatus] = useState(facture?.status);
+  const [devise, setDevise] = useState('GNF');
 
-
+  const currentStatus = facture?.status;
 
   const popover = usePopover();
 
-  const renderTotal = (
-    <StyledTableRow>
-      <TableCell colSpan={3} />
-      <TableCell sx={{ color: 'text.primary', fontWeight: 'bold' }}>
-        <Box sx={{ mt: 2 }} />
-        TOTAL
-      </TableCell>
-      <TableCell width={120} sx={{ typography: 'subtitle2' }}>
-        <Box sx={{ mt: 2 }} />
-        {`GNF ${facture?.amount}`}
-      </TableCell>
+ 
+  // Prix unitaire pour chaque type
+const prixUnitaires = {
+  cadres: 19000000,
+  agents: 19000000,
+  ouvriers: 19000000,
+};
 
-    </StyledTableRow>
-  );
+// Construction des données dynamiques pour le tableau
+const permisData = [
+  {
+    permis: 'A',
+    category: 'Cadres',
+    quantite: facture?.total_cadres,
+    prix_unitaire: prixUnitaires.cadres,
+  },
+  {
+    permis: 'B',
+    category: 'Agents',
+    quantite: facture?.total_agents,
+    prix_unitaire: prixUnitaires.agents,
+  },
+  {
+    permis: 'C',
+    category: 'Ouvriers',
+    quantite: facture?.total_ouvriers,
+    prix_unitaire: prixUnitaires.ouvriers,
+  },
+];
+
+const afficherMontant = (montant) => {
+  if (devise === 'GNF') {
+    return fGNF(montant);
+  } else if (devise === 'USD') {
+    return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
+  } else if (devise === 'EUR') {
+    return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+  }
+};
+
+
 
   const renderFooter = (
     <Box gap={2} display="flex" alignItems="center" flexWrap="wrap" sx={{ py: 3 }}>
@@ -77,52 +105,98 @@ export function FactureDetails({ facture }) {
     </Box>
   );
 
+  const renderTotal = (
+    <StyledTableRow>
+      <TableCell colSpan={3} />
+      <TableCell sx={{ color: 'text.primary', fontWeight: 'bold' }}>
+        <Box sx={{ mt: 2 }} />
+        TOTAL
+      </TableCell>
+      <TableCell width={120} sx={{ typography: 'subtitle2' }}>
+        <Box sx={{ mt: 2 }} />
+        {afficherMontant(facture?.amount)}
+      </TableCell>
+      
+
+    </StyledTableRow>
+  );
+
+  const CenteredTableCell = styled(TableCell)(({ theme }) => ({
+    textAlign: 'center',
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.1),
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+  }));
+  
+
   const renderList = (
     <Scrollbar sx={{ mt: 5 }}>
-      <Table sx={{ minWidth: 960 }}>
-        <TableHead>
-          <TableRow>
-            <TableCell width={40}>#</TableCell>
+  <Table sx={{ minWidth: 960 }}>
+    <TableHead>
+      <TableRow>
+        <CenteredTableCell width={40}>#</CenteredTableCell>
+        <CenteredTableCell width={150}>Categorie de permis</CenteredTableCell>
+        <CenteredTableCell width={150}>Quantité</CenteredTableCell>
+        <CenteredTableCell width={150}>Prix Unitaire</CenteredTableCell>
+        <CenteredTableCell width={150}>Total</CenteredTableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {permisData.map((row, index) => (
+        <TableRow key={index}>
+          <CenteredTableCell>{index + 1}</CenteredTableCell>
 
-            <TableCell sx={{ typography: 'subtitle2' }}>Categorie de permis</TableCell>
+          <CenteredTableCell>
+            <Typography variant="subtitle2">{row.category}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
+              Permis {row.permis}
+            </Typography>
+          </CenteredTableCell>
 
-            <TableCell>Quantité</TableCell>
+          <CenteredTableCell>{row.quantite}</CenteredTableCell>
 
-            <TableCell align="right">Prix Unitaire</TableCell>
+          <CenteredTableCell>{afficherMontant(row.prix_unitaire)}</CenteredTableCell>
 
-            <TableCell align="right">Total</TableCell>
-          </TableRow>
-        </TableHead>
+          <CenteredTableCell>
+            {afficherMontant(row.prix_unitaire * row.quantite)}
+          </CenteredTableCell>
+        </TableRow>
+      ))}
 
-        <TableBody>
-          {facture?.details?.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>{index + 1}</TableCell>
+      {/* Total général */}
+      <StyledTableRow>
+        <CenteredTableCell colSpan={3} />
+        <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
+        <CenteredTableCell sx={{ fontWeight: 'bold' }}>
+          {afficherMontant(
+            permisData.reduce((sum, r) => sum + r.quantite * r.prix_unitaire, 0)
+          )}
+        </CenteredTableCell>
+      </StyledTableRow>
+    </TableBody>
+  </Table>
+</Scrollbar>
 
-              <TableCell>
-                <Box sx={{ maxWidth: 560 }}>
-                  <Typography variant="subtitle2">{row.category}</Typography>
-
-                  <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-                    Permis  {row.permis}
-                  </Typography>
-                </Box>
-              </TableCell>
-
-              <TableCell>{row.quantite}</TableCell>
-
-              <TableCell align="right">{fCurrency(row.prix_unitaire)}</TableCell>
-
-              <TableCell align="right">{fCurrency(row.prix_unitaire * row.quantite)}</TableCell>
-            </TableRow>
-          ))}
-
-          {renderTotal}
-
-        </TableBody>
-      </Table>
-    </Scrollbar>
   );
+  
+
+  const statusLabels = {
+    PAID: 'Payée',
+    unpaid: 'En attente',
+    
+  }
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'unpaid':
+        return 'warning';
+      case 'PAID':
+        return 'success';
+      default:
+        return 'default';
+    }
+  }
+ 
 
 
   return (
@@ -147,18 +221,38 @@ export function FactureDetails({ facture }) {
           />
 
           <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
+          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Devise
+              </Typography>
+              <Box
+                component="select"
+                value={devise}
+                onChange={(e) => setDevise(e.target.value)}
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 1,
+                  border: '1px solid #ccc',
+                  backgroundColor: '#fff',
+                  fontSize: 14,
+                  minWidth: 80,
+                }}
+              >
+                <option value="GNF">GNF</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </Box>
+            </Box>
+
             <Label
               variant="soft"
-              color={
-                (currentStatus === 'paid' && 'success') ||
-                (currentStatus === 'pending' && 'warning') ||
-                (currentStatus === 'overdue' && 'error') ||
-                'default'
-              }
+              color={getStatusColor(currentStatus)}
             >
-              {currentStatus}
+             {statusLabels[currentStatus] || 'Inconnue'}
+ 
             </Label>
-            <Typography variant="h6"> {facture?.reference}</Typography>
+            <Typography variant="h6"> {`FACTURE N° ${facture?.number}`}</Typography>
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
@@ -167,26 +261,28 @@ export function FactureDetails({ facture }) {
             </Typography>
             <br />
             <Typography variant='h6' >
-              {facture?.client}
+              {facture?.client_name}
             </Typography>
             <br />
-            Tél :
+            Tél : {facture?.client_contact}
             <br />
-            Adresse :
+            Adresse : {facture?.client_adresse}
+            <br />
+            Région : {facture?.client_location}
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Date facture :
-              {/* {fDate(facture?.create_date)} */}
+              {fDate(facture?.created_on)}
             </Typography>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Declaration N :
-              {/* {facture?.declaration_number} */}
+              {facture?.declaration_number}
             </Typography>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Date declaration :
-              {/* {fDate(facture?.dec_date)} */}
+              {fDate(facture?.date_declaration)}
             </Typography>
 
           </Stack>

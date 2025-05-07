@@ -25,6 +25,7 @@ import { Iconify } from 'src/components/iconify';
 // import DeclarationDetailsPrint from './declaration-print';
 import { ShareSendDialog } from '../declaration/components/ShareSendDialog';
 import { FacturePDF } from './facture-pdf';
+import { FactureDetails } from './facture-details';
 
 // ----------------------------------------------------------------------
 
@@ -49,7 +50,7 @@ export function FactureToolbar({
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    documentTitle: `Declaration_${facture?.numero_facture}`,
+    documentTitle: `Declaration_${facture?.numero}`,
     onAfterPrint: () => console.log('Impression terminée'),
   });
 
@@ -121,7 +122,7 @@ export function FactureToolbar({
 
           {renderDownload}
           <Box sx={{ display: 'none' }}>
-            {/* <DeclarationDetailsPrint ref={componentRef} facture={facture} /> */}
+            {/* <FactureDetails ref={componentRef}  /> */}
           </Box>
 
           <Tooltip title="Imprimer">

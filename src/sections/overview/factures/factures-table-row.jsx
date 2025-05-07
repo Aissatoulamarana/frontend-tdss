@@ -176,7 +176,7 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && (
+          {/* {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && ( */}
           <MenuItem
           color={payeurForm.value ? 'inherit' : 'default'}
             onClick={() => {
@@ -188,7 +188,7 @@ export function FactureTableRow({
             <Iconify icon="mdi:credit-card" />
             Payer
           </MenuItem>
-          )}  
+          {/* )}   */}
         </MenuList>
 
        

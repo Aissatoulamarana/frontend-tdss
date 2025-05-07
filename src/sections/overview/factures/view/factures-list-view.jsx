@@ -306,7 +306,13 @@ export function FactureListView() {
     };
 
     fetchFactures();
-  }, [table.page, table.rowsPerPage, filters.state.status , filters.state.date_before, filters.state.date_after , filters.state.number, filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, 
+    table.rowsPerPage, 
+    filters.state.status , 
+    filters.state.date_before, 
+    filters.state.date_after , 
+    filters.state.number, 
+    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading factures...');

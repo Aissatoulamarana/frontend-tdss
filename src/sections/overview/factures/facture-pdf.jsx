@@ -114,7 +114,7 @@ export function FacturePDF({ facture }) {
       </View>
       {/* Numéro de facture centré */}
       <View>
-        <Text style={styles.invoiceNumber}>FACTURE {facture?.reference}</Text>
+        <Text style={styles.invoiceNumber}>FACTURE {facture?.number}</Text>
       </View>
     </View>
   );
@@ -123,9 +123,9 @@ export function FacturePDF({ facture }) {
   const renderClientInfo = (
     <View style={styles.mb40}>
       <Text style={[styles.subtitle2, styles.mb4]}>CLIENT</Text>
-      <Text style={styles.body2}>{facture?.client}</Text>
-      <Text style={styles.body2}>{facture?.client?.address}</Text>
-      <Text style={styles.body2}>{facture?.client?.phone_number}</Text>
+      <Text style={styles.body2}>{facture?.client_name}</Text>
+      <Text style={styles.body2}>{facture?.client_adresse}</Text>
+      <Text style={styles.body2}>{facture?.client?.contact}</Text>
     </View>
   );
 
@@ -133,7 +133,7 @@ export function FacturePDF({ facture }) {
     <View style={[styles.container, styles.mb40]}>
       <View style={{ width: '45%' }}>
         <Text style={[styles.subtitle2, styles.mb4]}>Date create</Text>
-        <Text style={styles.body2}>{fDate(facture?.create_date)}</Text>
+        <Text style={styles.body2}>{fDate(facture?.created_on)}</Text>
       </View>
       <View style={{ width: '45%' }}>
         <Text style={[styles.subtitle2, styles.mb4]}>Due date</Text>
