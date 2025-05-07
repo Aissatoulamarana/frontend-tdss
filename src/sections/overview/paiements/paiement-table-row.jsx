@@ -35,7 +35,7 @@ export function PaiementTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected}>
+      <TableRow hover selected={selected} onClick={onViewRow} sx={{ cursor: 'pointer' }}>
         <TableCell padding="checkbox">
           {/* <Checkbox
             checked={selected}
@@ -130,7 +130,7 @@ export function PaiementTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
-      {/* <CustomPopover
+      <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
         onClose={popover.onClose}
@@ -146,10 +146,8 @@ export function PaiementTableRow({
             <Iconify icon="solar:eye-bold" />
             Voir
           </MenuItem>
-
-          
         </MenuList>
-      </CustomPopover> */}
+      </CustomPopover>
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}

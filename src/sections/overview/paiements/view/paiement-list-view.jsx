@@ -191,8 +191,7 @@ export function PaiementListView() {
   }
 
   return (
-    <>
-      <DashboardContent maxWidth="xl">
+    <DashboardContent maxWidth="xl">
         <CustomBreadcrumbs
           heading="Listes des Paiements"
           links={[
@@ -248,28 +247,28 @@ export function PaiementListView() {
         <Tabs
          value={currentTab}
          onChange={(event, newValue) => setCurrentTab(newValue)}
-  sx={{
-    px: 2.5,
-    boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
-  }}
->
-  {TABS.map(({ value, label, color, count }) => (
-    <Tab
-      key={value}
-      value={value}
-      label={label}
-      iconPosition="end"
-      icon={
-        <Label
-          variant={value === 'all' ? 'filled' : 'soft'}
-          color={color}
+          sx={{
+            px: 2.5,
+            boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+          }}
         >
-          {count}
-        </Label>
-      }
-    />
-  ))}
-</Tabs>
+          {TABS.map(({ value, label, color, count }) => (
+            <Tab
+              key={value}
+              value={value}
+              label={label}
+              iconPosition="end"
+              icon={
+                <Label
+                  variant={value === 'all' ? 'filled' : 'soft'}
+                  color={color}
+                >
+                  {count}
+                </Label>
+              }
+            />
+          ))}
+        </Tabs>
 
           <PaiementTableToolbar
             filters={filters}
@@ -319,7 +318,7 @@ export function PaiementListView() {
                       />
                     ))}
                {tableData.length > 0 && 
-                tableData.lenght < table.rowsPerPage && (
+                tableData.length < table.rowsPerPage && (
                   <TableEmptyRows
                     height={table.dense ? 56 : 56 + 20}
                     emptyRows={table.rowsPerPage - tableData.length}
@@ -342,9 +341,6 @@ export function PaiementListView() {
           />
         </Card>
       </DashboardContent>
-
-     
-    </>
   );
 }
 
