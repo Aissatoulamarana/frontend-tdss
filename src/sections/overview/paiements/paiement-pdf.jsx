@@ -1,4 +1,5 @@
 import { Page, View, Text, Image, Document, StyleSheet } from '@react-pdf/renderer';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import PropTypes from 'prop-types';
 import { fDate } from 'src/utils/format-time';
 
@@ -142,13 +143,22 @@ export function PaiementPDF({ payment }) {
     },
     infoRow: {
       marginBottom: 4,
+      flexDirection: 'row',
+      flexWrap: 'nowrap',
     },
     infoLabel: {
       fontWeight: 'bold',
-      display: 'inline',
+      width: '30%',
     },
     infoValue: {
-      display: 'inline',
+      width: '70%',
+    },
+    infoTable: {
+      display: 'flex',
+    },
+    infoTableRow: {
+      flexDirection: 'row',
+      marginBottom: 4,
     },
     headerRow: {
       flexDirection: 'row',
@@ -189,73 +199,78 @@ export function PaiementPDF({ payment }) {
                 <Image src="/logo/logo-single.png" style={styles.logo} />
                 <Text style={styles.smallText}>TECH DATA SECURISATION & SYSTEMES</Text>
               </View>
+              
             </View>
             
+            <View style={styles.divider} />
             {/* Titre */}
             <Text style={styles.title}>RECU DE PAIEMENT N° {payment?.number || payment?.reference}</Text>
+            {/* Ligne horizontale */}
+            <View style={styles.divider} />
           </View>
           
-          {/* Ligne horizontale */}
-          <View style={styles.divider} />
+          
           
           {/* Informations de facture et date */}
           <View style={styles.row}>
             <View style={styles.column}>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Facture N° : </Text>
-                <Text style={styles.infoValue}>{payment?.facture_number}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Référence : </Text>
-                <Text style={styles.infoValue}>{payment?.facture_ref}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>Méthode : </Text>
-                <Text style={styles.infoValue}>{payment?.payment_method}</Text>
+              <View style={styles.infoTable}>
+                <View style={styles.infoTableRow}>
+                  <Text style={styles.infoLabel}>Facture N° :</Text>
+                  <Text style={styles.infoValue}>{payment?.facture_number}</Text>
+                </View>
+                <View style={styles.infoTableRow}>
+                  <Text style={styles.infoLabel}>Référence :</Text>
+                  <Text style={styles.infoValue}>{payment?.facture_ref}</Text>
+                </View>
+                <View style={styles.infoTableRow}>
+                  <Text style={styles.infoLabel}>Méthode :</Text>
+                  <Text style={styles.infoValue}>{payment?.payment_method}</Text>
+                </View>
               </View>
             </View>
             
             <View style={styles.column}>
-              <View style={[styles.infoRow, styles.tableCellRight]}>
-                <Text style={styles.infoLabel}>Date : </Text>
-                <Text style={styles.infoValue}>{payment ? fDate(new Date()) : ''}</Text>
-              </View>
-              <View style={[styles.infoRow, styles.tableCellRight]}>
-                <Text style={styles.infoLabel}>Devise : </Text>
-                <Text style={styles.infoValue}>{payment?.devise?.name} ({payment?.devise?.sign})</Text>
-              </View>
-              <View style={[styles.infoRow, styles.tableCellRight]}>
-                <Text style={styles.infoLabel}>Créé par : </Text>
-                <Text style={styles.infoValue}>{payment?.created_by?.name}</Text>
+              <View style={styles.infoTable}>
+                <View style={styles.infoTableRow}>
+                  <Text style={[styles.infoLabel, styles.tableCellRight]}>Date :</Text>
+                  <Text style={[styles.infoValue, styles.tableCellRight]}>{payment ? fDate(new Date()) : ''}</Text>
+                </View>
+                <View style={styles.infoTableRow}>
+                  <Text style={[styles.infoLabel, styles.tableCellRight]}>Devise :</Text>
+                  <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.devise?.name} ({payment?.devise?.sign})</Text>
+                </View>
+                <View style={styles.infoTableRow}>
+                  <Text style={[styles.infoLabel, styles.tableCellRight]}>Créé par :</Text>
+                  <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.created_by?.name}</Text>
+                </View>
               </View>
             </View>
           </View>
           
           {/* Informations du client */}
           <View style={styles.clientInfo}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>CLIENT : </Text>
-              <Text style={styles.infoValue}>{payment?.payer?.employer}</Text>
-            </View>
-            
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Nom : </Text>
-              <Text style={styles.infoValue}>{payment?.payer?.first} {payment?.payer?.last}</Text>
-            </View>
-            
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Tél : </Text>
-              <Text style={styles.infoValue}>{payment?.payer?.phone}</Text>
-            </View>
-            
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Email : </Text>
-              <Text style={styles.infoValue}>{payment?.payer?.email}</Text>
-            </View>
-            
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Pays : </Text>
-              <Text style={styles.infoValue}>{payment?.payer?.country_origin}</Text>
+            <View style={styles.infoTable}>
+              <View style={styles.infoTableRow}>
+                <Text style={styles.infoLabel}>CLIENT :</Text>
+                <Text style={styles.infoValue}>{payment?.payer?.employer}</Text>
+              </View>
+              <View style={styles.infoTableRow}>
+                <Text style={styles.infoLabel}>Nom :</Text>
+                <Text style={styles.infoValue}>{payment?.payer?.first} {payment?.payer?.last}</Text>
+              </View>
+              <View style={styles.infoTableRow}>
+                <Text style={styles.infoLabel}>Tél :</Text>
+                <Text style={styles.infoValue}>{payment?.payer?.phone}</Text>
+              </View>
+              <View style={styles.infoTableRow}>
+                <Text style={styles.infoLabel}>Email :</Text>
+                <Text style={styles.infoValue}>{payment?.payer?.email}</Text>
+              </View>
+              <View style={styles.infoTableRow}>
+                <Text style={styles.infoLabel}>Pays :</Text>
+                <Text style={styles.infoValue}>{payment?.payer?.country_origin}</Text>
+              </View>
             </View>
           </View>
           
