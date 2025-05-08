@@ -38,11 +38,11 @@ export function FactureDetailsView({ slug }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={facture?.numero_facture}
+        heading={`FACTURE N° ${facture?.number}`}
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Factures', href: paths.dashboard.factures.list },
-          { name: facture?.reference },
+          { name: `FACTURE N° ${facture?.number}` },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
