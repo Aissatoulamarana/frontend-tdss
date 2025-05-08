@@ -44,35 +44,6 @@ export function FactureDetails({ facture }) {
   const popover = usePopover();
 
  
-  // Prix unitaire pour chaque type
-const prixUnitaires = {
-  cadres: 19000000,
-  agents: 19000000,
-  ouvriers: 19000000,
-};
-
-// Construction des données dynamiques pour le tableau
-const permisData = [
-  {
-    permis: 'A',
-    category: 'Cadres',
-    quantite: facture?.total_cadres,
-    prix_unitaire: prixUnitaires.cadres,
-  },
-  {
-    permis: 'B',
-    category: 'Agents',
-    quantite: facture?.total_agents,
-    prix_unitaire: prixUnitaires.agents,
-  },
-  {
-    permis: 'C',
-    category: 'Ouvriers',
-    quantite: facture?.total_ouvriers,
-    prix_unitaire: prixUnitaires.ouvriers,
-  },
-];
-
 const afficherMontant = (montant) => {
   if (devise === 'GNF') {
     return fGNF(montant);
@@ -129,6 +100,8 @@ const afficherMontant = (montant) => {
     paddingRight: theme.spacing(1),
   }));
   
+ // Filtrer les permis avec count > 0
+ const filteredPermits = facture?.permits.filter((item) => item.count > 0) || [];
 
   const renderList = (
     <Scrollbar sx={{ mt: 5 }}>
@@ -143,23 +116,23 @@ const afficherMontant = (montant) => {
       </TableRow>
     </TableHead>
     <TableBody>
-      {permisData.map((row, index) => (
+      {filteredPermits.map((row, index) => (
         <TableRow key={index}>
           <CenteredTableCell>{index + 1}</CenteredTableCell>
 
           <CenteredTableCell>
             <Typography variant="subtitle2">{row.category}</Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-              Permis {row.permis}
+              Permis {row.type}
             </Typography>
           </CenteredTableCell>
 
-          <CenteredTableCell>{row.quantite}</CenteredTableCell>
+          <CenteredTableCell>{row.count}</CenteredTableCell>
 
-          <CenteredTableCell>{afficherMontant(row.prix_unitaire)}</CenteredTableCell>
+          <CenteredTableCell>{afficherMontant(row.price)}</CenteredTableCell>
 
           <CenteredTableCell>
-            {afficherMontant(row.prix_unitaire * row.quantite)}
+            {afficherMontant(row.total_price)}
           </CenteredTableCell>
         </TableRow>
       ))}
@@ -169,9 +142,7 @@ const afficherMontant = (montant) => {
         <CenteredTableCell colSpan={3} />
         <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
         <CenteredTableCell sx={{ fontWeight: 'bold' }}>
-          {afficherMontant(
-            permisData.reduce((sum, r) => sum + r.quantite * r.prix_unitaire, 0)
-          )}
+          {afficherMontant(facture?.amount)}
         </CenteredTableCell>
       </StyledTableRow>
     </TableBody>
@@ -204,7 +175,7 @@ const afficherMontant = (montant) => {
       <FactureToolbar
         facture={facture}
         currentStatus={currentStatus || ''}
-
+        devise={devise}
       />
       <Card sx={{ pt: 5, px: 5 }}>
         <Box

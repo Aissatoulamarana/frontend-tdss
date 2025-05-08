@@ -1,236 +1,162 @@
-import { Page, View, Text, Font, Image, Document, StyleSheet } from '@react-pdf/renderer';
-import { useMemo } from 'react';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { saveAs } from 'file-saver';
+import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
+import { amountToWords } from 'src/utils/number-to-words';
 
-import { fCurrency } from 'src/utils/format-number';
-import { fDate } from 'src/utils/format-time';
 
-// Enregistrement de la police Roboto
-Font.register({
-  family: 'Roboto',
-  fonts: [{ src: '/fonts/Roboto-Regular.ttf' }, { src: '/fonts/Roboto-Bold.ttf' }],
-});
+const TEMPLATE_URL = '/pdf/facture-pdf.pdf';
 
-const useStyles = () =>
-  useMemo(
-    () =>
-      StyleSheet.create({
-        // Mise en page générale
-        page: {
-          fontSize: 9,
-          lineHeight: 1.6,
-          fontFamily: 'Roboto',
-          backgroundColor: '#FFFFFF',
-          padding: '40px 24px 120px 24px',
-        },
-        footer: {
-          left: 0,
-          right: 0,
-          bottom: 0,
-          padding: 24,
-          margin: 'auto',
-          borderTopWidth: 1,
-          borderStyle: 'solid',
-          position: 'absolute',
-          borderColor: '#e9ecef',
-        },
-        container: {
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        },
-        signatureContainer: {
-          marginTop: 30,
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        },
-        signatureText: {
-          fontSize: 12,
-          fontWeight: 'bold',
-        },
-        qr: {
-          width: 60,
-          height: 60,
-        },
-        // Marges
-        mb4: { marginBottom: 4 },
-        mb8: { marginBottom: 8 },
-        mb40: { marginBottom: 40 },
-        // Textes
-        h3: { fontSize: 16, fontWeight: 700 },
-        h4: { fontSize: 13, fontWeight: 700 },
-        body1: { fontSize: 10 },
-        subtitle1: { fontSize: 10, fontWeight: 700 },
-        body2: { fontSize: 9 },
-        subtitle2: { fontSize: 9, fontWeight: 700 },
-        // Tableau
-        table: { display: 'flex', width: '100%' },
-        row: {
-          padding: '10px 0 8px 0',
-          flexDirection: 'row',
-          borderBottomWidth: 1,
-          borderStyle: 'solid',
-          borderColor: '#e9ecef',
-        },
-        cell_1: { width: '5%' },
-        cell_2: { width: '50%' },
-        cell_3: { width: '15%', paddingLeft: 32 },
-        cell_4: { width: '15%', paddingLeft: 8 },
-        cell_5: { width: '15%' },
-        noBorder: { paddingTop: '10px', paddingBottom: 0, borderBottomWidth: 0 },
-        // Style pour le numéro de facture centré et en gros caractères
-        invoiceNumber: {
-          fontSize: 18,
-          fontWeight: 'bold',
-          textAlign: 'center',
-          marginVertical: 10,
-        },
-      }),
-    []
+function sanitize(text) {
+  if (typeof text !== 'string') return text;
+  return text
+    .replace(/\u202F/g, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\u2009/g, ' ')
+    .replace(/\u2007/g, ' ');
+}
+
+export async function generateFacturePDF(facture, devise) {
+  const arrayBuffer = await fetch(TEMPLATE_URL).then(res => {
+    if (!res.ok) throw new Error(`Impossible de charger le template (${res.status})`);
+    return res.arrayBuffer();
+  });
+
+  const pdfDoc = await PDFDocument.load(arrayBuffer);
+  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const page = pdfDoc.getPage(0);
+
+  // Espacements spécifiques par section
+  const invoiceTopGap = 110;         // espace du haut au titre facture
+  const invoiceToClientGap = 30;     // gap entre facture et bloc client
+  const clientInfoLineGap = 16;      // interligne infos client
+  const invoiceToDateGap = 35;       // gap entre facture et bloc dates
+  const dateInfoLineGap = 16;        // interligne infos dates
+  const dateToSeparatorGap = 35;     // gap avant ligne séparatrice
+  const separatorToHeaderGap = 20;   // gap ligne->header tableau
+  const headerLineGap = 25;          // interligne header->lignes data
+  const dataLineGap = 24;            // interligne des lignes de données
+  const dataToTotalGap = 10;         // gap avant TOTAL GENERAL
+  const totalBoxPadding = 8;         // padding haut/bas de la box total
+  const totalFontSize = 16;          // taille police total
+  const totalToWordsGap = 70;        // gap avant montant en lettres
+  const wordsToQrGap = 120;           // gap avant QR/signature
+
+  // Couleurs & tailles
+  const baseSize = 12;
+  const headerSize = 14;
+  const black = rgb(0, 0, 0);
+  const blue = rgb(0, 0, 0.8);
+  const red = rgb(0.8, 0, 0);
+  const pinkBg = rgb(0.95, 0.9, 0.9);
+
+  // Formatage montants
+  const formatMontant = value => sanitize(
+    devise === 'GNF' ? fGNF(value)
+    : devise === 'USD' ? fCurrency(value / 9200)
+    : devise === 'EUR' ? fEuro(value / 10000)
+    : String(value)
   );
 
-export function FacturePDF({ facture }) {
-  const styles = useStyles();
+  // 1. Titre facture
+  let cursorY = page.getHeight() - invoiceTopGap;
+  const invoiceText = `FACTURE N° ${facture.number}`;
+  page.drawText(invoiceText, { x: 200, y: cursorY, size: headerSize, font: helveticaBold, color: black });
+  const invW = helveticaBold.widthOfTextAtSize(invoiceText, headerSize);
+  page.drawLine({ start: { x: 200, y: cursorY - 2 }, end: { x: 200 + invW, y: cursorY - 2 }, thickness: 1, color: black });
 
-  // Calcul de la date d'échéance (date de création + 5 ans)
-  const createDate = new Date(facture?.created_on);
-  let dueDate = null;
-  if (!isNaN(createDate.getTime())) {
-    dueDate = new Date(createDate);
-    dueDate.setFullYear(dueDate.getFullYear() + 5);
-  } else {
-    console.error("Invalid date format");
-  }
+  // 2. Bloc CLIENT
+  cursorY -= invoiceToClientGap;
+  const leftX = 50;
+  page.drawText('CLIENT', { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: blue });
+  const cW = helvetica.widthOfTextAtSize('CLIENT', baseSize);
+  page.drawLine({ start: { x: leftX, y: cursorY - 2 }, end: { x: leftX + cW, y: cursorY - 2 }, thickness: 0.5, color: blue });
 
-  // Préparation du QR code
-  const qrData = encodeURIComponent(`${facture?.numero_facture} - `);
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
+  cursorY -= clientInfoLineGap;
+  [
+    facture.client_name,
+    `Tél : ${facture.client_contact}`,
+    `Adresse : ${facture.client_adresse}`,
+    `Région : ${facture.client_location}`
+  ].forEach(line => {
+    page.drawText(line, { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
+    cursorY -= clientInfoLineGap;
+  });
 
-  // En-tête avec logo à gauche et informations de la facture à droite
-  const renderHeader = (
-    <View style={styles.mb40}>
-      <View style={[styles.container, styles.mb8]}>
-        <Image source="/logo/logo-single.png" style={{ width: 48, height: 48 }} />
-        <View style={{ textAlign: 'right' }} />
-      </View>
-      {/* Numéro de facture centré */}
-      <View>
-        <Text style={styles.invoiceNumber}>FACTURE {facture?.number}</Text>
-      </View>
-    </View>
-  );
+  // 3. Bloc Dates
+  cursorY = page.getHeight() - invoiceTopGap - invoiceToDateGap;
+  const rightX = 400;
+  const formatDate = ds => {
+    const d = new Date(ds);
+    const j = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const a = d.getFullYear();
+    return `${j}/${m}/${a}`;
+  };
+  [
+    ['Date facture : ', facture.created_on],
+    ['Declaration N : ', facture.declaration_number],
+    ['Date declaration : ', facture.date_declaration]
+  ].forEach(([label, val]) => {
+    const displayVal = label.includes('Date') ? formatDate(val) : val;
+    page.drawText(label, { x: rightX, y: cursorY, size: baseSize, font: helvetica, color: red });
+    page.drawText(displayVal, { x: rightX + helvetica.widthOfTextAtSize(label, baseSize), y: cursorY, size: baseSize, font: helvetica, color: black });
+    cursorY -= dateInfoLineGap;
+  });
 
-  // Informations client dans une section dédiée
-  const renderClientInfo = (
-    <View style={styles.mb40}>
-      <Text style={[styles.subtitle2, styles.mb4]}>CLIENT</Text>
-      <Text style={styles.body2}>{facture?.client_name}</Text>
-      <Text style={styles.body2}>{facture?.client_adresse}</Text>
-      <Text style={styles.body2}>{facture?.client?.contact}</Text>
-    </View>
-  );
+  // 4. Ligne séparatrice
+  const lineY = cursorY - dateToSeparatorGap;
+  page.drawLine({ start: { x: 49, y: lineY }, end: { x: 550, y: lineY }, thickness: 0.5, color: black });
 
-  const renderTime = (
-    <View style={[styles.container, styles.mb40]}>
-      <View style={{ width: '45%' }}>
-        <Text style={[styles.subtitle2, styles.mb4]}>Date create</Text>
-        <Text style={styles.body2}>{fDate(facture?.created_on)}</Text>
-      </View>
-      <View style={{ width: '45%' }}>
-        <Text style={[styles.subtitle2, styles.mb4]}>Due date</Text>
-        <Text style={styles.body2}>{fDate(dueDate)}</Text>
-      </View>
-      <View style={{ width: '45%' }}>
-        <Text style={[styles.subtitle2, styles.mb4]}>Source</Text>
-        <Text style={styles.body2}> {facture?.declaration_number}</Text>
-      </View>
-    </View>
-  );
+  // 5. Headers tableau
+  const headerY = lineY - separatorToHeaderGap;
+  ['Catégorie de permis','Quantité','Prix unitaire','Total'].forEach((h, i) => {
+    page.drawText(h, { x: 55 + i*140, y: headerY, size: baseSize, font: helvetica, color: red });
+  });
+  page.drawLine({ start: { x: 49, y: headerY - 6 }, end: { x: 550, y: headerY - 6 }, thickness: 1.5, color: black });
 
-  const renderTable = (
-    <View style={styles.table}>
-      <View style={styles.row}>
-        <View style={styles.cell_1}>
-          <Text style={styles.subtitle2}>#</Text>
-        </View>
-        <View style={styles.cell_2}>
-          <Text style={styles.subtitle2}>Categorie</Text>
-        </View>
-        <View style={styles.cell_3}>
-          <Text style={styles.subtitle2}>Quantité</Text>
-        </View>
-        <View style={styles.cell_4}>
-          <Text style={styles.subtitle2}>Prix unitaire</Text>
-        </View>
-        <View style={[styles.cell_5, { textAlign: 'right' }]}>
-          <Text style={styles.subtitle2}>Total</Text>
-        </View>
-      </View>
-      {facture?.details?.map((item, index) => (
-        <View key={index} style={styles.row}>
-          <View style={styles.cell_1}>
-            <Text>{index + 1}</Text>
-          </View>
-          <View style={styles.cell_2}>
-            <Text style={styles.subtitle2}>{item.category}</Text>
-            <Text> Permis {item.permis}</Text>
-          </View>
-          <View style={styles.cell_3}>
-            <Text>{item.quantite}</Text>
-          </View>
-          <View style={styles.cell_4}>
-            <Text>{item.prix_unitaire}</Text>
-          </View>
-          <View style={[styles.cell_5, { textAlign: 'right' }]}>
-            <Text>{fCurrency(item.prix_unitaire * item.quantite)}</Text>
-          </View>
-        </View>
-      ))}
-      <View style={[styles.row, styles.noBorder]}>
-        <View style={styles.cell_4}>
-          <Text style={styles.subtitle2}>TOTAL</Text>
-        </View>
-        <View style={[styles.cell_4, { textAlign: 'right' }]}>
-          <Text>{fCurrency(facture?.montant_usd)}</Text>
-        </View>
-        <View style={[styles.cell_5, { textAlign: 'right' }]}>
-          <Text>{fCurrency(facture?.montant_gnf)}</Text>
-        </View>
-      </View>
-    </View>
-  );
+  // 6. Lignes de données
+  let rowY = headerY - headerLineGap;
+  facture.permits.filter(r => r.count > 0).forEach(r => {
+    page.drawText(`Permis ${r.type}`, { x: 70, y: rowY, size: baseSize, font: helvetica, color: black });
+    page.drawText(`${r.count}`, { x: 210, y: rowY, size: baseSize, font: helvetica, color: black });
+    page.drawText(formatMontant(r.price), { x: 340, y: rowY, size: baseSize, font: helvetica, color: black });
+    page.drawText(formatMontant(r.total_price), { x: 480, y: rowY, size: baseSize, font: helvetica, color: black });
+    rowY -= dataLineGap;
+  });
 
-  const renderQRCode = (
-    <View style={styles.signatureContainer}>
-      <Image src={qrUrl} style={styles.qr} />
-      <Text style={styles.signatureText}>Le Directeur :</Text>
-    </View>
-  );
+  // 7. TOTAL GENERAL
+  rowY -= dataToTotalGap;
+  page.drawRectangle({ x: 49, y: rowY - totalBoxPadding, width: 510, height: totalFontSize + totalBoxPadding*2, color: pinkBg });
+  page.drawText('TOTAL GENERAL', { x: 50, y: rowY, size: totalFontSize, font: helveticaBold, color: black });
+  page.drawText(formatMontant(facture.amount), { x: 450, y: rowY, size: totalFontSize, font: helveticaBold, color: black });
 
-  const renderFooter = (
-    <View style={[styles.container, styles.footer]} fixed>
-      <View style={{ width: '75%' }}>
-        <Text style={styles.subtitle2}>NOTES</Text>
-        <Text>
-          We appreciate your business. Should you need us to add VAT or extra notes let us know!
-        </Text>
-      </View>
-      <View style={{ width: '25%', textAlign: 'right' }}>
-        <Text style={styles.subtitle2}>Have a question?</Text>
-        <Text>support@abcapp.com</Text>
-      </View>
-    </View>
-  );
+  // 8. Montant en lettres
+  rowY -= totalToWordsGap;
+  const phr = 'Arrêté la présente facture à la somme de : ';
+  const formattedAmount = formatMontant(facture.amount);
+  const numericAmount = Number(formattedAmount.replace(/[^0-9]/g, '').replace(/,/g, ''));
+  const words = sanitize(amountToWords(numericAmount, devise));
+  page.drawText(phr, { x: 40, y: rowY, size: baseSize, font: helvetica, color: black });
+  const phrW = helvetica.widthOfTextAtSize(phr, baseSize);
+  page.drawText(words, { x: 40 + phrW, y: rowY, size: baseSize, font: helveticaBold, color: black });
+  const fullW = phrW + helveticaBold.widthOfTextAtSize(words, baseSize);
+  page.drawLine({ start: { x: 40, y: rowY - 2 }, end: { x: 40 + fullW, y: rowY - 2 }, thickness: 0.5, color: black });
 
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        {renderHeader}
-        {renderClientInfo}
-        {renderTime}
-        {renderTable}
-        {renderQRCode}
-        {renderFooter}
-      </Page>
-    </Document>
-  );
+  // 9. QR & Signature
+  rowY -= wordsToQrGap;
+  const qrData = facture.number;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=100x100`;
+  const qrBytes = await fetch(qrUrl).then(r => { if (!r.ok) throw new Error(`Erreur chargement QR (${r.status})`); return r.arrayBuffer(); });
+  const qrImg = await pdfDoc.embedPng(qrBytes);
+  page.drawImage(qrImg, { x: 50, y: rowY, width: 100, height: 100 });
+
+  const sign = 'LE DIRECTEUR';
+  page.drawText(sign, { x: 450, y: rowY + 80, size: baseSize, font: helvetica, color: black });
+  const sW = helvetica.widthOfTextAtSize(sign, baseSize);
+  page.drawLine({ start: { x: 450, y: rowY + 78 }, end: { x: 450 + sW, y: rowY + 78 }, thickness: 0.5, color: black });
+
+  // Sauvegarde et téléchargement
+  const pdfBytes = await pdfDoc.save();
+  saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture.number}.pdf`);
 }

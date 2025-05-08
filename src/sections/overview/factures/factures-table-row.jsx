@@ -51,7 +51,7 @@ export function FactureTableRow({
   const [loaded, setLoaded] = useState(false);
 
   const [selectedBanqueLocal, setSelectedBanqueLocal] = useState(null);
-
+  const [localStatus, setLocalStatus] = useState(row?.status); // Etat local pour le statut de la facture
 
   const handleChangeBanque = (event, newValue) => {
     setSelectedBanqueLocal(newValue);
@@ -106,12 +106,12 @@ export function FactureTableRow({
           </Stack>
         </TableCell>
 
-        <TableCell>{row.declaration__declaration_number}</TableCell>
+        <TableCell>{row.declaration_number}</TableCell>
 
         <TableCell>
           <ListItemText
-            primary={fCurrency(row.amount / 9200)}
-            secondary={fGNF(row.amount)}
+            primary={fGNF(row.amount)}
+            secondary={fCurrency(row.amount / 9200)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
               secondary: { mt: 0.5, component: 'span', typography: 'caption' }
@@ -131,9 +131,9 @@ export function FactureTableRow({
         <TableCell>
           <Label
             variant="soft"
-            color={getStatusColor(row.status)}
+            color={getStatusColor(localStatus)}
           >
-            {statusLabels[row.status] || 'Inconnu'}
+            {statusLabels[localStatus] || 'Inconnu'}
           </Label>
         </TableCell>
 
@@ -176,7 +176,7 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {/* {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && ( */}
+          {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && (
           <MenuItem
           color={payeurForm.value ? 'inherit' : 'default'}
             onClick={() => {
@@ -188,14 +188,21 @@ export function FactureTableRow({
             <Iconify icon="mdi:credit-card" />
             Payer
           </MenuItem>
-          {/* )}   */}
+           )}   
         </MenuList>
 
        
 
       </CustomPopover>
 
-      <PayeurForm slug={row.slug} open={payeurForm.value} onclose={payeurForm.onFalse} />
+      <PayeurForm 
+      slug={row.slug} 
+      open={payeurForm.value} 
+      onclose={payeurForm.onFalse} 
+      onSuccess ={() => {
+        setLocalStatus('PAID'); // Met à jour le statut local de la facture
+        payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
+      }} />
       {/* <ConfirmDialog
         fullWidth
         open={openFirstDialog}

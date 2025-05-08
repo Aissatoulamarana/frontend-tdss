@@ -38,13 +38,13 @@ const NewPayeurSchema = z.object({
   payment_comment: z.string().optional()
 });
 
-export function PayeurForm({ slug, open, onClose }) {
+export function PayeurForm({ slug, open, onclose, onSuccess }) {
   const [devises, setDevises] = useState([]);
   const [countries, setCountries] = useState([]);
 
   const paymentTypes = [
     { id: 'TRANSFER', label: 'Virement' },
-    { id: 'DEPOSIT',  label: 'Espèces' },
+    { id: 'DEPOSIT',  label: 'Dêpot' },
     { id: 'CHEQUE',   label: 'Chèques' }
   ];
 
@@ -85,27 +85,27 @@ export function PayeurForm({ slug, open, onClose }) {
       Object.entries(data).forEach(([key, value]) => {
         if (key === 'payment_document' && value instanceof File) {
           formData.append(key, value);
-        } 
-        // else if (key !== 'payment_document') {
-        //   formData.append(key, value as string);
-        // }
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
       });
-
+  
       await axios.post(API.paidFacture(slug), formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      console.log('Données envoyées ' , formData);
       reset();
       toast.success('Mise à jour réussie !');
-      onClose();
+      onSuccess();
+      onclose();
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend :", error);
       toast.error('Une erreur est survenue.');
     }
   });
+  
 
   return (
-    <Dialog fullWidth maxWidth="sm" open={open} onClose={onClose}>
+    <Dialog fullWidth maxWidth="sm" open={open} onClose={onclose} >
       <DialogTitle sx={{ color: 'text.disabled' }}>
         Information du Payeur
       </DialogTitle>
@@ -192,7 +192,7 @@ export function PayeurForm({ slug, open, onClose }) {
 
 
         <DialogActions sx={{ pr: 3, pb: 2 }}>
-          <Button variant="outlined" onClick={onClose}>
+          <Button variant="outlined" onClick={onclose}>
             Retour
           </Button>
           <Button type="submit" variant="contained" disabled={isSubmitting}>
