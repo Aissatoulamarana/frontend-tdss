@@ -22,11 +22,28 @@ export function AuthProvider({ children }) {
     loading: true,
   });
 
+  // Fonction pour récupérer un cookie par son nom
+  const getCookie = useCallback((name) => {
+    const nameWithEqualSign = `${name}=`;
+    const cookies = document.cookie.split(';');
+    
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.indexOf(nameWithEqualSign) === 0) {
+        return decodeURIComponent(cookie.substring(nameWithEqualSign.length, cookie.length));
+      }
+    }
+    return null;
+  }, []);
+
   const checkUserSession = useCallback(async () => {
     try {
-
-
-      const access_token = sessionStorage.getItem(STORAGE_KEY);
+      // Vérifier d'abord le cookie, puis le sessionStorage comme fallback
+      let access_token = getCookie(STORAGE_KEY);
+      
+      if (!access_token) {
+        access_token = sessionStorage.getItem(STORAGE_KEY);
+      }
 
       if (access_token && isValidToken(access_token)) {
         setSession(access_token);

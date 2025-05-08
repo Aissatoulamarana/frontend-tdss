@@ -80,21 +80,38 @@ export function tokenExpired(exp) {
 
 export async function setSession(access_token, refresh_token) {
   try {
+    // Fonction pour définir un cookie avec expiration
+    const setCookie = (name, value, days) => {
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + days);
+      const cookieValue = `${encodeURIComponent(value)}; expires=${expirationDate.toUTCString()}; path=/; SameSite=Lax`;
+      document.cookie = `${name}=${cookieValue}`;
+    };
 
-    // Store refresh token in sessionStorage if it exists
+    // Fonction pour supprimer un cookie
+    const deleteCookie = (name) => {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+    };
+
+    // Store refresh token in cookie if it exists (7 days expiration)
     if (refresh_token) {
-      console.log ('le refres token stored in sessionStorage', refresh_token);
-      sessionStorage.setItem(STORAGE_KEY_REFRESH_TOKEN, refresh_token); 
+      console.log('Refresh token stored in cookie', refresh_token);
+      setCookie(STORAGE_KEY_REFRESH_TOKEN, refresh_token, 7);
+      // Garder aussi dans sessionStorage pour la compatibilité avec le code existant
+      sessionStorage.setItem(STORAGE_KEY_REFRESH_TOKEN, refresh_token);
     }
+
     if (access_token) {
-      // Storing access token in sessionStorage
-      sessionStorage.setItem(STORAGE_KEY, access_token); 
+      // Storing access token in cookie (1 day expiration)
+      setCookie(STORAGE_KEY, access_token, 1);
+      // Garder aussi dans sessionStorage pour la compatibilité avec le code existant
+      sessionStorage.setItem(STORAGE_KEY, access_token);
 
       // Set Authorization header for axios
       axios.defaults.headers.common.Authorization = `Bearer ${access_token}`;
 
       // Decode the access token to check its expiration
-      const decodedToken = jwtDecode(access_token); // Decode token to get expiration
+      const decodedToken = jwtDecode(access_token);
 
       if (decodedToken && 'exp' in decodedToken) {
         tokenExpired(decodedToken.exp); // Handle token expiration logic
@@ -103,8 +120,10 @@ export async function setSession(access_token, refresh_token) {
       }
     } else {
       // If no access token, remove tokens and clear Authorization header
+      deleteCookie(STORAGE_KEY);
+      deleteCookie(STORAGE_KEY_REFRESH_TOKEN);
       sessionStorage.removeItem(STORAGE_KEY);
-      sessionStorage.removeItem(STORAGE_KEY_REFRESH_TOKEN); // Remove refresh token too
+      sessionStorage.removeItem(STORAGE_KEY_REFRESH_TOKEN);
       delete axios.defaults.headers.common.Authorization;
     }
   } catch (error) {
