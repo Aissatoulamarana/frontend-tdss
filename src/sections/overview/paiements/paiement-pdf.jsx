@@ -9,7 +9,7 @@ export function PaiementPDF({ payment }) {
   // Fonction pour formater les montants
   const formatAmount = (amount) => {
     if (!amount) return '0 GNF';
-    return `${Number(amount).toLocaleString()} GNF`;
+    return `${amount.toLocaleString()} GNF`;
   };
 
   // Styles pour le PDF
