@@ -15,7 +15,7 @@ export function PaiementPDF({ payment }) {
   // Styles pour le PDF
   const styles = StyleSheet.create({
     page: {
-      padding: 30,
+      padding: 20,
       fontSize: 9,
       fontFamily: 'Helvetica',
       backgroundColor: '#FFFFFF',
@@ -24,12 +24,12 @@ export function PaiementPDF({ payment }) {
       flexDirection: 'column',
     },
     headerContainer: {
-      marginBottom: 20,
+      marginBottom: 10,
     },
     row: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 10,
+      marginBottom: 5,
     },
     column: {
       flexDirection: 'column',
@@ -39,7 +39,7 @@ export function PaiementPDF({ payment }) {
       fontSize: 14,
       fontWeight: 'bold',
       textAlign: 'center',
-      marginVertical: 10,
+      marginVertical: 5,
     },
     subtitle: {
       fontSize: 11,
@@ -54,7 +54,7 @@ export function PaiementPDF({ payment }) {
     },
     logo: {
       width: 80,
-      height: 80,
+      height: 50,
     },
     logoContainer: {
       alignItems: 'center',
@@ -65,7 +65,7 @@ export function PaiementPDF({ payment }) {
       width: '34%',
     },
     smallText: {
-      fontSize: 7,
+      fontSize: 3,
       textAlign: 'center',
       marginTop: 5,
       maxWidth: 100,
@@ -74,14 +74,14 @@ export function PaiementPDF({ payment }) {
     divider: { 
       borderBottomWidth: 1, 
       borderColor: '#DDDDDD', 
-      marginVertical: 10,
+      marginVertical: 5,
       width: '100%',
     },
     
     // Tableau
     table: { 
-      marginTop: 15,
-      marginBottom: 15,
+      marginTop: 8,
+      marginBottom: 8,
       borderWidth: 1,
       borderColor: '#DDDDDD',
     },
@@ -90,13 +90,13 @@ export function PaiementPDF({ payment }) {
       backgroundColor: '#F5F5F5',
       borderBottomWidth: 1,
       borderBottomColor: '#DDDDDD',
-      paddingVertical: 8,
+      paddingVertical: 4,
     },
     tableRow: {
       flexDirection: 'row',
       borderBottomWidth: 1,
       borderBottomColor: '#EEEEEE',
-      paddingVertical: 8,
+      paddingVertical: 4,
     },
     tableCell40: { 
       width: '40%',
@@ -138,36 +138,35 @@ export function PaiementPDF({ payment }) {
       marginTop: 60,
     },
     clientInfo: {
-      marginTop: 10,
-      marginBottom: 10,
+      marginTop: 5,
+      marginBottom: 5,
     },
     infoRow: {
-      marginBottom: 4,
+      marginBottom: 2,
       flexDirection: 'row',
       flexWrap: 'nowrap',
     },
     infoLabel: {
       fontWeight: 'bold',
-      width: '30%',
     },
     infoValue: {
-      width: '70%',
+      marginHorizontal: 5,
     },
     infoTable: {
       display: 'flex',
     },
     infoTableRow: {
       flexDirection: 'row',
-      marginBottom: 4,
+      marginBottom: 2,
     },
     headerRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 10,
+      marginBottom: 5,
     },
     signatureSection: {
-      marginTop: 30,
+      marginTop: 15,
       flexDirection: 'row',
       justifyContent: 'space-between',
     },
@@ -280,14 +279,14 @@ export function PaiementPDF({ payment }) {
           {/* Tableau des détails de paiement */}
           <View style={styles.table}>
             <View style={styles.tableHeader}>
-              <Text style={[styles.tableCell40, styles.label]}>Description</Text>
-              <Text style={[styles.tableCell30, styles.label, styles.tableCellCenter]}>Types de permis</Text>
+              <Text style={[styles.tableCell30, styles.label]}>Description</Text>
+              <Text style={[styles.tableCell40, styles.label, styles.tableCellCenter]}>Types de permis</Text>
               <Text style={[styles.tableCell30, styles.label, styles.tableCellRight, styles.tableCellLast]}>Montant</Text>
             </View>
             
             <View style={styles.tableRow}>
-              <Text style={styles.tableCell40}>Frais d'acquisition</Text>
-              <Text style={[styles.tableCell30, styles.tableCellCenter]}>
+              <Text style={styles.tableCell30}>Frais d'acquisition</Text>
+              <Text style={[styles.tableCell40, styles.tableCellCenter]}>
                 {payment?.facture_total_cadres && parseInt(payment.facture_total_cadres, 10) > 0 && `Permis A (${payment.facture_total_cadres}) `}
                 {payment?.facture_total_agents && parseInt(payment.facture_total_agents, 10) > 0 && `Permis B (${payment.facture_total_agents}) `}
                 {payment?.facture_total_ouvriers && parseInt(payment.facture_total_ouvriers, 10) > 0 && `Permis C (${payment.facture_total_ouvriers})`}
