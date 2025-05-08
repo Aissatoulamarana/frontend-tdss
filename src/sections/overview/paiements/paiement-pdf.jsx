@@ -218,12 +218,12 @@ export function PaiementPDF({ payment }) {
                   <Text style={styles.infoLabel}>Facture N° :</Text>
                   <Text style={styles.infoValue}>{payment?.facture_number}</Text>
                 </View>
-                <View style={styles.infoTableRow}>
+                {/* <View style={styles.infoTableRow}>
                   <Text style={styles.infoLabel}>Référence :</Text>
                   <Text style={styles.infoValue}>{payment?.facture_ref}</Text>
-                </View>
+                </View> */}
                 <View style={styles.infoTableRow}>
-                  <Text style={styles.infoLabel}>Méthode :</Text>
+                  <Text style={styles.infoLabel}>Méthode Paiement :</Text>
                   <Text style={styles.infoValue}>{payment?.payment_method}</Text>
                 </View>
               </View>
@@ -239,10 +239,10 @@ export function PaiementPDF({ payment }) {
                   <Text style={[styles.infoLabel, styles.tableCellRight]}>Devise :</Text>
                   <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.devise?.name} ({payment?.devise?.sign})</Text>
                 </View>
-                <View style={styles.infoTableRow}>
+                {/* <View style={styles.infoTableRow}>
                   <Text style={[styles.infoLabel, styles.tableCellRight]}>Créé par :</Text>
                   <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.created_by?.name}</Text>
-                </View>
+                </View> */}
               </View>
             </View>
           </View>
@@ -309,7 +309,7 @@ export function PaiementPDF({ payment }) {
             </View>
             
             <View style={styles.signatureColumn}>
-              <View style={styles.signatureLine} />
+              {/* <View style={styles.signatureLine} /> */}
               <Text style={styles.signature}>La Banque</Text>
             </View>
           </View>
