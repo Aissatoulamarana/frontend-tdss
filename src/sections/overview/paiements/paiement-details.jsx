@@ -171,27 +171,19 @@ export function PaiementDetails({ payment }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              <TableRow>
-                <StyledTableCell sx={{ fontWeight: 500 }}>Frais d'acquisition</StyledTableCell>
-                <StyledTableCell align="center">
-                  {payment?.facture_total_cadres && parseInt(payment.facture_total_cadres, 10) > 0 && (
-                    <Typography component="span" sx={{ mr: 1, fontSize: '0.85rem' }}>
-                      Permis A ({payment.facture_total_cadres})
-                    </Typography>
-                  )}
-                  {payment?.facture_total_agents && parseInt(payment.facture_total_agents, 10) > 0 && (
-                    <Typography component="span" sx={{ mr: 1, fontSize: '0.85rem' }}>
-                      Permis B ({payment.facture_total_agents})
-                    </Typography>
-                  )}
-                  {payment?.facture_total_ouvriers && parseInt(payment.facture_total_ouvriers, 10) > 0 && (
+              {payment?.permits?.filter(p => p.count > 0).map((permit, index) => (
+                <TableRow key={index}>
+                  <StyledTableCell sx={{ fontWeight: 500 }}>Frais d'acquisition</StyledTableCell>
+                  <StyledTableCell align="center">
                     <Typography component="span" sx={{ fontSize: '0.85rem' }}>
-                      Permis C ({payment.facture_total_ouvriers})
+                      Permis {permit.type} ({permit.count})
                     </Typography>
-                  )}
-                </StyledTableCell>
-                <StyledTableCell align="right">{formatAmount(payment?.amount)}</StyledTableCell>
-              </TableRow>
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    {formatAmount(permit.total_price)}
+                  </StyledTableCell>
+                </TableRow>
+              ))}
               <StyledTableRow>
                 <StyledTableCell colSpan={2} align="right" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}>
                   TOTAL TTC
