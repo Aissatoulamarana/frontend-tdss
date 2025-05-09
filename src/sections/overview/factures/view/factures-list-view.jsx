@@ -98,7 +98,8 @@ export function FactureListView() {
   });
 
   const filters = useSetState({
-    name: '',
+    number: '',
+    declaration_number:'',
     service: [],
     status: 'all',
     date_before: null,
@@ -117,7 +118,8 @@ export function FactureListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name ||
+    !!filters.state.number ||
+    !!filters.state.declaration_number ||
     filters.state.service.length > 0 ||
     filters.state.status !== 'all' ||
     (!!filters.state.date_before && !!filters.state.date_after);
@@ -278,6 +280,8 @@ export function FactureListView() {
           limit: table.rowsPerPage,
           offset: offset,
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.number ? { number: filters.state.number } : {}),
+          ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
                 date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
@@ -302,7 +306,13 @@ export function FactureListView() {
     };
 
     fetchFactures();
-  }, [table.page, table.rowsPerPage, filters.state.status , filters.state.date_before, filters.state.date_after]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, 
+    table.rowsPerPage, 
+    filters.state.status , 
+    filters.state.date_before, 
+    filters.state.date_after , 
+    filters.state.number, 
+    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading factures...');
@@ -633,8 +643,8 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   if (name) {
     inputData = inputData.filter(
       (facture) =>
-        facture.numero_facture.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        facture.declaration__declaration_number.toLowerCase().indexOf(name.toLowerCase()) !== -1
+        facture.numero.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        facture.declaration_ref.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
