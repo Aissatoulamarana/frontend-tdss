@@ -12,11 +12,14 @@ import { PaiementDetails } from '../paiement-details';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 import { toast } from 'src/components/snackbar';
+import { useMockedUser } from 'src/auth/hooks';
 
 export function PaiementDetailsView({ slug }) {
   const [payment, setPayment] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const {user} = useMockedUser();
 
   useEffect(() => {
     const fetchPayment = async () => {
@@ -46,7 +49,7 @@ export function PaiementDetailsView({ slug }) {
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
-      <PaiementDetails payment={payment} />
+      <PaiementDetails payment={payment} user={user} />
 
     </DashboardContent>
   );

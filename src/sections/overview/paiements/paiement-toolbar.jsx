@@ -33,12 +33,14 @@ export function PaiementToolbar({ payment, componentRef }) {
   });
 
   return (
-    <Stack
-      direction="row"
-      justifyContent="flex-end"
-      spacing={1}
-     
-    >
+    <> 
+   <Stack
+        spacing={3}
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'flex-end', sm: 'center' }}
+        sx={{ mb: { xs: 3, md: 5 } }}
+      >
+        <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
       {/* Bouton d'aperçu PDF */}
       <Tooltip title="Aperçu PDF">
         <IconButton onClick={view.onTrue}>
@@ -51,7 +53,7 @@ export function PaiementToolbar({ payment, componentRef }) {
         {payment && (
           <PDFDownloadLink
             document={payment ? <PaiementPDF payment={payment} /> : <span />}
-            fileName={`recu-paiement-${payment?.reference || payment?.number || 'sans-reference'}.pdf`}
+            fileName={`recu-paiement-${payment?.number || ''}.pdf`}
             style={{ textDecoration: 'none' }}
           >
             {({ loading }) => (
@@ -75,7 +77,9 @@ export function PaiementToolbar({ payment, componentRef }) {
           <Iconify icon="eva:printer-fill" />
         </IconButton>
       </Tooltip>
+      </Stack>
 
+      </Stack>
       {/* Dialogue d'aperçu PDF */}
       <Dialog
         fullScreen
@@ -122,17 +126,18 @@ export function PaiementToolbar({ payment, componentRef }) {
           )}
         </DialogContent>
       </Dialog>
-    </Stack>
+   
+    </>
   );
 }
 
-PaiementToolbar.propTypes = {
-  payment: PropTypes.shape({
-    reference: PropTypes.string,
-    number: PropTypes.string,
-  }),
-  componentRef: PropTypes.shape({
-    // eslint-disable-next-line react/forbid-prop-types
-    current: PropTypes.any,
-  }),
-};
+// PaiementToolbar.propTypes = {
+//   payment: PropTypes.shape({
+//     reference: PropTypes.string,
+//     number: PropTypes.string,
+//   }),
+//   componentRef: PropTypes.shape({
+//     // eslint-disable-next-line react/forbid-prop-types
+//     current: PropTypes.any,
+//   }),
+// };

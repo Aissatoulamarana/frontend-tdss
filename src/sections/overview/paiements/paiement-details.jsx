@@ -2,7 +2,7 @@
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -11,6 +11,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useRef, useState, useEffect } from 'react';
+import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 
 import { fDate } from 'src/utils/format-time';
 
@@ -46,9 +47,21 @@ const Logo = styled('img')({
   width: 'auto',
 });
 
-export function PaiementDetails({ payment }) {
+
+export function PaiementDetails({ payment, user }) {
   const componentRef = useRef();
   const [qrUrl, setQrUrl] = useState('');
+
+  const afficherMontant = (montant) => {
+    if (payment?.devise.sign === 'GNF') {
+      return fGNF(montant);
+    } else if (payment?.devise.sign  === '$') {
+      return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
+    } else if (payment?.devise.sign  === '€') {
+      return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+    }
+  };
+  
   
   useEffect(() => {
     if (payment?.reference) {
@@ -68,21 +81,30 @@ export function PaiementDetails({ payment }) {
     return `${Number(amount).toLocaleString()} GNF`;
   };
 
+  const formatDate = ds => {
+    const d = new Date(ds);
+    const j = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const a = d.getFullYear();
+    return `${j}/${m}/${a}`;
+  };
 
   return (
     <>
-      <Card sx={{ mb: 3 }}>
-        <PaiementToolbar payment={payment} componentRef={componentRef} />
-      </Card>
+      
+        <PaiementToolbar 
+        payment={payment} 
+        componentRef={componentRef} />
+     
       
       <Card sx={{ pt: 4, px: 4, borderRadius: 1}} ref={componentRef}>
         <Box sx={{ mb: 5 }}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid  size={{ xs: 12, }} >
               <Box sx={{ width: '100%' }}>
                 {/* Première ligne : logos symétriques */}
                 <Grid container justifyContent="space-between" alignItems="center">
-                  <Grid item xs={4} display="flex" justifyContent="flex-start">
+                  <Grid item size={{ xs: 4 }} display="flex" justifyContent="flex-start">
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <Logo src="/logo/logo-single.png" alt="TDSS Logo" sx={{ height: 80, width: 80 }} />
                       <Typography variant="subtitle2" align="center" sx={{ fontSize: 10, lineHeight: 1.2, mt: 1 }}>
@@ -91,7 +113,7 @@ export function PaiementDetails({ payment }) {
                     </Box>
                   </Grid>
                   
-                  <Grid item xs={4} display="flex" justifyContent="flex-end">
+                  <Grid item size={{ xs: 4 }} display="flex" justifyContent="flex-end">
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <Logo src="/logo/logo-single.png" alt="TDSS Logo" sx={{ height: 80, width: 80 }} />
                       <Typography variant="subtitle2" align="center" sx={{ fontSize: 10, lineHeight: 1.2, mt: 1 }}>
@@ -115,31 +137,38 @@ export function PaiementDetails({ payment }) {
               <Divider sx={{ mt: 2, borderStyle: 'solid', borderColor: 'divider', opacity: 0.7 }} />
             </Grid>
             
-            <Grid item xs={6} sx={{ mt: 2 }}>
+            <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
               <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Facture N° :</Typography> {payment?.facture_number}
               </Typography>
+              {user?.type === 'Admin' && (
+                 <>
               <Typography variant="body2" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Référence :</Typography> {payment?.facture_ref}
               </Typography>
+              
               <Typography variant="body2" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Méthode :</Typography> {payment?.payment_method}
               </Typography>
+              </>
+              )}
             </Grid>
             
-            <Grid item xs={6} sx={{ mt: 2 }}>
+            <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
               <Typography variant="body2" align="right" sx={{ fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
-                <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Date :</Typography> {payment ? fDate(new Date()) : ''}
+                <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Date :</Typography> {payment ? formatDate(payment.created_on) : ''}
               </Typography>
-              <Typography variant="body2" align="right" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
+              {/* <Typography variant="body2" align="right" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Devise :</Typography> {payment?.devise?.name} ({payment?.devise?.sign})
-              </Typography>
+              </Typography> */}
+              {user?.type === 'Admin' && (
               <Typography variant="body2" align="right" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Créé par :</Typography> {payment?.created_by?.name}
               </Typography>
+              )}
             </Grid>
             
-            <Grid item xs={12} sx={{ mt: 2 }}>
+            <Grid item size={{ xs: 12 }} sx={{ mt: 2 }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 500, fontSize: '0.9rem', letterSpacing: 0.25, mb: 1 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>CLIENT : </Typography>{payment?.payer?.employer}
               </Typography>
@@ -153,9 +182,9 @@ export function PaiementDetails({ payment }) {
                 <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}>
                   <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Email :</Typography> {payment?.payer?.email}
                 </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+                {/* <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
                   <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Pays :</Typography> {payment?.payer?.country_origin}
-                </Typography>
+                </Typography> */}
               </Box>
             </Grid>
           </Grid>
@@ -180,7 +209,7 @@ export function PaiementDetails({ payment }) {
                     </Typography>
                   </StyledTableCell>
                   <StyledTableCell align="right">
-                    {formatAmount(permit.total_price)}
+                    {afficherMontant(permit.total_price)}
                   </StyledTableCell>
                 </TableRow>
               ))}
@@ -189,18 +218,20 @@ export function PaiementDetails({ payment }) {
                   TOTAL TTC
                 </StyledTableCell>
                 <StyledTableCell align="right" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}>
-                  {formatAmount(payment?.amount)}
+                  {afficherMontant(payment?.amount)}
                 </StyledTableCell>
               </StyledTableRow>
             </TableBody>
           </Table>
         </Box>
         
-        <Box sx={{ mt: 5, mb: 3 }}>
+        <Box sx={{ mt: 5, mb: 8 }}>
           <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <Box sx={{ width: 120, height: 120, p: 1, mb: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            {/* Colonne Client avec QR Code */}
+            <Grid item size={{ xs: 6 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                
+                <Box sx={{ width: 100, height: 100, p: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                   {qrUrl ? (
                     <img 
                       src={qrUrl} 
@@ -213,19 +244,19 @@ export function PaiementDetails({ payment }) {
                     </Typography>
                   )}
                 </Box>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 500 }}>Le Client</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', mt: 2 , textDecoration: 'underline' }}>Le Client</Typography>
               </Box>
             </Grid>
-            <Grid item xs={6}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
-                <Divider sx={{ width: '100%', mb: 1 }} />
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 500 }}>La Banque</Typography>
-              </Box>
-            </Grid>
-            
 
+            {/* Colonne Banque alignée en haut à droite */}
+            <Grid item size={{ xs: 6 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-start', height: '100%' }}>
+                <Typography variant="body2" sx={{ fontWeight: 'bold', textDecoration: 'underline' }}>La Banque</Typography>
+              </Box>
+            </Grid>
           </Grid>
         </Box>
+
       </Card>
     </>
   );

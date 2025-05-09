@@ -1,349 +1,173 @@
+// Updated PaiementPDF component to fix formatting and duplicate receipt
 import { Page, View, Text, Image, Document, StyleSheet } from '@react-pdf/renderer';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { fDate } from 'src/utils/format-time';
-
-// ----------------------------------------------------------------------
+// Remove fGNF/fCurrency/fEuro imports since we handle formatting manually
 
 export function PaiementPDF({ payment }) {
-  // Fonction pour formater les montants
-  const formatAmount = (amount) => {
-    if (!amount) return '0 GNF';
-    return `${amount.toLocaleString()} GNF`;
+  // Fonction pour formater les montants en GNF avec séparateurs de milliers
+  const formatAmount = (amount, sign = 'GNF') => {
+    if (amount == null) return `0 ${sign}`;
+    return `${Number(amount).toLocaleString('en-US')} ${sign}`;
   };
 
-  // Styles pour le PDF
+  // Convertit le montant selon la devise
+  const convertirMontant = (montant) => {
+    const sign = payment?.devise?.sign;
+    if (sign === 'GNF') return formatAmount(montant, 'GNF');
+    if (sign === '$') return formatAmount(montant / 9200, '$');
+    if (sign === '€') return formatAmount(montant / 10000, '€');
+    return formatAmount(montant, sign);
+  };
+
+  const formatDate = ds => {
+    const d = new Date(ds);
+    const j = String(d.getDate()).padStart(2, '0');
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const a = d.getFullYear();
+    return `${j}/${m}/${a}`;
+  };
+
   const styles = StyleSheet.create({
-    page: {
-      padding: 20,
-      fontSize: 9,
-      fontFamily: 'Helvetica',
-      backgroundColor: '#FFFFFF',
-    },
-    container: {
-      flexDirection: 'column',
-    },
-    headerContainer: {
-      marginBottom: 10,
-    },
-    row: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginBottom: 5,
-    },
-    column: {
-      flexDirection: 'column',
-      flex: 1,
-    },
-    title: {
-      fontSize: 14,
-      fontWeight: 'bold',
-      textAlign: 'center',
-      marginVertical: 5,
-    },
-    subtitle: {
-      fontSize: 11,
-      fontWeight: 'bold',
-      marginBottom: 5,
-    },
-    label: {
-      fontWeight: 'bold',
-    },
-    value: {
-      marginBottom: 5,
-    },
-    logo: {
-      width: 80,
-      height: 50,
-    },
-    logoContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      width: '33%',
-    },
-    emptySpace: {
-      width: '34%',
-    },
-    smallText: {
-      fontSize: 3,
-      textAlign: 'center',
-      marginTop: 5,
-      maxWidth: 100,
-      lineHeight: 1.2,
-    },
-    divider: { 
-      borderBottomWidth: 1, 
-      borderColor: '#DDDDDD', 
-      marginVertical: 5,
-      width: '100%',
-    },
-    
-    // Tableau
-    table: { 
-      marginTop: 8,
-      marginBottom: 8,
-      borderWidth: 1,
-      borderColor: '#DDDDDD',
-    },
-    tableHeader: {
-      flexDirection: 'row',
-      backgroundColor: '#F5F5F5',
-      borderBottomWidth: 1,
-      borderBottomColor: '#DDDDDD',
-      paddingVertical: 4,
-    },
-    tableRow: {
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderBottomColor: '#EEEEEE',
-      paddingVertical: 4,
-    },
-    tableCell40: { 
-      width: '40%',
-      paddingHorizontal: 10,
-      borderRightWidth: 1,
-      borderRightColor: '#EEEEEE',
-    },
-    tableCell30: { 
-      width: '30%',
-      paddingHorizontal: 10,
-      borderRightWidth: 1,
-      borderRightColor: '#EEEEEE',
-    },
-    tableCellLast: {
-      borderRightWidth: 0,
-    },
-    tableCellCenter: {
-      textAlign: 'center',
-    },
-    tableCellRight: {
-      textAlign: 'right',
-    },
-    qrCode: {
-      width: 100,
-      height: 100,
-      marginBottom: 5,
-    },
-    signature: {
-      marginTop: 5,
-      textAlign: 'center',
-      fontWeight: 'bold',
-      fontSize: 9,
-    },
-    signatureLine: {
-      borderBottomWidth: 1,
-      borderBottomColor: '#000000',
-      width: '100%',
-      marginBottom: 5,
-      marginTop: 60,
-    },
-    clientInfo: {
-      marginTop: 5,
-      marginBottom: 5,
-    },
-    infoRow: {
-      marginBottom: 2,
-      flexDirection: 'row',
-      flexWrap: 'nowrap',
-    },
-    infoLabel: {
-      fontWeight: 'bold',
-    },
-    infoValue: {
-      marginHorizontal: 5,
-    },
-    infoTable: {
-      display: 'flex',
-    },
-    infoTableRow: {
-      flexDirection: 'row',
-      marginBottom: 2,
-    },
-    headerRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: 5,
-    },
-    signatureSection: {
-      marginTop: 15,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    signatureColumn: {
-      width: '48%',
-      alignItems: 'center',
-    },
+    page: { flexDirection: 'column', padding: 20, fontSize: 9, fontFamily: 'Helvetica', backgroundColor: '#FFF' },
+    copyContainer: { flex: 1, marginBottom: 10 },
+    separator: { borderBottomWidth: 1, borderColor: '#000', borderStyle: 'dashed', marginVertical: 10 },
+    headerRow: { flexDirection: 'row', justifyContent: 'space-between' },
+    logoContainer: { alignItems: 'center', width: '33%' },
+    logo: { width: 80, height: 50 },
+    smallText: { fontSize: 3, textAlign: 'center', marginTop: 5, maxWidth: 100, lineHeight: 1.2 },
+    title: { fontSize: 14, fontWeight: 'bold', textAlign: 'center', marginVertical: 5 },
+    divider: { borderBottomWidth: 1, borderColor: '#DDD', marginVertical: 5 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+    column: { flex: 1 },
+    infoTable: { flexDirection: 'column' },
+    infoTableRow: { flexDirection: 'row', marginBottom: 2  },
+    infoLabel: { fontWeight: 'bold' },
+    infoValue: { marginLeft: 5 },
+    table: { marginVertical: 8, borderWidth: 1, borderColor: '#DDD' },
+    tableHeader: { flexDirection: 'row', backgroundColor: '#F5F5F5', borderBottomWidth: 1, borderBottomColor: '#DDD', paddingVertical: 4 },
+    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#EEE', paddingVertical: 4 },
+    tableCell30: { width: '30%', paddingHorizontal: 10 },
+    tableCell40: { width: '40%', paddingHorizontal: 10 },
+    tableCellLast: { borderRightWidth: 0 },
+    tableCellCenter: { textAlign: 'center' },
+    tableCellRight: { textAlign: 'flex-end' },
+    signatureSection: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+    qrCode: { width: 50, height: 50  },
+    signature: { textAlign: 'center', fontWeight: 'bold', fontSize: 9, textDecoration: 'underline' , marginTop: 5 },
   });
 
   // URL du QR code
   const qrData = encodeURIComponent(`Paiement: ${payment?.reference} - Facture: ${payment?.facture_number || ''} - Montant: ${payment?.amount || ''} ${payment?.devise?.sign || 'GNF'}`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
+  // Fonction pour rendre un reçu
+  const renderReceipt = () => (
+    <View style={styles.copyContainer}>
+      <View style={styles.headerRow}>
+        <View style={styles.logoContainer}>
+          <Image src="/logo/logo-single.png" style={styles.logo} />
+          <Text style={styles.smallText}>TECH DATA SECURISATION & SYSTEMES</Text>
+        </View>
+        <View />
+        <View style={styles.logoContainer}>
+          <Image src="/logo/logo-single.png" style={styles.logo} />
+          <Text style={styles.smallText}>TECH DATA SECURISATION & SYSTEMES</Text>
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+      <Text style={styles.title}>RECU DE PAIEMENT N° {payment?.number || payment?.reference}</Text>
+      <View style={styles.divider} />
+
+      {/* <View style={styles.row}> */}
+      <View style={[styles.column]}>
+      <View style={[styles.infoTableRow, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
+        <Text style={[styles.infoLabel, styles.tableCellRight, { width: 100, textAlign: 'right', marginRight: 5 }]}>
+          Facture N° :
+        </Text>
+        <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.facture_number}</Text>
+      </View>
+      <View style={[styles.infoTableRow, { flexDirection: 'row', justifyContent: 'flex-end' }]}>
+    <Text style={[styles.infoLabel, styles.tableCellRight, { width: 100, textAlign: 'right', marginRight: 5 }]}>
+      Date :
+    </Text>
+    <Text style={[styles.infoValue, styles.tableCellRight]}>{formatDate(payment?.created_on)}</Text>
+  </View>
+    </View>
+
+      {/* </View> */}
+
+      <View style={styles.divider} />
+
+      <View style={styles.infoTableRow}>
+        <Text style={styles.infoLabel}>CLIENT :</Text>
+        <Text style={styles.infoValue}>{payment?.payer?.employer}</Text>
+      </View>
+          <View style={styles.infoTableRow}>
+            <Text style={styles.infoLabel}>Tél :</Text>
+            <Text style={styles.infoValue}>{payment?.payer?.phone}</Text>
+          </View>
+          <View style={styles.infoTableRow}>
+            <Text style={styles.infoLabel}>Adresse :</Text>
+            <Text style={styles.infoValue}>{payment?.payer?.address}</Text>
+          </View>
+          
+      {/* ... autres infos client ... */}
+
+      <View style={styles.divider} />
+
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableCell30, styles.infoLabel]}>Description</Text>
+          <Text style={[styles.tableCell40, styles.infoLabel, styles.tableCellCenter]}>Types de permis</Text>
+          <Text style={[styles.tableCell30, styles.infoLabel, styles.tableCellRight, styles.tableCellLast]}>Montant</Text>
+        </View>
+        {payment?.permits?.filter(p => p?.count > 0).map((permit, idx) => (
+          <View key={idx} style={styles.tableRow}>
+            <Text style={styles.tableCell30}>Frais d'acquisition</Text>
+            <Text style={[styles.tableCell40, styles.tableCellCenter]}>Permis {permit.type} ({permit.count})</Text>
+            <Text style={[styles.tableCell30, styles.tableCellRight, styles.tableCellLast]}>{convertirMontant(permit.total_price)}</Text>
+          </View>
+        ))}
+        <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
+          <Text style={styles.tableCell40} />
+          <Text style={[styles.tableCell30, styles.infoLabel, styles.tableCellRight]}>TOTAL TTC</Text>
+          <Text style={[styles.tableCell30, styles.infoLabel, styles.tableCellRight, styles.tableCellLast]}>{convertirMontant(payment.amount)}</Text>
+        </View>
+      </View>
+
+      <View style={styles.signatureSection}>
+        <View>
+          <Image src={qrUrl} style={styles.qrCode} />
+          <Text style={styles.signature}>Le Client</Text>
+        </View>
+        <View>
+          <Text style={styles.signature}>La Banque</Text>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.container}>
-          {/* En-tête avec logos et titre */}
-          <View style={styles.headerContainer}>
-            <View style={styles.headerRow}>
-              <View style={styles.logoContainer}>
-                <Image src="/logo/logo-single.png" style={styles.logo} />
-                <Text style={styles.smallText}>TECH DATA SECURISATION & SYSTEMES</Text>
-              </View>
-              
-              <View style={styles.emptySpace}></View>
-              
-              <View style={styles.logoContainer}>
-                <Image src="/logo/logo-single.png" style={styles.logo} />
-                <Text style={styles.smallText}>TECH DATA SECURISATION & SYSTEMES</Text>
-              </View>
-              
-            </View>
-            
-            <View style={styles.divider} />
-            {/* Titre */}
-            <Text style={styles.title}>RECU DE PAIEMENT N° {payment?.number || payment?.reference}</Text>
-            {/* Ligne horizontale */}
-            <View style={styles.divider} />
-          </View>
-          
-          
-          
-          {/* Informations de facture et date */}
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <View style={styles.infoTable}>
-                <View style={styles.infoTableRow}>
-                  <Text style={styles.infoLabel}>Facture N° :</Text>
-                  <Text style={styles.infoValue}>{payment?.facture_number}</Text>
-                </View>
-                {/* <View style={styles.infoTableRow}>
-                  <Text style={styles.infoLabel}>Référence :</Text>
-                  <Text style={styles.infoValue}>{payment?.facture_ref}</Text>
-                </View> */}
-                <View style={styles.infoTableRow}>
-                  <Text style={styles.infoLabel}>Méthode Paiement :</Text>
-                  <Text style={styles.infoValue}>{payment?.payment_method}</Text>
-                </View>
-              </View>
-            </View>
-            
-            <View style={styles.column}>
-              <View style={styles.infoTable}>
-                <View style={styles.infoTableRow}>
-                  <Text style={[styles.infoLabel, styles.tableCellRight]}>Date :</Text>
-                  <Text style={[styles.infoValue, styles.tableCellRight]}>{payment ? fDate(new Date()) : ''}</Text>
-                </View>
-                <View style={styles.infoTableRow}>
-                  <Text style={[styles.infoLabel, styles.tableCellRight]}>Devise :</Text>
-                  <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.devise?.name} ({payment?.devise?.sign})</Text>
-                </View>
-                {/* <View style={styles.infoTableRow}>
-                  <Text style={[styles.infoLabel, styles.tableCellRight]}>Créé par :</Text>
-                  <Text style={[styles.infoValue, styles.tableCellRight]}>{payment?.created_by?.name}</Text>
-                </View> */}
-              </View>
-            </View>
-          </View>
-          
-          {/* Informations du client */}
-          <View style={styles.clientInfo}>
-            <View style={styles.infoTable}>
-              <View style={styles.infoTableRow}>
-                <Text style={styles.infoLabel}>CLIENT :</Text>
-                <Text style={styles.infoValue}>{payment?.payer?.employer}</Text>
-              </View>
-              <View style={styles.infoTableRow}>
-                <Text style={styles.infoLabel}>Nom :</Text>
-                <Text style={styles.infoValue}>{payment?.payer?.first} {payment?.payer?.last}</Text>
-              </View>
-              <View style={styles.infoTableRow}>
-                <Text style={styles.infoLabel}>Tél :</Text>
-                <Text style={styles.infoValue}>{payment?.payer?.phone}</Text>
-              </View>
-              <View style={styles.infoTableRow}>
-                <Text style={styles.infoLabel}>Email :</Text>
-                <Text style={styles.infoValue}>{payment?.payer?.email}</Text>
-              </View>
-              <View style={styles.infoTableRow}>
-                <Text style={styles.infoLabel}>Pays :</Text>
-                <Text style={styles.infoValue}>{payment?.payer?.country_origin}</Text>
-              </View>
-            </View>
-          </View>
-          
-          {/* Ligne horizontale */}
-          <View style={styles.divider} />
-          
-          {/* Tableau des détails de paiement */}
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableCell30, styles.label]}>Description</Text>
-              <Text style={[styles.tableCell40, styles.label, styles.tableCellCenter]}>Types de permis</Text>
-              <Text style={[styles.tableCell30, styles.label, styles.tableCellRight, styles.tableCellLast]}>Montant</Text>
-            </View>
-            
-            <View style={styles.tableRow}>
-              <Text style={styles.tableCell30}>Frais d'acquisition</Text>
-              <Text style={[styles.tableCell40, styles.tableCellCenter]}>
-                {payment?.facture_total_cadres && parseInt(payment.facture_total_cadres, 10) > 0 && `Permis A (${payment.facture_total_cadres}) `}
-                {payment?.facture_total_agents && parseInt(payment.facture_total_agents, 10) > 0 && `Permis B (${payment.facture_total_agents}) `}
-                {payment?.facture_total_ouvriers && parseInt(payment.facture_total_ouvriers, 10) > 0 && `Permis C (${payment.facture_total_ouvriers})`}
-              </Text>
-              <Text style={[styles.tableCell30, styles.tableCellRight, styles.tableCellLast]}>{formatAmount(payment?.amount)}</Text>
-            </View>
-            
-            <View style={[styles.tableRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.tableCell40}></Text>
-              <Text style={[styles.tableCell30, styles.label, styles.tableCellRight]}>TOTAL TTC</Text>
-              <Text style={[styles.tableCell30, styles.label, styles.tableCellRight, styles.tableCellLast]}>{formatAmount(payment?.amount)}</Text>
-            </View>
-          </View>
-          
-          {/* Signatures et QR code */}
-          <View style={styles.signatureSection}>
-            <View style={styles.signatureColumn}>
-              <Image src={qrUrl} style={styles.qrCode} />
-              <Text style={styles.signature}>Le Client</Text>
-            </View>
-            
-            <View style={styles.signatureColumn}>
-              {/* <View style={styles.signatureLine} /> */}
-              <Text style={styles.signature}>La Banque</Text>
-            </View>
-          </View>
-        </View>
+      <Page size="A4" style={styles.page} wrap>
+        {renderReceipt()}
+        <View style={styles.separator} />
+        {renderReceipt()}
       </Page>
     </Document>
   );
 }
 
-PaiementPDF.propTypes = {
-  payment: PropTypes.shape({
-    number: PropTypes.string,
-    reference: PropTypes.string,
-    amount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    facture_number: PropTypes.string,
-    facture_ref: PropTypes.string,
-    payment_method: PropTypes.string,
-    devise: PropTypes.shape({
-      name: PropTypes.string,
-      sign: PropTypes.string,
-    }),
-    created_by: PropTypes.shape({
-      name: PropTypes.string,
-    }),
-    payer: PropTypes.shape({
-      employer: PropTypes.string,
-      first: PropTypes.string,
-      last: PropTypes.string,
-      phone: PropTypes.string,
-      email: PropTypes.string,
-      country_origin: PropTypes.string,
-    }),
-    facture_total_cadres: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    facture_total_agents: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    facture_total_ouvriers: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  }),
-};
+// PaiementPDF.propTypes = {
+//   payment: PropTypes.shape({
+//     reference: PropTypes.string,
+//     number: PropTypes.string,
+//     facture_number: PropTypes.string,
+//     amount: PropTypes.number,
+//     devise: PropTypes.shape({ sign: PropTypes.string }),
+//     payer: PropTypes.object,
+//     permits: PropTypes.arrayOf(PropTypes.object)
+//   }).isRequired,
+// };
