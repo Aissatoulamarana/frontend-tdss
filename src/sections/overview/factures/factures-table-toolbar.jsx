@@ -1,3 +1,4 @@
+"use client";
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
@@ -13,7 +14,7 @@ import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback } from 'react';
+import { useCallback , useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -24,11 +25,31 @@ import dayjs from 'dayjs';
 
 export function FactureTableToolbar({ filters, options, dateError, onResetPage }) {
   const popover = usePopover();
+  const [numberInput, setNumberInput] = useState('');
+  const [declarationInput, setDeclarationInput] = useState('');
 
-  const handleFilterName = useCallback(
+  const handleNumberKeyUp = useCallback(
     (event) => {
-      onResetPage();
-      filters.setState({ name: event.target.value });
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.number !== value) {
+          onResetPage();
+          filters.setState({ number: event.target.value });
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
+  const handleNumberDecKeyUp = useCallback(
+    (event) => {
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.declaration_number !== value) {
+          onResetPage();
+          filters.setState({ declaration_number: event.target.value });
+        }
+      }
     },
     [filters, onResetPage]
   );
@@ -68,7 +89,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         direction={{ xs: 'column', md: 'row' }}
         sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
       >
-        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
+        {/* <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
           <InputLabel htmlFor="invoice-filter-service-select-label">Type Déclarations</InputLabel>
 
           <Select
@@ -87,7 +108,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
@@ -124,8 +145,26 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            onChange={handleFilterName}
-            placeholder="rechercher par nom ou par numéro"
+            onChange={(e) => setNumberInput(e.target.value)} 
+            onKeyDown={handleNumberKeyUp}
+            value={numberInput}
+            placeholder="rechercher par numero de facture.."
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
+            }}
+          />
+          <TextField
+            fullWidth
+            onChange={(e) => setDeclarationInput(e.target.value)}
+            onKeyDown={handleNumberDecKeyUp}
+            value={declarationInput}
+            placeholder="rechercher par numero de declaration.."
             slotProps={{
               input: {
                 startAdornment: (
@@ -137,9 +176,9 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </Stack>
       <CustomPopover
