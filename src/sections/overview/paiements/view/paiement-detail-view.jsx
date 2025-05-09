@@ -41,11 +41,11 @@ export function PaiementDetailsView({ slug }) {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={payment?.reference}
+        heading={`PAIEMENT N° ${payment?.number}`}	
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Paiements', href: paths.dashboard.paiements.list },
-          { name: payment?.reference },
+          { name:`PAIEMENT N° ${payment?.number}` },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />

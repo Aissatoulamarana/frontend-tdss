@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -24,14 +24,23 @@ import { Iconify } from 'src/components/iconify';
 export function PaiementTableRow({
   row,
   selected,
-  onSelectRow,
   onViewRow,
-  onEditRow,
   onDeleteRow,
 }) {
   const confirm = useBoolean();
 
   const popover = usePopover();
+
+  const afficherMontant = (montant) => {
+    if (row?.devise === 'Franc Guinéen') {
+      return fGNF(montant);
+    } else if (row?.devise === 'US dollar') {
+      return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
+    } else if (row?.devise === 'Euro') {
+      return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+    }
+  };
+  
 
   return (
     <>
@@ -43,7 +52,7 @@ export function PaiementTableRow({
             inputProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
           /> */}
         </TableCell>
-        <TableCell>{row.reference}</TableCell>
+        <TableCell>{row.number}</TableCell>
 
 
         <TableCell>
@@ -54,7 +63,7 @@ export function PaiementTableRow({
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.numero_facture}
+                  {row.facture_number}
                 </Typography>
               }
               secondary={
@@ -103,21 +112,22 @@ export function PaiementTableRow({
           <ListItemText
             primary={
               <Typography variant='body2'>
-                {`GNF ${row.amount}`}
+                {afficherMontant(row.amount)}
               </Typography>
             }
-            secondary={
-              <Typography variant='body2'>
-                {row.montantGnf}
-              </Typography>
-            } />
+            // secondary={
+            //   <Typography variant='body2'>
+            //     {row.montantGnf}
+            //   </Typography>
+            // } 
+            />
 
         </TableCell>
 
         <TableCell>
           <ListItemText
-            primary={fDate(row.date_paiement)}
-            secondary={fTime(row.date_paiement)}
+            primary={fDate(row.created_on)}
+            secondary={fTime(row.created_on)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
               secondary: { mt: 0.5, component: 'span', typography: 'caption' }
