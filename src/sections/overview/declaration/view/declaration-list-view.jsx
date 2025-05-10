@@ -177,6 +177,15 @@ export function DeclarationListView() {
   // const getPercentByStatus = (status) => (useDeclarationCount(status) / pagination.count) * 100;
   const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
 
+  const allowedStatusByRole = {
+    admin:       ['all','SUBMITTED','VALIDATED','BILLED','UNSUBMITTED','REJECTED'],
+    agent:       ['all','SUBMITTED','VALIDATED','BILLED','UNSUBMITTED','REJECTED'],
+    superviseur: ['all','SUBMITTED','REJECTED'],
+    comptable:   ['all', 'BILLED', 'VALIDATED'],
+    default:     ['all'],
+  };
+
+
   const TABS = [
     {
       value: 'all',
@@ -217,6 +226,15 @@ export function DeclarationListView() {
     },
 
   ];
+
+
+  function getTabsForUser(userType) {
+    const allowed = allowedStatusByRole[userType] || allowedStatusByRole.default;
+    return TABS.filter(tab => allowed.includes(tab.value));
+  }
+
+  const tabs = getTabsForUser(type_user);
+
   const handleDeleteRow = async (id) => {
     try {
       const response = await axios.delete(API.supprimerDeclaration(id));
@@ -592,7 +610,7 @@ export function DeclarationListView() {
               boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
             }}
           >
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <Tab
                 key={tab.value}
                 value={tab.value}
