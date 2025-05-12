@@ -53,8 +53,8 @@ export const signInWithPassword = async ({ email, password }) => {
     setSession(access_token, refresh_token);
   } catch (error) {
     // Affiche toute l'erreur pour examiner sa structure complète
-    console.error('Error during sign in:', error.detail);
-    throw new Error(error.detail);
+    console.error('Error during sign in:', error?.detail);
+    throw new Error(error?.detail);
 
     // if (error.response) {
     //   // console.error('Response from server:', error.response);
@@ -110,18 +110,28 @@ export const signUp = async ({ email, password, firstName, lastName }) => {
  *************************************** */
 export const signOut = async () => {
   try {
+    // Fonction pour supprimer un cookie
+    const deleteCookie = (name) => {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+      console.log(`Cookie ${name} supprimé`);
+    };
+
+    // Vérifie si l'utilisateur est connecté
     const refresh_token = sessionStorage.getItem(STORAGE_KEY_REFRESH_TOKEN);
-    console.log(sessionStorage.getItem(STORAGE_KEY_REFRESH_TOKEN));
+    console.log('Refresh token dans sessionStorage:', refresh_token);
 
+    // Supprime les tokens des cookies
+    deleteCookie(STORAGE_KEY); // Supprime le cookie du token d'accès
+    deleteCookie(STORAGE_KEY_REFRESH_TOKEN); // Supprime le cookie du refresh token
 
-    if (!refresh_token) {
-      console.warn("No refresh token found. User might already be logged out.");
-      return;
-    }
-  // Supprime les tokens côté client
-    sessionStorage.removeItem(STORAGE_KEY);  // Supprime le token d'accès
+    // Supprime les tokens du sessionStorage
+    sessionStorage.removeItem(STORAGE_KEY); // Supprime le token d'accès
     sessionStorage.removeItem(STORAGE_KEY_REFRESH_TOKEN); // Supprime le refresh token
 
+    // Supprime l'utilisateur du localStorage
+    localStorage.removeItem('user');
+
+    console.log('Déconnexion réussie');
   } catch (error) {
     console.error("Error during sign out:", error);
     throw error;
