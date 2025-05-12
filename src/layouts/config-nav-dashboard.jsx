@@ -4,6 +4,8 @@ import { paths } from 'src/routes/paths';
 
 import { SvgColor } from 'src/components/svg-color';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 const icon = (name) => <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />;
@@ -40,10 +42,14 @@ const ICONS = {
 
 // ----------------------------------------------------------------------
 
-const user = JSON.parse(localStorage.getItem('user'));
-const type = user?.type?.toLowerCase().trim();
 
-export const navData = [
+
+export function useNavData () {
+
+  const {user} = useMockedUser();
+  const type = user?.type.toLowerCase().trim();
+
+  return [
   /**
    * Overview
    */
@@ -173,5 +179,5 @@ export const navData = [
     ]
     : []),
 
-
-];
+]
+};

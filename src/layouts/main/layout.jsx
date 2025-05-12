@@ -19,7 +19,7 @@ import { Footer, HomeFooter } from './footer';
 import { Main } from './main';
 import { NavDesktop } from './nav/desktop';
 import { NavMobile } from './nav/mobile';
-
+import { useNavData } from '../config-nav-dashboard';
 // ----------------------------------------------------------------------
 
 export function MainLayout({ sx, data, children, header }) {
@@ -32,8 +32,9 @@ export function MainLayout({ sx, data, children, header }) {
   const homePage = pathname === '/';
 
   const layoutQuery = 'md';
+  const mainData = useNavData();
 
-  // const navData = data?.nav ?? mainNavData;
+  const navData = data?.nav ?? mainData;
 
   return (
     <LayoutSection
@@ -62,7 +63,7 @@ export function MainLayout({ sx, data, children, header }) {
                   }}
                 />
                 <NavMobile
-                  // data={navData}
+                  data={navData}
                   open={mobileNavOpen.value}
                   onClose={mobileNavOpen.onFalse}
                 />
@@ -74,7 +75,7 @@ export function MainLayout({ sx, data, children, header }) {
               <>
                 {/* -- Nav desktop -- */}
                 <NavDesktop
-                 // data={navData}
+                 data={navData}
                   sx={{
                     display: 'none',
                     [theme.breakpoints.up(layoutQuery)]: { mr: 2.5, display: 'flex' },

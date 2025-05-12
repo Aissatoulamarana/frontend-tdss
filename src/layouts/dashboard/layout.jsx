@@ -22,7 +22,7 @@ import { NotificationsDrawer } from '../components/notifications-drawer';
 import { Searchbar } from '../components/searchbar';
 import { SettingsButton } from '../components/settings-button';
 import { _account } from '../config-nav-account';
-import { navData as dashboardNavData } from '../config-nav-dashboard';
+
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
 import { Main } from './main';
@@ -30,6 +30,7 @@ import { NavHorizontal } from './nav-horizontal';
 import { NavMobile } from './nav-mobile';
 import { NavVertical } from './nav-vertical';
 import { StyledDivider, useNavColorVars } from './styles';
+import { useNavData } from '../config-nav-dashboard';
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,8 @@ export function DashboardLayout({ sx, children, header, data }) {
   const navColorVars = useNavColorVars(theme, settings);
 
   const layoutQuery = 'lg';
+
+  const dashboardNavData = useNavData();
 
   const navData = data?.nav ?? dashboardNavData;
 
