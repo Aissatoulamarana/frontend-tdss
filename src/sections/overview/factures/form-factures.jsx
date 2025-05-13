@@ -164,7 +164,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
               </Grid>
               <Box sx={{ display:'flex', justifyContent:'flex-end' , mt: 3 }}>
                     <Button variant="contained" onClick={handleNext}>
-                        { "Suivant" }
+                         "Suivant" 
 
                     </Button>
                 </Box>
