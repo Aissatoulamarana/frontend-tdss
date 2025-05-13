@@ -132,7 +132,7 @@ export function DeclarationTableRow({
               secondary: { mt: 0.5, component: 'span', typography: 'caption' }
             }} />
         </TableCell>
-        <TableCell>{fCurrency(row.total_amount)}</TableCell>
+        {/* <TableCell>{fCurrency(row.total_amount)}</TableCell> */}
         <TableCell>
           <Label variant="soft" color={getStatusColor(row.status)}>
             {statusLabels[row.status] || 'Inconnu'}
@@ -180,7 +180,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {(user?.type === 'Admin' || user?.type === 'Agent') && ['REJECTED'].includes(row.status) && (
+          {( user?.type === 'Agent') && ['REJECTED'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 unsubmitConfirm.onTrue();

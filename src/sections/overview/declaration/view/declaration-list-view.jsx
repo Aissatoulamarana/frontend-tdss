@@ -63,7 +63,7 @@ const TABLE_HEAD = [
   { id: 'company', label: 'Entreprise' },
   { id: 'Number', label: 'Nombre Personnel' },
   { id: 'createDate', label: 'Date de Création' },
-  { id: 'price', label: 'Montant' },
+  // { id: 'price', label: 'Montant' },
   { id: 'status', label: 'Status' },
 
   { id: '' },

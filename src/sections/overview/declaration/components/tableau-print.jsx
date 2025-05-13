@@ -76,7 +76,7 @@ export default function FilteredTablePrint({ employees }) {
           <TableBody>
             {rows.map((row, i) => (
               <TableRow
-                key={row.id}
+                key={row.slug}
                 sx={{
                   '& > *': {
                     py: 1.2  // padding vertical pour espacer les lignes
