@@ -135,7 +135,7 @@ export function JobNewEditForm({ currentJob }) {
         <Box display="flex" alignItems="center" flexWrap="wrap">
           <FormControlLabel
             control={<Switch defaultChecked inputProps={{ id: 'publish-switch' }} />}
-            label="Publier"
+            label="Activer"
             sx={{ flexGrow: 1, pl: 3 }}
           />
           <LoadingButton
