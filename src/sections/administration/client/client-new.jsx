@@ -440,14 +440,12 @@ export function ClientNewEditForm({ currentClient }) {
                                         </Field.Select>
                                     </Grid>
                                 </Grid>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-                                    <Button variant="outlined" onClick={() => setStep(1)}>
-                                        Précédent
-                                    </Button>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 3 }}>
                                     <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
                                         Créer
                                     </LoadingButton>
                                 </Box>
+
                             </Card>
                         </Grid>
                     </>
