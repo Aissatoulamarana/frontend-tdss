@@ -321,7 +321,7 @@ export function UserNewEditForm({ currentUser }) {
               <Field.Text name="email" label="Adresse Mail *" />
               <Field.Phone name="phone" label="Numéro de Téléphone *" />
 
-              <Field.Select name="profile" label="Profil *" >
+              <Field.Select name="profile" label="Structure *" >
                 {profils.map((profil) => (
                   <MenuItem key={profil?.slug} value={profil?.slug}>
                     {profil?.name}
