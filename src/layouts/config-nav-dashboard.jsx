@@ -59,6 +59,18 @@ export function useNavData () {
       ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'superviseur'
         ? [
             { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
+              {
+                title: 'Statistiques',
+                path: paths.dashboard.analytics.root,
+                icon: ICONS.analytics,
+                children: [
+                  { title: 'Declaration', path: paths.dashboard.analytics.declaration },
+                  { title: 'Facture', path: paths.dashboard.analytics.facture },
+                  { title: 'Paiement', path: paths.dashboard.analytics.paiement },
+                  { title: 'Penalité', path: paths.dashboard.group.root },
+                  { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
+                ],
+              },
           ]
         : []),
       ...(type === 'comptable' || type === 'agent' || type === 'superviseur' || type === 'admin'
