@@ -100,6 +100,7 @@ const API = {
   }, // Liste des entreprises avec des params
 
   listDevises: () => `${BASE_URL}/devises/`,
+  Devises : () => `${BASE_URL}/devises/list/`,
   listPermits: () => `${BASE_URL}/permits/`,
 
   listCountry:() => `${BASE_URL}/payments/countries/`,

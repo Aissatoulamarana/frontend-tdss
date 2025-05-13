@@ -55,7 +55,7 @@ const fetchAndCache = async (cacheKey, apiCall, dataPath = 'data') => {
 export const getRegions = () => fetchAndCache('regions', API.listRegions, 'results');
 export const getPermits = () => fetchAndCache('permits', API.listPermits, 'results');
 export const getCategories = () => fetchAndCache('categories', API.listCategories);
-export const getDevises = () => fetchAndCache('devises', API.listDevises, 'results');
+export const getDevises = () => fetchAndCache('devises', API.Devises, 'results');
 export const getProfileTypes = () => fetchAndCache('profileTypes', API.listProfilesTypes, 'results');
 export const getPermissions = () => fetchAndCache('permissions', API.listPermissions);
 export const getAgences = () => fetchAndCache('agences', API.listAgences , 'results');
