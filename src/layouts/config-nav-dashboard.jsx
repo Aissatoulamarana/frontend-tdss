@@ -25,9 +25,9 @@ const ICONS = {
   kanban: icon('ic-kanban'),
   folder: icon('ic-folder'),
   penalite: icon('ic-course'),
-  facture: icon('ic-invoice'),
+  facture: icon('ic-facture'),
   booking: icon('ic-booking'),
-  paiement: icon('ic-banking'),
+  paiement: icon('ic-paiement'),
   product: icon('ic-product'),
   calendar: icon('ic-calendar'),
   disabled: icon('ic-disabled'),
@@ -42,6 +42,7 @@ const ICONS = {
   devise: icon('ic-devise'),
   employes: icon('ic-employes'),
   fonction: icon('ic-fonction'),
+  fonction_category: icon('ic-fonction-category'),
   region: icon('ic-region'),
   permission: icon('ic-permission'),
   typeUser: icon('ic-type-user'),
@@ -140,16 +141,16 @@ export function useNavData () {
 
             title: 'Catégories Fonctions',
             path: paths.dashboard.jobCategory.root,
-            icon: ICONS.job,
+            icon: ICONS.fonction_category,
             // children: [
             //   { title: 'Listes Catégories Professionnelles', path: paths.dashboard.jobCategory.list },
             //   { title: 'Nouvelle', path: paths.dashboard.jobCategory.new },
             // ]
           },
           {
-            title: 'Fonction',
+            title: 'Fonctions',
             path: paths.dashboard.fonction.list,
-            icon: ICONS.job,
+            icon: ICONS.fonction,
             // children: [
             //   { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
             //   { title: 'Nouvelle', path: paths.dashboard.fonction.new },
@@ -169,18 +170,18 @@ export function useNavData () {
           //   title: 'Permissions',
           //   path: paths.dashboard.permission.list,
           //   icon: ICONS.permission,
-          // },
-          {
+            // },
+            {
             title: 'Paramètres',
             icon: ICONS.parameter,
             children: [
-              { title: 'Regions', path: paths.dashboard.region.root },
-              { title: 'Type Structure', path: paths.dashboard.profilType.root },
-              { title: 'Type Utilisateur', path: paths.dashboard.userType.root },
-              { title: 'Devises', path: paths.dashboard.devise.root },
-              { title: 'Permits', path: paths.dashboard.permit.root },
+              { title: 'Regions', path: paths.dashboard.region.root, icon: ICONS.region },
+              { title: 'Type Structure', path: paths.dashboard.profilType.root, icon: ICONS.typeStruct },
+              { title: 'Type Utilisateur', path: paths.dashboard.userType.root, icon: ICONS.typeUser },
+              { title: 'Devises', path: paths.dashboard.devise.root, icon: ICONS.devise },
+              { title: 'Permits', path: paths.dashboard.permit.root, icon: ICONS.permis },
             ],
-          },
+            },
           // {
           //   title: 'Regions',
           //   path: paths.dashboard.region.root,
