@@ -59,7 +59,7 @@ import dayjs from 'dayjs';
 
 const TABLE_HEAD = [
   { id: 'declarationNumber', label: 'Déclaration' },
-  { id: 'type', label: 'Type Déclaration' },
+  { id: 'type', label: 'Titre Déclaration' },
   { id: 'company', label: 'Entreprise' },
   { id: 'Number', label: 'Nombre Personnel' },
   { id: 'createDate', label: 'Date de Création' },
