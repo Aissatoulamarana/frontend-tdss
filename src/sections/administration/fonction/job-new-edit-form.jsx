@@ -40,7 +40,6 @@ export function JobNewEditForm({ currentJob }) {
     axios
       .get(API.listJobCategory())
       .then((response) => {
-        console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
         setCategories(response.data.results || response.data); // Adapter si c'est sous `results`
       })
       .catch((error) => {
@@ -98,7 +97,7 @@ export function JobNewEditForm({ currentJob }) {
       }
 
       reset(); // Réinitialiser les champs du formulaire
-      console.log('Réponse API:', response.data);
+      
       router.push(paths.dashboard.fonction.list); // Rediriger vers la page appropriée
     } catch (error) {
       console.error('Erreur lors de la soumission', error);

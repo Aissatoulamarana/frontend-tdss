@@ -168,7 +168,6 @@ export function DeclarationNewEditDetails({ formData }) {
   const handleImageUpload = (fieldName) => (event) => {
     const { files } = event.target;
     if (files && files.length > 0) {
-      console.log(`Fichier sélectionné pour ${fieldName}:`, files[0]);
       setValue(fieldName, files[0]);
     } else {
       console.log(`Aucun fichier sélectionné pour ${fieldName}`);

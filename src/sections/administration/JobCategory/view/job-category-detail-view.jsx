@@ -33,7 +33,6 @@ export function JobCategoryDetailsView({ slug }) {
             try {
                 const response = await axios.get(API.editJobCategory(slug));
                 setJobCategory(response.data);
-                console.log(response.data);
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -43,7 +42,7 @@ export function JobCategoryDetailsView({ slug }) {
 
         fetchJobCategory();
     }, [slug]);
-    // console.log('jobCategory', jobCategory);
+    
     
     if (loading) return <div>Chargement...</div>;
     if (error) return <div>{error}</div>;

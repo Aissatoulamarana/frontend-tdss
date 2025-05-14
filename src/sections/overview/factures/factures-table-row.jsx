@@ -251,7 +251,7 @@ export function FactureTableRow({
             onClick={() => {
               setOpenFirstDialog(false); // Ferme la première boîte de dialogue
               setOpenSecondDialog(true); // Ouvre la deuxième boîte de dialogue
-              console.log('ID de la banque sélectionnée:', selectedBanque?.value);
+              
             }}
           >
             Suivant

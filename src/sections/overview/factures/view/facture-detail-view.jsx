@@ -23,7 +23,6 @@ export function FactureDetailsView({ slug }) {
       try {
         const response = await axios.get(API.detailsFacture(slug));
         setFacture(response.data);
-        console.log(response.data)
       } catch (error) {
         setError(error.message || error.details || error.error)
         toast.error(error);

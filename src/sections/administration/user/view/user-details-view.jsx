@@ -103,10 +103,8 @@ export function UserDetailsView({ slug }) {
                 profile: selectedCompany.slug,
                 user: slug,
             };
-            console.log('formData:', formData);
 
             const response = await axios.post(API.addProfileToUser(), formData);
-            console.log('Response:', response.data);
 
             toast.success('Entreprise liée avec succès !');
 

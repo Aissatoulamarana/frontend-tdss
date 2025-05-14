@@ -32,7 +32,6 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
       (event) => {
         if (event.key === 'Enter') {
           const value = event.target.value;
-          console.log('Entrée détectée sur le filtre Titre avec la valeur :', value);
           if (filters.state.name !== value) {
             onResetPage();
             filters.setState({ name: event.target.value });

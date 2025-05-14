@@ -116,7 +116,6 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
 
       // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
       const updatedUser = { ...currentUser, ...modifiedData };
-      console.log("utilisateur  mis à jour :", updatedUser);
       onUpdateRow(updatedUser);
       reset();
       onClose();

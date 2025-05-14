@@ -95,7 +95,6 @@ export async function setSession(access_token, refresh_token) {
 
     // Store refresh token in cookie if it exists (7 days expiration)
     if (refresh_token) {
-      console.log('Refresh token stored in cookie', refresh_token);
       setCookie(STORAGE_KEY_REFRESH_TOKEN, refresh_token, 7);
       // Garder aussi dans sessionStorage pour la compatibilité avec le code existant
       sessionStorage.setItem(STORAGE_KEY_REFRESH_TOKEN, refresh_token);

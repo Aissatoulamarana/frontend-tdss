@@ -208,7 +208,7 @@ export function EmployeeListView() {
                                 value={tab.value}
                                 label={tab.label}
                                 icon={
-                                    <Label variant="filled" color="default">
+                                    <Label variant="filled" color="main">
                                         {pagination.count}
                                     </Label>
                                 }

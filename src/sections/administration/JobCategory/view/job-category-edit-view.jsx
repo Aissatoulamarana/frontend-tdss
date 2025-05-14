@@ -12,8 +12,7 @@ import axios from 'src/utils/axios';
 
 
 export function JobCategoryEditView({ slug }) {
-    // console.log("Slug reçu:", slug);
-    // console.log("URL API appelée:", API.editJobCategory(slug));
+    
 
     const [jobCategory, setJobCategory] = useState();
     const [error, setError] = useState(null);
@@ -25,7 +24,7 @@ export function JobCategoryEditView({ slug }) {
             try {
                 const response = await axios.get(API.editJobCategory(slug));
                 setJobCategory(response.data);
-                console.log(response.data);
+                
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {

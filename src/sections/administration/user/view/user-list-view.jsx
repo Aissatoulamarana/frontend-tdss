@@ -268,12 +268,12 @@ useEffect(() => {
                       (tab.value === true && 'success') ||
                       (tab.value === false && 'warning') ||
 
-                      'default'
+                      'main'
                     }
                   >
                     {['actif', 'inactif'].includes(tab.value)
                       ? tableData.filter((user) => user.status === tab.value).length
-                      : tableData.length}
+                      : pagination.count}
                   </Label>
                 }
               />

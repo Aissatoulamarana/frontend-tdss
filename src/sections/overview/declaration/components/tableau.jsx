@@ -207,7 +207,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
         setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
         setSelected([]);
         setIsDialogSup(false);
-        console.log('Employé supprimé avec succès:', response.data.message);
         toast.success('Suppression reussie!');
         window.location.reload();
       } else {

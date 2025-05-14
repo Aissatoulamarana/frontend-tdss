@@ -39,7 +39,7 @@ export function PaiementTableToolbar({
 
   // Gestion de la sélection du filtre actif
   const handleSelectFilter = (filterType) => {
-    console.log('Filter selected:', filterType); // Debug log
+  
     onResetPage();
     filters.setState({ facture_number: '', number: '' }); // Réinitialise les autres filtres
     setSelectedFilter(filterType); // Définit le filtre actif

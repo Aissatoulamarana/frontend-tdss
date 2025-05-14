@@ -105,7 +105,7 @@ export function PaiementListView() {
 
         // --- 3) Somme des montants en GNF ---
         const totalAmountGnf = sumBy(allPaiements, (p) => p.amount);
-        console.log('montant total', totalAmountGnf);
+        
 
         // --- 4) Conversion GNF → USD (taux fixe ici) ---
         const GNF_PER_USD = 9200;
@@ -117,8 +117,7 @@ export function PaiementListView() {
           totalAmountGnf,
           totalAmountUsd,
         });
-        console.log('montant en gnf', summary.totalAmountGnf);
-        console.log('montant en USD', summary.totalAmountUsd)
+
       } catch (err) {
         console.error('Erreur summary paiements', err);
         toast.error('Impossible de charger le total des paiements');

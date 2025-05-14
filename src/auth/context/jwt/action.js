@@ -13,7 +13,6 @@ export const resetPassword = async ({email}) => {
   try {
     const params = {email}
     const res = await axios.post(API.resetPassword(), params);
-    console.log (res)
 
   }catch (error) {
     console.log('Error during reset password', error)
@@ -24,7 +23,6 @@ export const updatePassword = async ({uid , token , new_password}) => {
   try {
     const params = {uid, token, new_password}
     const res = await axios.post(API.resetPasswordConfirmation(), params);
-    console.log(res)
   }catch (error) {
     console.log('Error during update password', error)
   }
@@ -39,12 +37,10 @@ export const signInWithPassword = async ({ email, password }) => {
     const params = { email, password };
 
     const res = await axios.post(API.login(), params);
-    // console.log("reponse du backend lors de la connexion", res)
-    // console.log("le token recupere depuis le backend",res.data.access)
     const  access_token  = res.data.access;
     const refresh_token = res.data.refresh;
 
-    console.log('le refresh token recupere depuis le backend',refresh_token)
+   
 
     if (!access_token) {
       throw new Error('Access token not found in response');
@@ -64,7 +60,7 @@ export const signInWithPassword = async ({ email, password }) => {
 
     //   // Nous lançons l'erreur si elle existe dans la réponse du serveur
     //   const message = error.response.data.detail || 'Authentication failed';
-    //   console.log('message',message);
+   
       
       
     // } else if (error.request) {
@@ -113,12 +109,12 @@ export const signOut = async () => {
     // Fonction pour supprimer un cookie
     const deleteCookie = (name) => {
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
-      console.log(`Cookie ${name} supprimé`);
+      
     };
 
     // Vérifie si l'utilisateur est connecté
     const refresh_token = sessionStorage.getItem(STORAGE_KEY_REFRESH_TOKEN);
-    console.log('Refresh token dans sessionStorage:', refresh_token);
+    
 
     // Supprime les tokens des cookies
     deleteCookie(STORAGE_KEY); // Supprime le cookie du token d'accès
@@ -131,7 +127,7 @@ export const signOut = async () => {
     // Supprime l'utilisateur du localStorage
     localStorage.removeItem('user');
 
-    console.log('Déconnexion réussie');
+    
   } catch (error) {
     console.error("Error during sign out:", error);
     throw error;

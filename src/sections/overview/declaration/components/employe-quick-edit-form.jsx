@@ -117,7 +117,6 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
                 // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
                 const updatedEmployee = { ...currentEmployee, ...modifiedData };
-                console.log("utilisateur  mis à jour :", updatedEmployee);
                 onUpdateRow(updatedEmployee);
                 reset();
                 onClose();

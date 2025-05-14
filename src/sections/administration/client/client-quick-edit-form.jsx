@@ -109,7 +109,7 @@ export function ClientQuickEditForm({ currentClient, open, onClose, onUpdateRow 
 
             // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
             const updatedClient = { ...currentClient, ...modifiedData };
-            console.log("Client mis à jour :", updatedClient);
+          
             onUpdateRow(updatedClient);
             reset();
             onClose();

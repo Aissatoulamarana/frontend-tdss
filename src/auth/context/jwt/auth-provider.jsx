@@ -51,7 +51,6 @@ export function AuthProvider({ children }) {
         const res = await axios.get(API.me());
 
         const user = res.data;
-        console.log('User récupéré :', user);
 
         // Sauvegarder l'utilisateur dans le localStorage
         localStorage.setItem('user', JSON.stringify(user));

@@ -61,7 +61,7 @@ export function ClientDetailsView({ slug }) {
             try {
                 const response = await axios.get(API.UpdateProfile(slug));
                 setProfil(response.data);
-                // console.log(response.data);
+             
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -77,7 +77,6 @@ export function ClientDetailsView({ slug }) {
             try {
                 const response = await axios.get(API.detailsProfile(slug));
                 setUsers(response.data.users);
-                console.log('Details profiles :', response.data.users);
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {

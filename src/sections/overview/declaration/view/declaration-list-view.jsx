@@ -78,7 +78,7 @@ export function DeclarationListView() {
 
   const { user } = useMockedUser();
   const type_user = user?.type?.toLowerCase().trim();
-  // console.log('type_user:', type_user);
+  
 
   const router = useRouter();
 
@@ -248,7 +248,6 @@ export function DeclarationListView() {
     try {
       const response = await axios.delete(API.supprimerDeclaration(id));
       if (response.data.success) {
-        console.log('Déclaration supprimée:', response.data.message);
         toast.success('Déclaration supprimée avec succès !');
       } else {
         console.error('Erreur lors de la suppression:', response.data.error);

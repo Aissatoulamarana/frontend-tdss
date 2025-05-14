@@ -252,7 +252,6 @@ export function FactureListView() {
         const response = await axios.post(API.paidFacture(slug));
 
         if (response.data.success) {
-          console.log('Facture payée:', response.data.message);
           toast.success('Facture payée avec succès !');
           router.push(paths.dashboard.factures.list);
         } else {
@@ -286,7 +285,6 @@ export function FactureListView() {
   //       const response = await axios.post(API.PaidFactures(), data);
 
   //       if (response.data.success) {
-  //         console.log('Factures payées:', response.data.message);
   //         toast.success('Factures payées avec succès !');
   //         router.push(paths.dashboard.factures.list);
   //       } else {
