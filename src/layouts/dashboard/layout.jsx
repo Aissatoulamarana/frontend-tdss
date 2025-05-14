@@ -4,8 +4,8 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { iconButtonClasses } from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
-import { _notifications } from 'src/_mock';
-import { allLangs } from 'src/locales';
+// import { _notifications } from 'src/_mock';
+// import { allLangs } from 'src/locales';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -15,10 +15,10 @@ import { useSettingsContext } from 'src/components/settings';
 import { layoutClasses } from '../classes';
 import { AccountDrawer } from '../components/account-drawer';
 // import { ContactsPopover } from '../components/contacts-popover';
-import { LanguagePopover } from '../components/language-popover';
+// import { LanguagePopover } from '../components/language-popover';
 // import { _workspaces } from '../config-nav-workspace';
 import { MenuButton } from '../components/menu-button';
-import { NotificationsDrawer } from '../components/notifications-drawer';
+// import { NotificationsDrawer } from '../components/notifications-drawer';
 import { Searchbar } from '../components/searchbar';
 import { SettingsButton } from '../components/settings-button';
 import { _account } from '../config-nav-account';
@@ -146,9 +146,9 @@ export function DashboardLayout({ sx, children, header, data }) {
                 {/* -- Searchbar -- */}
                 <Searchbar data={navData} />
                 {/* -- Language popover -- */}
-                <LanguagePopover data={allLangs} />
+                {/* <LanguagePopover data={allLangs} /> */}
                 {/* -- Notifications popover -- */}
-                <NotificationsDrawer data={_notifications} />
+                {/* <NotificationsDrawer data={_notifications} /> */}
                 {/* -- Contacts popover -- */}
                 {/* <ContactsPopover data={_contacts} /> */}
                 {/* -- Settings button -- */}
