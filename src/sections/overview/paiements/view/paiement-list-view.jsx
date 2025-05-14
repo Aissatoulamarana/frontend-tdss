@@ -43,6 +43,8 @@ import { PaiementTableFiltersResult } from '../paiement-table-filters';
 import { PaiementTableRow } from '../paiement-table-row';
 import { PaiementTableToolbar } from '../paiement-table-toolbar';
 
+import { fCurrency, fGNF } from 'src/utils/format-number';
+
 import dayjs from 'dayjs';
 
 // ----------------------------------------------------------------------
@@ -79,6 +81,53 @@ export function PaiementListView() {
       next: null,
       previous: null,
     });
+
+  const [summary, setSummary] = useState({
+    totalCount: 0,
+    totalAmountGnf: 0,
+    totalAmountUsd: 0,
+  });
+
+   useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        // --- 1) Récupérer le count global ---
+        const countRes = await axios.get(API.listPaiments(), {
+          params: { limit: 1 },
+        });
+        const totalCount = countRes.data.count;
+
+        // --- 2) Récupérer tous les paiements en une seule requête ---
+        const allRes = await axios.get(API.listPaiments(), {
+          params: { limit: totalCount },
+        });
+        const allPaiements = allRes.data.results;
+
+        // --- 3) Somme des montants en GNF ---
+        const totalAmountGnf = sumBy(allPaiements, (p) => p.amount);
+        console.log('montant total', totalAmountGnf);
+
+        // --- 4) Conversion GNF → USD (taux fixe ici) ---
+        const GNF_PER_USD = 9200;
+        const totalAmountUsd = totalAmountGnf / GNF_PER_USD;
+
+        // --- 5) On met à jour le state ---
+        setSummary({
+          totalCount,
+          totalAmountGnf,
+          totalAmountUsd,
+        });
+        console.log('montant en gnf', summary.totalAmountGnf);
+        console.log('montant en USD', summary.totalAmountUsd)
+      } catch (err) {
+        console.error('Erreur summary paiements', err);
+        toast.error('Impossible de charger le total des paiements');
+      }
+    };
+
+    fetchSummary();
+  }, []);
+
   const [selectedFilter, setSelectedFilter] = useState('facture_number');
 
   const filters = useSetState({
@@ -113,21 +162,26 @@ export function PaiementListView() {
 
   const notFound = pagination.count === 0 && canReset;
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+   const fetchTotalCount = () => 
+    axios
+      .get(API.listPaiments(), {params: {limit:1}})
+      .then((res) => res.data.count);
 
-  const getTotalAmount = (status) =>
+  
+
+  const getTotalAmount = () =>
     sumBy(
-      tableData.filter((item) => item.status === status),
-      (invoice) => invoice.totalAmount
+    
+      (paiement) => paiement.amount
     );
 
-  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
+  const getPercentByStatus = () => (getTotalAmount() / tableData.length) * 100;
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
+      color: 'main',
       count: pagination.count,
     },
 
@@ -204,8 +258,8 @@ export function PaiementListView() {
           <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
-                title="Total"
-                total={tableData.length}
+                title="Nombres Total Paiements"
+                total={summary.totalCount}
                 percent={100}
                 chart={{
                   colors: [theme.vars.palette.info.main],
@@ -217,8 +271,8 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En Dollars"
-                percent={2.6}
-                total={18765}
+                percent={100}
+                total={fCurrency(summary.totalAmountUsd)}
                 chart={{
                   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                   series: [15, 18, 12, 51, 68, 11, 39, 37],
@@ -228,8 +282,8 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En GNF"
-                percent={2.6}
-                total={18765}
+                percent={100}
+                total={fGNF(summary.totalAmountGnf)}
                 chart={{
                   colors: [theme.vars.palette.error.main],
                   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
