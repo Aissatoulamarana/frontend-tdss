@@ -62,7 +62,7 @@ export function PaiementAnalytic({ title, percent, total, chart = {}, sx, ...oth
     >
       <Box sx={{ flexGrow: 1 }}>
         <Box sx={{ typography: 'subtitle2' }}>{title}</Box>
-        <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{fNumber(total)}</Box>
+        <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{(total)}</Box>
         {renderTrending}
       </Box>
 
