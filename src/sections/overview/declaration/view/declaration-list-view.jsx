@@ -3,7 +3,7 @@
 import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { Popover, MenuItem } from '@mui/material';
+// import { Popover, MenuItem } from '@mui/material';
 import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -17,7 +17,7 @@ import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
-
+import { Label } from 'src/components/label';
 import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
@@ -99,6 +99,8 @@ export function DeclarationListView() {
 
   });
 
+  const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
+
 
   const filters = useSetState({
     name: '', // mot-clé pour filtrer par numéro ou type de déclaration
@@ -133,40 +135,47 @@ export function DeclarationListView() {
 
   const notFound = pagination.count === 0 && canReset;;
 
+  const fetchTotalCount = () =>
+    axios 
+      .get(API.listDeclarations(), {params: {limit: 1}})
+      .then((res) => res.data.count);
+  
+  const fetchCountByStatus = (status) =>
+    axios 
+      .get(API.listDeclarations(), {params: {limit: 1, status}})
+      .then((res) => res.data.count);
+      
+  useEffect (() => {
+    Promise.all([
+      fetchTotalCount(),
+      fetchCountByStatus('UNSUBMITTED'),
+      fetchCountByStatus('SUBMITTED'),
+      fetchCountByStatus('VALIDATED'),
+      fetchCountByStatus('BILLED'),
+      fetchCountByStatus('REJECTED')
+    ])
+    .then(([totalCount, 
+      unsubmitCount, 
+      submitCount, 
+      validatCount, 
+      billedCount, 
+      rejectCount]) => {
+        setSummary({
+          totalCount,
+          countByStatus: { 
+            UNSUBMITTED : unsubmitCount,
+            SUBMITTED : submitCount,
+            VALIDATED : validatCount,
+            BILLED : billedCount,
+            REJECTED : rejectCount
+           }
+        });
+      }) ;
+  }, [])
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+  const getDeclarationLength = (status) => summary.countByStatus[status];
 
-  const useDeclarationCount = (status) => {
-    const [count, setCount] = useState(0);
-
-    useEffect(() => {
-      const fetchCount = async () => {
-        try {
-          const response = await axios.get(API.listDeclarations(), {
-            params: {
-              status: status,
-              limit: 1,
-              offset: 0,
-            },
-          });
-
-          // On récupère le nombre total à partir du champ "count"
-
-          // setTableData(response.data.results)
-         
-          setCount(response.data.count);
-        } catch (error) {
-          console.error(`Erreur lors de la récupération des déclarations pour le statut ${status}`, error);
-
-        }
-      };
-
-      fetchCount();
-    }, [status]);
-
-    return count;
-  };
-
+ 
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -175,7 +184,7 @@ export function DeclarationListView() {
     );
 
   // const getPercentByStatus = (status) => (useDeclarationCount(status) / pagination.count) * 100;
-  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
+  const getPercentByStatus = (status) => (getDeclarationLength(status) / summary.totalCount) * 100;
 
   const allowedStatusByRole = {
     admin:       ['all','SUBMITTED','VALIDATED','BILLED','UNSUBMITTED','REJECTED'],
@@ -190,39 +199,39 @@ export function DeclarationListView() {
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
-      count: count,
+      color: 'main',
+      count: summary.totalCount,
     },
     {
       value: 'SUBMITTED',
       label: 'Soumises',
       color: 'warnning',
-      // count: useDeclarationCount('SUBMITTED'),
+      count: getDeclarationLength('SUBMITTED'),
     },
     {
       value: 'VALIDATED',
       label: 'Validées',
       color: 'success',
-      // count: useDeclarationCount('VALIDATED'),
+      count: getDeclarationLength('VALIDATED'),
     },
     {
       value: 'BILLED',
       label: 'Facturées',
       color: 'primary',
-      // count: useDeclarationCount('BILLED'),
+      count: getDeclarationLength('BILLED'),
     },
     {
       value: 'UNSUBMITTED',
       label: 'Brouillon',
       color: 'warning',
-      // count: useDeclarationCount('UNSUBMITTED'),
+      count: getDeclarationLength('UNSUBMITTED'),
     },
 
     {
       value: 'REJECTED',
       label: 'Rejetées',
       color: 'error',
-      // count: useDeclarationCount('REJECTED'),
+      count: getDeclarationLength('REJECTED'),
     },
 
   ];
@@ -553,7 +562,7 @@ export function DeclarationListView() {
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
-              total={pagination.count}
+              total={summary.totalCount}
               percent={100}
               chart={{
                 colors: [theme.vars.palette.info.main],
@@ -565,7 +574,7 @@ export function DeclarationListView() {
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Facturées"
-              total={useDeclarationCount('BILLED')}
+              total={getDeclarationLength('BILLED')}
               percent={getPercentByStatus('BILLED')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
@@ -578,7 +587,7 @@ export function DeclarationListView() {
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Brouillon"
-              total={useDeclarationCount('UNSUBMITTED')}
+              total={getDeclarationLength('UNSUBMITTED')}
               percent={getPercentByStatus('UNSUBMITTED')}
               chart={{
                 colors: [theme.vars.palette.warning.main],
@@ -590,7 +599,7 @@ export function DeclarationListView() {
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Rejetées"
-              total={useDeclarationCount('REJECTED')}
+              total={getDeclarationLength('REJECTED')}
               percent={getPercentByStatus('REJECTED')}
               chart={{
                 colors: [theme.vars.palette.error.main],
@@ -616,19 +625,19 @@ export function DeclarationListView() {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-              // icon={
-              //   <Label
-              //     variant={
-              //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-              //       'soft'
-              //     }
+              icon={
+                <Label
+                  variant={
+                    ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                    'soft'
+                  }
 
-              //   // color={tab.color}
-              //   >
-              //     {/* {tab.count} */}
+                color={tab.color}
+                >
+                   {tab.count} 
 
-              //   </Label>
-              // }
+                </Label>
+              }
               />
             ))}
           </Tabs>
