@@ -10,6 +10,7 @@ import Grid from '@mui/material/Grid2';
 import Link from '@mui/material/Link';
 import Divider from '@mui/material/Divider';
 import { Iconify } from 'src/components/iconify';
+import { CircularProgress } from '@mui/material'
 
 export function EmployeeDeclarations({ declarations }) {
   // S'assurer que declarations est un tableau
@@ -32,6 +33,15 @@ export function EmployeeDeclarations({ declarations }) {
 // --- Version pour une seule déclaration
 function SingleDeclaration({ declaration }) {
   const router = useRouter();
+
+ if (!declaration) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   const { title, company, reference, status, slug } = declaration;
 
   // Mapping des statuts : Backend -> Frontend
