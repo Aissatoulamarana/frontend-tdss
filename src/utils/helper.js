@@ -60,10 +60,10 @@ export function keyBy(array, key) {
 // ----------------------------------------------------------------------
 
 export function sumBy(array, iteratee) {
-  return array.reduce((sum, item) => {
+  return array.reduce((sum, item) => 
     // +iteratee(item) force la conversion en nombre
-    return sum + +iteratee(item);
-  }, 0);
+     sum + +iteratee(item)
+  , 0);
 }
 
 // ----------------------------------------------------------------------
