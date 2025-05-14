@@ -73,6 +73,12 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
+/**
+ * @typedef {{ totalCount: number; countByStatus: Record<string, number> }} Summary
+ */
+
+// ----------------------------------------------------------------------
+
 export function FactureListView() {
   const theme = useTheme();
 
@@ -80,7 +86,7 @@ export function FactureListView() {
   
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'createDate' });
+  const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
   const [options, setOptions] = useState([]);
@@ -96,6 +102,10 @@ export function FactureListView() {
     next: null,
     previous: null,
   });
+
+   /** @type {[Summary, Function]} */
+  const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
+  // …
 
   const filters = useSetState({
     number: '',
@@ -126,8 +136,31 @@ export function FactureListView() {
 
   const notFound = pagination.count === 0 && canReset;
 
+  const fetchTotalCount = () => 
+    axios
+      .get(API.listFactures(), {params: {limit:1}})
+      .then((res) => res.data.count);
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+  const fetchCount = (status) => 
+    axios 
+      .get(API.listFactures(), {params : {limit : 1 , status}})
+      .then ((res) => res.data.count );
+
+  useEffect(() => {
+    Promise.all([
+      fetchTotalCount(),
+      fetchCount('PAID'),
+      fetchCount('unpaid'),
+    ]).then (([totalCount, paidCount , unpaidCount]) => {
+      setSummary({
+        totalCount,
+        countByStatus: {all: totalCount, PAID:paidCount, unpaid : unpaidCount},
+
+      });
+    });
+  }, []);
+
+  const getInvoiceLength = (status) => summary.countByStatus[status];
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -135,14 +168,17 @@ export function FactureListView() {
       (facture) => facture.amount
     );
 
-  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
+  const getPercentByStatus = (status) => 
+    summary.totalCount > 0
+    ? (getInvoiceLength(status) / summary.totalCount) * 100
+    : 0;
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
-      count: pagination.count,
+      color: 'white',
+      count: summary.totalCount,
     },
     {
       value: 'PAID',
@@ -340,7 +376,7 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Total"
-              total={tableData.length}
+              total={summary.totalCount}
               percent={100}
               chart={{
                 colors: [theme.vars.palette.info.main],
@@ -352,8 +388,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Payées"
-              percent={2.6}
-              total={18765}
+              percent={getPercentByStatus('PAID')}
+              total={getInvoiceLength('PAID')}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
@@ -363,8 +399,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="En attente"
-              percent={2.6}
-              total={18765}
+              percent={getPercentByStatus('unpaid')}
+              total={getInvoiceLength('unpaid')}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
