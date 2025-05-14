@@ -261,11 +261,11 @@ export function PaiementListView() {
                 title="Nombres Total Paiements"
                 total={summary.totalCount}
                 percent={100}
-                chart={{
-                  colors: [theme.vars.palette.info.main],
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [20, 41, 63, 33, 28, 35, 50, 46],
-                }}
+                // chart={{
+                //   colors: [theme.vars.palette.info.main],
+                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                //   series: [20, 41, 63, 33, 28, 35, 50, 46],
+                // }}
               />
             </Grid>
             <Grid size={{ xs: 6, md: 4 }}>
@@ -273,10 +273,10 @@ export function PaiementListView() {
                 title="Total En Dollars"
                 percent={100}
                 total={fCurrency(summary.totalAmountUsd)}
-                chart={{
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [15, 18, 12, 51, 68, 11, 39, 37],
-                }}
+                // chart={{
+                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                //   series: [15, 18, 12, 51, 68, 11, 39, 37],
+                // }}
               />
             </Grid>
             <Grid size={{ xs: 6, md: 4 }}>
@@ -284,11 +284,11 @@ export function PaiementListView() {
                 title="Total En GNF"
                 percent={100}
                 total={fGNF(summary.totalAmountGnf)}
-                chart={{
-                  colors: [theme.vars.palette.error.main],
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [18, 19, 31, 8, 16, 37, 12, 33],
-                }}
+                // chart={{
+                //   colors: [theme.vars.palette.success.main],
+                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                //   series: [18, 19, 31, 8, 16, 37, 12, 33],
+                // }}
               />
             </Grid>
           </Grid>
