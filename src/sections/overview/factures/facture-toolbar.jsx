@@ -97,11 +97,11 @@ export function FactureToolbar({
             {/* <FactureDetails ref={componentRef}  /> */}
           </Box>
 
-          <Tooltip title="Imprimer">
+          {/* <Tooltip title="Imprimer">
             <IconButton onClick={handlePrint}>
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Stack>
 
 
