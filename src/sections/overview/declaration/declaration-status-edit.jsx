@@ -1,88 +1,144 @@
 "use client";
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
-import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useFormContext } from 'react-hook-form';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import { useFormContext, Controller } from 'react-hook-form';
 import { useEffect, useState, useCallback } from 'react';
+import debounce from 'lodash.debounce';
 
 import { Field } from 'src/components/hook-form';
 import { useMockedUser } from 'src/auth/hooks';
 
 // Import des données mock pour les entreprises
-import { mockFetchCompanies } from 'src/_mock/companies';
+import { MOCK_COMPANIES } from 'src/_mock/companies';
 
 
 // ----------------------------------------------------------------------
 
 export function DeclarationEditStatusDate({ type }) {
-  const { watch, setValue } = useFormContext();
+  const { watch, setValue, control } = useFormContext();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [nextUrl, setNextUrl] = useState('/api/companies/?page=1'); // URL de la première page
-  const [previousUrl, setPreviousUrl] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [inputValue, setInputValue] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const user = useMockedUser();
 
   const values = watch();
 
-  // Fonction pour extraire le numéro de page d'une URL
-  const getPageFromUrl = (url) => {
-    if (!url) return 1;
-    const match = url.match(/page=(\d+)/);
-    return match ? parseInt(match[1], 10) : 1;
-  };
-
-  // Fonction pour charger les entreprises (simulée)
-  const fetchCompanies = useCallback(async (url, append = false) => {
-    if (!url) return; // Plus rien à charger
-
+  // Fonction pour rechercher des entreprises en fonction de la saisie (avec mock)
+  const searchCompanies = useCallback(async (searchText) => {
     setLoading(true);
     try {
-      // Extraire le numéro de page de l'URL
-      const page = getPageFromUrl(url);
-      setCurrentPage(page);
-
-      // Simuler l'appel API avec notre fonction mock
-      const response = await mockFetchCompanies(page);
-      const { data } = response;
-
-      // Transformer les données pour le format attendu par le sélecteur
-      const newCompanies = data.results.map((company) => ({
+      // Simuler un délai réseau
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Filtrer les entreprises mock en fonction du texte de recherche
+      let filteredCompanies;
+      if (searchText && searchText.length > 0) {
+        const searchLower = searchText.toLowerCase();
+        filteredCompanies = MOCK_COMPANIES.filter(company => 
+          company.name.toLowerCase().includes(searchLower)
+        ).slice(0, 10); // Limiter à 10 résultats
+      } else {
+        // Si pas de texte, retourner les 10 premières entreprises
+        filteredCompanies = MOCK_COMPANIES.slice(0, 10);
+      }
+      
+      // Transformer les données pour le format attendu par l'autocomplete
+      const formattedCompanies = filteredCompanies.map((company) => ({
         value: company.slug,
         label: company.name,
         slug: company.slug,
       }));
 
-      // Mettre à jour la liste des entreprises
-      setCompanies((prev) => append ? [...prev, ...newCompanies] : newCompanies);
-      
-      // Mettre à jour les URLs de pagination
-      setNextUrl(data.next);
-      setPreviousUrl(data.previous);
+      setCompanies(formattedCompanies);
     } catch (error) {
-      console.error("Erreur lors de la récupération des entreprises:", error);
+      console.error("Erreur lors de la recherche des entreprises:", error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Charger les entreprises au chargement du composant
-  useEffect(() => {
-    fetchCompanies('/api/companies/?page=1');
-  }, [fetchCompanies]);
-
-  // Handler pour sélectionner une entreprise
-  const handleSelectCompany = useCallback(
-    (option) => {
-      const selectedCompany = companies.find((company) => company.value === option);
-      if (selectedCompany) {
-        setValue('companyField', selectedCompany);
-      }
-    },
-    [setValue, companies]
+  // Créer une version debounced de la fonction de recherche
+  // pour éviter trop d'appels API pendant la saisie
+  const debouncedSearch = useCallback(
+    debounce((text) => {
+      searchCompanies(text);
+    }, 400),
+    [searchCompanies]
   );
+
+  // Charger les entreprises initiales au chargement du composant (avec mock)
+  useEffect(() => {
+    const loadInitialCompanies = async () => {
+      setLoading(true);
+      try {
+        // Simuler un délai réseau
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Utiliser les 10 premières entreprises du mock
+        const initialCompanies = MOCK_COMPANIES.slice(0, 10).map(company => ({
+          value: company.slug,
+          label: company.name,
+          slug: company.slug,
+        }));
+
+        setCompanies(initialCompanies);
+      } catch (error) {
+        console.error("Erreur lors du chargement initial des entreprises:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialCompanies();
+  }, []);
+
+  // Handler pour la sélection d'une entreprise
+  const handleCompanyChange = (event, newValue) => {
+    setSelectedCompany(newValue);
+    // Fermer le menu après sélection
+    setOpen(false);
+    
+    // Mettre à jour la valeur dans le formulaire
+    if (newValue) {
+      setValue('company', newValue.value);
+    } else {
+      setValue('company', '');
+    }
+  };
+
+  // Handler pour la saisie dans le champ de recherche
+  const handleInputChange = (event, newInputValue) => {
+    setInputValue(newInputValue);
+    
+    // Si l'utilisateur tape quelque chose, ouvrir le menu
+    if (newInputValue) {
+      setOpen(true);
+    }
+    
+    debouncedSearch(newInputValue);
+  };
+
+  // Handler pour le focus sur le champ
+  const handleFocus = () => {
+    // Ouvrir le menu au focus
+    setOpen(true);
+    
+    // Si la liste est vide, charger les entreprises initiales
+    if (companies.length === 0) {
+      searchCompanies('');
+    }
+  };
+  
+  // Handler pour fermer le menu
+  const handleClose = () => {
+    setOpen(false);
+  };
 
 
   return (
@@ -92,56 +148,52 @@ export function DeclarationEditStatusDate({ type }) {
       sx={{ p: 3, bgcolor: 'background.neutral' }}
     >
       {/* {user.type_code === 'ENTREPRISE' && */}
-      <Field.Select
-        fullWidth
-        name='company'
-        label='Entreprise *'
-        placeholder="Veuillez sélectionner l'entreprise dont vous déclarez"
-        slotProps={{
-          select: {
-            MenuProps: {
-              PaperProps: {
-                onScroll: (event) => {
-                  // Charger plus d'entreprises quand on atteint le bas
-                  const bottom =
-                    event.target.scrollHeight - event.target.scrollTop === event.target.clientHeight;
-                  if (bottom && nextUrl && !loading) {
-                    fetchCompanies(nextUrl, true); // Charger les suivants
-                  }
-
-                  // Charger les précédents quand on atteint le haut
-                  const top = event.target.scrollTop === 0;
-                  if (top && previousUrl && !loading) {
-                    fetchCompanies(previousUrl, true); // Charger les précédents
-                  }
-                },
-                style: {
-                  maxHeight: 200, // Pour activer le scroll
-                },
-              },
-            },
-          },
-        }}
-      >
-        <MenuItem sx={{ fontStyle: 'italic', color: 'text.secondary' }} value="">
-          Aucune entreprise sélectionnée
-        </MenuItem>
-        <Divider sx={{ borderStyle: 'dashed' }} />
-        {companies.map((company) => (
-          <MenuItem
-            key={company.slug}
-            value={company.value}
-            onClick={() => handleSelectCompany(company.value)}
-          >
-            {company.label}
-          </MenuItem>
-        ))}
-        {loading && (
-          <MenuItem disabled>
-            <CircularProgress size={20} />
-          </MenuItem>
+      <Controller
+        name="company"
+        control={control}
+        render={({ field, fieldState: { error } }) => (
+          <Autocomplete
+            {...field}
+            fullWidth
+            options={companies}
+            loading={loading}
+            value={selectedCompany}
+            inputValue={inputValue}
+            onChange={handleCompanyChange}
+            onInputChange={handleInputChange}
+            onFocus={handleFocus}
+            onClose={handleClose}
+            open={open && companies.length > 0} // Contrôler l'ouverture du menu
+            getOptionLabel={(option) => option.label || ''}
+            isOptionEqualToValue={(option, value) => option.value === value?.value}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Entreprise *"
+                placeholder="Rechercher une entreprise..."
+                error={!!error}
+                helperText={error?.message}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <MenuItem {...props} key={option.slug} value={option.value}>
+                {option.label}
+              </MenuItem>
+            )}
+            noOptionsText="Aucune entreprise trouvée"
+            loadingText="Chargement..."
+          />
         )}
-      </Field.Select>
+      />
       {/* } */}
 
       <Field.Select
