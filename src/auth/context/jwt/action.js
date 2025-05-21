@@ -109,12 +109,20 @@ export const signOut = async () => {
     // Fonction pour supprimer un cookie
     const deleteCookie = (name) => {
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+<<<<<<< HEAD
       
+=======
+      console.log(`Cookie ${name} supprimé`);
+>>>>>>> fix-transformation-champ-en-divider
     };
 
     // Vérifie si l'utilisateur est connecté
     const refresh_token = sessionStorage.getItem(STORAGE_KEY_REFRESH_TOKEN);
+<<<<<<< HEAD
     
+=======
+    console.log('Refresh token dans sessionStorage:', refresh_token);
+>>>>>>> fix-transformation-champ-en-divider
 
     // Supprime les tokens des cookies
     deleteCookie(STORAGE_KEY); // Supprime le cookie du token d'accès
@@ -127,7 +135,11 @@ export const signOut = async () => {
     // Supprime l'utilisateur du localStorage
     localStorage.removeItem('user');
 
+<<<<<<< HEAD
     
+=======
+    console.log('Déconnexion réussie');
+>>>>>>> fix-transformation-champ-en-divider
   } catch (error) {
     console.error("Error during sign out:", error);
     throw error;
