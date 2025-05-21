@@ -2,23 +2,23 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
+// import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
-import NoSsr from '@mui/material/NoSsr';
+// import NoSsr from '@mui/material/NoSsr';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import { BlobProvider } from '@react-pdf/renderer';
-import { saveAs } from 'file-saver';
-import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
-import axios from 'src/utils/axios';
-import { useRef, useState, useCallback } from 'react';
+// import { BlobProvider } from '@react-pdf/renderer';
+// import { saveAs } from 'file-saver';
+import { PDFViewer } from '@react-pdf/renderer';
+// import axios from 'src/utils/axios';
+import { useRef } from 'react';
 
 import { useReactToPrint } from 'react-to-print';
 
 import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
+// import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -26,7 +26,7 @@ import { Iconify } from 'src/components/iconify';
 
 
 import { generateFacturePDF } from './facture-pdf';
-import { FactureDetails } from './facture-details';
+// import { FactureDetails } from './facture-details';
 
 // ----------------------------------------------------------------------
 

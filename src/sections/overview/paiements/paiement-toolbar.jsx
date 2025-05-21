@@ -1,7 +1,7 @@
 'use client';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 import { useReactToPrint } from 'react-to-print';
 
