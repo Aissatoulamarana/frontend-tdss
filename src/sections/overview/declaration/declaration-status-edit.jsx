@@ -7,12 +7,11 @@ import TextField from '@mui/material/TextField';
 import { useFormContext, Controller } from 'react-hook-form';
 import { useEffect, useState, useCallback } from 'react';
 import debounce from 'lodash.debounce';
+import axios from 'src/utils/axios';
 
 import { Field } from 'src/components/hook-form';
 import { useMockedUser } from 'src/auth/hooks';
-
-// Import des données mock pour les entreprises
-import { MOCK_COMPANIES } from 'src/_mock/companies';
+import API from 'src/utils/api';
 
 
 // ----------------------------------------------------------------------
@@ -29,27 +28,19 @@ export function DeclarationEditStatusDate({ type }) {
 
   const values = watch();
 
-  // Fonction pour rechercher des entreprises en fonction de la saisie (avec mock)
+  // Fonction pour rechercher des entreprises en fonction de la saisie (API réelle)
   const searchCompanies = useCallback(async (searchText) => {
     setLoading(true);
     try {
-      // Simuler un délai réseau
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Utiliser l'API réelle avec des paramètres de recherche
+      const params = searchText && searchText.length > 0 
+        ? { search: searchText, limit: 10 }
+        : { limit: 10 }; // Si pas de texte, charger les 10 premières entreprises
       
-      // Filtrer les entreprises mock en fonction du texte de recherche
-      let filteredCompanies;
-      if (searchText && searchText.length > 0) {
-        const searchLower = searchText.toLowerCase();
-        filteredCompanies = MOCK_COMPANIES.filter(company => 
-          company.name.toLowerCase().includes(searchLower)
-        ).slice(0, 10); // Limiter à 10 résultats
-      } else {
-        // Si pas de texte, retourner les 10 premières entreprises
-        filteredCompanies = MOCK_COMPANIES.slice(0, 10);
-      }
+      const response = await axios.get(API.listEntreprises(params));
       
       // Transformer les données pour le format attendu par l'autocomplete
-      const formattedCompanies = filteredCompanies.map((company) => ({
+      const formattedCompanies = response.data.results.map((company) => ({
         value: company.slug,
         label: company.name,
         slug: company.slug,
@@ -72,16 +63,16 @@ export function DeclarationEditStatusDate({ type }) {
     [searchCompanies]
   );
 
-  // Charger les entreprises initiales au chargement du composant (avec mock)
+  // Charger les entreprises initiales au chargement du composant (API réelle)
   useEffect(() => {
     const loadInitialCompanies = async () => {
       setLoading(true);
       try {
-        // Simuler un délai réseau
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Utiliser l'API réelle pour charger les entreprises initiales
+        const response = await axios.get(API.listEntreprises({ limit: 10 }));
         
-        // Utiliser les 10 premières entreprises du mock
-        const initialCompanies = MOCK_COMPANIES.slice(0, 10).map(company => ({
+        // Transformer les données pour le format attendu par l'autocomplete
+        const initialCompanies = response.data.results.map(company => ({
           value: company.slug,
           label: company.name,
           slug: company.slug,
