@@ -1,1 +1,1 @@
-export * from './overview-app-view';
+export * from './overview-global-view';

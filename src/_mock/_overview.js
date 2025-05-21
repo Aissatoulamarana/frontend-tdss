@@ -3,6 +3,7 @@ import { CONFIG } from 'src/config-global';
 import { today } from 'src/utils/format-time';
 
 import { _mock } from './_mock';
+import { date } from 'zod';
 
 // APP
 // ----------------------------------------------------------------------
@@ -45,12 +46,13 @@ export const _appAuthors = [...Array(3)].map((_, index) => ({
 export const _appInvoices = [...Array(5)].map((_, index) => {
   const category = ['Android', 'Mac', 'Windows', 'Android', 'Mac'][index];
 
-  const status = ['paid', 'out of date', 'progress', 'paid', 'paid'][index];
+  const status = ['soumise', 'non soumise', 'soumise', 'non soumise','non soumise'][index];
 
   return {
     id: _mock.id(index),
-    invoiceNumber: `INV-199${index}`,
-    price: _mock.number.price(index),
+    invoiceNumber: `000001-202${index}`,
+    price: _mock.number.nativeM(index),
+    date: _mock.time(index),
     category,
     status,
   };

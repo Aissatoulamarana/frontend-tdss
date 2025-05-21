@@ -21,6 +21,7 @@ import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
+import { fDate } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 
@@ -46,7 +47,7 @@ export function AppNewInvoice({ title, subheader, tableData, headLabel, ...other
       <Box sx={{ p: 2, textAlign: 'right' }}>
         <Button
           component={RouterLink}
-          href={paths.dashboard.three}
+          href={paths.dashboard.declaration.list}
           size="small"
           color="inherit"
           endIcon={<Iconify icon="eva:arrow-ios-forward-fill" width={18} sx={{ ml: -0.5 }} />}
@@ -71,16 +72,8 @@ function RowItem({ row }) {
     console.info('PRINT', row.id);
   };
 
-  const handleShare = () => {
-    popover.onClose();
-    console.info('SHARE', row.id);
-  };
-
-  const handleDelete = () => {
-    popover.onClose();
-    console.info('DELETE', row.id);
-  };
-
+ 
+ 
   return (
     <>
       <TableRow>
@@ -88,13 +81,14 @@ function RowItem({ row }) {
 
         <TableCell>{row.category}</TableCell>
 
-        <TableCell>{fCurrency(row.price)}</TableCell>
+        <TableCell>{(row.price)}</TableCell>
+         <TableCell>{fDate(row.date)}</TableCell>
 
         <TableCell>
           <Label
             variant="soft"
             color={
-              (row.status === 'progress' && 'warning') ||
+              (row.status === 'non soumise' && 'warning') ||
               (row.status === 'out of date' && 'error') ||
               'success'
             }
@@ -103,11 +97,11 @@ function RowItem({ row }) {
           </Label>
         </TableCell>
 
-        <TableCell align="right" sx={{ pr: 1 }}>
+        {/* <TableCell align="right" sx={{ pr: 1 }}>
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
 
       <CustomPopover
@@ -127,10 +121,7 @@ function RowItem({ row }) {
             Imprimer
           </MenuItem>
 
-          <MenuItem onClick={handleShare}>
-            <Iconify icon="solar:share-bold" />
-            Partager
-          </MenuItem>
+          
         </MenuList>
       </CustomPopover>
     </>
