@@ -42,6 +42,10 @@ export function DeclarationToolbar({
   const router = useRouter();
 
   const user = useMockedUser();
+  const type = user?.type?.toLowerCase().trim();
+  const profil = user?.companies?.type_code?.toLowerCase().trim();
+  
+
   // États pour contrôler l'ouverture des dialogues share et send
   const [openShare, setOpenShare] = useState(false);
   const [openSend, setOpenSend] = useState(false);
@@ -130,7 +134,7 @@ export function DeclarationToolbar({
       >
 
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-          {user?.type === 'Admin' && declaration?.status === 'UNSUBMITTED' && (
+          {(type === 'admin' && profil === 'tdss') && declaration?.status === 'UNSUBMITTED' && (
             <Tooltip title="Modifier">
               <IconButton onClick={handleEdit}>
                 <Iconify icon="solar:pen-bold" />
@@ -148,17 +152,35 @@ export function DeclarationToolbar({
             </IconButton>
           </Tooltip>
 
-          {/* <Tooltip title="Send">
+          <Tooltip title="Mettre en edition">
             <IconButton onClick={() => setOpenSend(true)}>
-              <Iconify icon="iconamoon:send-fill" />
+              <Iconify icon="solar:pen-bold" />
             </IconButton>
           </Tooltip>
 
-          <Tooltip title="Share">
+          <Tooltip title="Soumettre">
             <IconButton onClick={() => setOpenShare(true)}>
-              <Iconify icon="solar:share-bold" />
+              <Iconify icon="mdi:check-bold" />
             </IconButton>
-          </Tooltip> */}
+          </Tooltip>
+
+           <Tooltip title="Valider">
+            <IconButton onClick={() => setOpenShare(true)}>
+              <Iconify icon="mdi:check-bold" />
+            </IconButton>
+          </Tooltip>
+
+           <Tooltip title="Rejeter">
+            <IconButton onClick={() => setOpenShare(true)}>
+              <Iconify icon="material-symbols:cancel" />
+            </IconButton>
+          </Tooltip>
+
+           <Tooltip title="Facturer">
+            <IconButton onClick={() => setOpenShare(true)}>
+              <Iconify icon="mdi:credit-card" />
+            </IconButton>
+          </Tooltip>
         </Stack>
 
         <TextField
