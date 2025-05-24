@@ -8,9 +8,14 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
 import { UserNewEditForm } from '../user-edit-form';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 export function UserCreateView() {
+
+  const { user } = useMockedUser();
+
   return (
     <DashboardContent>
       <CustomBreadcrumbs
@@ -23,7 +28,7 @@ export function UserCreateView() {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <UserNewEditForm />
+      <UserNewEditForm user={user} />
     </DashboardContent>
   );
 }

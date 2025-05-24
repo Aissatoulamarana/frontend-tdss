@@ -41,7 +41,7 @@ const ICONS = {
 // ----------------------------------------------------------------------
 
 const user = JSON.parse(localStorage.getItem('user'));
-const type = user?.type?.toLowerCase().trim();
+const type = user?.type_name?.toLowerCase().trim();
 
 export const navData = [
   /**

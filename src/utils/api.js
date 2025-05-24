@@ -89,6 +89,7 @@ const API = {
   listProfilesTypes: () => `${BASE_URL}/profiles/types/`,
   
   createProfile: () => `${BASE_URL}/profiles/`,
+  getProfile : (profile_code) => `${BASE_URL}/profiles/profile-types/${profile_code}/`, // recuperer les roles en fonction du profil 
   listProfiles: () => `${BASE_URL}/profiles/?limit=200&offset=200/`,
   detailsProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,

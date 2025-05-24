@@ -50,14 +50,21 @@ export const NewUserSchema = zod.object({
 
 // ----------------------------------------------------------------------
 // Composant ajusté
-export function UserNewEditForm({ currentUser }) {
+export function UserNewEditForm({ currentUser , user}) {
   const router = useRouter();
   const password = useBoolean();
+
+  const type = user?.type_name?.toLowerCase().trim();
+ const profil = user?.companies[0]?.type_code?.trim();
+
+
+
   const [eror, setError] = useState(null);
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [profils, setProfils] = useState([]);
   const [agences, setAgences] = useState([]);
+  const [selectedProfil, setSelectedProfil] = useState();
 
   const defaultValues = useMemo(() => {
     const currentRegion = regions?.find(region => region.name === currentUser?.location?.name);
@@ -108,6 +115,18 @@ export function UserNewEditForm({ currentUser }) {
     });
 
     return modifiedFields;
+  };
+
+  const getRolesProfile = async (profile_code) => {
+    try {
+      const response = await axios.get(API.getProfile(profile_code));
+      const data = response.data;
+      if (data ) {
+        console.log('Rôles récupérés pour le profil:', data);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des rôles pour le profil:', error);
+    }
   };
 
   const onSubmit = handleSubmit(async (data) => {
@@ -321,13 +340,28 @@ export function UserNewEditForm({ currentUser }) {
               <Field.Text name="email" label="Adresse Mail *" />
               <Field.Phone name="phone" label="Numéro de Téléphone *" />
 
-              <Field.Select name="profile" label="Structure *" >
-                {profils.map((profil) => (
-                  <MenuItem key={profil?.slug} value={profil?.slug}>
-                    {profil?.name}
-                  </MenuItem>
-                ))}
-              </Field.Select>
+             <Field.Select
+              name="profile"
+              label="Structure *"
+              value={selectedProfil} // ← à définir dans ton state
+              onChange={(e) => {
+                const selectedSlug = e.target.value;
+                setSelectedProfil(selectedSlug); // ← mettre à jour l’état local
+                const selectedProfil = profils.find(p => p.slug === selectedSlug);
+                if (selectedProfil) {
+                  const typeLower = selectedProfil.type.toLowerCase();
+                  getRolesProfile(typeLower);
+                }
+              }}
+            >
+              {profils.map((profil) => (
+                <MenuItem key={profil?.slug} value={profil?.slug}>
+                  {profil?.name}
+                </MenuItem>
+              ))}
+            </Field.Select>
+
+
               <Field.Select name="location" label="Region *" >
                 {regions.map((region) => (
                   <MenuItem key={region?.slug} value={region?.slug}>
@@ -336,6 +370,7 @@ export function UserNewEditForm({ currentUser }) {
                 ))
                 }
               </Field.Select>
+              {(type === 'admin' && profil === 'tdss') && (
               <Field.Select name="agency" label="Agence *" >
                 {agences.map((agence) => (
                   <MenuItem key={agence?.slug} value={agence?.slug}>
@@ -344,6 +379,7 @@ export function UserNewEditForm({ currentUser }) {
                 ))
                 }
               </Field.Select>
+              )}
               <Field.Select name="type" label="Role *" inputlabelprops={{ shrink: true }}>
                 {roles?.map((role) => (
                   <MenuItem key={role.slug} value={role.slug}>
