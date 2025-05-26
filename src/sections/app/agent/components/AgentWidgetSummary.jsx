@@ -6,17 +6,12 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
+import { useAuthContext } from 'src/auth/hooks';
 import { fShortenNumber } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
-// Contexte utilisateur simulé (à remplacer par un vrai contexte d'authentification)
-const CURRENT_USER = {
-  id: 'AGENT-001',
-  name: 'Jean Dupont',
-  company: 'Entreprise ABC',
-  role: 'agent',
-};
+// Les données utilisateur seront obtenues via le contexte d'authentification
 
 // Données mockées pour le développement
 const ALL_SUMMARY_DATA = {
@@ -147,9 +142,9 @@ AgentWidgetSummary.propTypes = {
 // ----------------------------------------------------------------------
 
 // Fonction utilitaire pour filtrer les données par agent et entreprise
-export function getAgentSummaryData(dataType, companyFilter = 'all') {
+export function getAgentSummaryData(dataType, companyFilter = 'all', userId = 'AGENT-001') {
   // Filtrer d'abord par agent
-  const agentData = ALL_SUMMARY_DATA[dataType].filter(item => item.agentId === CURRENT_USER.id);
+  const agentData = ALL_SUMMARY_DATA[dataType].filter(item => item.agentId === userId);
   
   // Appliquer le filtre d'entreprise si nécessaire
   if (companyFilter !== 'all') {

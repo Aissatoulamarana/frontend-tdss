@@ -18,6 +18,7 @@ import API from 'src/utils/api';
 
 import { Iconify } from 'src/components/iconify';
 import { toast } from 'src/components/snackbar';
+import { useAuthContext } from 'src/auth/hooks';
 
 import { AgentWidgetSummary, getAgentSummaryData } from './AgentWidgetSummary';
 import { AgentPermitCategoryChart, AgentDeclarationChart } from './AgentCharts';
@@ -26,15 +27,7 @@ import { AgentActionButton } from './AgentActionButton';
 
 // ----------------------------------------------------------------------
 
-// Contexte utilisateur simulé (à remplacer par un vrai contexte d'authentification)
-const CURRENT_USER = {
-  id: 'AGENT-001',
-  name: 'Jean Dupont',
-  company: 'Entreprise ABC',
-  role: 'agent',
-};
-
-// Obtenir la liste des entreprises de l'agent
+// Obtenir la liste des entreprises de l'agent (sera remplacé par un appel API réel)
 const AGENT_COMPANIES = [
   'Entreprise ABC',
   'Société XYZ',
@@ -43,6 +36,9 @@ const AGENT_COMPANIES = [
 // ----------------------------------------------------------------------
 
 export default function AgentDashboard() {
+  // Utiliser le contexte d'authentification pour obtenir l'utilisateur actuel
+  const { user } = useAuthContext();
+  
   const [companyFilter, setCompanyFilter] = useState('all');
   const [periodFilter, setPeriodFilter] = useState('month');
   const [companies, setCompanies] = useState(AGENT_COMPANIES);
@@ -115,10 +111,10 @@ export default function AgentDashboard() {
       // Simulation d'un appel API
       await new Promise(resolve => setTimeout(resolve, 1500));
       setSummaryData({
-        totalEmployees: getAgentSummaryData('totalEmployees', companyFilter),
-        totalPayments: getAgentSummaryData('totalPayments', companyFilter),
-        pendingPayments: getAgentSummaryData('pendingPayments', companyFilter),
-        totalInvoices: getAgentSummaryData('totalInvoices', companyFilter)
+        totalEmployees: getAgentSummaryData('totalEmployees', companyFilter, user?.id),
+        totalPayments: getAgentSummaryData('totalPayments', companyFilter, user?.id),
+        pendingPayments: getAgentSummaryData('pendingPayments', companyFilter, user?.id),
+        totalInvoices: getAgentSummaryData('totalInvoices', companyFilter, user?.id)
       });
     } catch (error) {
       console.error('Erreur lors du chargement des données de résumé', error);
