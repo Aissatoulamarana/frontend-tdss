@@ -68,11 +68,14 @@ export default function AgentDashboard() {
     setLoading(prev => ({ ...prev, companies: true }));
     try {
       // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentCompanies());
+      // const response = await axios.get(API.getAgentCompanies(user?.id));
       // setCompanies(response.data);
       
       // Simulation d'un appel API
       await new Promise(resolve => setTimeout(resolve, 1000));
+      // En attendant l'API réelle, on utilise des données simulées
+      // mais dans un environnement de production, ces données viendraient du serveur
+      // en fonction de l'utilisateur authentifié
       setCompanies(AGENT_COMPANIES);
     } catch (error) {
       console.error('Erreur lors du chargement des entreprises', error);
@@ -81,7 +84,7 @@ export default function AgentDashboard() {
     } finally {
       setLoading(prev => ({ ...prev, companies: false }));
     }
-  }, []);
+  }, [user?.id]); // Ajouter user?.id comme dépendance pour recharger si l'utilisateur change
 
   // Fonction pour gérer le changement de période
   const handlePeriodFilterChange = (event) => {
@@ -132,7 +135,7 @@ export default function AgentDashboard() {
       const params = { company: companyFilter, period: periodFilter };
       
       // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentChartData(companyFilter), { params });
+      // const response = await axios.get(API.getAgentChartData(user?.id, companyFilter), { params });
       // Mettre à jour les données des graphiques
       
       // Simulation d'un appel API
@@ -141,11 +144,11 @@ export default function AgentDashboard() {
     } catch (error) {
       console.error('Erreur lors du chargement des données des graphiques', error);
       setErrors(prev => ({ ...prev, charts: 'Impossible de charger les graphiques' }));
-      toast.error('Erreur lors du chargement des entreprises');
+      toast.error('Erreur lors du chargement des graphiques');
     } finally {
       setLoading(prev => ({ ...prev, charts: false }));
     }
-  }, [companyFilter, periodFilter, toast]);
+  }, [companyFilter, periodFilter, user?.id]);
 
   // Charger les données des déclarations récentes
   const fetchDeclarationsData = useCallback(async () => {
@@ -155,16 +158,16 @@ export default function AgentDashboard() {
       const params = { company: companyFilter, period: periodFilter };
       
       // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentRecentDeclarations(companyFilter), { params });
+      // const response = await axios.get(API.getAgentRecentDeclarations(user?.id, companyFilter), { params });
       // Mettre à jour les données des déclarations
     } catch (error) {
       console.error('Erreur lors du chargement des déclarations récentes', error);
       setErrors(prev => ({ ...prev, declarations: 'Impossible de charger les déclarations récentes' }));
-      toast.error('Erreur lors du chargement des données');
+      toast.error('Erreur lors du chargement des déclarations');
     } finally {
       setLoading(prev => ({ ...prev, declarations: false }));
     }
-  }, [companyFilter, periodFilter, toast]);
+  }, [companyFilter, periodFilter, user?.id]);
   
   // Charger les données des employés récents
   const fetchEmployeesData = useCallback(async () => {
@@ -174,7 +177,7 @@ export default function AgentDashboard() {
       const params = { company: companyFilter, period: periodFilter };
       
       // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentRecentEmployees(params));
+      // const response = await axios.get(API.getAgentRecentEmployees(user?.id, params));
       // Mettre à jour les données des employés
       
       // Simulation d'un appel API
@@ -183,11 +186,11 @@ export default function AgentDashboard() {
     } catch (error) {
       console.error('Erreur lors du chargement des employés récents', error);
       setErrors(prev => ({ ...prev, employees: 'Impossible de charger les employés récents' }));
-      toast.error('Erreur lors du chargement des entreprises');
+      toast.error('Erreur lors du chargement des employés');
     } finally {
       setLoading(prev => ({ ...prev, employees: false }));
     }
-  }, [companyFilter, periodFilter, toast]);
+  }, [companyFilter, periodFilter, user?.id]);
 
   // Effet pour charger les données initiales
   useEffect(() => {
@@ -217,7 +220,14 @@ export default function AgentDashboard() {
   return (
     <Container maxWidth="xl">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
-        <Typography variant="h4">Tableau de Bord Agent</Typography>
+        <Box>
+          <Typography variant="h4">Tableau de Bord Agent</Typography>
+          {user && (
+            <Typography variant="subtitle2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+              {user.name} | {user.role} | ID: {user.id}
+            </Typography>
+          )}
+        </Box>
         
         <Box sx={{ display: 'flex', gap: 2 }}>
           <FormControl sx={{ minWidth: 200 }} size="small" disabled={loading.companies}>
@@ -351,6 +361,11 @@ export default function AgentDashboard() {
 
         {/* Graphiques */}
         <Grid item xs={12} md={6} lg={4}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+            <Iconify icon="mdi:chart-pie" width={24} sx={{ mr: 1 }} />
+            Répartition par Catégorie
+          </Typography>
+          
           {errors.charts && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.charts}
@@ -370,6 +385,11 @@ export default function AgentDashboard() {
         </Grid>
 
         <Grid item xs={12} md={6} lg={8}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+            <Iconify icon="mdi:chart-line" width={24} sx={{ mr: 1 }} />
+            Évolution des Déclarations
+          </Typography>
+          
           {loading.charts ? (
             <Card sx={{ p: 3, height: '100%', minHeight: 350 }}>
               <Skeleton variant="text" width="60%" height={40} />
@@ -382,6 +402,11 @@ export default function AgentDashboard() {
 
         {/* Tableaux de données */}
         <Grid item xs={12} md={6} lg={8}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+            <Iconify icon="mdi:clipboard-text-clock" width={24} sx={{ mr: 1 }} />
+            Récentes Déclarations
+          </Typography>
+          
           {errors.declarations && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.declarations}
@@ -402,6 +427,11 @@ export default function AgentDashboard() {
         </Grid>
 
         <Grid item xs={12} md={6} lg={4}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
+            <Iconify icon="mdi:account-group" width={24} sx={{ mr: 1 }} />
+            Employés par Entreprise
+          </Typography>
+          
           {errors.employees && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.employees}

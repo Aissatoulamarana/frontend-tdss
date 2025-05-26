@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTheme, alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -18,8 +19,9 @@ import TablePagination from '@mui/material/TablePagination';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
-import { useTheme } from '@mui/material/styles';
-
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
 import { fDate } from 'src/utils/format-time';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -153,30 +155,23 @@ export function AgentRecentDeclarations() {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const [page, setPage] = useState(0);
+  const [filter, setFilter] = useState('all');
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [filter, setFilter] = useState('all'); // 'all', 'submitted', 'pending'
-  const [declarations, setDeclarations] = useState([]);
 
-  // Filtrer les déclarations pour n'afficher que celles de l'agent connecté
-  useEffect(() => {
-    // Filtrer par agent
-    const filteredByAgent = ALL_DECLARATIONS.filter(dec => dec.agentId === CURRENT_USER.id);
-    
-    // Appliquer le filtre de statut si nécessaire
-    const filtered = filter === 'all' 
-      ? filteredByAgent 
-      : filteredByAgent.filter(dec => dec.status === filter);
-    
-    setDeclarations(filtered);
-  }, [filter]);
+  // Filtrer les déclarations par agent et par statut
+  const declarations = ALL_DECLARATIONS.filter(dec => {
+    const isCurrentAgent = dec.agentId === CURRENT_USER.id;
+    const matchesFilter = filter === 'all' || dec.status === filter;
+    return isCurrentAgent && matchesFilter;
+  });
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+    setRowsPerPage(parseInt(event.target.value, 10));
   };
 
   const handleFilterChange = (event) => {
@@ -185,30 +180,63 @@ export function AgentRecentDeclarations() {
   };
 
   return (
-    <Card sx={{ boxShadow: theme.customShadows.z8 }}>
+    <Card sx={{
+      boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+      borderRadius: 1,
+      overflow: 'hidden',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        boxShadow: isDarkMode ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+      },
+    }}>
       <CardHeader 
-        title="Mes Déclarations" 
+        title={
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Iconify icon="mdi:clipboard-text-clock" width={24} />
+            <Typography variant="h6">
+              Déclarations fiscales récentes
+            </Typography>
+            <Label color="info" sx={{ ml: 1 }}>
+              {declarations.length}
+            </Label>
+          </Stack>
+        }
+        subheader={
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+            Liste des dernières déclarations fiscales enregistrées dans le système
+          </Typography>
+        }
         sx={{ 
-          mb: 2,
+          pb: 0,
           '& .MuiCardHeader-title': {
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-            fontWeight: 600
           }
         }} 
         action={
-          <FormControl sx={{ minWidth: 150 }} size="small">
-            <InputLabel id="status-filter-label">Statut</InputLabel>
-            <Select
-              labelId="status-filter-label"
-              value={filter}
-              label="Statut"
-              onChange={handleFilterChange}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <FormControl sx={{ minWidth: 150 }} size="small">
+              <InputLabel id="status-filter-label">Statut</InputLabel>
+              <Select
+                labelId="status-filter-label"
+                value={filter}
+                label="Statut"
+                onChange={handleFilterChange}
+                startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />}
+              >
+                <MenuItem value="all">Toutes</MenuItem>
+                <MenuItem value="submitted">Soumises</MenuItem>
+                <MenuItem value="pending">Non Soumises</MenuItem>
+              </Select>
+            </FormControl>
+            <Button 
+              size="small" 
+              startIcon={<Iconify icon="mdi:plus" />}
+              variant="contained"
+              color="primary"
             >
-              <MenuItem value="all">Toutes</MenuItem>
-              <MenuItem value="submitted">Soumises</MenuItem>
-              <MenuItem value="pending">Non Soumises</MenuItem>
-            </Select>
-          </FormControl>
+              Nouvelle
+            </Button>
+          </Stack>
         }
       />
       <TableContainer sx={{ overflow: 'unset' }}>
@@ -363,34 +391,55 @@ export function AgentRecentEmployees() {
   };
 
   return (
-    <Card sx={{ boxShadow: theme.customShadows.z8 }}>
+    <Card sx={{
+      boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+      borderRadius: 1,
+      overflow: 'hidden',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        boxShadow: isDarkMode ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+      },
+    }}>
       <CardHeader 
-        title="Mes Employés" 
+        title={
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Iconify icon="mdi:account-group" width={24} />
+            <Typography variant="h6">
+              Employés par entreprise
+            </Typography>
+            <Label color="info" sx={{ ml: 1 }}>
+              {employees.length}
+            </Label>
+          </Stack>
+        }
+        
         sx={{ 
-          mb: 2,
+          pb: 0,
           '& .MuiCardHeader-title': {
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-            fontWeight: 600
           }
         }} 
         action={
-          <FormControl sx={{ minWidth: 150 }} size="small">
-            <InputLabel id="company-filter-label">Entreprise</InputLabel>
-            <Select
-              labelId="company-filter-label"
-              value={companyFilter}
-              label="Entreprise"
-              onChange={handleCompanyFilterChange}
-            >
-              <MenuItem value="all">Toutes</MenuItem>
-              {companies.map(company => (
-                <MenuItem key={company} value={company}>{company}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <FormControl size="small">
+              <InputLabel id="company-filter-label">Entreprise</InputLabel>
+              <Select
+                labelId="company-filter-label"
+                value={companyFilter}
+                label="Entreprise"
+                onChange={handleCompanyFilterChange}
+                startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />}
+              >
+                <MenuItem value="all">Toutes</MenuItem>
+                {companies.map(company => (
+                  <MenuItem key={company} value={company}>{company}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
         }
       />
-      <Box sx={{ p: 3, pt: 0 }}>
+      <Box sx={{ p: 1, pt: 0 }}>
         {employees.length > 0 ? (
           <Stack spacing={3} divider={<Divider sx={{ borderStyle: 'dashed' }} />}>
             {employees.map((employee) => (
@@ -426,6 +475,17 @@ export function AgentRecentEmployees() {
 function EmployeeItem({ employee }) {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const popover = usePopover();
+  
+  // Déterminer la couleur du badge en fonction du type de permis
+  const getPermitColor = (type) => {
+    switch (type) {
+      case 'Permis A': return 'success';
+      case 'Permis B': return 'info';
+      case 'Permis C': return 'warning';
+      default: return 'default';
+    }
+  };
   
   return (
     <Stack 
@@ -433,35 +493,66 @@ function EmployeeItem({ employee }) {
       alignItems="center" 
       spacing={2}
       sx={{
-        p: 1,
+        p: 1.5,
         borderRadius: 1,
+        transition: 'all 0.2s ease-in-out',
+        cursor: 'pointer',
         '&:hover': {
           backgroundColor: isDarkMode 
-            ? theme.palette.action.hover 
-            : theme.palette.background.neutral,
+            ? alpha(theme.palette.primary.main, 0.08)
+            : alpha(theme.palette.primary.lighter, 0.2),
+          boxShadow: `0 0 0 1px ${isDarkMode ? theme.palette.divider : theme.palette.primary.lighter}`,
         },
       }}
+      onClick={popover.onOpen}
     >
-      <Avatar alt={employee.name} src={employee.avatar} sx={{ border: isDarkMode ? `1px solid ${theme.palette.divider}` : 'none' }} />
+      <Avatar 
+        alt={employee.name} 
+        src={employee.avatar} 
+        sx={{ 
+          width: 48, 
+          height: 48,
+          border: `2px solid ${theme.palette[getPermitColor(employee.permitType)].main}`,
+          boxShadow: `0 0 0 2px ${alpha(theme.palette[getPermitColor(employee.permitType)].main, 0.2)}`,
+        }} 
+      />
 
       <Box sx={{ flexGrow: 1 }}>
         <Typography 
           variant="subtitle2"
           sx={{ 
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-            fontWeight: 600
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5
           }}
         >
           {employee.name}
+          <Tooltip title="Ajouté récemment" arrow>
+            <Label 
+              color="success" 
+              variant="soft" 
+              sx={{ 
+                height: 18, 
+                fontSize: '0.65rem', 
+                display: isRecent(employee.addedDate) ? 'inline-flex' : 'none'
+              }}
+            >
+              Nouveau
+            </Label>
+          </Tooltip>
         </Typography>
 
         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
+          <Iconify icon="mdi:briefcase-outline" width={14} sx={{ color: 'text.secondary' }} />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {employee.position}
           </Typography>
 
           <Divider orientation="vertical" sx={{ height: 12, mx: 1 }} />
 
+          <Iconify icon="mdi:office-building-outline" width={14} sx={{ color: 'text.secondary' }} />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {employee.company}
           </Typography>
@@ -469,14 +560,51 @@ function EmployeeItem({ employee }) {
       </Box>
 
       <Stack alignItems="flex-end">
-        <Label variant="soft" color="info">
+        <Label 
+          variant="soft" 
+          color={getPermitColor(employee.permitType)}
+          sx={{ fontWeight: 600 }}
+        >
           {employee.permitType}
         </Label>
 
-        <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary' }}>
+        <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
+          <Iconify icon="mdi:calendar-outline" width={14} sx={{ mr: 0.5 }} />
           {fDate(employee.addedDate)}
         </Typography>
       </Stack>
+      
+      <CustomPopover
+        open={popover.open}
+        onClose={popover.onClose}
+        arrow="right-top"
+        sx={{ width: 160 }}
+      >
+        <MenuItem>
+          <Iconify icon="solar:eye-bold" />
+          Voir détails
+        </MenuItem>
+
+        <MenuItem>
+          <Iconify icon="solar:pen-bold" />
+          Modifier
+        </MenuItem>
+
+        <Divider sx={{ borderStyle: 'dashed' }} />
+
+        <MenuItem sx={{ color: 'error.main' }}>
+          <Iconify icon="solar:trash-bin-trash-bold" />
+          Supprimer
+        </MenuItem>
+      </CustomPopover>
     </Stack>
   );
+}
+
+// Fonction pour vérifier si un employé a été ajouté récemment (moins de 7 jours)
+function isRecent(date) {
+  const now = new Date();
+  const diffTime = Math.abs(now - new Date(date));
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays <= 7;
 }

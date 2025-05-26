@@ -6,7 +6,6 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { alpha, useTheme } from '@mui/material/styles';
 
-import { useAuthContext } from 'src/auth/hooks';
 import { fShortenNumber } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
