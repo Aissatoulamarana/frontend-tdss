@@ -20,7 +20,7 @@ import { CaissierAppView } from '../caissier/caissier-app-view';
 
 export function OverviewGlobalView() {
   const { user } = useMockedUser();
-  const type = user?.type.toLowerCase().trim();
+  const type = user?.type_name.toLowerCase().trim();
 
   
 

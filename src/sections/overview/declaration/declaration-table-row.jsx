@@ -192,7 +192,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
             <MenuItem
               key="submit"
               onClick={() => {

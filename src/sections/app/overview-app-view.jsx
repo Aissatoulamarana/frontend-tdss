@@ -35,20 +35,11 @@ export function OverviewAppView() {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const activated = searchParams.get("activated");
 
-  const [openChangePwd, setOpenChangePwd] = useState(false);
 
   const theme = useTheme();
 
-  useEffect(() => {
-    if (searchParams.get('activated') === 'true') {
-      setOpenChangePwd(true);
-      // On nettoie la query pour ne pas réouvrir au reload
-      const { activated, ...rest } = Object.fromEntries(searchParams.entries());
-      router.replace({ pathname: router.pathname, query: rest });
-    }
-  }, [searchParams, router]);
+ 
 
   return (
     <DashboardContent maxWidth="xl">
@@ -104,7 +95,33 @@ export function OverviewAppView() {
 
         <Grid size={{ xs: 6, md: 4 }}>
           <AppCurrentDownload
-            title="Catégorie de déclaration"
+            title="Permis declarés"
+            subheader=""
+            chart={{
+              series: [
+                { label: 'Permis A', value: 12244 },
+                { label: 'Permis B', value: 53345 },
+                { label: 'Permis C', value: 44313 },
+              ],
+            }}
+          />
+        </Grid>
+         <Grid size={{ xs: 6, md: 4 }}>
+          <AppCurrentDownload
+            title="Permis facturés"
+            subheader=""
+            chart={{
+              series: [
+                { label: 'Permis A', value: 12244 },
+                { label: 'Permis B', value: 53345 },
+                { label: 'Permis C', value: 44313 },
+              ],
+            }}
+          />
+        </Grid>
+         <Grid size={{ xs: 6, md: 4 }}>
+          <AppCurrentDownload
+            title="Permis Payés"
             subheader=""
             chart={{
               series: [
@@ -116,7 +133,7 @@ export function OverviewAppView() {
           />
         </Grid>
 
-        <Grid size={{ xs: 6, md: 8 }}>
+        <Grid size={{ xs: 6, md: 4 }}>
           <AppAreaInstalled
             title="Déclarations"
             subheader="(+43%) Depuis l'année dernière"
@@ -164,15 +181,143 @@ export function OverviewAppView() {
             }}
           />
         </Grid>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <AppAreaInstalled
+            title="Factures"
+            subheader="(+43%) Depuis l'année dernière"
+            chart={{
+              categories: [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
+              ],
+              series: [
+                {
+                  name: '2022',
+                  data: [
+                    { name: 'Permis A', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
+                    { name: 'Permis B', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
+                    { name: 'Permis C', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
+                  ],
+                },
+                {
+                  name: '2023',
+                  data: [
+                    { name: 'Permis A', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
+                    { name: 'Permis B', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
+                    { name: 'Permis C', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
+                  ],
+                },
+                {
+                  name: '2024',
+                  data: [
+                    { name: 'Permis A', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                    { name: 'Permis B', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                    { name: 'Permis C', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                  ],
+                },
+              ],
+            }}
+          />
+        </Grid>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <AppAreaInstalled
+            title="Paiements"
+            subheader="(+43%) Depuis l'année dernière"
+            chart={{
+              categories: [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
+              ],
+              series: [
+                {
+                  name: '2022',
+                  data: [
+                    { name: 'Permis A', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
+                    { name: 'Permis B', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
+                    { name: 'Permis C', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
+                  ],
+                },
+                {
+                  name: '2023',
+                  data: [
+                    { name: 'Permis A', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
+                    { name: 'Permis B', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
+                    { name: 'Permis C', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
+                  ],
+                },
+                {
+                  name: '2024',
+                  data: [
+                    { name: 'Permis A', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                    { name: 'Permis B', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                    { name: 'Permis C', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                  ],
+                },
+              ],
+            }}
+          />
+        </Grid>
 
-        <Grid size={{ xs: 6, md: 8 }}>
+        <Grid size={{ xs: 6, md: 4 }}>
           <AppNewInvoice
             title="Dernières Déclarations"
             tableData={_appInvoices}
             headLabel={[
               { id: 'id', label: 'Déclaration ' },
+               { id: 'price', label: 'Entreprises' },
               { id: 'Total', label: 'Total Employés' },
-              { id: 'price', label: 'Montant' },
+             
+              { id: 'date', label: 'Date ' },
+              { id: 'status', label: 'Status' },
+              { id: '' },
+            ]}
+          />
+        </Grid>
+         <Grid size={{ xs: 6, md: 4 }}>
+          <AppNewInvoice
+            title="Dernières Factures"
+            tableData={_appInvoices}
+            headLabel={[
+              { id: 'id', label: 'Déclaration ' },
+               { id: 'price', label: 'Entreprises' },
+              { id: 'Total', label: 'Total Employés' },
+             
+              { id: 'date', label: 'Date ' },
+              { id: 'status', label: 'Status' },
+              { id: '' },
+            ]}
+          />
+        </Grid>
+         <Grid size={{ xs: 6, md: 4 }}>
+          <AppNewInvoice
+            title="Dernières Paiements"
+            tableData={_appInvoices}
+            headLabel={[
+              { id: 'id', label: 'Déclaration ' },
+               { id: 'price', label: 'Entreprises' },
+              { id: 'Total', label: 'Total Employés' },
+             
+              { id: 'date', label: 'Date ' },
               { id: 'status', label: 'Status' },
               { id: '' },
             ]}
@@ -215,40 +360,6 @@ export function OverviewAppView() {
       </Grid>
 
 
-         {/* ——— Boîte de dialogue “Pensez à changer votre mot de passe” ——— */}
-    <Dialog
-      open={openChangePwd}
-      onClose={() => {
-        setOpenChangePwd(false);
-         router.push(paths.dashboard.root);
-       }}
-     >
-       <DialogTitle>Bienvenue !</DialogTitle>
-       <DialogContent>
-         Votre compte vient d’être activé. Pour votre sécurité, pensez à changer
-        votre mot de passe dans les paramètres de votre compte.
-       </DialogContent>
-      <DialogActions>
-        <Button
-         onClick={() => {
-             setOpenChangePwd(false);
-             router.push(paths.dashboard.user.account);
-            
-           }}
-         >
-           Changer mon mot de passe
-         </Button>
-         <Button
-           onClick={() => {
-             setOpenChangePwd(false);
-            router.push(paths.dashboard.root);
-          }}
-         color="inherit"
-        >
-           Plus tard
-         </Button>
-       </DialogActions>
-    </Dialog>
 
     </DashboardContent>
   );
