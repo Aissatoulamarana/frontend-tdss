@@ -46,13 +46,27 @@ const ALL_SUMMARY_DATA = {
 
 export function AgentWidgetSummary({ title, total, icon, color = 'primary', sx, ...other }) {
   const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   return (
     <Card
       sx={{
-        boxShadow: 0,
-        color: theme.palette[color].darker,
-        bgcolor: alpha(theme.palette[color].main, 0.12),
+        boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+        color: isDarkMode 
+          ? theme.palette[color].lighter 
+          : theme.palette[color].darker,
+        bgcolor: isDarkMode 
+          ? alpha(theme.palette[color].dark, 0.3) 
+          : alpha(theme.palette[color].main, 0.08),
+        borderRadius: 1,
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: isDarkMode ? '0 6px 10px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+          bgcolor: isDarkMode 
+            ? alpha(theme.palette[color].dark, 0.4) 
+            : alpha(theme.palette[color].main, 0.12),
+        },
         ...sx,
       }}
       {...other}
@@ -60,21 +74,57 @@ export function AgentWidgetSummary({ title, total, icon, color = 'primary', sx, 
       <Box sx={{ p: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <div>
-            <Typography variant="subtitle2">{title}</Typography>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                color: isDarkMode 
+                  ? theme.palette[color].lighter 
+                  : theme.palette[color].darker,
+                fontWeight: 600,
+                mb: 0.5,
+                fontSize: '0.85rem',
+                opacity: 0.9
+              }}
+            >
+              {title}
+            </Typography>
 
-            <Typography variant="h3">{fShortenNumber(total)}</Typography>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                color: isDarkMode 
+                  ? theme.palette.common.white 
+                  : theme.palette[color].darker,
+                fontWeight: 700,
+                fontSize: '2rem'
+              }}
+            >
+              {fShortenNumber(total)}
+            </Typography>
           </div>
 
           <Box
             sx={{
-              width: 48,
-              height: 48,
+              width: 50,
+              height: 50,
               display: 'flex',
-              borderRadius: 1.5,
+              borderRadius: '8px',
               alignItems: 'center',
               justifyContent: 'center',
-              color: theme.palette[color].darker,
-              bgcolor: alpha(theme.palette[color].dark, 0.12),
+              color: isDarkMode 
+                ? theme.palette[color].lighter 
+                : theme.palette[color].darker,
+              bgcolor: isDarkMode 
+                ? alpha(theme.palette[color].dark, 0.5) 
+                : alpha(theme.palette[color].main, 0.15),
+              boxShadow: isDarkMode ? '0 2px 6px rgba(0,0,0,0.3)' : 'none',
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                bgcolor: isDarkMode 
+                  ? alpha(theme.palette[color].dark, 0.6) 
+                  : alpha(theme.palette[color].main, 0.2),
+              }
             }}
           >
             {icon}
@@ -88,6 +138,7 @@ export function AgentWidgetSummary({ title, total, icon, color = 'primary', sx, 
 AgentWidgetSummary.propTypes = {
   color: PropTypes.string,
   icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
+  // eslint-disable-next-line react/forbid-prop-types
   sx: PropTypes.object,
   title: PropTypes.string,
   total: PropTypes.number,

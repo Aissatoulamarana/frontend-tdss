@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
+import { useTheme } from '@mui/material/styles';
 
 import { Chart } from 'src/components/chart';
 
@@ -87,6 +88,8 @@ const ALL_DECLARATION_SERIES = [
 
 export function AgentPermitCategoryChart() {
   const [permitCategories, setPermitCategories] = useState([]);
+  const { palette, customShadows } = useTheme();
+  const isDarkMode = palette.mode === 'dark';
 
   // Filtrer les catégories de permis pour n'afficher que celles de l'agent connecté
   useEffect(() => {
@@ -97,8 +100,15 @@ export function AgentPermitCategoryChart() {
   const chartOptions = {
     chart: {
       width: 400,
+      background: 'transparent',
     },
-    colors: [
+    colors: isDarkMode ? [
+      '#66d9ef',
+      '#f7d2c4',
+      '#8bc34a',
+      '#ff9800',
+      '#03a9f4',
+    ] : [
       '#00A76F',
       '#FFAB00',
       '#00B8D9',
@@ -154,6 +164,8 @@ export function AgentDeclarationChart() {
   const [selectedYear, setSelectedYear] = useState('2023');
   const [chartData, setChartData] = useState([]);
   const [availableYears, setAvailableYears] = useState([]);
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
 
   // Filtrer les données de déclaration pour n'afficher que celles de l'agent connecté
   useEffect(() => {
@@ -179,18 +191,43 @@ export function AgentDeclarationChart() {
     chart: {
       stacked: false,
       zoom: { enabled: false },
+      background: 'transparent',
+      foreColor: isDarkMode ? theme.palette.text.primary : undefined,
     },
+    colors: [isDarkMode ? theme.palette.primary.light : theme.palette.primary.main],
     xaxis: {
       categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+      labels: {
+        style: {
+          colors: isDarkMode ? theme.palette.text.secondary : undefined,
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: isDarkMode ? theme.palette.text.secondary : undefined,
+        },
+      },
     },
     tooltip: {
       y: {
         formatter: (value) => `${value} déclarations`,
       },
+      theme: isDarkMode ? 'dark' : 'light',
+    },
+    grid: {
+      borderColor: isDarkMode ? theme.palette.divider : undefined,
     },
     plotOptions: {
       area: {
         fillTo: 'end',
+        opacity: isDarkMode ? 0.2 : 0.1,
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.5,
+          opacityTo: 0.3,
+        },
       },
     },
   };

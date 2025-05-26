@@ -18,6 +18,7 @@ import TablePagination from '@mui/material/TablePagination';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
+import { useTheme } from '@mui/material/styles';
 
 import { fDate } from 'src/utils/format-time';
 import { Iconify } from 'src/components/iconify';
@@ -35,6 +36,8 @@ const CURRENT_USER = {
   company: 'Entreprise ABC',
   role: 'agent',
 };
+
+
 
 // Données mockées pour le développement
 const ALL_DECLARATIONS = [
@@ -147,6 +150,8 @@ const TABLE_HEAD = [
 // ----------------------------------------------------------------------
 
 export function AgentRecentDeclarations() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [filter, setFilter] = useState('all'); // 'all', 'submitted', 'pending'
@@ -180,10 +185,16 @@ export function AgentRecentDeclarations() {
   };
 
   return (
-    <Card>
+    <Card sx={{ boxShadow: theme.customShadows.z8 }}>
       <CardHeader 
         title="Mes Déclarations" 
-        sx={{ mb: 2 }} 
+        sx={{ 
+          mb: 2,
+          '& .MuiCardHeader-title': {
+            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+            fontWeight: 600
+          }
+        }} 
         action={
           <FormControl sx={{ minWidth: 150 }} size="small">
             <InputLabel id="status-filter-label">Statut</InputLabel>
@@ -202,12 +213,19 @@ export function AgentRecentDeclarations() {
       />
       <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>
-          <Table sx={{ minWidth: 720 }}>
+          <Table sx={{ 
+            minWidth: 720,
+            '& .MuiTableCell-head': {
+              color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+              backgroundColor: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral,
+              fontWeight: 600
+            }
+          }}>
             <TableHeadCustom headLabel={TABLE_HEAD} />
 
             <TableBody>
               {declarations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                <AgentDeclarationRow key={row.id} row={row} />
+                <AgentDeclarationRow key={row.id} row={row} isDarkMode={isDarkMode} />
               ))}
             </TableBody>
           </Table>
@@ -229,7 +247,8 @@ export function AgentRecentDeclarations() {
 
 // ----------------------------------------------------------------------
 
-function AgentDeclarationRow({ row }) {
+function AgentDeclarationRow({ row, isDarkMode }) {
+  const theme = useTheme();
   const popover = usePopover();
 
   const handleViewDetails = () => {
@@ -249,11 +268,20 @@ function AgentDeclarationRow({ row }) {
 
   return (
     <>
-      <TableRow>
-        <TableCell>{row.id}</TableCell>
-        <TableCell>{fDate(row.date)}</TableCell>
-        <TableCell>{row.company}</TableCell>
-        <TableCell>{row.employees}</TableCell>
+      <TableRow
+        hover
+        sx={{
+          '&:hover': {
+            backgroundColor: isDarkMode 
+              ? theme.palette.action.hover 
+              : theme.palette.background.neutral,
+          },
+        }}
+      >
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.id}</TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{fDate(row.date)}</TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>{row.company}</TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.employees}</TableCell>
         <TableCell>
           <Label
             variant="soft"
@@ -263,7 +291,15 @@ function AgentDeclarationRow({ row }) {
           </Label>
         </TableCell>
         <TableCell align="right">
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton 
+            color={popover.open ? 'primary' : 'default'} 
+            onClick={popover.onOpen}
+            sx={{ 
+              color: popover.open 
+                ? theme.palette.primary.main 
+                : isDarkMode ? theme.palette.text.secondary : undefined 
+            }}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -299,6 +335,8 @@ function AgentDeclarationRow({ row }) {
 // ----------------------------------------------------------------------
 
 export function AgentRecentEmployees() {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   const [employees, setEmployees] = useState([]);
   const [companyFilter, setCompanyFilter] = useState('all');
 
@@ -325,10 +363,16 @@ export function AgentRecentEmployees() {
   };
 
   return (
-    <Card>
+    <Card sx={{ boxShadow: theme.customShadows.z8 }}>
       <CardHeader 
         title="Mes Employés" 
-        sx={{ mb: 2 }} 
+        sx={{ 
+          mb: 2,
+          '& .MuiCardHeader-title': {
+            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+            fontWeight: 600
+          }
+        }} 
         action={
           <FormControl sx={{ minWidth: 150 }} size="small">
             <InputLabel id="company-filter-label">Entreprise</InputLabel>
@@ -380,12 +424,36 @@ export function AgentRecentEmployees() {
 // ----------------------------------------------------------------------
 
 function EmployeeItem({ employee }) {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
+  
   return (
-    <Stack direction="row" alignItems="center" spacing={2}>
-      <Avatar alt={employee.name} src={employee.avatar} />
+    <Stack 
+      direction="row" 
+      alignItems="center" 
+      spacing={2}
+      sx={{
+        p: 1,
+        borderRadius: 1,
+        '&:hover': {
+          backgroundColor: isDarkMode 
+            ? theme.palette.action.hover 
+            : theme.palette.background.neutral,
+        },
+      }}
+    >
+      <Avatar alt={employee.name} src={employee.avatar} sx={{ border: isDarkMode ? `1px solid ${theme.palette.divider}` : 'none' }} />
 
       <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="subtitle2">{employee.name}</Typography>
+        <Typography 
+          variant="subtitle2"
+          sx={{ 
+            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+            fontWeight: 600
+          }}
+        >
+          {employee.name}
+        </Typography>
 
         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>

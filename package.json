@@ -52,6 +52,7 @@
         "apexcharts": "^4.5.0",
         "autosuggest-highlight": "^3.3.4",
         "axios": "^1.8.3",
+        "date-fns": "^4.1.0",
         "dayjs": "^1.11.13",
         "eslint-config-airbnb": "^19.0.4",
         "eslint-config-prettier": "^10.1.1",

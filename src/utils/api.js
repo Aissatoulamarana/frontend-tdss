@@ -98,6 +98,21 @@ const API = {
     const searchParams = new URLSearchParams({ type: 'entreprise', ...params }).toString();
     return `${BASE_URL}/profiles/active-profiles/?${searchParams}`;
   }, // Liste des entreprises avec des params
+  
+  // Endpoints pour le dashboard agent
+  getAgentCompanies: () => `${BASE_URL}/agent/companies/`, // Liste des entreprises gérées par l'agent
+  getAgentSummary: (companyId = 'all') => `${BASE_URL}/agent/summary/?company=${companyId}`, // Résumé des données de l'agent
+  getAgentChartData: (companyId = 'all') => `${BASE_URL}/agent/charts/?company=${companyId}`, // Données pour les graphiques
+  getAgentRecentDeclarations: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/agent/declarations/?${searchParams}`;
+  }, // Déclarations récentes de l'agent
+  getAgentRecentEmployees: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/agent/employees/?${searchParams}`;
+  }, // Employés récents de l'agent
+  getAgentNotifications: () => `${BASE_URL}/agent/notifications/`, // Notifications de l'agent
+  exportAgentData: (companyId = 'all', period = 'month') => `${BASE_URL}/agent/export/?company=${companyId}&period=${period}`, // Exporter les données de l'agent
 
   listDevises: () => `${BASE_URL}/devises/`,
   Devises : () => `${BASE_URL}/devises/list/`,
