@@ -47,7 +47,7 @@ const ICONS = {
 export function useNavData () {
 
   const {user} = useMockedUser();
-  const type = user?.type.toLowerCase().trim();
+  const type = user?.type_name?.toLowerCase().trim();
 
   return [
   /**

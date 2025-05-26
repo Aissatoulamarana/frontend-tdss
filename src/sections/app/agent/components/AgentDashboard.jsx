@@ -10,6 +10,8 @@ import Box from '@mui/material/Box';
 
 import { Iconify } from 'src/components/iconify';
 
+import { svgColorClasses } from 'src/components/svg-color';
+
 import { AgentWidgetSummary, getAgentSummaryData } from './AgentWidgetSummary';
 import { AgentPermitCategoryChart, AgentDeclarationChart } from './AgentCharts';
 import { AgentRecentDeclarations, AgentRecentEmployees } from './AgentTables';
@@ -77,8 +79,9 @@ export default function AgentDashboard() {
           <AgentWidgetSummary
             title="Employés déclarés"
             total={totalEmployees}
-            color="primary"
+          
             icon={<Iconify icon="mdi:account-group" width={36} />}
+            sx={{ bgcolor: 'info.dark', [`& .${svgColorClasses.root}`]: { color: 'info.light' } }}
           />
         </Grid>
 
@@ -86,7 +89,7 @@ export default function AgentDashboard() {
           <AgentWidgetSummary
             title="Total Paiement"
             total={totalPayments}
-            color="info"
+            
             icon={<Iconify icon="mdi:cash-multiple" width={36} />}
           />
         </Grid>
@@ -95,7 +98,7 @@ export default function AgentDashboard() {
           <AgentWidgetSummary
             title="En attente de paiement"
             total={pendingPayments}
-            color="warning"
+           
             icon={<Iconify icon="mdi:clock-time-four" width={36} />}
           />
         </Grid>
@@ -104,7 +107,7 @@ export default function AgentDashboard() {
           <AgentWidgetSummary
             title="Total Factures"
             total={totalInvoices}
-            color="error"
+            
             icon={<Iconify icon="mdi:file-document" width={36} />}
           />
         </Grid>

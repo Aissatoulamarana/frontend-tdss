@@ -6,6 +6,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import { useTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
 
 import { Iconify } from 'src/components/iconify';
 
@@ -14,6 +15,7 @@ import { Iconify } from 'src/components/iconify';
 export function AgentActionButton() {
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const handleOpen = () => {
     setOpen(true);
@@ -26,7 +28,7 @@ export function AgentActionButton() {
   const handleCreateDeclaration = () => {
     // Ici, on pourrait rediriger vers la page de création de déclaration
     // ou implémenter la logique de création directement
-    handleClose();
+    router.push('/agent/declaration/new');
   };
 
   return (
