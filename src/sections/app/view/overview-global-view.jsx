@@ -20,7 +20,7 @@ import { CaissierAppView } from '../caissier/caissier-app-view';
 
 export function OverviewGlobalView() {
   const { user } = useMockedUser();
-  const type = user?.type.toLowerCase().trim();
+  const type = user?.type_name.toLowerCase().trim();
 
   
 
@@ -29,20 +29,20 @@ export function OverviewGlobalView() {
     <DashboardContent maxWidth="xl">
       {type === 'admin' && (
       <OverviewAppView></OverviewAppView>
-)}
-{type === 'agent' && (
+      )}
+      {type === 'agent' && (
       <AgentAppView/>
-)}
-{type === 'superviseur' && (
+      )}
+      {type === 'superviseur' && (
       <SuperviserAppView/>
-)}
+      )}
       {type === 'comptable' && (
       <ComptableAppView/>
-)}
+      )}
 
       {type === 'caissier' && (
       <CaissierAppView/>
-)}
+      )}
     </DashboardContent>
   );
 }
