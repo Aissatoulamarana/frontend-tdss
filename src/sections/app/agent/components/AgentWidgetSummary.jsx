@@ -21,22 +21,22 @@ const CURRENT_USER = {
 // Données mockées pour le développement
 const ALL_SUMMARY_DATA = {
   totalEmployees: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18765 },
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18 },
     { agentId: 'AGENT-001', company: 'Société XYZ', count: 12 },
     { agentId: 'AGENT-002', company: 'Compagnie 123', count: 30 },
   ],
   totalPayments: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 4876 },
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 48 },
     { agentId: 'AGENT-001', company: 'Société XYZ', count: 5 },
     { agentId: 'AGENT-002', company: 'Compagnie 123', count: 15 },
   ],
   pendingPayments: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18765 },
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18 },
     { agentId: 'AGENT-001', company: 'Société XYZ', count: 3 },
     { agentId: 'AGENT-002', company: 'Compagnie 123', count: 10 },
   ],
   totalInvoices: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 678 },
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 67 },
     { agentId: 'AGENT-001', company: 'Société XYZ', count: 2 },
     { agentId: 'AGENT-002', company: 'Compagnie 123', count: 5 },
   ],

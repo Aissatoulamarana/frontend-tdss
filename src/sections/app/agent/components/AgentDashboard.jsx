@@ -81,7 +81,7 @@ export default function AgentDashboard() {
             total={totalEmployees}
           
             icon={<Iconify icon="mdi:account-group" width={36} />}
-            sx={{ bgcolor: 'info.dark', [`& .${svgColorClasses.root}`]: { color: 'info.light' } }}
+           
           />
         </Grid>
 
@@ -98,7 +98,7 @@ export default function AgentDashboard() {
           <AgentWidgetSummary
             title="En attente de paiement"
             total={pendingPayments}
-           
+            
             icon={<Iconify icon="mdi:clock-time-four" width={36} />}
           />
         </Grid>
