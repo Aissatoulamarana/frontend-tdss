@@ -196,16 +196,9 @@ export function AgentRecentDeclarations() {
             <Typography variant="h6">
               Déclarations fiscales récentes
             </Typography>
-            <Label color="info" sx={{ ml: 1 }}>
-              {declarations.length}
-            </Label>
           </Stack>
         }
-        subheader={
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-            Liste des dernières déclarations fiscales enregistrées dans le système
-          </Typography>
-        }
+        
         sx={{ 
           pb: 0,
           '& .MuiCardHeader-title': {
@@ -407,9 +400,6 @@ export function AgentRecentEmployees() {
             <Typography variant="h6">
               Employés par entreprise
             </Typography>
-            <Label color="info" sx={{ ml: 1 }}>
-              {employees.length}
-            </Label>
           </Stack>
         }
         
