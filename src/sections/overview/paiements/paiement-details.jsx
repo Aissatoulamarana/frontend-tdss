@@ -141,7 +141,7 @@ export function PaiementDetails({ payment, user }) {
               <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Facture N° :</Typography> {payment?.facture_number}
               </Typography>
-              {user?.type === 'Admin' && (
+              {user?.type_name=== 'Admin' && (
                  <>
               <Typography variant="body2" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Référence :</Typography> {payment?.facture_ref}
@@ -161,7 +161,7 @@ export function PaiementDetails({ payment, user }) {
               {/* <Typography variant="body2" align="right" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Devise :</Typography> {payment?.devise?.name} ({payment?.devise?.sign})
               </Typography> */}
-              {user?.type === 'Admin' && (
+              {user?.type_name === 'Admin' && (
               <Typography variant="body2" align="right" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
                 <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Créé par :</Typography> {payment?.created_by?.name}
               </Typography>
