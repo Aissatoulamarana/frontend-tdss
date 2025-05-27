@@ -75,7 +75,7 @@ export function FactureTableRow({
 
   const popover = usePopover();
   const payeurForm = useBoolean();
-
+ const profil = user?.companie[0]?.type_code?.toLowerCase().trim();
 
   return (
     <>
@@ -176,7 +176,7 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && (
+          {(user?.type_name === 'Caissier' && profil === 'AGUIPEE' || profil === 'TDSS') &&  row.status === 'unpaid' && (
           <MenuItem
           color={payeurForm.value ? 'inherit' : 'default'}
             onClick={() => {
