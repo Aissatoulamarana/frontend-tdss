@@ -224,7 +224,7 @@ export default function AgentDashboard() {
           <Typography variant="h4">Tableau de Bord Agent</Typography>
           {user && (
             <Typography variant="subtitle2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-              {user.name} | {user.role} | ID: {user.id}
+              {user.name} | {user.type_name} |
             </Typography>
           )}
         </Box>

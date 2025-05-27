@@ -206,7 +206,7 @@ export function AgentRecentDeclarations() {
           }
         }} 
         action={
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center" marginBottom={3}>
             <FormControl sx={{ minWidth: 150 }} size="small">
               <InputLabel id="status-filter-label">Statut</InputLabel>
               <Select
@@ -418,7 +418,8 @@ export function AgentRecentEmployees() {
                 value={companyFilter}
                 label="Entreprise"
                 onChange={handleCompanyFilterChange}
-                startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />}
+                sx= {{mb: 0.5}}
+                startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5}} />}
               >
                 <MenuItem value="all">Toutes</MenuItem>
                 {companies.map(company => (
