@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
-
+import { Iconify } from 'src/components/iconify';
 import { Chart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
@@ -145,8 +144,13 @@ export function AgentPermitCategoryChart() {
 
   return (
     <Card>
-      <CardHeader title="Répartition par Catégorie de Permis" sx={{ mb: 2 }} />
-      <Box sx={{ mx: 3 }} dir="ltr">
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 2, pb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+          <Iconify icon="mdi:chart-pie" width={24} sx={{ mr: 1 }} />
+          Répartition par Catégorie
+        </Typography>
+      </Box>
+      <Box sx={{ p: 3, pt: 1 }} dir="ltr">
         <Chart
           type="donut"
           series={permitCategories.map(i => i.value)}
@@ -234,25 +238,26 @@ export function AgentDeclarationChart() {
 
   return (
     <Card>
-      <CardHeader 
-        title="Évolution des Déclarations" 
-        sx={{ mb: 2 }} 
-        action={
-          <FormControl sx={{ minWidth: 120 }} size="small">
-            <InputLabel id="year-select-label">Année</InputLabel>
-            <Select
-              labelId="year-select-label"
-              value={selectedYear}
-              label="Année"
-              onChange={handleYearChange}
-            >
-              {availableYears.map(year => (
-                <MenuItem key={year} value={year}>{year}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        }
-      />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 2, pb: 1 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+          <Iconify icon="mdi:chart-line" width={24} sx={{ mr: 1 }} />
+          Évolution des déclarations
+        </Typography>
+        
+        <FormControl sx={{ minWidth: 120 }} size="small">
+          <InputLabel id="year-select-label">Année</InputLabel>
+          <Select
+            labelId="year-select-label"
+            value={selectedYear}
+            label="Année"
+            onChange={handleYearChange}
+          >
+            {availableYears.map(year => (
+              <MenuItem key={year} value={year}>{year}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
         <Chart
           type="area"

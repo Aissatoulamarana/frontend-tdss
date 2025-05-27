@@ -28,7 +28,7 @@ export function AgentActionButton() {
   const handleCreateDeclaration = () => {
     // Ici, on pourrait rediriger vers la page de création de déclaration
     // ou implémenter la logique de création directement
-    router.push('/declaration/new');
+    router.replace('/dashboard/declaration/new');
   };
 
   return (

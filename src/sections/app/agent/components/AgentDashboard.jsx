@@ -305,7 +305,7 @@ export default function AgentDashboard() {
             <AgentWidgetSummary
               title="Employés déclarés"
               total={summaryData.totalEmployees}
-              icon={<Iconify icon="mdi:account-group" width={36} />}
+              icon={<Iconify icon="mdi:account-group" width={36} height={36} />}
               color="info"
             />
           )}
@@ -321,7 +321,7 @@ export default function AgentDashboard() {
             <AgentWidgetSummary
               title="Total Paiement"
               total={summaryData.totalPayments}
-              icon={<Iconify icon="mdi:cash-multiple" width={36} />}
+              icon={<Iconify icon="mdi:cash-multiple" width={36} height={36} />}
               color="success"
             />
           )}
@@ -337,7 +337,7 @@ export default function AgentDashboard() {
             <AgentWidgetSummary
               title="En attente de paiement"
               total={summaryData.pendingPayments}
-              icon={<Iconify icon="mdi:clock-time-four" width={36} />}
+              icon={<Iconify icon="mdi:clock-time-four" width={36} height={36} />}
               color="warning"
             />
           )}
@@ -353,7 +353,7 @@ export default function AgentDashboard() {
             <AgentWidgetSummary
               title="Total Factures"
               total={summaryData.totalInvoices}
-              icon={<Iconify icon="mdi:file-document" width={36} />}
+              icon={<Iconify icon="mdi:file-document" width={36} height={36} />}
               color="error"
             />
           )}
@@ -361,10 +361,7 @@ export default function AgentDashboard() {
 
         {/* Graphiques */}
         <Grid item xs={12} md={6} lg={4}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-            <Iconify icon="mdi:chart-pie" width={24} sx={{ mr: 1 }} />
-            Répartition par Catégorie
-          </Typography>
+          
           
           {errors.charts && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -385,10 +382,6 @@ export default function AgentDashboard() {
         </Grid>
 
         <Grid item xs={12} md={6} lg={8}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-            <Iconify icon="mdi:chart-line" width={24} sx={{ mr: 1 }} />
-            Évolution des Déclarations
-          </Typography>
           
           {loading.charts ? (
             <Card sx={{ p: 3, height: '100%', minHeight: 350 }}>

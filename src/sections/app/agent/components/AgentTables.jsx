@@ -221,14 +221,6 @@ export function AgentRecentDeclarations() {
                 <MenuItem value="pending">Non Soumises</MenuItem>
               </Select>
             </FormControl>
-            <Button 
-              size="small" 
-              startIcon={<Iconify icon="mdi:plus" />}
-              variant="contained"
-              color="primary"
-            >
-              Nouvelle
-            </Button>
           </Stack>
         }
       />
