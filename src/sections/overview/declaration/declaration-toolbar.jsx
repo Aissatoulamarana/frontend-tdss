@@ -42,8 +42,8 @@ export function DeclarationToolbar({
   const router = useRouter();
 
   const user = useMockedUser();
-  const type = user?.type?.toLowerCase().trim();
-  const profil = user?.companies?.type_code?.toLowerCase().trim();
+  const type = user?.type_name?.toLowerCase().trim();
+  const profil = user?.companies[0]?.type_code?.toLowerCase().trim();
   
 
   // États pour contrôler l'ouverture des dialogues share et send
