@@ -56,20 +56,20 @@ export function AccountGeneral() {
 
   const defaultValues = useMemo(() => {
     const currentRegion = regions?.find(region => region.name === user?.location);
-    const currentRole = roles?.find(role => role.name === user?.type);
+    const currentRole = roles?.find(role => role.name === user?.type_name);
     const currentProfil = profils?.find(profil => profil.name === user?.profile);
     const currentAgence = agences?.find(agence => agence.name === user?.agency);
 
     return {
-      first_name: user?.first_name || '',
+      first_name: user?.name || '',
       last_name: user?.last_name || '',
       email: user?.email || '',
       picture: user?.picture || '',
       phone: user?.phone || '',
-      type: user?.type === 'Admin'
-        ? currentRole?.slug || user?.type?.slug || ''
-        : currentRole || user?.type || '',
-      profile: user?.type === 'Admin'
+      type: user?.type_name === 'Admin'
+        ? currentRole?.slug || user?.type_name || ''
+        : currentRole || user?.type_name || '',
+      profile: user?.type_name === 'Admin'
         ? currentProfil?.slug || user?.profile?.slug || ''
         : currentProfil || user?.profile || '',
       location: currentRegion ? currentRegion.slug : user?.location?.slug || '',
@@ -171,12 +171,12 @@ export function AccountGeneral() {
                 sm: 'repeat(2, 1fr)',
               }}
             >
-              <Field.Text name="first_name" label="Prénom" />
-              <Field.Text name="last_name" label="Nom" />
+              <Field.Text name="first_name" label="Nom Complet" />
+              {/* <Field.Text name="last_name" label="Nom" /> */}
               <Field.Text name="email" label="Adresse Mail" />
               <Field.Phone name="phone" label="Numéro de Téléphone" />
 
-              {user.type === 'Admin' ? (
+              {/* {user.type === 'Admin' ? (
                 <Field.Select name="profile" label="Profil">
                   {profils.map((profil) => (
                     <MenuItem key={profil?.slug} value={profil?.slug}>
@@ -192,10 +192,10 @@ export function AccountGeneral() {
 
                   inputlabelprops={{ shrink: true }}
                 />
-              )}
+              )} */}
 
 
-              <Field.Select name="location" label="Region" >
+              {/* <Field.Select name="location" label="Region" >
                 {regions.map((region) => (
                   <MenuItem key={region?.slug} value={region?.slug}>
                     {region?.name}
@@ -210,8 +210,9 @@ export function AccountGeneral() {
                   </MenuItem>
                 ))
                 }
-              </Field.Select>
-              {user.type === 'Admin' ? (
+              </Field.Select> */}
+
+              {user.type_name === 'Admin' ? (
                 <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
                   {roles?.map((role) => (
                     <MenuItem key={role.slug} value={role.slug}>
@@ -229,7 +230,7 @@ export function AccountGeneral() {
               )}
 
             </Box>
-
+            {user.type_name === 'Admin' && (
             <Stack spacing={3} alignItems="flex-end" sx={{ mt: 3 }}>
 
 
@@ -237,6 +238,7 @@ export function AccountGeneral() {
                 Enregistrer les changements
               </LoadingButton>
             </Stack>
+            )}
           </Card>
         </Grid2>
       </Grid2>

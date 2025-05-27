@@ -29,12 +29,12 @@ import { ProfileFollowers } from '../profile-followers';
 
 const TABS = [
     { value: 'profile', label: 'Profile', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
-    { value: 'followers', label: 'Followers', icon: <Iconify icon="solar:heart-bold" width={24} /> },
-    {
-        value: 'utilisateurs',
-        label: 'Utilisateurs',
-        icon: <Iconify icon="solar:users-group-rounded-bold" width={24} />,
-    },
+    // { value: 'followers', label: 'Followers', icon: <Iconify icon="solar:heart-bold" width={24} /> },
+    // {
+    //     value: 'utilisateurs',
+    //     label: 'Utilisateurs',
+    //     icon: <Iconify icon="solar:users-group-rounded-bold" width={24} />,
+    // },
     // {
     //     value: 'gallery',
     //     label: 'Gallery',
@@ -61,8 +61,8 @@ export function UserProfileView() {
                 heading="Profile"
                 links={[
                     { name: 'Dashboard', href: paths.dashboard.root },
-                    { name: 'Utilisateur', href: paths.dashboard.user.root },
-                    { name: user?.first_name },
+                    { name: 'Profil'},
+                    { name: user?.name },
                 ]}
                 sx={{ mb: { xs: 3, md: 5 } }}
             />
@@ -70,7 +70,7 @@ export function UserProfileView() {
             <Card sx={{ mb: 3, height: 290 }}>
                 <ProfileCover
                     role={user?.type_name}
-                    name={`${user?.first_name || ''} ${user?.last_name || ''}`.trim()}
+                    name={`${user?.name || ''} `}
                     avatarUrl={user?.picture}
                     coverUrl={user?.profile_picture}
                 />
@@ -97,15 +97,15 @@ export function UserProfileView() {
 
             {tabs.value === 'profile' && <ProfileHome info={user} posts={_userFeeds} />}
 
-            {tabs.value === 'followers' && <ProfileFollowers followers={_userFollowers} />}
-
+            {/* {tabs.value === 'followers' && <ProfileFollowers followers={_userFollowers} />} */}
+{/* 
             {tabs.value === 'utilisateurs' && (
                 <ProfileFriends
                     friends={_userFriends}
                     searchFriends={searchFriends}
                     onSearchFriends={handleSearchFriends}
                 />
-            )}
+            )} */}
 
             {/* {tabs.value === 'gallery' && <ProfileGallery gallery={_userGallery} />} */}
         </DashboardContent>

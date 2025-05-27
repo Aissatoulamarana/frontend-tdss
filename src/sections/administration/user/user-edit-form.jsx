@@ -9,6 +9,7 @@ import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import TextField from '@mui/material/TextField';
 import axios from 'src/utils/axios';
 import { useMemo, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -28,6 +29,8 @@ import { toast } from 'src/components/snackbar';
 import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
 
 
+
+
 // ----------------------------------------------------------------------
 // Le schéma de validation (nous n'incluons plus username car le backend s'appuie sur email)
 export const NewUserSchema = zod.object({
@@ -42,7 +45,11 @@ export const NewUserSchema = zod.object({
 
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
   type: zod.string().optional(),
-  profile: zod.string().optional(),
+ profile: zod.object({
+    slug: zod.string(),
+    name: zod.string(),
+    type: zod.string()
+  }).optional(),
   location: zod.string().optional(),
   agency: zod.string().optional(),
 
@@ -50,15 +57,20 @@ export const NewUserSchema = zod.object({
 
 // ----------------------------------------------------------------------
 // Composant ajusté
-export function UserNewEditForm({ currentUser }) {
+export function UserNewEditForm({ currentUser , user}) {
   const router = useRouter();
   const password = useBoolean();
+
+
   const [eror, setError] = useState(null);
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [profils, setProfils] = useState([]);
   const [agences, setAgences] = useState([]);
+  const [selectedProfil, setSelectedProfil] = useState('');
+  const [typeProfil, setTypeProfil] = useState();
 
+ 
   const defaultValues = useMemo(() => {
     const currentRegion = regions?.find(region => region.name === currentUser?.location?.name);
     const currentRole = roles?.find(role => role.name === currentUser?.type?.name);
@@ -72,11 +84,11 @@ export function UserNewEditForm({ currentUser }) {
       picture: currentUser?.picture || '',
       phone: currentUser?.phone || '',
       type: currentRole ? currentRole.slug : currentUser?.type?.slug || '',
-      profile: currentProfil ? currentProfil.slug : currentUser?.profile?.slug || '',
+      profile: currentProfil ? currentProfil : currentUser?.profile || '',
       location: currentRegion ? currentRegion.slug : currentUser?.location?.slug || '',
       agency: currentAgence ? currentAgence.slug : currentUser?.agency?.slug || '',
     };
-  }, [regions, roles, profils, agences, currentUser]);
+  }, [ currentUser]);
 
 
 
@@ -93,10 +105,14 @@ export function UserNewEditForm({ currentUser }) {
     watch,
     control,
     handleSubmit,
+    setValue,
     formState: { isSubmitting },
   } = methods;
 
   const values = watch();
+
+  
+
 
   const getModifiedFields = (originalData, newData) => {
     const modifiedFields = {};
@@ -110,6 +126,18 @@ export function UserNewEditForm({ currentUser }) {
     return modifiedFields;
   };
 
+  const getRolesProfile = async (profile_code) => {
+    try {
+      const response = await axios.get(API.getProfile(profile_code));
+      const data = response.data;
+      if (data ) {
+        setRoles(data?.results || [])
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des rôles pour le profil:', error);
+    }
+  };
+
   const onSubmit = handleSubmit(async (data) => {
     try {
       // Petite pause pour simuler le délai
@@ -120,8 +148,8 @@ export function UserNewEditForm({ currentUser }) {
 
       // Ajouter tous les champs du formulaire sauf l'image
       Object.keys(data).forEach(key => {
-        if (key !== 'picture') {
-          formData.append(key, data[key]);
+        if (key !== 'picture' && data[key] !== undefined) {
+          formData.append(key, key === 'profile' ? data[key].slug : data[key]);
         }
       });
       // Si le champ picture est renseigné et de type File, on l'ajoute
@@ -198,13 +226,26 @@ export function UserNewEditForm({ currentUser }) {
   useEffect(() => {
     getRegions().then(data => setRegions(data));
     getAgences().then(data => setAgences(data));
-    getUserTypes().then(data => setRoles(data));
-    getProfils().then(data => setProfils(data));
-  })
+    getProfils().then(data => {
+      setProfils(data);
+    if (currentUser?.profile?.type) {
+        const typeLower = currentUser?.profile?.type.toLowerCase();
+        setTypeProfil(typeLower);
+        getRolesProfile(typeLower);
+    }
+  });
+  },[currentUser]);
+
   // Pour mettre à jour les valeurs du formulaire dès que currentClient change
   useEffect(() => {
     reset(defaultValues);
-  }, [currentUser, defaultValues, reset]);
+  }, [currentUser, reset]);
+
+  const options = profils.filter(
+  (profil, index, self) =>
+    index === self.findIndex((p) => p.name === profil.name)
+);
+
 
 
   return (
@@ -321,13 +362,25 @@ export function UserNewEditForm({ currentUser }) {
               <Field.Text name="email" label="Adresse Mail *" />
               <Field.Phone name="phone" label="Numéro de Téléphone *" />
 
-              <Field.Select name="profile" label="Structure *" >
-                {profils.map((profil) => (
-                  <MenuItem key={profil?.slug} value={profil?.slug}>
-                    {profil?.name}
-                  </MenuItem>
-                ))}
-              </Field.Select>
+    
+            <Field.Autocomplete
+              name="profile"
+              label="Structure *"
+              options={options}
+              getOptionLabel={(option) => option.name || ''}
+              isOptionEqualToValue={(option, value) => option.slug === value.slug}
+              onCustomChange={( selectedProfil) => {
+                if (selectedProfil) {
+                  const typeLower = selectedProfil?.type?.toLowerCase();
+                  setTypeProfil(typeLower);
+                  getRolesProfile(typeLower);
+                  setValue('type', '');
+                }
+              }}
+            />
+                    
+
+
               <Field.Select name="location" label="Region *" >
                 {regions.map((region) => (
                   <MenuItem key={region?.slug} value={region?.slug}>
@@ -336,6 +389,8 @@ export function UserNewEditForm({ currentUser }) {
                 ))
                 }
               </Field.Select>
+
+              {(typeProfil === 'tdss') && (
               <Field.Select name="agency" label="Agence *" >
                 {agences.map((agence) => (
                   <MenuItem key={agence?.slug} value={agence?.slug}>
@@ -344,6 +399,9 @@ export function UserNewEditForm({ currentUser }) {
                 ))
                 }
               </Field.Select>
+              )}
+
+
               <Field.Select name="type" label="Role *" inputlabelprops={{ shrink: true }}>
                 {roles?.map((role) => (
                   <MenuItem key={role.slug} value={role.slug}>
