@@ -84,7 +84,7 @@ export function UserNewEditForm({ currentUser , user}) {
       picture: currentUser?.picture || '',
       phone: currentUser?.phone || '',
       type: currentRole ? currentRole.slug : currentUser?.type?.slug || '',
-      profile: currentProfil ? currentProfil : currentUser?.profile || '',
+      profile: currentProfil  || currentUser?.profile || '',
       location: currentRegion ? currentRegion.slug : currentUser?.location?.slug || '',
       agency: currentAgence ? currentAgence.slug : currentUser?.agency?.slug || '',
     };
