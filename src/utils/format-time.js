@@ -12,12 +12,13 @@ dayjs.locale('fr');
 
 
 // Capitalise le mois (ex: avril => Avril)
-const capitalizeMonth = (formattedDate) => {
-  return formattedDate.replace(
+const capitalizeMonth = (formattedDate) => 
+     formattedDate.replace(
     /(?<=\s)([a-zàâçéèêëîïôûùüÿñæœ]+)/i,
     (month) => month.charAt(0).toUpperCase() + month.slice(1)
   );
-};
+
+
 
 
 /**
