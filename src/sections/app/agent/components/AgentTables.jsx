@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTheme, alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -20,12 +20,16 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
+import Alert from '@mui/material/Alert';
+import Skeleton from '@mui/material/Skeleton';
 import { fDate } from 'src/utils/format-time';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
 import { CustomPopover, usePopover } from 'src/components/custom-popover';
 import { Label } from 'src/components/label';
+import axios from 'src/utils/axios';
+import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
@@ -343,62 +347,70 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         </MenuItem>
       </CustomPopover>
     </>
-  );
+    )
 }
-
-// ----------------------------------------------------------------------
-
-// Données mockées pour les entreprises associées à l'agent
-const AGENT_COMPANIES = [
-  {
-    id: 'COMP-001',
-    name: 'Entreprise ABC',
-    sector: 'Technologies',
-    employees: 45,
-    lastDeclaration: new Date('2023-05-15'),
-    status: 'active',
-    logo: '/assets/images/company/company_1.png'
-  },
-  {
-    id: 'COMP-002',
-    name: 'Société XYZ',
-    sector: 'Finance',
-    employees: 28,
-    lastDeclaration: new Date('2023-05-10'),
-    status: 'active',
-    logo: '/assets/images/company/company_2.png'
-  },
-  {
-    id: 'COMP-003',
-    name: 'Compagnie 123',
-    sector: 'Industrie',
-    employees: 67,
-    lastDeclaration: new Date('2023-05-05'),
-    status: 'inactive',
-    logo: '/assets/images/company/company_3.png'
-  },
-];
-
 export function AgentRecentEmployees() {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
-  const [companies, setCompanies] = useState(AGENT_COMPANIES);
+  const [companies, setCompanies] = useState([]);
+  const [sectors, setSectors] = useState([]);
   const [sectorFilter, setSectorFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Charger les entreprises depuis l'API
+  const fetchCompanies = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Utiliser l'endpoint listEntreprises qui est disponible
+      const response = await axios.get(API.listEntreprises());
+      // Vérifier si la réponse contient des données
+      if (response.data && Array.isArray(response.data.results)) {
+        const companiesData = response.data.results;
+        setCompanies(companiesData);
+        
+        // Extraire les secteurs uniques pour le filtre
+        const uniqueSectors = [...new Set(companiesData.map(comp => 
+          comp.sector || comp.secteur || 'Non spécifié'
+        ))];
+        setSectors(uniqueSectors);
+        
+        console.log('Entreprises chargées:', companiesData.length);
+      } else {
+        setCompanies([]);
+        setSectors([]);
+        console.warn('Format de données inattendu:', response.data);
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement des entreprises:', error.response?.data || error.message);
+      setError('Impossible de charger les entreprises. Veuillez réessayer plus tard.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  
+  // Charger les entreprises au chargement du composant
+  useEffect(() => {
+    fetchCompanies();
+  }, [fetchCompanies]);
 
   // Filtrer les entreprises par secteur
-  useEffect(() => {
-    const filtered = sectorFilter === 'all' 
-      ? AGENT_COMPANIES 
-      : AGENT_COMPANIES.filter(comp => comp.sector === sectorFilter);
-    
-    setCompanies(filtered);
-  }, [sectorFilter]);
-
-  // Obtenir la liste des secteurs uniques pour le filtre
-  const sectors = [...new Set(AGENT_COMPANIES.map(comp => comp.sector))];
+  const filteredCompanies = useMemo(() => {
+    if (sectorFilter === 'all') return companies;
+    return companies.filter(comp => 
+      (comp.sector && comp.sector === sectorFilter) || 
+      (comp.secteur && comp.secteur === sectorFilter)
+    );
+  }, [companies, sectorFilter]);
 
   const handleSectorFilterChange = (event) => {
     setSectorFilter(event.target.value);
+  };
+  
+  // Fonction pour rafraîchir les données
+  const handleRefresh = () => {
+    fetchCompanies();
   };
 
   return (
@@ -451,10 +463,36 @@ export function AgentRecentEmployees() {
           </Stack>
         }
       />
+      {error && (
+        <Box sx={{ p: 2 }}>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+            <Button size="small" onClick={handleRefresh} sx={{ ml: 2 }}>
+              Réessayer
+            </Button>
+          </Alert>
+        </Box>
+      )}
+      
       <Box sx={{ p: 2, pt: 1 }}>
-        {companies.length > 0 ? (
+        {loading ? (
+          <Box sx={{ py: 3 }}>
+            <Stack spacing={2}>
+              {[...Array(3)].map((_, index) => (
+                <Stack key={index} direction="row" spacing={2} sx={{ p: 1 }}>
+                  <Skeleton variant="rounded" width={48} height={48} />
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Skeleton variant="text" width="60%" height={24} />
+                    <Skeleton variant="text" width="40%" height={20} />
+                  </Box>
+                  <Skeleton variant="rounded" width={80} height={32} />
+                </Stack>
+              ))}
+            </Stack>
+          </Box>
+        ) : filteredCompanies.length > 0 ? (
           <Stack spacing={3} divider={<Divider sx={{ borderStyle: 'dashed' }} />}>
-            {companies.map((company) => (
+            {filteredCompanies.map((company) => (
               <CompanyItem key={company.id} company={company} isDarkMode={isDarkMode} />
             ))}
           </Stack>
@@ -466,8 +504,18 @@ export function AgentRecentEmployees() {
           </Box>
         )}
 
-        {companies.length > 0 && (
+        {filteredCompanies.length > 0 && (
           <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              size="small"
+              color="inherit"
+              startIcon={<Iconify icon="mdi:refresh" />}
+              onClick={handleRefresh}
+              disabled={loading}
+              sx={{ mr: 1 }}
+            >
+              Actualiser
+            </Button>
             <Button
               size="small"
               color="inherit"
@@ -629,15 +677,25 @@ function CompanyItem({ company, isDarkMode }) {
   
   // Déterminer la couleur du badge en fonction du statut
   const getStatusColor = (status) => {
-    switch (status) {
+    if (!status) return 'default';
+    switch (status.toLowerCase()) {
       case 'active': return 'success';
+      case 'actif': return 'success';
       case 'inactive': return 'warning';
+      case 'inactif': return 'warning';
       default: return 'default';
     }
   };
   
   // Vérifier si la dernière déclaration est récente (moins de 7 jours)
-  const hasRecentDeclaration = isRecent(company.lastDeclaration);
+  const hasRecentDeclaration = company.lastDeclaration ? isRecent(company.lastDeclaration) : false;
+  
+  // Valeurs par défaut pour les propriétés qui pourraient être manquantes
+  const companyName = company.name || company.nom || 'Entreprise sans nom';
+  const companyLogo = company.logo || company.avatar || '/assets/images/company/default.png';
+  const companySector = company.sector || company.secteur || 'Non spécifié';
+  const companyEmployees = company.employees || company.employes || 0;
+  const companyStatus = company.status || company.statut || 'Non spécifié';
   
   return (
     <Stack 
@@ -659,8 +717,8 @@ function CompanyItem({ company, isDarkMode }) {
       onClick={popover.onOpen}
     >
       <Avatar 
-        alt={company.name} 
-        src={company.logo} 
+        alt={companyName} 
+        src={companyLogo} 
         variant="rounded"
         sx={{ 
           width: 48, 
@@ -680,7 +738,7 @@ function CompanyItem({ company, isDarkMode }) {
             gap: 0.5
           }}
         >
-          {company.name}
+          {companyName}
           {hasRecentDeclaration && (
             <Tooltip title="Déclaration récente" arrow>
               <Label 
@@ -700,31 +758,40 @@ function CompanyItem({ company, isDarkMode }) {
         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
           <Iconify icon="mdi:domain" width={14} sx={{ color: 'text.secondary' }} />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {company.sector}
+            {companySector}
           </Typography>
 
-          <Divider orientation="vertical" sx={{ height: 12, mx: 1 }} />
-
-          <Iconify icon="mdi:account-group-outline" width={14} sx={{ color: 'text.secondary' }} />
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {company.employees} employés
-          </Typography>
+          {companyEmployees > 0 && (
+            <>
+              <Divider orientation="vertical" sx={{ height: 12, mx: 1 }} />
+              <Iconify icon="mdi:account-group-outline" width={14} sx={{ color: 'text.secondary' }} />
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                {companyEmployees} employé{companyEmployees > 1 ? 's' : ''}
+              </Typography>
+            </>
+          )}
         </Stack>
       </Box>
 
       <Stack alignItems="flex-end">
-        <Label 
-          variant="soft" 
-          color={getStatusColor(company.status)}
-          sx={{ fontWeight: 600 }}
-        >
-          {company.status === 'active' ? 'Active' : 'Inactive'}
-        </Label>
+        {companyStatus && (
+          <Label 
+            variant="soft" 
+            color={getStatusColor(companyStatus)}
+            sx={{ fontWeight: 600 }}
+          >
+            {companyStatus === 'active' || companyStatus === 'actif' ? 'Active' : 
+             companyStatus === 'inactive' || companyStatus === 'inactif' ? 'Inactive' : 
+             companyStatus}
+          </Label>
+        )}
 
-        <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
-          <Iconify icon="mdi:calendar-outline" width={14} sx={{ mr: 0.5 }} />
-          {fDate(company.lastDeclaration)}
-        </Typography>
+        {company.lastDeclaration && (
+          <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
+            <Iconify icon="mdi:calendar-outline" width={14} sx={{ mr: 0.5 }} />
+            {fDate(company.lastDeclaration)}
+          </Typography>
+        )}
       </Stack>
       
       <CustomPopover
@@ -741,6 +808,11 @@ function CompanyItem({ company, isDarkMode }) {
         <MenuItem>
           <Iconify icon="mdi:file-document-plus" />
           Nouvelle déclaration
+        </MenuItem>
+
+        <MenuItem>
+          <Iconify icon="mdi:account-group" />
+          Gérer les employés
         </MenuItem>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
