@@ -127,11 +127,11 @@ export const _emails = [
 // ----------------------------------------------------------------------
 
 export const _fullNames = [
-  `Jayvion Simon`,
-  `Lucian Obrien`,
-  `Deja Brady`,
-  `Harrison Stein`,
-  `Reece Chung`,
+  `Ousmane Diallo`,
+  `Lucian Olivogui`,
+  `Lamarana Camara`,
+  `Aissatou Kanté`,
+  `Seydi Fall`,
   `Lainey Davidson`,
   `Cristopher Cardenas`,
   `Melanie Noble`,
