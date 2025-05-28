@@ -731,7 +731,7 @@ function CompanyItem({ company, isDarkMode }) {
         open={popover.open}
         onClose={popover.onClose}
         arrow="right-top"
-        sx={{ width: 180 }}
+        sx={{ width: 250 }}
       >
         <MenuItem>
           <Iconify icon="solar:eye-bold" />
@@ -741,11 +741,6 @@ function CompanyItem({ company, isDarkMode }) {
         <MenuItem>
           <Iconify icon="mdi:file-document-plus" />
           Nouvelle déclaration
-        </MenuItem>
-
-        <MenuItem>
-          <Iconify icon="mdi:account-group" />
-          Gérer les employés
         </MenuItem>
 
         <Divider sx={{ borderStyle: 'dashed' }} />
