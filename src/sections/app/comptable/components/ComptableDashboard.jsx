@@ -139,7 +139,11 @@ export function ComptableDashboard() {
         </Typography>
         
         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          Bienvenue, {user?.displayName || 'Utilisateur'} | ID: {user?.id || 'N/A'} | Rôle: Comptable
+          {user ? (
+            <>Bienvenue, {user.name} | Rôle : {user.type_name}</>
+          ) : (
+            <>Bienvenue, Utilisateur | Rôle: Comptable</>
+          )}
         </Typography>
       </Box>
 
