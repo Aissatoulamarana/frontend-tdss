@@ -425,12 +425,12 @@ export function AgentRecentEmployees() {
     }}>
       <CardHeader 
         title={
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Iconify icon="mdi:office-building" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          <Stack direction="row" alignItems="center" spacing={1} key="header-stack">
+            <Iconify icon="mdi:office-building" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} key="header-icon" />
+            <Typography variant="h6" sx={{ fontWeight: 700 }} key="header-title">
               Entreprises associées
             </Typography>
-            <Label color="info" sx={{ ml: 1 }}>
+            <Label color="info" sx={{ ml: 1 }} key="header-count">
               {companies.length}
             </Label>
           </Stack>
@@ -443,8 +443,8 @@ export function AgentRecentEmployees() {
           }
         }} 
         action={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <FormControl size="small">
+          <Stack direction="row" spacing={1} alignItems="center" key="filter-stack">
+            <FormControl size="small" key="sector-filter">
               <InputLabel id="sector-filter-label">Secteur</InputLabel>
               <Select
                 labelId="sector-filter-label"
@@ -454,9 +454,9 @@ export function AgentRecentEmployees() {
                 sx= {{mb: 0.5}}
                 startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5}} />}
               >
-                <MenuItem value="all">Tous</MenuItem>
-                {sectors.map(sector => (
-                  <MenuItem key={sector} value={sector}>{sector}</MenuItem>
+                <MenuItem value="all" key="all-sectors">Tous</MenuItem>
+                {sectors.map((sector, index) => (
+                  <MenuItem key={`sector-${index}-${sector}`} value={sector}>{sector}</MenuItem>
                 ))}
               </Select>
             </FormControl>
@@ -491,9 +491,13 @@ export function AgentRecentEmployees() {
             </Stack>
           </Box>
         ) : filteredCompanies.length > 0 ? (
-          <Stack spacing={3} divider={<Divider sx={{ borderStyle: 'dashed' }} />}>
-            {filteredCompanies.map((company) => (
-              <CompanyItem key={company.id} company={company} isDarkMode={isDarkMode} />
+          <Stack spacing={3} divider={<Divider sx={{ borderStyle: 'dashed' }} key="company-divider" />}>
+            {filteredCompanies.map((company, index) => (
+              <CompanyItem 
+                key={company.id || company.slug || `company-${index}`} 
+                company={company} 
+                isDarkMode={isDarkMode} 
+              />
             ))}
           </Stack>
         ) : (
