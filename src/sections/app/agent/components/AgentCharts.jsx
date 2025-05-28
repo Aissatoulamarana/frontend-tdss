@@ -117,24 +117,58 @@ export function AgentPermitCategoryChart() {
     labels: permitCategories.map(i => i.category),
     stroke: { show: false },
     legend: {
+      position: 'bottom',
       horizontalAlign: 'center',
+      fontSize: '14px',
+      fontWeight: 600,
+      markers: {
+        radius: 12,
+      },
+      itemMargin: {
+        horizontal: 12,
+      },
+      labels: {
+        colors: palette.text.primary,
+      },
     },
     tooltip: {
       fillSeriesColor: false,
+      y: {
+        formatter: (value) => `${value} déclarations`,
+        title: {
+          formatter: (seriesName) => `${seriesName}:`,
+        },
+      },
     },
     plotOptions: {
       pie: {
+        customScale: 0.85,
         donut: {
-          size: '90%',
+          size: '70%',
           labels: {
+            show: true,
+            name: {
+              show: true,
+              fontSize: '14px',
+              fontWeight: 600,
+              offsetY: -10,
+            },
             value: {
+              show: true,
+              fontSize: '20px',
+              fontWeight: 700,
               formatter: (value) => `${value}`,
             },
             total: {
+              show: true,
+              fontSize: '16px',
+              fontWeight: 700,
+              label: 'Total',
               formatter: (w) => {
                 const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
                 return `${sum}`;
               },
+              color: palette.text.primary,
             },
           },
         },
@@ -142,12 +176,26 @@ export function AgentPermitCategoryChart() {
     },
   };
 
+  // Calculer le total des déclarations
+  const totalDeclarations = permitCategories.reduce((sum, category) => sum + category.value, 0);
+
   return (
-    <Card>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 2, pb: 1 }}>
+    <Card sx={{
+      boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+      borderRadius: 1,
+      overflow: 'hidden',
+      transition: 'all 0.2s ease-in-out',
+      '&:hover': {
+        boxShadow: isDarkMode ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+      },
+    }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 3, pt: 3, pb: 1 }}>
         <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
           <Iconify icon="mdi:chart-pie" width={24} sx={{ mr: 1 }} />
           Répartition par Catégorie
+        </Typography>
+        <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>
+          Total: {totalDeclarations} déclarations
         </Typography>
       </Box>
       <Box sx={{ p: 3, pt: 1 }} dir="ltr">

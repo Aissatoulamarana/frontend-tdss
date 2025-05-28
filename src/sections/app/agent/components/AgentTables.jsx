@@ -20,8 +20,6 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
-import Skeleton from '@mui/material/Skeleton';
-import Alert from '@mui/material/Alert';
 import { fDate } from 'src/utils/format-time';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
@@ -192,10 +190,13 @@ export function AgentRecentDeclarations() {
       <CardHeader 
         title={
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Iconify icon="mdi:clipboard-text-clock" width={24} />
-            <Typography variant="h6">
+            <Iconify icon="mdi:clipboard-text-clock" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
               Déclarations fiscales récentes
             </Typography>
+            <Label color="info" sx={{ ml: 1 }}>
+              {declarations.length}
+            </Label>
           </Stack>
         }
         
@@ -347,32 +348,57 @@ function AgentDeclarationRow({ row, isDarkMode }) {
 
 // ----------------------------------------------------------------------
 
+// Données mockées pour les entreprises associées à l'agent
+const AGENT_COMPANIES = [
+  {
+    id: 'COMP-001',
+    name: 'Entreprise ABC',
+    sector: 'Technologies',
+    employees: 45,
+    lastDeclaration: new Date('2023-05-15'),
+    status: 'active',
+    logo: '/assets/images/company/company_1.png'
+  },
+  {
+    id: 'COMP-002',
+    name: 'Société XYZ',
+    sector: 'Finance',
+    employees: 28,
+    lastDeclaration: new Date('2023-05-10'),
+    status: 'active',
+    logo: '/assets/images/company/company_2.png'
+  },
+  {
+    id: 'COMP-003',
+    name: 'Compagnie 123',
+    sector: 'Industrie',
+    employees: 67,
+    lastDeclaration: new Date('2023-05-05'),
+    status: 'inactive',
+    logo: '/assets/images/company/company_3.png'
+  },
+];
+
 export function AgentRecentEmployees() {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
-  const [employees, setEmployees] = useState([]);
-  const [companyFilter, setCompanyFilter] = useState('all');
+  const [companies, setCompanies] = useState(AGENT_COMPANIES);
+  const [sectorFilter, setSectorFilter] = useState('all');
 
-  // Filtrer les employés pour n'afficher que ceux de l'agent connecté
+  // Filtrer les entreprises par secteur
   useEffect(() => {
-    // Filtrer par agent
-    const filteredByAgent = ALL_EMPLOYEES.filter(emp => emp.agentId === CURRENT_USER.id);
+    const filtered = sectorFilter === 'all' 
+      ? AGENT_COMPANIES 
+      : AGENT_COMPANIES.filter(comp => comp.sector === sectorFilter);
     
-    // Appliquer le filtre d'entreprise si nécessaire
-    const filtered = companyFilter === 'all' 
-      ? filteredByAgent 
-      : filteredByAgent.filter(emp => emp.company === companyFilter);
-    
-    setEmployees(filtered);
-  }, [companyFilter]);
+    setCompanies(filtered);
+  }, [sectorFilter]);
 
-  // Obtenir la liste des entreprises uniques pour le filtre
-  const companies = [...new Set(ALL_EMPLOYEES
-    .filter(emp => emp.agentId === CURRENT_USER.id)
-    .map(emp => emp.company))];
+  // Obtenir la liste des secteurs uniques pour le filtre
+  const sectors = [...new Set(AGENT_COMPANIES.map(comp => comp.sector))];
 
-  const handleCompanyFilterChange = (event) => {
-    setCompanyFilter(event.target.value);
+  const handleSectorFilterChange = (event) => {
+    setSectorFilter(event.target.value);
   };
 
   return (
@@ -388,10 +414,13 @@ export function AgentRecentEmployees() {
       <CardHeader 
         title={
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Iconify icon="mdi:account-group" width={24} />
-            <Typography variant="h6">
-              Employés par entreprise
+            <Iconify icon="mdi:office-building" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              Entreprises associées
             </Typography>
+            <Label color="info" sx={{ ml: 1 }}>
+              {companies.length}
+            </Label>
           </Stack>
         }
         
@@ -404,47 +433,47 @@ export function AgentRecentEmployees() {
         action={
           <Stack direction="row" spacing={1} alignItems="center">
             <FormControl size="small">
-              <InputLabel id="company-filter-label">Entreprise</InputLabel>
+              <InputLabel id="sector-filter-label">Secteur</InputLabel>
               <Select
-                labelId="company-filter-label"
-                value={companyFilter}
-                label="Entreprise"
-                onChange={handleCompanyFilterChange}
+                labelId="sector-filter-label"
+                value={sectorFilter}
+                label="Secteur"
+                onChange={handleSectorFilterChange}
                 sx= {{mb: 0.5}}
                 startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5}} />}
               >
-                <MenuItem value="all">Toutes</MenuItem>
-                {companies.map(company => (
-                  <MenuItem key={company} value={company}>{company}</MenuItem>
+                <MenuItem value="all">Tous</MenuItem>
+                {sectors.map(sector => (
+                  <MenuItem key={sector} value={sector}>{sector}</MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Stack>
         }
       />
-      <Box sx={{ p: 1, pt: 0 }}>
-        {employees.length > 0 ? (
+      <Box sx={{ p: 2, pt: 1 }}>
+        {companies.length > 0 ? (
           <Stack spacing={3} divider={<Divider sx={{ borderStyle: 'dashed' }} />}>
-            {employees.map((employee) => (
-              <EmployeeItem key={employee.id} employee={employee} />
+            {companies.map((company) => (
+              <CompanyItem key={company.id} company={company} isDarkMode={isDarkMode} />
             ))}
           </Stack>
         ) : (
           <Box sx={{ textAlign: 'center', py: 3 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Aucun employé trouvé
+              Aucune entreprise trouvée
             </Typography>
           </Box>
         )}
 
-        {employees.length > 0 && (
+        {companies.length > 0 && (
           <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
             <Button
               size="small"
               color="inherit"
               endIcon={<Iconify icon="eva:arrow-ios-forward-fill" />}
             >
-              Voir tous les employés
+              Voir toutes
             </Button>
           </Box>
         )}
@@ -590,4 +619,142 @@ function isRecent(date) {
   const diffTime = Math.abs(now - new Date(date));
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays <= 7;
+}
+
+// ----------------------------------------------------------------------
+
+function CompanyItem({ company, isDarkMode }) {
+  const theme = useTheme();
+  const popover = usePopover();
+  
+  // Déterminer la couleur du badge en fonction du statut
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'success';
+      case 'inactive': return 'warning';
+      default: return 'default';
+    }
+  };
+  
+  // Vérifier si la dernière déclaration est récente (moins de 7 jours)
+  const hasRecentDeclaration = isRecent(company.lastDeclaration);
+  
+  return (
+    <Stack 
+      direction="row" 
+      alignItems="center" 
+      spacing={2}
+      sx={{
+        p: 1.5,
+        borderRadius: 1,
+        transition: 'all 0.2s ease-in-out',
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: isDarkMode 
+            ? alpha(theme.palette.primary.main, 0.08)
+            : alpha(theme.palette.primary.lighter, 0.2),
+          boxShadow: `0 0 0 1px ${isDarkMode ? theme.palette.divider : theme.palette.primary.lighter}`,
+        },
+      }}
+      onClick={popover.onOpen}
+    >
+      <Avatar 
+        alt={company.name} 
+        src={company.logo} 
+        variant="rounded"
+        sx={{ 
+          width: 48, 
+          height: 48,
+          backgroundColor: theme.palette.background.neutral,
+        }} 
+      />
+
+      <Box sx={{ flexGrow: 1 }}>
+        <Typography 
+          variant="subtitle2"
+          sx={{ 
+            color: isDarkMode ? theme.palette.text.primary : theme.palette.text.primary,
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.5
+          }}
+        >
+          {company.name}
+          {hasRecentDeclaration && (
+            <Tooltip title="Déclaration récente" arrow>
+              <Label 
+                color="info" 
+                variant="soft" 
+                sx={{ 
+                  height: 18, 
+                  fontSize: '0.65rem',
+                }}
+              >
+                Récent
+              </Label>
+            </Tooltip>
+          )}
+        </Typography>
+
+        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
+          <Iconify icon="mdi:domain" width={14} sx={{ color: 'text.secondary' }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {company.sector}
+          </Typography>
+
+          <Divider orientation="vertical" sx={{ height: 12, mx: 1 }} />
+
+          <Iconify icon="mdi:account-group-outline" width={14} sx={{ color: 'text.secondary' }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {company.employees} employés
+          </Typography>
+        </Stack>
+      </Box>
+
+      <Stack alignItems="flex-end">
+        <Label 
+          variant="soft" 
+          color={getStatusColor(company.status)}
+          sx={{ fontWeight: 600 }}
+        >
+          {company.status === 'active' ? 'Active' : 'Inactive'}
+        </Label>
+
+        <Typography variant="caption" sx={{ mt: 0.5, color: 'text.secondary', display: 'flex', alignItems: 'center' }}>
+          <Iconify icon="mdi:calendar-outline" width={14} sx={{ mr: 0.5 }} />
+          {fDate(company.lastDeclaration)}
+        </Typography>
+      </Stack>
+      
+      <CustomPopover
+        open={popover.open}
+        onClose={popover.onClose}
+        arrow="right-top"
+        sx={{ width: 180 }}
+      >
+        <MenuItem>
+          <Iconify icon="solar:eye-bold" />
+          Voir détails
+        </MenuItem>
+
+        <MenuItem>
+          <Iconify icon="mdi:file-document-plus" />
+          Nouvelle déclaration
+        </MenuItem>
+
+        <MenuItem>
+          <Iconify icon="mdi:account-group" />
+          Gérer les employés
+        </MenuItem>
+
+        <Divider sx={{ borderStyle: 'dashed' }} />
+
+        <MenuItem sx={{ color: 'error.main' }}>
+          <Iconify icon="solar:trash-bin-trash-bold" />
+          Supprimer
+        </MenuItem>
+      </CustomPopover>
+    </Stack>
+  );
 }

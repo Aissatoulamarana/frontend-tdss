@@ -395,11 +395,6 @@ export default function AgentDashboard() {
 
         {/* Tableaux de données */}
         <Grid item xs={12} md={6} lg={8}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-            <Iconify icon="mdi:clipboard-text-clock" width={24} sx={{ mr: 1 }} />
-            Récentes Déclarations
-          </Typography>
-          
           {errors.declarations && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.declarations}
@@ -420,11 +415,6 @@ export default function AgentDashboard() {
         </Grid>
 
         <Grid item xs={12} md={6} lg={4}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700, display: 'flex', alignItems: 'center' }}>
-            <Iconify icon="mdi:account-group" width={24} sx={{ mr: 1 }} />
-            Employés par Entreprise
-          </Typography>
-          
           {errors.employees && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.employees}
