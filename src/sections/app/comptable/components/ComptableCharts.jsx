@@ -88,8 +88,9 @@ export function ComptableStatusChart() {
     },
     plotOptions: {
       pie: {
+        customScale: 0.85, // Réduire la taille globale du graphique
         donut: {
-          size: '85%',
+          size: '70%', // Réduire la taille du trou du donut
           labels: {
             value: {
               formatter: (value) => `${value}%`,
