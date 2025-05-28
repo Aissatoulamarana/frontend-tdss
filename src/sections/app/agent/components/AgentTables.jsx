@@ -504,7 +504,7 @@ function EmployeeItem({ employee }) {
         <Typography 
           variant="subtitle2"
           sx={{ 
-            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+            color: isDarkMode ? theme.palette.text.primary : theme.palette.text.primary,
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
