@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/material/styles';
 
-import { _appAuthors, _appRelated, _appInstalled } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useMockedUser } from 'src/auth/hooks';
@@ -13,9 +12,6 @@ import { AppAreaInstalled } from '../app-area-installed';
 import { AppCurrentDownload } from '../app-current-download';
 // import { AppNewInvoice } from '../app-new-invoice';
 import { AppNewInvoice} from './app-new-invoice';
-import { AppTopAuthors } from '../app-top-authors';
-import { AppTopInstalledCountries } from '../app-top-installed-countries';
-import { AppTopRelated } from '../app-top-related';
 import { AppWidgetSummary } from '../app-widget-summary';
 
 // Import axios et ton API
@@ -269,7 +265,7 @@ export function CaissierAppView() {
           />
         </Grid>
 
-        <Grid size={{ xs: 6, md: 8 }}>
+        <Grid size={{ xs: 12, md: 12 }}>
           <AppNewInvoice
             title="Dernières Factures"
             tableData={dernieresFactures} 
@@ -283,17 +279,17 @@ export function CaissierAppView() {
             />
         </Grid>
 
-        <Grid size={{ xs: 6, md: 4 }}>
+        {/* <Grid size={{ xs: 6, md: 4 }}>
           <AppTopRelated title="Entreprises" list={_appRelated} />
-        </Grid>
+        </Grid> */}
 
-        <Grid size={{ xs: 6, md: 4 }}>
+        {/* <Grid size={{ xs: 6, md: 4 }}>
           <AppTopInstalledCountries title="Pays" list={_appInstalled} />
         </Grid>
 
         <Grid size={{ xs: 6, md: 4 }}>
           <AppTopAuthors title="Top Utilisateurs" list={_appAuthors} />
-        </Grid>
+        </Grid> */}
       </Grid>
     </DashboardContent>
   );
