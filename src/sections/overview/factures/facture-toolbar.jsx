@@ -32,7 +32,9 @@ import { generateFacturePDF } from './facture-pdf';
 
 export function FactureToolbar({
   facture,
+  user,
   currentStatus,
+  onChangeStatus,
   devise
 
 }) {
@@ -41,6 +43,8 @@ export function FactureToolbar({
   
 
   const view = useBoolean();
+ const type = user?.type_name?.toLowerCase().trim();
+//  const profil = user?.companies?.[0]?.type_name?.toLowerCase().trim() ;
 
   
   const payeurForm = useBoolean();
@@ -102,12 +106,13 @@ export function FactureToolbar({
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip> */}
-
+      {(type === 'caissier' && currentStatus === 'UNPAID') && (
           <Tooltip title="Payer la facture">
             <IconButton onClick={() => payeurForm.onTrue()}>
               <Iconify icon="mdi:credit-card" />
             </IconButton>
           </Tooltip>
+      )}
         </Stack>
 
 
@@ -133,6 +138,15 @@ export function FactureToolbar({
           </Box>
         </Box>
       </Dialog>
+
+            <PayeurForm 
+            slug={facture?.slug} 
+            open={payeurForm.value} 
+            onclose={payeurForm.onFalse} 
+            onSuccess ={() => {
+              onChangeStatus('PAID'); // Met à jour le statut local de la facture
+              payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
+            }} />
     </>
   );
 }
