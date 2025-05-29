@@ -23,7 +23,7 @@ import { useRouter } from 'src/routes/hooks';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { Iconify } from 'src/components/iconify';
-
+import { PayeurForm } from './form-factures';
 
 import { generateFacturePDF } from './facture-pdf';
 // import { FactureDetails } from './facture-details';
@@ -43,7 +43,7 @@ export function FactureToolbar({
   const view = useBoolean();
 
   
-
+  const payeurForm = useBoolean();
   const componentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -102,6 +102,12 @@ export function FactureToolbar({
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip> */}
+
+          <Tooltip title="Payer la facture">
+            <IconButton onClick={() => payeurForm.onTrue()}>
+              <Iconify icon="mdi:credit-card" />
+            </IconButton>
+          </Tooltip>
         </Stack>
 
 
