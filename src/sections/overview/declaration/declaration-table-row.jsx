@@ -56,7 +56,7 @@ export function DeclarationTableRow({
 
   const popover = usePopover();
 
-  const profil = user?.companie[0]?.type_code?.toLowerCase().trim();
+  const profil = user?.companies[0]?.type_code?.toLowerCase().trim();
 
   // Handler pour le rejet, après validation du motif
   const handleConfirmRejet = () => {
