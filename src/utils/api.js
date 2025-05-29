@@ -61,7 +61,7 @@ const API = {
   deleteFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // Supprimer une fonction
   editFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // modifier une fonction
   listCategories: () => `${BASE_URL}/jobs/agent/job-categories/`,
-  listFonctionAgent: () => `${BASE_URL}/jobs/agent/jobs`, // Liste des fonctions des agents
+  listFonctionAgent: () => `${BASE_URL}/jobs/agent/jobs-list/`, // Liste des fonctions des agents
   
 
   CreateBank: () => `${BASE_URL}/bank/create`,
