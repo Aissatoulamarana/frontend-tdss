@@ -356,7 +356,7 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         <TableCell align="right">
           <IconButton 
             color={popover.open ? 'primary' : 'default'} 
-            onClick={(event) => { event.stopPropagation(); popover.onOpen(event); }}
+            onClick={(event) => { event.stopPropagation(); handleClick(); }}
             sx={{ 
               color: popover.open 
                 ? theme.palette.primary.main 
@@ -616,7 +616,7 @@ function EmployeeItem({ employee }) {
           boxShadow: `0 0 0 1px ${isDarkMode ? theme.palette.divider : theme.palette.primary.lighter}`,
         },
       }}
-      onClick={(event) => { event.stopPropagation(); popover.onOpen(event); }}
+      onClick={(event) => { event.stopPropagation(); handleClick(); }}
     >
       <Avatar 
         alt={employee.name} 
@@ -772,7 +772,7 @@ function CompanyItem({ company, isDarkMode }) {
           boxShadow: `0 0 0 1px ${isDarkMode ? theme.palette.divider : theme.palette.primary.lighter}`,
         },
       }}
-      onClick={(event) => { event.stopPropagation(); popover.onOpen(event); }}
+      onClick={(event) => { event.stopPropagation(); handleClick(); }}
     >
       <Avatar 
         alt={companyName} 
@@ -786,43 +786,45 @@ function CompanyItem({ company, isDarkMode }) {
       />
 
       <Box sx={{ flexGrow: 1 }}>
-        <Typography 
-          variant="subtitle2"
-          sx={{ 
-            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5
-          }}
-        >
+        {/* Utilisation d'un élément div avec un style direct pour garantir la visibilité */}
+        <div style={{ 
+          color: isDarkMode ? '#ffffff' : theme.palette.text.primary,
+          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          fontSize: '0.875rem',
+          fontFamily: theme.typography.fontFamily,
+          marginBottom: '2px'
+        }}>
           {companyName}
           {hasRecentDeclaration && (
             <Tooltip title="Déclaration récente" arrow>
-            <Label 
-              color="info" 
-              variant="soft" 
-              sx={{ 
-                height: 18, 
-                fontSize: '0.65rem',
-              }}
-            >
-              Récent
-            </Label>
-            </Tooltip>          )}
-        </Typography>
+              <Label 
+                color="info" 
+                variant="soft" 
+                sx={{ 
+                  height: 18, 
+                  fontSize: '0.65rem',
+                }}
+              >
+                Récent
+              </Label>
+            </Tooltip>
+          )}
+        </div>
 
         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
-          <Iconify icon="mdi:domain" width={14} sx={{ color: 'text.secondary' }} />
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Iconify icon="mdi:domain" width={14} sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }} />
+          <Typography variant="caption" sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }}>
             {companySector}
           </Typography>
 
           {companyEmployees > 0 && (
             <>
               <Divider orientation="vertical" sx={{ height: 12, mx: 1 }} />
-              <Iconify icon="mdi:account-group-outline" width={14} sx={{ color: 'text.secondary' }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              <Iconify icon="mdi:account-group-outline" width={14} sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }} />
+              <Typography variant="caption" sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }}>
                 {companyEmployees} employé{companyEmployees > 1 ? 's' : ''}
               </Typography>
             </>

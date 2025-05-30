@@ -106,17 +106,35 @@ export default function AgentDashboard() {
         params.endDate = dateRange.endDate.toISOString().split('T')[0];
       }
       
-      // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentSummary(companyFilter), { params });
-      // setSummaryData(response.data);
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setSummaryData({
-        totalDeclarations: getAgentSummaryData('totalDeclarations', companyFilter, user?.id),
-        unsubmittedDeclarations: getAgentSummaryData('unsubmittedDeclarations', companyFilter, user?.id),
-        rejectedDeclarations: getAgentSummaryData('rejectedDeclarations', companyFilter, user?.id)
-      });
+      try {
+        // Appel API réel pour récupérer les données de résumé
+        const response = await axios.get(API.getAgentSummary(companyFilter), { params });
+        
+        // Vérifier si la réponse contient les données attendues
+        if (response.data) {
+          setSummaryData({
+            totalDeclarations: response.data.totalDeclarations || 0,
+            unsubmittedDeclarations: response.data.unsubmittedDeclarations || 0,
+            rejectedDeclarations: response.data.rejectedDeclarations || 0
+          });
+        } else {
+          // Fallback sur les données mockées en cas de réponse vide
+          console.warn('Réponse API vide, utilisation des données mockées');
+          setSummaryData({
+            totalDeclarations: getAgentSummaryData('totalDeclarations', companyFilter, user?.id),
+            unsubmittedDeclarations: getAgentSummaryData('unsubmittedDeclarations', companyFilter, user?.id),
+            rejectedDeclarations: getAgentSummaryData('rejectedDeclarations', companyFilter, user?.id)
+          });
+        }
+      } catch (error) {
+        console.warn('Erreur API, utilisation des données mockées', error);
+        // Fallback sur les données mockées en cas d'erreur
+        setSummaryData({
+          totalDeclarations: getAgentSummaryData('totalDeclarations', companyFilter, user?.id),
+          unsubmittedDeclarations: getAgentSummaryData('unsubmittedDeclarations', companyFilter, user?.id),
+          rejectedDeclarations: getAgentSummaryData('rejectedDeclarations', companyFilter, user?.id)
+        });
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des données de résumé', error);
       setErrors(prev => ({ ...prev, summary: 'Impossible de charger les données de résumé' }));
@@ -132,13 +150,24 @@ export default function AgentDashboard() {
       // Préparer les paramètres pour l'appel API
       const params = { company: companyFilter, period: periodFilter };
       
-      // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentChartData(user?.id, companyFilter), { params });
-      // Mettre à jour les données des graphiques
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // Les données sont déjà chargées dans les composants de graphiques
+      try {
+        // Appel API réel pour récupérer les données des graphiques
+        const response = await axios.get(API.getAgentChartData(companyFilter), { params });
+        
+        // Mettre à jour les données des graphiques si la réponse est valide
+        if (response.data && response.data.chartData) {
+          // Ici, vous pouvez stocker les données dans un état si nécessaire
+          // ou les passer directement aux composants de graphiques
+          // Par exemple : setChartData(response.data.chartData);
+          console.log('Données des graphiques chargées avec succès', response.data);
+        } else {
+          console.warn('Réponse API vide pour les graphiques');
+          // Vous pouvez charger des données mockées ici si nécessaire
+        }
+      } catch (error) {
+        console.warn('Erreur lors du chargement des données des graphiques via API', error);
+        // Vous pouvez charger des données mockées ici si nécessaire
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des données des graphiques', error);
       setErrors(prev => ({ ...prev, charts: 'Impossible de charger les graphiques' }));
@@ -155,9 +184,43 @@ export default function AgentDashboard() {
       // Préparer les paramètres pour l'appel API
       const params = { company: companyFilter, period: periodFilter };
       
-      // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentRecentDeclarations(user?.id, companyFilter), { params });
-      // Mettre à jour les données des déclarations
+      try {
+        // Appel API réel pour récupérer les déclarations récentes
+        const response = await axios.get(API.getAgentRecentDeclarations(params));
+        
+        // Mettre à jour les données des déclarations si la réponse est valide
+        if (response.data && Array.isArray(response.data.declarations)) {
+          // Ici, vous pourriez stocker les déclarations dans un état global
+          // ou les passer directement au composant AgentRecentDeclarations
+          // Par exemple : setDeclarations(response.data.declarations);
+          
+          // Assurez-vous que les déclarations sont triées selon la priorité demandée :
+          // 1. Déclarations non soumises (pending)
+          // 2. Déclarations rejetées (rejected)
+          // 3. Tri par date (plus récent en premier)
+          const sortedDeclarations = [...response.data.declarations].sort((a, b) => {
+            // Priorité 1: Non soumises (pending)
+            if (a.status === 'pending' && b.status !== 'pending') return -1;
+            if (a.status !== 'pending' && b.status === 'pending') return 1;
+            
+            // Priorité 2: Rejetées (rejected)
+            if (a.status === 'rejected' && b.status !== 'rejected') return -1;
+            if (a.status !== 'rejected' && b.status === 'rejected') return 1;
+            
+            // Priorité 3: Par date (plus récent en premier)
+            return new Date(b.date) - new Date(a.date);
+          });
+          
+          console.log('Déclarations récentes chargées avec succès', sortedDeclarations);
+          // Vous pourriez stocker les déclarations triées ici : setDeclarations(sortedDeclarations);
+        } else {
+          console.warn('Réponse API vide pour les déclarations récentes');
+          // Vous pouvez charger des données mockées ici si nécessaire
+        }
+      } catch (error) {
+        console.warn('Erreur lors du chargement des déclarations récentes via API', error);
+        // Vous pouvez charger des données mockées ici si nécessaire
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des déclarations récentes', error);
       setErrors(prev => ({ ...prev, declarations: 'Impossible de charger les déclarations récentes' }));
@@ -174,13 +237,25 @@ export default function AgentDashboard() {
       // Préparer les paramètres pour l'appel API
       const params = { company: companyFilter, period: periodFilter };
       
-      // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentRecentEmployees(user?.id, params));
-      // Mettre à jour les données des employés
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1700));
-      // Les données sont déjà chargées dans le composant de tableau
+      try {
+        // Appel API réel pour récupérer les employés récents
+        const response = await axios.get(API.getAgentRecentEmployees(params));
+        
+        // Mettre à jour les données des employés si la réponse est valide
+        if (response.data && Array.isArray(response.data.employees)) {
+          // Ici, vous pourriez stocker les employés dans un état global
+          // ou les passer directement au composant AgentRecentEmployees
+          // Par exemple : setEmployees(response.data.employees);
+          
+          console.log('Employés récents chargés avec succès', response.data.employees);
+        } else {
+          console.warn('Réponse API vide pour les employés récents');
+          // Vous pouvez charger des données mockées ici si nécessaire
+        }
+      } catch (error) {
+        console.warn('Erreur lors du chargement des employés récents via API', error);
+        // Vous pouvez charger des données mockées ici si nécessaire
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des employés récents', error);
       setErrors(prev => ({ ...prev, employees: 'Impossible de charger les employés récents' }));

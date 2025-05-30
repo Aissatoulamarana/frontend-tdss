@@ -266,7 +266,7 @@ export function AgentDeclarationChart() {
       y: {
         formatter: (value) => `${value} déclarations`,
       },
-      theme: isDarkMode ? 'dark' : 'light',
+      theme: isDarkMode ? 'light' : 'dark',
     },
     grid: {
       borderColor: isDarkMode ? theme.palette.divider : undefined,
