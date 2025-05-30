@@ -191,6 +191,7 @@ export function ComptableFacturationChart() {
       y: {
         formatter: (value) => fCurrency(value),
       },
+      theme: isDarkMode ? 'light' : 'dark',
     },
     grid: {
       borderColor: theme.palette.divider,
