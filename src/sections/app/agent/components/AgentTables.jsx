@@ -356,7 +356,7 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         <TableCell align="right">
           <IconButton 
             color={popover.open ? 'primary' : 'default'} 
-            onClick={popover.onOpen}
+            onClick={(event) => { event.stopPropagation(); popover.onOpen(event); }}
             sx={{ 
               color: popover.open 
                 ? theme.palette.primary.main 
@@ -616,7 +616,7 @@ function EmployeeItem({ employee }) {
           boxShadow: `0 0 0 1px ${isDarkMode ? theme.palette.divider : theme.palette.primary.lighter}`,
         },
       }}
-      onClick={popover.onOpen}
+      onClick={(event) => { event.stopPropagation(); popover.onOpen(event); }}
     >
       <Avatar 
         alt={employee.name} 
@@ -725,7 +725,13 @@ function isRecent(date) {
 
 function CompanyItem({ company, isDarkMode }) {
   const theme = useTheme();
-  const popover = usePopover();
+  
+  const handleClick = () => {
+    // Simple action au clic - par exemple, afficher un message dans la console
+    console.log('Entreprise cliquée:', company.name || company.nom);
+    // Ici vous pourriez ajouter une navigation vers une page de détails
+    // ou toute autre action que vous souhaitez
+  };
   
   // Déterminer la couleur du badge en fonction du statut
   const getStatusColor = (status) => {
@@ -766,7 +772,7 @@ function CompanyItem({ company, isDarkMode }) {
           boxShadow: `0 0 0 1px ${isDarkMode ? theme.palette.divider : theme.palette.primary.lighter}`,
         },
       }}
-      onClick={popover.onOpen}
+      onClick={(event) => { event.stopPropagation(); popover.onOpen(event); }}
     >
       <Avatar 
         alt={companyName} 
@@ -793,18 +799,17 @@ function CompanyItem({ company, isDarkMode }) {
           {companyName}
           {hasRecentDeclaration && (
             <Tooltip title="Déclaration récente" arrow>
-              <Label 
-                color="info" 
-                variant="soft" 
-                sx={{ 
-                  height: 18, 
-                  fontSize: '0.65rem',
-                }}
-              >
-                Récent
-              </Label>
-            </Tooltip>
-          )}
+            <Label 
+              color="info" 
+              variant="soft" 
+              sx={{ 
+                height: 18, 
+                fontSize: '0.65rem',
+              }}
+            >
+              Récent
+            </Label>
+            </Tooltip>          )}
         </Typography>
 
         <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
@@ -845,35 +850,6 @@ function CompanyItem({ company, isDarkMode }) {
           </Typography>
         )}
       </Stack>
-      
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="right-top"
-        sx={{ width: 250 }}
-      >
-        <MenuItem>
-          <Iconify icon="solar:eye-bold" />
-          Voir détails
-        </MenuItem>
-
-        <MenuItem>
-          <Iconify icon="mdi:file-document-plus" />
-          Nouvelle déclaration
-        </MenuItem>
-
-        <MenuItem>
-          <Iconify icon="mdi:account-group" />
-          Gérer les employés
-        </MenuItem>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon="solar:trash-bin-trash-bold" />
-          Supprimer
-        </MenuItem>
-      </CustomPopover>
     </Stack>
   );
 }
