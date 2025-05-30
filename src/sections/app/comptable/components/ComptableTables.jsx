@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
+import { getTableStyles } from './ComptableStyles';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
@@ -175,9 +176,10 @@ export function ComptableDeclarationTable({ title }) {
     }}>
       <CardHeader 
         title={
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{color: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral, }}>
             <Iconify icon="mdi:clipboard-text-clock" width={24} />
-            <Typography variant="h6">
+            <Typography variant="h6" >
+             
               {title || 'Déclarations à facturer'}
             </Typography>
             <Label color="info" sx={{ ml: 1 }}>
@@ -186,7 +188,7 @@ export function ComptableDeclarationTable({ title }) {
           </Stack>
         }
         subheader={
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, mb: 1 }}>
             Liste des déclarations validées en attente de facturation
           </Typography>
         }
@@ -198,7 +200,7 @@ export function ComptableDeclarationTable({ title }) {
         }} 
         action={
           <Button 
-            size="small" 
+            size="medium" 
             startIcon={<Iconify icon="mdi:file-document-plus" />}
             variant="contained"
             color="primary"
@@ -352,7 +354,7 @@ export function ComptableFactureTable({ title }) {
     }}>
       <CardHeader 
         title={
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{color: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral, }}>
             <Iconify icon="mdi:file-document-multiple" width={24} />
             <Typography variant="h6">
               {title || 'Factures récentes'}
@@ -363,7 +365,7 @@ export function ComptableFactureTable({ title }) {
           </Stack>
         }
         subheader={
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, mb: 1, }}>
             Liste des factures générées et leur statut de paiement
           </Typography>
         }
@@ -391,7 +393,7 @@ export function ComptableFactureTable({ title }) {
               </Select>
             </FormControl>
             <Button 
-              size="small" 
+              size="medium" 
               startIcon={<Iconify icon="mdi:file-export" />}
               variant="outlined"
               color="primary"

@@ -58,11 +58,25 @@ export function ComptableStatusChart() {
       ],
     },
     legend: {
-      floating: true,
+      floating: false,
       position: 'bottom',
       horizontalAlign: 'center',
+      fontSize: '14px',
+      fontWeight: 600,
+      offsetY: 10,
+      markers: {
+        radius: 8,
+        width: 12,
+        height: 12,
+        offsetX: -5
+      },
+      itemMargin: {
+        horizontal: 15,
+        vertical: 5
+      },
       labels: {
-        colors: theme.palette.text.primary,
+        colors: isDarkMode ? '#ffffff' : theme.palette.text.primary,
+        useSeriesColors: false
       },
     },
     dataLabels: {
