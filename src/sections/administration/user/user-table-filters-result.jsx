@@ -1,0 +1,55 @@
+import Chip from '@mui/material/Chip';
+import { useCallback } from 'react';
+
+import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-result';
+
+// ----------------------------------------------------------------------
+
+export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx }) {
+  const handleRemoveKeyword = useCallback(() => {
+    onResetPage();
+    filters.setState({ name: '' });
+  }, [filters, onResetPage]);
+
+  const handleRemoveStatus = useCallback(() => {
+    onResetPage();
+    filters.setState({ status: 'all' });
+  }, [filters, onResetPage]);
+
+  const handleRemoveRole = useCallback(() => {
+      // const newValue = filters.state.type.filter((item) => item !== inputValue);
+
+      onResetPage();
+      filters.setState({ type: '' });
+    },
+    [filters, onResetPage]
+  );
+
+  const handleReset = useCallback(() => {
+    onResetPage();
+    filters.onResetState();
+  }, [filters, onResetPage]);
+
+  return (
+    <FiltersResult totalResults={totalResults} onReset={handleReset} sx={sx}>
+      <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
+        <Chip
+          {...chipProps}
+          label={filters.state.status}
+          onDelete={handleRemoveStatus}
+          sx={{ textTransform: 'capitalize' }}
+        />
+      </FiltersBlock>
+
+      <FiltersBlock label="Role:" isShow={!!filters.state.type}>
+      
+          <Chip {...chipProps} label={filters.state.type} onDelete={ handleRemoveRole} />
+      
+      </FiltersBlock>
+
+      <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
+        <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
+      </FiltersBlock>
+    </FiltersResult>
+  );
+}
