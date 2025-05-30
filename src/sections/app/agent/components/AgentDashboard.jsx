@@ -21,7 +21,7 @@ import { toast } from 'src/components/snackbar';
 import { useAuthContext } from 'src/auth/hooks';
 
 import { AgentWidgetSummary, getAgentSummaryData } from './AgentWidgetSummary';
-import { AgentPermitCategoryChart, AgentDeclarationChart } from './AgentCharts';
+import { AgentDeclarationChart } from './AgentCharts';
 import { AgentRecentDeclarations, AgentRecentEmployees } from './AgentTables';
 import { AgentActionButton } from './AgentActionButton';
 
@@ -45,10 +45,9 @@ export default function AgentDashboard() {
   
   // États pour les données
   const [summaryData, setSummaryData] = useState({
-    totalEmployees: 0,
-    totalPayments: 0,
-    pendingPayments: 0,
-    totalInvoices: 0
+    totalDeclarations: 0,
+    unsubmittedDeclarations: 0,
+    rejectedDeclarations: 0
   });
   
   // États de chargement
@@ -114,10 +113,9 @@ export default function AgentDashboard() {
       // Simulation d'un appel API
       await new Promise(resolve => setTimeout(resolve, 1500));
       setSummaryData({
-        totalEmployees: getAgentSummaryData('totalEmployees', companyFilter, user?.id),
-        totalPayments: getAgentSummaryData('totalPayments', companyFilter, user?.id),
-        pendingPayments: getAgentSummaryData('pendingPayments', companyFilter, user?.id),
-        totalInvoices: getAgentSummaryData('totalInvoices', companyFilter, user?.id)
+        totalDeclarations: getAgentSummaryData('totalDeclarations', companyFilter, user?.id),
+        unsubmittedDeclarations: getAgentSummaryData('unsubmittedDeclarations', companyFilter, user?.id),
+        rejectedDeclarations: getAgentSummaryData('rejectedDeclarations', companyFilter, user?.id)
       });
     } catch (error) {
       console.error('Erreur lors du chargement des données de résumé', error);
@@ -292,77 +290,62 @@ export default function AgentDashboard() {
           </Button>
         </Alert>
       )}
-
+      
       {/* Widgets de résumé */}
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           {loading.summary ? (
-            <Card sx={{ p: 3 }}>
+            <Card sx={{ p: 3, height: '100%', minHeight: 200 }}>
               <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 2 }} />
+              <Skeleton variant="text" width="40%" height={40} sx={{ mt: 2 }} />
+              <Skeleton variant="text" width="80%" height={20} sx={{ mt: 2 }} />
             </Card>
           ) : (
             <AgentWidgetSummary
-              title="Employés déclarés"
-              total={summaryData.totalEmployees}
-              icon={<Iconify icon="mdi:account-group" width={36} height={36} />}
-              color="info"
+              title="Total Déclarations"
+              total={summaryData.totalDeclarations}
+              icon={<Iconify icon="mdi:file-document-multiple" width={36} height={36} />}
+              color="primary"
             />
           )}
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           {loading.summary ? (
-            <Card sx={{ p: 3 }}>
+            <Card sx={{ p: 3, height: '100%', minHeight: 200 }}>
               <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 2 }} />
+              <Skeleton variant="text" width="40%" height={40} sx={{ mt: 2 }} />
+              <Skeleton variant="text" width="80%" height={20} sx={{ mt: 2 }} />
             </Card>
           ) : (
             <AgentWidgetSummary
-              title="Total Paiement"
-              total={summaryData.totalPayments}
-              icon={<Iconify icon="mdi:cash-multiple" width={36} height={36} />}
-              color="success"
-            />
-          )}
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          {loading.summary ? (
-            <Card sx={{ p: 3 }}>
-              <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 2 }} />
-            </Card>
-          ) : (
-            <AgentWidgetSummary
-              title="En attente de paiement"
-              total={summaryData.pendingPayments}
-              icon={<Iconify icon="mdi:clock-time-four" width={36} height={36} />}
+              title="Déclarations non soumises"
+              total={summaryData.unsubmittedDeclarations}
+              icon={<Iconify icon="mdi:file-document-alert" width={36} height={36} />}
               color="warning"
             />
           )}
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={4}>
           {loading.summary ? (
-            <Card sx={{ p: 3 }}>
+            <Card sx={{ p: 3, height: '100%', minHeight: 200 }}>
               <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={60} sx={{ mt: 2 }} />
+              <Skeleton variant="text" width="40%" height={40} sx={{ mt: 2 }} />
+              <Skeleton variant="text" width="80%" height={20} sx={{ mt: 2 }} />
             </Card>
           ) : (
             <AgentWidgetSummary
-              title="Total Factures"
-              total={summaryData.totalInvoices}
-              icon={<Iconify icon="mdi:file-document" width={36} height={36} />}
+              title="Déclarations rejetées"
+              total={summaryData.rejectedDeclarations}
+              icon={<Iconify icon="mdi:file-document-remove" width={36} height={36} />}
               color="error"
             />
           )}
         </Grid>
-
+        
         {/* Graphiques */}
-        <Grid item xs={12} md={6} lg={4}>
-          
-          
+        <Grid item xs={12} lg={12}>
           {errors.charts && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {errors.charts}
@@ -377,63 +360,58 @@ export default function AgentDashboard() {
               <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2 }} />
             </Card>
           ) : (
-            <AgentPermitCategoryChart />
-          )}
-        </Grid>
-
-        <Grid item xs={12} md={6} lg={8}>
-          
-          {loading.charts ? (
-            <Card sx={{ p: 3, height: '100%', minHeight: 350 }}>
-              <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2 }} />
-            </Card>
-          ) : (
             <AgentDeclarationChart />
           )}
         </Grid>
-
-        {/* Tableaux de données */}
-        <Grid item xs={12} md={6} lg={8}>
-          {errors.declarations && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {errors.declarations}
-              <Button size="small" onClick={fetchDeclarationsData} sx={{ ml: 2 }}>
-                Réessayer
-              </Button>
-            </Alert>
-          )}
-          {loading.declarations ? (
-            <Card sx={{ p: 3, height: '100%', minHeight: 400 }}>
-              <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={50} sx={{ mt: 2 }} />
-              <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2 }} />
-            </Card>
-          ) : (
-            <AgentRecentDeclarations />
-          )}
+          
+          
         </Grid>
 
-        <Grid item xs={12} md={6} lg={4}>
-          {errors.employees && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {errors.employees}
-              <Button size="small" onClick={fetchEmployeesData} sx={{ ml: 2 }}>
-                Réessayer
-              </Button>
-            </Alert>
-          )}
-          {loading.employees ? (
-            <Card sx={{ p: 3, height: '100%', minHeight: 400 }}>
-              <Skeleton variant="text" width="60%" height={40} />
-              <Skeleton variant="rectangular" width="100%" height={50} sx={{ mt: 2 }} />
-              <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2 }} />
-            </Card>
-          ) : (
-            <AgentRecentEmployees />
-          )}
+        {/* Tableaux de données sur la même ligne avec répartition 70/30 */}
+        <Grid container item xs={12} spacing={2} sx={{ mt: 3 }}>
+          {/* Section Déclarations récentes (70%) */}
+          <Grid item xs={12} md={8}>
+            {errors.declarations && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {errors.declarations}
+                <Button size="small" onClick={fetchDeclarationsData} sx={{ ml: 2 }}>
+                  Réessayer
+                </Button>
+              </Alert>
+            )}
+            {loading.declarations ? (
+              <Card sx={{ p: 3, height: '100%', minHeight: 400 }}>
+                <Skeleton variant="text" width="60%" height={40} />
+                <Skeleton variant="rectangular" width="100%" height={50} sx={{ mt: 2 }} />
+                <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2 }} />
+              </Card>
+            ) : (
+              <AgentRecentDeclarations />
+            )}
+          </Grid>
+
+          {/* Section Entreprises associées (30%) */}
+          <Grid item xs={12} md={4}>
+            {errors.employees && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {errors.employees}
+                <Button size="small" onClick={fetchEmployeesData} sx={{ ml: 2 }}>
+                  Réessayer
+                </Button>
+              </Alert>
+            )}
+            {loading.employees ? (
+              <Card sx={{ p: 3, height: '100%', minHeight: 400 }}>
+                <Skeleton variant="text" width="60%" height={40} />
+                <Skeleton variant="rectangular" width="100%" height={50} sx={{ mt: 2 }} />
+                <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2 }} />
+              </Card>
+            ) : (
+              <AgentRecentEmployees />
+            )}
+          </Grid>
         </Grid>
-      </Grid>
+  
     </Container>
   );
 }

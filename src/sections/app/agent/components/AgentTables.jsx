@@ -85,6 +85,30 @@ const ALL_DECLARATIONS = [
     employees: 10,
     agentId: 'AGENT-003',
   },
+  {
+    id: 'DEC-006',
+    date: new Date('2023-05-22'),
+    company: 'Entreprise ABC',
+    status: 'rejected',
+    employees: 7,
+    agentId: 'AGENT-001',
+  },
+  {
+    id: 'DEC-007',
+    date: new Date('2023-05-25'),
+    company: 'Société XYZ',
+    status: 'pending',
+    employees: 3,
+    agentId: 'AGENT-001',
+  },
+  {
+    id: 'DEC-008',
+    date: new Date('2023-05-26'),
+    company: 'Entreprise ABC',
+    status: 'rejected',
+    employees: 2,
+    agentId: 'AGENT-001',
+  },
 ];
 
 const ALL_EMPLOYEES = [
@@ -161,10 +185,24 @@ export function AgentRecentDeclarations() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   // Filtrer les déclarations par agent et par statut
-  const declarations = ALL_DECLARATIONS.filter(dec => {
+  const filteredDeclarations = ALL_DECLARATIONS.filter(dec => {
     const isCurrentAgent = dec.agentId === CURRENT_USER.id;
     const matchesFilter = filter === 'all' || dec.status === filter;
     return isCurrentAgent && matchesFilter;
+  });
+  
+  // Prioriser les déclarations non soumises (pending) et rejetées (rejected)
+  const declarations = [...filteredDeclarations].sort((a, b) => {
+    // Priorité 1: Non soumises (pending)
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (a.status !== 'pending' && b.status === 'pending') return 1;
+    
+    // Priorité 2: Rejetées (rejected)
+    if (a.status === 'rejected' && b.status !== 'rejected') return -1;
+    if (a.status !== 'rejected' && b.status === 'rejected') return 1;
+    
+    // Priorité 3: Par date (plus récent en premier)
+    return new Date(b.date) - new Date(a.date);
   });
 
   const handleChangePage = (event, newPage) => {
@@ -195,8 +233,8 @@ export function AgentRecentDeclarations() {
         title={
           <Stack direction="row" alignItems="center" spacing={1}>
             <Iconify icon="mdi:clipboard-text-clock" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} />
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Déclarations fiscales récentes
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.white }}>
+              Déclarations récentes
             </Typography>
             <Label color="info" sx={{ ml: 1 }}>
               {declarations.length}
@@ -206,8 +244,11 @@ export function AgentRecentDeclarations() {
         
         sx={{ 
           pb: 0,
+          
           '& .MuiCardHeader-title': {
-            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+            color: theme.palette.common.white,
+            display: 'block',
+            width: '100%'
           }
         }} 
         action={
@@ -224,6 +265,7 @@ export function AgentRecentDeclarations() {
                 <MenuItem value="all">Toutes</MenuItem>
                 <MenuItem value="submitted">Soumises</MenuItem>
                 <MenuItem value="pending">Non Soumises</MenuItem>
+                <MenuItem value="rejected">Rejetées</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -234,8 +276,7 @@ export function AgentRecentDeclarations() {
           <Table sx={{ 
             minWidth: 720,
             '& .MuiTableCell-head': {
-              color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-              backgroundColor: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral,
+              color: theme.palette.common.white,
               fontWeight: 600
             }
           }}>
@@ -303,9 +344,13 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         <TableCell>
           <Label
             variant="soft"
-            color={row.status === 'submitted' ? 'success' : 'warning'}
+            color={
+              row.status === 'submitted' ? 'success' : 
+              row.status === 'rejected' ? 'error' : 'warning'
+            }
           >
-            {row.status === 'submitted' ? 'Soumise' : 'Non Soumise'}
+            {row.status === 'submitted' ? 'Soumise' : 
+             row.status === 'rejected' ? 'Rejetée' : 'Non Soumise'}
           </Label>
         </TableCell>
         <TableCell align="right">
@@ -427,7 +472,7 @@ export function AgentRecentEmployees() {
         title={
           <Stack direction="row" alignItems="center" spacing={1} key="header-stack">
             <Iconify icon="mdi:office-building" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} key="header-icon" />
-            <Typography variant="h6" sx={{ fontWeight: 700 }} key="header-title">
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.white }} key="header-title">
               Entreprises associées
             </Typography>
             <Label color="info" sx={{ ml: 1 }} key="header-count">
@@ -438,8 +483,11 @@ export function AgentRecentEmployees() {
         
         sx={{ 
           pb: 0,
+          
           '& .MuiCardHeader-title': {
-            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+            color: theme.palette.common.white,
+            display: 'block',
+            width: '100%'
           }
         }} 
         action={
@@ -735,7 +783,7 @@ function CompanyItem({ company, isDarkMode }) {
         <Typography 
           variant="subtitle2"
           sx={{ 
-            color: isDarkMode ? theme.palette.text.primary : theme.palette.text.primary,
+            color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
             fontWeight: 600,
             display: 'flex',
             alignItems: 'center',

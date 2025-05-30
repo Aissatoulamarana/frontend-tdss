@@ -14,6 +14,7 @@ import { fShortenNumber } from 'src/utils/format-number';
 
 // Données mockées pour le développement
 const ALL_SUMMARY_DATA = {
+  // Anciennes données conservées pour compatibilité
   totalEmployees: [
     { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18 },
     { agentId: 'AGENT-001', company: 'Société XYZ', count: 12 },
@@ -33,6 +34,23 @@ const ALL_SUMMARY_DATA = {
     { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 67 },
     { agentId: 'AGENT-001', company: 'Société XYZ', count: 2 },
     { agentId: 'AGENT-002', company: 'Compagnie 123', count: 5 },
+  ],
+  
+  // Nouvelles données demandées par le boss
+  totalDeclarations: [
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 85 },
+    { agentId: 'AGENT-001', company: 'Société XYZ', count: 42 },
+    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 63 },
+  ],
+  unsubmittedDeclarations: [
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 12 },
+    { agentId: 'AGENT-001', company: 'Société XYZ', count: 8 },
+    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 15 },
+  ],
+  rejectedDeclarations: [
+    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 5 },
+    { agentId: 'AGENT-001', company: 'Société XYZ', count: 3 },
+    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 7 },
   ],
 };
 
@@ -137,18 +155,23 @@ AgentWidgetSummary.propTypes = {
 
 // ----------------------------------------------------------------------
 
-// Fonction utilitaire pour filtrer les données par agent et entreprise
-export function getAgentSummaryData(dataType, companyFilter = 'all', userId = 'AGENT-001') {
-  // Filtrer d'abord par agent
-  const agentData = ALL_SUMMARY_DATA[dataType].filter(item => item.agentId === userId);
-  
-  // Appliquer le filtre d'entreprise si nécessaire
-  if (companyFilter !== 'all') {
-    return agentData
-      .filter(item => item.company === companyFilter)
-      .reduce((sum, item) => sum + item.count, 0);
+// Fonction pour obtenir les données de résumé pour un agent spécifique
+export function getAgentSummaryData(dataType, company = 'all', agentId = 'AGENT-001') {
+  // Vérifier si le type de données existe
+  if (!ALL_SUMMARY_DATA[dataType]) {
+    console.error(`Type de données "${dataType}" non disponible`);
+    return 0;
   }
-  
-  // Sinon, retourner la somme pour toutes les entreprises de l'agent
-  return agentData.reduce((sum, item) => sum + item.count, 0);
+
+  // Filtrer les données par agent
+  const agentData = ALL_SUMMARY_DATA[dataType].filter(item => item.agentId === agentId);
+
+  // Si aucune entreprise spécifique n'est sélectionnée, retourner la somme de toutes les entreprises
+  if (company === 'all') {
+    return agentData.reduce((sum, item) => sum + item.count, 0);
+  }
+
+  // Sinon, retourner les données pour l'entreprise spécifiée
+  const companyData = agentData.find(item => item.company === company);
+  return companyData ? companyData.count : 0;
 }
