@@ -25,9 +25,9 @@ const ICONS = {
   kanban: icon('ic-kanban'),
   folder: icon('ic-folder'),
   penalite: icon('ic-course'),
-  facture: icon('ic-facture'),
+  facture: icon('ic-invoice'),
   booking: icon('ic-booking'),
-  paiement: icon('ic-paiement'),
+  paiement: icon('ic-banking'),
   product: icon('ic-product'),
   calendar: icon('ic-calendar'),
   disabled: icon('ic-disabled'),
@@ -41,7 +41,7 @@ const ICONS = {
   permis: icon('ic-permit'),
   devise: icon('ic-devise'),
   employes: icon('ic-employes'),
-  fonction: icon('ic-fonction'),
+  fonction: icon('ic-job'),
   fonction_category: icon('ic-fonction-category'),
   region: icon('ic-region'),
   permission: icon('ic-permission'),
@@ -57,6 +57,7 @@ export function useNavData () {
 
   const {user} = useMockedUser();
   const type = user?.type.toLowerCase().trim();
+  const profil = user?.companies[0]?.type_name.toLowerCase().trim();
 
   return [
   /**
@@ -65,9 +66,14 @@ export function useNavData () {
   {
     subheader: "Vue d'ensemble",
     items: [
-      ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'superviseur'
+      ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'aguipe'
         ? [
             { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
+            ]
+        : []),
+            
+        ...(type === 'admin' || type === 'aguipe' || type === 'ministère' ?
+          [
             {
               title: 'Statistiques',
               path: paths.dashboard.analytics.root,
@@ -80,9 +86,10 @@ export function useNavData () {
                 { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
               ],
             },
-          ]
-        : []),
-      ...(type === 'comptable' || type === 'agent' || type === 'superviseur' || type === 'admin'
+            ]
+          : []),
+        
+      ...(type === 'comptable' || type === 'agent' || type === 'aguipe' || type === 'admin'
         ? [
             {
               title: 'Déclarations',
@@ -137,6 +144,9 @@ export function useNavData () {
             //   { title: 'Nouveau', path: paths.dashboard.user.new },
             // ],
           },
+
+          ...(profil === 'tdss' ? 
+            [
           {
 
             title: 'Catégories Fonctions',
@@ -182,6 +192,8 @@ export function useNavData () {
               { title: 'Permits', path: paths.dashboard.permit.root, icon: ICONS.permis },
             ],
             },
+            ]
+          : []),
           // {
           //   title: 'Regions',
           //   path: paths.dashboard.region.root,
