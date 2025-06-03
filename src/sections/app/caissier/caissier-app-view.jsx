@@ -49,18 +49,6 @@ const fetchAllFactures = async () => {
   }
 };
 
-// Service pour récupérer les paiements
-const fetchAllPaiements = async () => {
-  try {
-    const response = await axios.get(API.listPaiments());
-    // console.log('All Paiements Response:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Erreur lors de la récupération des paiements:', error);
-    throw error;
-  }
-};
-
 // Fonction pour filtrer les données par mois
 const filterDataByMonth = (data, selectedMonth, selectedYear) => {
   if (!data || !Array.isArray(data) || !selectedMonth || !selectedYear) return data || [];
@@ -191,66 +179,6 @@ export function CaissierAppView() {
     }
   }
 
-
-  // Récupération des métriques
-  // useEffect(() => {
-  //   const fetchDashboardMetrics = async () => {
-  //     try {
-  //       setLoading(true);
-  //       setError(null);
-
-  //       // Récupère toutes les factures
-  //       const facturesData = await fetchAllFactures();
-  //       // Récupère tous les paiements
-  //       const paiementsData = await fetchAllPaiements();
-  //       // console.log('Paiements Data:', paiementsData);
-        
-  //       // 1. Total Factures
-  //       const totalFactures = facturesData.count;
-  //       // console.log('Total Factures:', totalFactures);
-
-  //       // 2. Factures payées - somme des factures avec status = "PAID"
-  //       const facturesPayees = facturesData.results?.filter(
-  //         facture => facture.status === 'PAID'
-  //       ).length || 0;
-  //       // console.log('Factures Payées:', facturesPayees);
-
-  //       // 3. Montant Total Payé - somme des amounts des factures payées par le caissier
-  //       const montantTotalPaye = facturesData.results
-  //         ?.filter(facture => facture.status === 'PAID' && facture.created_by === user?.name)
-  //         .reduce((total, facture) => total + parseFloat(facture.amount || 0), 0) ;
-  //       // console.log('Montant Total Payé:', montantTotalPaye);
-
-  //       // 4. Nombre de paiements - nombre de paiements effectués par le caissier
-  //       const PaiementsParCaissier = paiementsData.results?.filter(
-  //         paiement => paiement.created_by === user?.name
-  //       ).length || 0;
-  //       // console.log('user connected :', user)
-  //       // console.log('Nombre de Paiements:', PaiementsParCaissier);
-  //       const nombrePaiements = PaiementsParCaissier;
-
-  //       // 5. Dernières factures (5 dernières)
-  //       const dernieres = facturesData.results?.sort((a, b) => new Date(b.created_on) - new Date(a.created_on)).slice(0, 5) || [];
-  //       // console.log('Dernières :', dernieres);
-  //       setDashboardMetrics({
-  //         totalFactures,
-  //         facturesPayees,
-  //         montantTotalPaye,
-  //         nombrePaiements,
-  //       });
-  //       setDernieresFactures(dernieres);
-  //       // console.log('Dernières Factures:', dernieresFactures);
-
-  //     } catch (err) {
-  //       setError('Erreur lors du chargement des données');
-  //       console.error('Erreur dashboard:', err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchDashboardMetrics();
-  // }, []);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -258,7 +186,7 @@ export function CaissierAppView() {
         setError(null);
         const facturesData = await fetchAllFactures();
         setAllFactures(facturesData.results || []);
-        console.log('All Factures Data:', facturesData.results);
+        // console.log('All Factures Data:', facturesData.results);
       } catch (err) {
         setError('Erreur lors du chargement des factures');
         console.error('Erreur lors du chargement des factures:', err);
@@ -279,8 +207,8 @@ useEffect(() => {
     // Génération des données pour le graphique
     const chartData = generateMonthlyTransactionData(allFactures, chartYear);
     setMonthlyTransactionData(chartData);
-    console.log('Monthly Transaction Data:', chartData);
-    console.log('Monthly Transaction Data:', chartData.series);
+    // console.log('Monthly Transaction Data:', chartData);
+    // console.log('Monthly Transaction Data:', chartData.series);
 
     // 5 dernières factures non payées
     const facturesNonPayees = allFactures
@@ -291,12 +219,6 @@ useEffect(() => {
   }
 }, [allFactures, selectedMonth, selectedYear, chartYear]);
 
-  // Fonction pour formater les montants en GNF
-  const formatCurrency = (amount) => new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'GNF', // GNF - change selon ta devise
-    }).format(amount);
-
   // // Fonction pour formater les nombres  
   function formatNumber(value) {
     return new Intl.NumberFormat('en-US', {
@@ -306,12 +228,6 @@ useEffect(() => {
     }).format(value);
   }
 
-  // Calcul des pourcentages (tu peux les adapter selon tes besoins)
-  const calculatePercentage = (current, previous) => {
-    if (previous === 0) return 0;
-    return ((current - previous) / previous) * 100;
-  };
-
 return (
   <DashboardContent maxWidth="xl">
     {error && (
@@ -320,7 +236,7 @@ return (
       </div>
     )}
     <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <h2>Dashboard Caissier</h2>
+      <h2>Tableau de bord Caissier</h2>
       <Box sx={{ typography: 'subtitle1', color: 'text.secondary' }}>
         {user ? `Bienvenue, ${user.name}` : 'Bienvenue, utilisateur inconnu'}
       </Box>
