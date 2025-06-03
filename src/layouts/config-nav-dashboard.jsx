@@ -56,12 +56,12 @@ export function useNavData () {
   {
     subheader: "Vue d'ensemble",
     items: [
-      ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'superviseur'
+      ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'superviseur' || type === 'aguipe'
         ? [
             { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
           ]
         : []),
-      ...(type === 'comptable' || type === 'agent' || type === 'superviseur' || type === 'admin'
+      ...(type === 'comptable' || type === 'agent' || type === 'superviseur' || type === 'admin' || type === 'aguipe'
         ? [
             {
               title: 'Déclarations',
@@ -70,7 +70,7 @@ export function useNavData () {
             },
           ]
         : []),
-      ...(type === 'comptable' || type === 'caissier' || type === 'admin'
+      ...(type === 'comptable' || type === 'caissier' || type === 'admin' || type === 'aguipe'
         ? [
             {
               title: 'Factures',
@@ -79,7 +79,7 @@ export function useNavData () {
             },
           ]
         : []),
-      ...(type === 'caissier' || type === 'admin'
+      ...(type === 'caissier' || type === 'admin' || type === 'aguipe'
         ? [
             {
               title: 'Paiements',
