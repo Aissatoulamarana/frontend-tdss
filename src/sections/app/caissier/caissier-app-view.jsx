@@ -8,7 +8,6 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useMockedUser } from 'src/auth/hooks';
 
-import { AppAreaInstalled } from '../app-area-installed';
 // import { AppNewInvoice } from '../app-new-invoice';
 import { AppNewInvoice} from './app-new-invoice';
 // import { AppWidgetSummary } from '../app-widget-summary';
@@ -26,6 +25,7 @@ import {
   Box 
 } from '@mui/material';
 
+import { MultiLineChart } from './CaissierCharts';
 
 // Service pour récupérer toutes les factures avec tous les résultats
 const fetchAllFactures = async () => {
@@ -98,7 +98,6 @@ const generateMonthlyTransactionData = (factures, selectedYear) => {
 };
 
 
-
 // ----------------------------------------------------------------------
 
 export function CaissierAppView() {
@@ -121,12 +120,12 @@ export function CaissierAppView() {
   const [dernieresFactures, setDernieresFactures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-// États pour les filtres
+  
+  // États pour les filtres
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
-
+  
   // Nouveaux états pour les données
   const [dernieresFacturesNonPayees, setDernieresFacturesNonPayees] = useState([]);
   const [monthlyTransactionData, setMonthlyTransactionData] = useState({
@@ -134,6 +133,10 @@ export function CaissierAppView() {
     series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   });
   const [allFactures, setAllFactures] = useState([]);
+  const rechartsData = (monthlyTransactionData.categories || []).map((month, index) => ({
+    mois: month,
+    transactions: monthlyTransactionData.series ? monthlyTransactionData.series[index] : 0,
+  }));
 
   // Options pour les filtres
   const months = [
@@ -276,6 +279,7 @@ useEffect(() => {
     // Génération des données pour le graphique
     const chartData = generateMonthlyTransactionData(allFactures, chartYear);
     setMonthlyTransactionData(chartData);
+    console.log('Monthly Transaction Data:', chartData);
     console.log('Monthly Transaction Data:', chartData.series);
 
     // 5 dernières factures non payées
@@ -416,19 +420,7 @@ return (
             </Select>
           </FormControl>
         </Box>
-        <AppAreaInstalled
-          title="Évolution des Transactions"
-          subheader={`Nombre de transactions par mois en ${chartYear}`}
-          chart={{
-            categories: monthlyTransactionData.categories,
-            series: [
-              {
-                name: `${chartYear}`,
-                data: monthlyTransactionData.series,
-              },
-            ],
-          }}
-        />
+        <MultiLineChart data={rechartsData} />
       </Grid>
 
       {/* Troisième ligne - Dernières factures non payées */}
