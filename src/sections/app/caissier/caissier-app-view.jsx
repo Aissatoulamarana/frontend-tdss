@@ -9,14 +9,23 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { useMockedUser } from 'src/auth/hooks';
 
 import { AppAreaInstalled } from '../app-area-installed';
-import { AppCurrentDownload } from '../app-current-download';
 // import { AppNewInvoice } from '../app-new-invoice';
 import { AppNewInvoice} from './app-new-invoice';
-import { AppWidgetSummary } from '../app-widget-summary';
+// import { AppWidgetSummary } from '../app-widget-summary';
+import { AppWidgetSummary } from './app-widget-summary';
 
 // Import axios et ton API
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
+
+import { 
+  FormControl, 
+  InputLabel, 
+  Select, 
+  MenuItem, 
+  Box 
+} from '@mui/material';
+
 
 // Service pour récupérer toutes les factures avec tous les résultats
 const fetchAllFactures = async () => {
@@ -52,91 +61,246 @@ const fetchAllPaiements = async () => {
   }
 };
 
+// Fonction pour filtrer les données par mois
+const filterDataByMonth = (data, selectedMonth, selectedYear) => {
+  if (!data || !Array.isArray(data) || !selectedMonth || !selectedYear) return data || [];
+  
+  return data.filter(item => {
+    const itemDate = new Date(item.created_on);
+    return itemDate.getMonth() === selectedMonth - 1 && itemDate.getFullYear() === selectedYear;
+  });
+};
+
+// Fonction pour générer les données de transaction par mois
+const generateMonthlyTransactionData = (factures, selectedYear) => {
+  const monthlyData = Array(12).fill(0);
+  const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+  
+    // Vérifier que factures existe et est un tableau
+  if (!factures || !Array.isArray(factures)) {
+    return {
+      categories: monthNames,
+      series: monthlyData
+    };
+  }
+
+  factures.forEach(facture => {
+    const date = new Date(facture.created_on);
+    if (date.getFullYear() === selectedYear) {
+      monthlyData[date.getMonth()]++;
+    }
+  });
+  
+  return {
+    categories: monthNames,
+    series: monthlyData
+  };
+};
+
+
+
 // ----------------------------------------------------------------------
 
 export function CaissierAppView() {
+
   const { user } = useMockedUser();
   const theme = useTheme();
 
   // États pour les métriques du dashboard
   const [dashboardMetrics, setDashboardMetrics] = useState({
     totalFactures: 0,
+    montantTotalFactures: 0,
     facturesPayees: 0,
+    montantFacturesPayees: 0,
+    facturesEnAttente: 0,
+    montantFacturesEnAttente: 0,
     montantTotalPaye: 0,
     nombrePaiements: 0,
   });
+
   const [dernieresFactures, setDernieresFactures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Récupération des métriquess
+// États pour les filtres
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [chartYear, setChartYear] = useState(new Date().getFullYear());
+
+  // Nouveaux états pour les données
+  const [dernieresFacturesNonPayees, setDernieresFacturesNonPayees] = useState([]);
+  const [monthlyTransactionData, setMonthlyTransactionData] = useState({
+    categories: [],
+    series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  });
+  const [allFactures, setAllFactures] = useState([]);
+
+  // Options pour les filtres
+  const months = [
+    { value: '', label: 'Tous les mois' },
+    { value: 1, label: 'Janvier' },
+    { value: 2, label: 'Février' },
+    { value: 3, label: 'Mars' },
+    { value: 4, label: 'Avril' },
+    { value: 5, label: 'Mai' },
+    { value: 6, label: 'Juin' },
+    { value: 7, label: 'Juillet' },
+    { value: 8, label: 'Août' },
+    { value: 9, label: 'Septembre' },
+    { value: 10, label: 'Octobre' },
+    { value: 11, label: 'Novembre' },
+    { value: 12, label: 'Décembre' },
+  ];
+  const years = Array.from({ length: 5}, (_, i) => new Date().getFullYear() - i);
+
+  const calculateMetrics = (factures) => {
+    if (!factures || factures.length === 0) {
+      return {
+        totalFactures: 0,
+        montantTotalFactures: 0,
+        facturesPayees: 0,
+        montantFacturesPayees: 0,
+        facturesEnAttente: 0,
+        montantFacturesEnAttente: 0,
+      };
+    }
+    // filtrer par mois si selectionné
+    const filteredFactures = filterDataByMonth(factures, selectedMonth, selectedYear);
+    // 1. Total Factures
+    const totalFactures = filteredFactures.length;
+    const montantTotalFactures = filteredFactures.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
+    // 2. Factures payées - somme des factures avec status = "PAID"
+    const facturesPayees = filteredFactures.filter(facture => facture.status === 'PAID');
+    const facturesPayeesCount = facturesPayees.length;
+    const montantFacturesPayees = facturesPayees.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
+
+    // FActures en attente
+    const facturesEnAttente = filteredFactures.filter(facture => facture.status !== 'PAID');
+    const facturesEnAttenteCount = facturesEnAttente.length;
+    const montantFacturesEnAttente = facturesEnAttente.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
+    return {
+      totalFactures,
+      montantTotalFactures,
+      facturesPayees: facturesPayeesCount,
+      montantFacturesPayees,
+      facturesEnAttente: facturesEnAttenteCount,
+      montantFacturesEnAttente,
+    }
+  }
+
+
+  // Récupération des métriques
+  // useEffect(() => {
+  //   const fetchDashboardMetrics = async () => {
+  //     try {
+  //       setLoading(true);
+  //       setError(null);
+
+  //       // Récupère toutes les factures
+  //       const facturesData = await fetchAllFactures();
+  //       // Récupère tous les paiements
+  //       const paiementsData = await fetchAllPaiements();
+  //       // console.log('Paiements Data:', paiementsData);
+        
+  //       // 1. Total Factures
+  //       const totalFactures = facturesData.count;
+  //       // console.log('Total Factures:', totalFactures);
+
+  //       // 2. Factures payées - somme des factures avec status = "PAID"
+  //       const facturesPayees = facturesData.results?.filter(
+  //         facture => facture.status === 'PAID'
+  //       ).length || 0;
+  //       // console.log('Factures Payées:', facturesPayees);
+
+  //       // 3. Montant Total Payé - somme des amounts des factures payées par le caissier
+  //       const montantTotalPaye = facturesData.results
+  //         ?.filter(facture => facture.status === 'PAID' && facture.created_by === user?.name)
+  //         .reduce((total, facture) => total + parseFloat(facture.amount || 0), 0) ;
+  //       // console.log('Montant Total Payé:', montantTotalPaye);
+
+  //       // 4. Nombre de paiements - nombre de paiements effectués par le caissier
+  //       const PaiementsParCaissier = paiementsData.results?.filter(
+  //         paiement => paiement.created_by === user?.name
+  //       ).length || 0;
+  //       // console.log('user connected :', user)
+  //       // console.log('Nombre de Paiements:', PaiementsParCaissier);
+  //       const nombrePaiements = PaiementsParCaissier;
+
+  //       // 5. Dernières factures (5 dernières)
+  //       const dernieres = facturesData.results?.sort((a, b) => new Date(b.created_on) - new Date(a.created_on)).slice(0, 5) || [];
+  //       // console.log('Dernières :', dernieres);
+  //       setDashboardMetrics({
+  //         totalFactures,
+  //         facturesPayees,
+  //         montantTotalPaye,
+  //         nombrePaiements,
+  //       });
+  //       setDernieresFactures(dernieres);
+  //       // console.log('Dernières Factures:', dernieresFactures);
+
+  //     } catch (err) {
+  //       setError('Erreur lors du chargement des données');
+  //       console.error('Erreur dashboard:', err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchDashboardMetrics();
+  // }, []);
   useEffect(() => {
-    const fetchDashboardMetrics = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Récupère toutes les factures
         const facturesData = await fetchAllFactures();
-        // Récupère tous les paiements
-        const paiementsData = await fetchAllPaiements();
-        // console.log('Paiements Data:', paiementsData);
-        
-        // 1. Total Factures
-        const totalFactures = facturesData.count;
-        // console.log('Total Factures:', totalFactures);
-
-        // 2. Factures payées - somme des factures avec status = "PAID"
-        const facturesPayees = facturesData.results?.filter(
-          facture => facture.status === 'PAID'
-        ).length || 0;
-        // console.log('Factures Payées:', facturesPayees);
-
-        // 3. Montant Total Payé - somme des amounts des factures payées par le caissier
-        const montantTotalPaye = facturesData.results
-          ?.filter(facture => facture.status === 'PAID' && facture.created_by === user?.name)
-          .reduce((total, facture) => total + parseFloat(facture.amount || 0), 0) ;
-        // console.log('Montant Total Payé:', montantTotalPaye);
-
-        // 4. Nombre de paiements - nombre de paiements effectués par le caissier
-        const PaiementsParCaissier = paiementsData.results?.filter(
-          paiement => paiement.created_by === user?.name
-        ).length || 0;
-        // console.log('user connected :', user)
-        // console.log('Nombre de Paiements:', PaiementsParCaissier);
-        const nombrePaiements = PaiementsParCaissier;
-
-        // 5. Dernières factures (5 dernières)
-        const dernieres = facturesData.results?.sort((a, b) => new Date(b.created_on) - new Date(a.created_on)).slice(0, 5) || [];
-        // console.log('Dernières :', dernieres);
-        setDashboardMetrics({
-          totalFactures,
-          facturesPayees,
-          montantTotalPaye,
-          nombrePaiements,
-        });
-        setDernieresFactures(dernieres);
-        // console.log('Dernières Factures:', dernieresFactures);
-
+        setAllFactures(facturesData.results || []);
+        console.log('All Factures Data:', facturesData.results);
       } catch (err) {
-        setError('Erreur lors du chargement des données');
-        console.error('Erreur dashboard:', err);
+        setError('Erreur lors du chargement des factures');
+        console.error('Erreur lors du chargement des factures:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardMetrics();
+    fetchData();
   }, []);
 
-  // Fonction pour formater les montants en GNF 
+  // Recalcul des métriques et des données à chaque changement de filtre
+useEffect(() => {
+  if (allFactures && allFactures.length > 0) {
+    const metrics = calculateMetrics(allFactures);
+    setDashboardMetrics(metrics);
+
+    // Génération des données pour le graphique
+    const chartData = generateMonthlyTransactionData(allFactures, chartYear);
+    setMonthlyTransactionData(chartData);
+    console.log('Monthly Transaction Data:', chartData.series);
+
+    // 5 dernières factures non payées
+    const facturesNonPayees = allFactures
+      .filter(facture => facture.status !== 'PAID')
+      .sort((a, b) => new Date(b.created_on) - new Date(a.created_on))
+      .slice(0, 5);
+    setDernieresFacturesNonPayees(facturesNonPayees);
+  }
+}, [allFactures, selectedMonth, selectedYear, chartYear]);
+
+  // Fonction pour formater les montants en GNF
   const formatCurrency = (amount) => new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'GNF', // GNF - change selon ta devise
     }).format(amount);
 
-  // Fonction pour formater les nombres
-  const formatNumber = (number) => new Intl.NumberFormat('fr-FR').format(number);
+  // // Fonction pour formater les nombres  
+  function formatNumber(value) {
+    return new Intl.NumberFormat('en-US', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
 
   // Calcul des pourcentages (tu peux les adapter selon tes besoins)
   const calculatePercentage = (current, previous) => {
@@ -144,153 +308,145 @@ export function CaissierAppView() {
     return ((current - previous) / previous) * 100;
   };
 
-  return (
-    <DashboardContent maxWidth="xl">
-      {error && (
-        <div style={{ color: 'red', marginBottom: '1rem', padding: '1rem', backgroundColor: '#ffebee', borderRadius: '4px' }}>
-          {error}
-        </div>
-      )}
+return (
+  <DashboardContent maxWidth="xl">
+    {error && (
+      <div style={{ color: 'red', marginBottom: '1rem', padding: '1rem', backgroundColor: '#ffebee', borderRadius: '4px' }}>
+        {error}
+      </div>
+    )}
+    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <h2>Dashboard Caissier</h2>
+      <Box sx={{ typography: 'subtitle1', color: 'text.secondary' }}>
+        {user ? `Bienvenue, ${user.name}` : 'Bienvenue, utilisateur inconnu'}
+      </Box>
+    </Box>
+    {/* Filtres */}
+    <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
+      <FormControl size="small" sx={{ minWidth: 150 }}>
+        <InputLabel>Mois</InputLabel>
+        <Select
+          value={selectedMonth}
+          label="Mois"
+          onChange={(e) => setSelectedMonth(e.target.value)}
+        >
+          {months.map((month) => (
+            <MenuItem key={month.value} value={month.value}>
+              {month.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 6, md: 3 }}>
-          <AppWidgetSummary
-            title="Total Factures"
-            percent={2.6} // Tu peux calculer ce pourcentage dynamiquement
-            total={dashboardMetrics.totalFactures}
-            chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [15, 18, 12, 51, 68, 11, 39, 37],
-            }}
-          />
-        </Grid>
+      <FormControl size="small" sx={{ minWidth: 120 }}>
+        <InputLabel>Année</InputLabel>
+        <Select
+          value={selectedYear}
+          label="Année"
+          onChange={(e) => setSelectedYear(e.target.value)}
+        >
+          {years.map((year) => (
+            <MenuItem key={year} value={year}>
+              {year}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
 
-        <Grid size={{ xs: 6, md: 3 }}>
-          <AppWidgetSummary
-            title="Factures payées"
-            percent={0.2}
-            total={dashboardMetrics.facturesPayees}
-            chart={{
-              colors: [theme.vars.palette.info.main],
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [20, 41, 63, 33, 28, 35, 50, 46],
-            }}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 6, md: 3 }}>
-          <AppWidgetSummary
-            title="Montant Total Payé"
-            percent={2.6}
-            total={formatNumber(dashboardMetrics.montantTotalPaye)} // Format sans devise pour l'affichage
-            chart={{
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [15, 18, 12, 51, 68, 11, 39, 37],
-            }}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 6, md: 3 }}>
-          <AppWidgetSummary
-            title="Nombre de Paiements"
-            percent={-0.1}
-            total={dashboardMetrics.nombrePaiements}
-            chart={{
-              colors: [theme.vars.palette.error.main],
-              categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-              series: [18, 19, 31, 8, 16, 37, 12, 33],
-            }}
-          />
-        </Grid>
-
-        {/* Reste du dashboard... */}
-        <Grid size={{ xs: 6, md: 4 }}>
-          <AppCurrentDownload
-            title="Paiements Par type de permis"
-            subheader=""
-            chart={{
-              series: [
-                { label: 'Permis A', value: 12244 },
-                { label: 'Permis B', value: 53345 },
-                { label: 'Permis C', value: 44313 },
-              ],
-            }}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 6, md: 8 }}>
-          <AppAreaInstalled
-            title="Factures"
-            subheader="(+43%) Depuis l'année dernière"
-            chart={{
-              categories: [
-                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-              ],
-              series: [
-                {
-                  name: '2022',
-                  data: [
-                    { name: 'Permis A', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                    { name: 'Permis B', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                    { name: 'Permis C', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                  ],
-                },
-                {
-                  name: '2023',
-                  data: [
-                    { name: 'Permis A', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                    { name: 'Permis B', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                    { name: 'Permis C', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                  ],
-                },
-                {
-                  name: '2024',
-                  data: [
-                    { name: 'Permis A', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                    { name: 'Permis B', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                    { name: 'Permis C', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                  ],
-                },
-                {
-                  name: '2025',
-                  data: [
-                    { name: 'Permis A', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                    { name: 'Permis B', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                    { name: 'Permis C', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                  ],
-                },
-              ],
-            }}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, md: 12 }}>
-          <AppNewInvoice
-            title="Dernières Factures"
-            tableData={dernieresFactures} 
-            headLabel={[
-              { id: 'number', label: 'Numéro Facture ' },
-              { id: 'declaration_number', label: 'Numéro Déclaration' },
-              { id: 'amount', label: 'Montant' },
-              { id: 'client', label: 'Client' },
-              { id: 'status', label: 'Statut' },
-            ]}
-            />
-        </Grid>
-
-        {/* <Grid size={{ xs: 6, md: 4 }}>
-          <AppTopRelated title="Entreprises" list={_appRelated} />
-        </Grid> */}
-
-        {/* <Grid size={{ xs: 6, md: 4 }}>
-          <AppTopInstalledCountries title="Pays" list={_appInstalled} />
-        </Grid>
-
-        <Grid size={{ xs: 6, md: 4 }}>
-          <AppTopAuthors title="Top Utilisateurs" list={_appAuthors} />
-        </Grid> */}
+    <Grid container spacing={2}>
+      {/* Première ligne - Métriques principales */}
+      <Grid size={{ xs: 12, md: 4 }}>
+        <AppWidgetSummary
+          title="Total Factures"
+          percent={2.6}
+          total={dashboardMetrics.totalFactures}
+          subtitle={`Montant: ${formatNumber(dashboardMetrics.montantTotalFactures)}`}
+          chart={{
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [15, 18, 12, 51, 68, 11, 39, 37],
+          }}
+        />
       </Grid>
-    </DashboardContent>
+
+      <Grid size={{ xs: 12, md: 4 }}>
+        <AppWidgetSummary
+          title="Factures Payées"
+          percent={0.2}
+          total={dashboardMetrics.facturesPayees}
+          subtitle={`Montant: ${formatNumber(dashboardMetrics.montantFacturesPayees)}`}
+          chart={{
+            colors: [theme.vars.palette.success.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [20, 41, 63, 33, 28, 35, 50, 46],
+          }}
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, md: 4 }}>
+        <AppWidgetSummary
+          title="Factures en Attente"
+          percent={-0.1}
+          total={dashboardMetrics.facturesEnAttente}
+          subtitle={`Montant: ${formatNumber(dashboardMetrics.montantFacturesEnAttente)}`}
+          chart={{
+            colors: [theme.vars.palette.warning.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [18, 19, 31, 8, 16, 37, 12, 33],
+          }}
+        />
+      </Grid>
+
+      {/* Deuxième ligne - Graphique des transactions */}
+      <Grid size={{ xs: 12 }}>
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>Transactions par Mois</h3>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Année</InputLabel>
+            <Select
+              value={chartYear}
+              label="Année"
+              onChange={(e) => setChartYear(e.target.value)}
+            >
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <AppAreaInstalled
+          title="Évolution des Transactions"
+          subheader={`Nombre de transactions par mois en ${chartYear}`}
+          chart={{
+            categories: monthlyTransactionData.categories,
+            series: [
+              {
+                name: `${chartYear}`,
+                data: monthlyTransactionData.series,
+              },
+            ],
+          }}
+        />
+      </Grid>
+
+      {/* Troisième ligne - Dernières factures non payées */}
+      <Grid size={{ xs: 12 }}>
+        <AppNewInvoice
+          title="5 Dernières Factures Non Payées"
+          tableData={dernieresFacturesNonPayees} 
+          headLabel={[
+            { id: 'number', label: 'Numéro Facture' },
+            { id: 'declaration_number', label: 'Numéro Déclaration' },
+            { id: 'amount', label: 'Montant' },
+            { id: 'client', label: 'Client' },
+            { id: 'status', label: 'Statut' },
+            { id: 'created_on', label: 'Date de Création' },
+          ]}
+        />
+      </Grid>
+    </Grid>
+  </DashboardContent>
   );
 }

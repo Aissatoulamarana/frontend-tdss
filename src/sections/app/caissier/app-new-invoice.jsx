@@ -69,7 +69,14 @@ function RowItem({ row }) {
     console.info('PRINT', row.id);
   };
 
- 
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  }
  
   return (
     <>
@@ -93,6 +100,7 @@ function RowItem({ row }) {
             {row.status}
           </Label>
         </TableCell>
+        <TableCell>{formatDate(row.created_on)}</TableCell>
 
         {/* <TableCell align="right" sx={{ pr: 1 }}>
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
