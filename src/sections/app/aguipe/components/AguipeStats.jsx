@@ -48,12 +48,12 @@ export function AguipeStats() {
   const theme = useTheme();
 
   return (
-    <Grid container spacing={1}>
+    <Grid container spacing={2}>
       {STATS.map((stat) => (
-        <Grid item key={stat.title} xs={12} sm={6} md={3} spacing={3}>
+        <Grid item key={stat.title} xs={12} sm={6} md={3}>
           <Card
             sx={{
-              p: 3,
+              p: 2,
               boxShadow: 0,
               color: `${stat.color}.darker`,
             }}
