@@ -77,8 +77,10 @@ export function DeclarationListView() {
 
 
   const { user } = useMockedUser();
-  const type_user = user?.type?.toLowerCase().trim();
-  
+
+  const type_user = user?.type_name?.toLowerCase().trim();
+  // console.log('type_user:', type_user);
+
 
   const router = useRouter();
 
@@ -188,7 +190,7 @@ export function DeclarationListView() {
 
   const allowedStatusByRole = {
     admin:       ['all','SUBMITTED','VALIDATED','BILLED','UNSUBMITTED','REJECTED'],
-    agent:       ['all','SUBMITTED','VALIDATED','BILLED','UNSUBMITTED','REJECTED'],
+    agent:       ['all','SUBMITTED','VALIDATED','UNSUBMITTED','REJECTED'],
     superviseur: ['all','SUBMITTED','REJECTED'],
     comptable:   ['all', 'BILLED', 'VALIDATED'],
     default:     ['all'],
@@ -572,9 +574,9 @@ export function DeclarationListView() {
           </Grid>
           <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
-              title="Facturées"
-              total={getDeclarationLength('BILLED')}
-              percent={getPercentByStatus('BILLED')}
+              title="Validées"
+              total={getDeclarationLength('VALIDATED')}
+              percent={getPercentByStatus('VALIDATED')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],

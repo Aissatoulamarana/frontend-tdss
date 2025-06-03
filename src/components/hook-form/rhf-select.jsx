@@ -7,6 +7,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import { Autocomplete} from '@mui/material';
 import { Controller, useFormContext } from 'react-hook-form';
 
 // ----------------------------------------------------------------------
@@ -19,6 +20,7 @@ export function RHFSelect({
   helperText,
   inputProps,
   InputLabelProps,
+  
   ...other
 }) {
   const { control } = useFormContext();
@@ -37,6 +39,7 @@ export function RHFSelect({
           error={!!error}
           helperText={error ? error?.message : helperText}
           {...other}
+         
           slotProps={{
             htmlInput: { id: labelId, ...inputProps },
 
@@ -140,6 +143,44 @@ export function RHFMultiSelect({
             </FormHelperText>
           )}
         </FormControl>
+      )}
+    />
+  );
+}
+
+
+export function RHFAutocomplete({ name, label, options, getOptionLabel, isOptionEqualToValue, onCustomChange, ...other }) {
+  const { control } = useFormContext();
+
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field: { ref, onChange, value, ...field }, fieldState: { error } }) => (
+        <Autocomplete
+          {...field}
+          options={options}
+          value={value || null}
+          getOptionLabel={getOptionLabel}
+          isOptionEqualToValue={isOptionEqualToValue}
+          onChange={(event, newValue) => {
+            onChange(newValue);
+            if (onCustomChange) {
+              onCustomChange(newValue);
+            }
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label={label}
+              error={!!error}
+              helperText={error?.message}
+              inputRef={ref}
+              fullWidth
+            />
+          )}
+          {...other}
+        />
       )}
     />
   );

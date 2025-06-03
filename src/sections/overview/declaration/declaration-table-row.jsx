@@ -56,6 +56,8 @@ export function DeclarationTableRow({
 
   const popover = usePopover();
 
+  const profil = user?.companies[0]?.type_name?.toLowerCase().trim();
+
   // Handler pour le rejet, après validation du motif
   const handleConfirmRejet = () => {
     onRejetRow(motifRejet); // On passe le motif en paramètre
@@ -168,7 +170,7 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type === 'Admin' && ['UNSUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Admin' && ['UNSUBMITTED'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 onEditRow();
@@ -180,7 +182,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {( user?.type === 'Agent') && ['REJECTED'].includes(row.status) && (
+          {( user?.type_name === 'Agent') && ['REJECTED'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 unsubmitConfirm.onTrue();
@@ -192,7 +194,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
             <MenuItem
               key="submit"
               onClick={() => {
@@ -205,8 +207,8 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type === 'Superviseur' &&
-            user?.profile === 'AGUIPEE' &&
+          {user?.type_name === 'Aguipe' &&
+            profil === 'aguipe' &&
             !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="validate"
@@ -220,8 +222,8 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type === 'Superviseur' &&
-            user?.profile === 'AGUIPEE' &&
+          {user?.type_name === 'Aguipe' &&
+            user?.profile === 'aguipe' &&
             !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="reject"
@@ -249,7 +251,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )} */}
 
-          {user?.type === 'Comptable' &&
+          {user?.type_name === 'Comptable' &&
             !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="facture"
