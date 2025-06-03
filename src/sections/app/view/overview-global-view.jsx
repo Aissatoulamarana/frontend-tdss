@@ -10,6 +10,7 @@ import { SuperviserAppView } from '../superviseur/superviseur-app-view';
 import { ComptableAppView } from '../comptable/comptable-app-view';
 import { CaissierAppView } from '../caissier/caissier-app-view';
 import AguipeAppView from '../aguipe/AguipeAppView';
+import Loading from 'src/app/dashboard/loading';
 
 // ----------------------------------------------------------------------
 
@@ -33,7 +34,7 @@ export function OverviewGlobalView() {
       case 'aguipe':
         return <AguipeAppView />;
       default:
-        return <div>Vue non disponible pour ce type d'utilisateur</div>;
+        return <Loading />;
     }
   };
 
