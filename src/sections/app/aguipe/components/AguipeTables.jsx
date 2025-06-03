@@ -13,7 +13,8 @@ import {
   TableRow, 
   Button,
   IconButton,
-  Tooltip
+  Tooltip,
+  Stack,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { fDate } from 'src/utils/format-time';
@@ -21,6 +22,7 @@ import { fCurrency } from 'src/utils/format-number';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Iconify } from 'src/components/iconify';
+import { ReportExport } from './ReportExport';
 
 // ----------------------------------------------------------------------
 
@@ -146,13 +148,12 @@ export function AguipeTables() {
       <CardHeader 
         title="Déclarations récentes" 
         action={
-          <Button 
-            variant="contained" 
-            startIcon={<Iconify icon="eva:plus-fill" />}
-            onClick={() => console.log('Nouvelle déclaration')}
-          >
-            Nouvelle déclaration
-          </Button>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <ReportExport 
+              data={DECLARATIONS}
+              defaultTitle="Rapport_Declarations"
+            />
+          </Stack>
         }
       />
       
@@ -175,7 +176,7 @@ export function AguipeTables() {
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{fDate(row.date, 'dd/MM/yyyy')}</TableCell>
                   <TableCell>{row.entreprise}</TableCell>
-                  <TableCell align="right">{fCurrency(row.montant)} FCFA</TableCell>
+                  <TableCell align="right">{row.montant} GNF</TableCell>
                   <TableCell>
                     <Label
                       color={getStatusColor(row.statut)}
