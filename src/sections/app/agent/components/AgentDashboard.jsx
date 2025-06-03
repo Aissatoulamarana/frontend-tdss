@@ -1,26 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
-import Grid from '@mui/material/Grid';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Alert from '@mui/material/Alert';
-import Skeleton from '@mui/material/Skeleton';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
+import { useTheme } from '@mui/material/styles';
+import { 
+  Box, 
+  Button, 
+  Card, 
+  Container, 
+  FormControl, 
+  Grid, 
+  InputLabel, 
+  MenuItem, 
+  Select, 
+  Stack, 
+  Typography,
+  Alert,
+  Skeleton
+} from '@mui/material';
+// Imports des paramètres de configuration
+import { useSettingsContext } from 'src/components/settings/context/use-settings-context';
+
 // Ces imports sont conservés pour l'implémentation future des appels API réels
 // Actuellement, nous utilisons des données simulées pour le développement
-import axios from 'src/utils/axios';
-import API from 'src/utils/api';
+// import axios from 'src/utils/axios';
+// import API from 'src/utils/api';
 
 import { Iconify } from 'src/components/iconify';
 import { toast } from 'src/components/snackbar';
 import { useAuthContext } from 'src/auth/hooks';
 
-import { AgentWidgetSummary, getAgentSummaryData } from './AgentWidgetSummary';
+import { AgentWidgetSummary } from './AgentWidgetSummary';
 import { AgentDeclarationChart } from './AgentCharts';
 import { AgentRecentDeclarations, AgentRecentEmployees } from './AgentTables';
 import { AgentActionButton } from './AgentActionButton';
@@ -38,9 +45,57 @@ const AGENT_COMPANIES = [
 export default function AgentDashboard() {
   // Utiliser le contexte d'authentification pour obtenir l'utilisateur actuel
   const { user } = useAuthContext();
+  const settings = useSettingsContext();
+  const theme = useTheme();
+  // Fonction pour gérer l'exportation des données
+  const handleExportData = async () => {
+    try {
+      // Construire l'URL d'exportation
+      const exportUrl = `/api/agent/export?company=${encodeURIComponent(companyFilter || '')}&period=${encodeURIComponent(periodFilter || '')}`;
+      
+      // Créer un élément d'ancrage pour déclencher le téléchargement
+      const a = document.createElement('a');
+      a.href = exportUrl;
+      a.download = `export-${companyFilter || 'all'}-${periodFilter || 'all'}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      // Afficher un message de succès
+      toast.success('Exportation terminée avec succès');
+    } catch (error) {
+      console.error('Erreur lors de l\'exportation:', error);
+      toast.error('Erreur lors de l\'exportation');
+    }
+  };
+  
+  // Fonction pour gérer la création d'une nouvelle déclaration
+  const handleCreateNew = useCallback(() => {
+    // Ici, vous pouvez ajouter la logique pour créer une nouvelle déclaration
+    // Par exemple, naviguer vers la page de création de déclaration
+    // ou ouvrir une boîte de dialogue
+    console.log('Création d\'une nouvelle déclaration');
+    
+    // Exemple de navigation (décommentez si vous utilisez next/router ou next/navigation)
+    // router.push('/declarations/nouvelle');
+    
+    // Ou ouvrir une boîte de dialogue
+    // setOpenNewDeclarationDialog(true);
+  }, []);
+  
+  // Gestion du changement de filtre d'entreprise
+  const handleCompanyChange = useCallback((event) => {
+    const newCompany = event.target.value;
+    setCompanyFilter(newCompany);
+    // Les données seront automatiquement rafraîchies via l'effet qui dépend de companyFilter
+  }, []);
   
   const [companyFilter, setCompanyFilter] = useState('all');
   const [periodFilter, setPeriodFilter] = useState('month');
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(),
+    endDate: new Date()
+  });
   const [companies, setCompanies] = useState(AGENT_COMPANIES);
   
   // États pour les données
@@ -49,6 +104,10 @@ export default function AgentDashboard() {
     unsubmittedDeclarations: 0,
     rejectedDeclarations: 0
   });
+  
+  const [recentDeclarations, setRecentDeclarations] = useState([]);
+  const [recentEmployees, setRecentEmployees] = useState([]);
+  const [chartData, setChartData] = useState({ labels: [], series: [] });
   
   // États de chargement
   const [loading, setLoading] = useState({
@@ -67,14 +126,7 @@ export default function AgentDashboard() {
     setLoading(prev => ({ ...prev, companies: true }));
     try {
       // En production, remplacer par un appel API réel
-      // const response = await axios.get(API.getAgentCompanies(user?.id));
-      // setCompanies(response.data);
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // En attendant l'API réelle, on utilise des données simulées
-      // mais dans un environnement de production, ces données viendraient du serveur
-      // en fonction de l'utilisateur authentifié
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulation de chargement
       setCompanies(AGENT_COMPANIES);
     } catch (error) {
       console.error('Erreur lors du chargement des entreprises', error);
@@ -83,277 +135,308 @@ export default function AgentDashboard() {
     } finally {
       setLoading(prev => ({ ...prev, companies: false }));
     }
-  }, [user?.id]); // Ajouter user?.id comme dépendance pour recharger si l'utilisateur change
+  }, [user?.id]);
 
-  // Fonction pour gérer le changement de période
-  const handlePeriodFilterChange = (event) => {
-    const newPeriod = event.target.value;
-    setPeriodFilter(newPeriod);
-    // Recharger les données avec la nouvelle période
-    setTimeout(() => handleRefresh(), 100);
-  };
-
-  // Charger les données de résumé
+  // Déclaration des fonctions de chargement
   const fetchSummaryData = useCallback(async () => {
     setLoading(prev => ({ ...prev, summary: true }));
     try {
-      // Préparer les paramètres pour l'appel API
       const params = { company: companyFilter, period: periodFilter };
       
-      // Si la période est personnalisée et que les dates sont définies
       if (periodFilter === 'custom' && dateRange.startDate && dateRange.endDate) {
         params.startDate = dateRange.startDate.toISOString().split('T')[0];
         params.endDate = dateRange.endDate.toISOString().split('T')[0];
       }
       
-      try {
-        // Appel API réel pour récupérer les données de résumé
-        const response = await axios.get(API.getAgentSummary(companyFilter), { params });
-        
-        // Vérifier si la réponse contient les données attendues
-        if (response.data) {
-          setSummaryData({
-            totalDeclarations: response.data.totalDeclarations || 0,
-            unsubmittedDeclarations: response.data.unsubmittedDeclarations || 0,
-            rejectedDeclarations: response.data.rejectedDeclarations || 0
-          });
-        } else {
-          // Fallback sur les données mockées en cas de réponse vide
-          console.warn('Réponse API vide, utilisation des données mockées');
-          setSummaryData({
-            totalDeclarations: getAgentSummaryData('totalDeclarations', companyFilter, user?.id),
-            unsubmittedDeclarations: getAgentSummaryData('unsubmittedDeclarations', companyFilter, user?.id),
-            rejectedDeclarations: getAgentSummaryData('rejectedDeclarations', companyFilter, user?.id)
-          });
-        }
-      } catch (error) {
-        console.warn('Erreur API, utilisation des données mockées', error);
-        // Fallback sur les données mockées en cas d'erreur
-        setSummaryData({
-          totalDeclarations: getAgentSummaryData('totalDeclarations', companyFilter, user?.id),
-          unsubmittedDeclarations: getAgentSummaryData('unsubmittedDeclarations', companyFilter, user?.id),
-          rejectedDeclarations: getAgentSummaryData('rejectedDeclarations', companyFilter, user?.id)
-        });
-      }
+      // Données simulées pour le développement
+      setSummaryData({
+        totalDeclarations: 42,
+        unsubmittedDeclarations: 8,
+        rejectedDeclarations: 5,
+        pending: 12,
+        validated: 25
+      });
+      
+      return true;
     } catch (error) {
       console.error('Erreur lors du chargement des données de résumé', error);
       setErrors(prev => ({ ...prev, summary: 'Impossible de charger les données de résumé' }));
+      toast.error('Erreur lors du chargement des données de résumé');
+      return false;
     } finally {
       setLoading(prev => ({ ...prev, summary: false }));
     }
-  }, [companyFilter, periodFilter, toast]);
-  
-  // Charger les données des graphiques
+  }, [companyFilter, periodFilter, dateRange]);
+
   const fetchChartData = useCallback(async () => {
     setLoading(prev => ({ ...prev, charts: true }));
     try {
-      // Préparer les paramètres pour l'appel API
-      const params = { company: companyFilter, period: periodFilter };
-      
-      try {
-        // Appel API réel pour récupérer les données des graphiques
-        const response = await axios.get(API.getAgentChartData(companyFilter), { params });
-        
-        // Mettre à jour les données des graphiques si la réponse est valide
-        if (response.data && response.data.chartData) {
-          // Ici, vous pouvez stocker les données dans un état si nécessaire
-          // ou les passer directement aux composants de graphiques
-          // Par exemple : setChartData(response.data.chartData);
-          console.log('Données des graphiques chargées avec succès', response.data);
-        } else {
-          console.warn('Réponse API vide pour les graphiques');
-          // Vous pouvez charger des données mockées ici si nécessaire
-        }
-      } catch (error) {
-        console.warn('Erreur lors du chargement des données des graphiques via API', error);
-        // Vous pouvez charger des données mockées ici si nécessaire
-      }
+      // Données simulées pour le développement
+      setChartData({
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+        series: [
+          {
+            name: 'Déclarations',
+            type: 'column',
+            data: [23, 44, 22, 27, 43, 22],
+          },
+          {
+            name: 'Montants',
+            type: 'area',
+            data: [30, 25, 36, 30, 45, 35],
+          },
+        ],
+      });
+      return true;
     } catch (error) {
-      console.error('Erreur lors du chargement des données des graphiques', error);
-      setErrors(prev => ({ ...prev, charts: 'Impossible de charger les graphiques' }));
-      toast.error('Erreur lors du chargement des graphiques');
+      console.error('Erreur lors du chargement des données du graphique', error);
+      setErrors(prev => ({ ...prev, charts: 'Impossible de charger les données du graphique' }));
+      return false;
     } finally {
       setLoading(prev => ({ ...prev, charts: false }));
     }
-  }, [companyFilter, periodFilter, user?.id]);
+  }, []);
 
-  // Charger les données des déclarations récentes
   const fetchDeclarationsData = useCallback(async () => {
     setLoading(prev => ({ ...prev, declarations: true }));
     try {
-      // Préparer les paramètres pour l'appel API
-      const params = { company: companyFilter, period: periodFilter };
-      
-      try {
-        // Appel API réel pour récupérer les déclarations récentes
-        const response = await axios.get(API.getAgentRecentDeclarations(params));
-        
-        // Mettre à jour les données des déclarations si la réponse est valide
-        if (response.data && Array.isArray(response.data.declarations)) {
-          // Ici, vous pourriez stocker les déclarations dans un état global
-          // ou les passer directement au composant AgentRecentDeclarations
-          // Par exemple : setDeclarations(response.data.declarations);
-          
-          // Assurez-vous que les déclarations sont triées selon la priorité demandée :
-          // 1. Déclarations non soumises (pending)
-          // 2. Déclarations rejetées (rejected)
-          // 3. Tri par date (plus récent en premier)
-          const sortedDeclarations = [...response.data.declarations].sort((a, b) => {
-            // Priorité 1: Non soumises (pending)
-            if (a.status === 'pending' && b.status !== 'pending') return -1;
-            if (a.status !== 'pending' && b.status === 'pending') return 1;
-            
-            // Priorité 2: Rejetées (rejected)
-            if (a.status === 'rejected' && b.status !== 'rejected') return -1;
-            if (a.status !== 'rejected' && b.status === 'rejected') return 1;
-            
-            // Priorité 3: Par date (plus récent en premier)
-            return new Date(b.date) - new Date(a.date);
-          });
-          
-          console.log('Déclarations récentes chargées avec succès', sortedDeclarations);
-          // Vous pourriez stocker les déclarations triées ici : setDeclarations(sortedDeclarations);
-        } else {
-          console.warn('Réponse API vide pour les déclarations récentes');
-          // Vous pouvez charger des données mockées ici si nécessaire
-        }
-      } catch (error) {
-        console.warn('Erreur lors du chargement des déclarations récentes via API', error);
-        // Vous pouvez charger des données mockées ici si nécessaire
-      }
+      // Données simulées pour le développement
+      setRecentDeclarations([
+        { id: 1, reference: 'DEC-2023-001', company: 'Entreprise ABC', period: 'Janvier 2023', amount: 1500, status: 'validated' },
+        { id: 2, reference: 'DEC-2023-002', company: 'Société XYZ', period: 'Janvier 2023', amount: 2300, status: 'pending' },
+        { id: 3, reference: 'DEC-2022-012', company: 'Entreprise ABC', period: 'Décembre 2022', amount: 1800, status: 'validated' },
+      ]);
+      return true;
     } catch (error) {
       console.error('Erreur lors du chargement des déclarations récentes', error);
       setErrors(prev => ({ ...prev, declarations: 'Impossible de charger les déclarations récentes' }));
-      toast.error('Erreur lors du chargement des déclarations');
+      return false;
     } finally {
       setLoading(prev => ({ ...prev, declarations: false }));
     }
-  }, [companyFilter, periodFilter, user?.id]);
-  
-  // Charger les données des employés récents
+  }, []);
+
   const fetchEmployeesData = useCallback(async () => {
     setLoading(prev => ({ ...prev, employees: true }));
     try {
-      // Préparer les paramètres pour l'appel API
-      const params = { company: companyFilter, period: periodFilter };
-      
-      try {
-        // Appel API réel pour récupérer les employés récents
-        const response = await axios.get(API.getAgentRecentEmployees(params));
-        
-        // Mettre à jour les données des employés si la réponse est valide
-        if (response.data && Array.isArray(response.data.employees)) {
-          // Ici, vous pourriez stocker les employés dans un état global
-          // ou les passer directement au composant AgentRecentEmployees
-          // Par exemple : setEmployees(response.data.employees);
-          
-          console.log('Employés récents chargés avec succès', response.data.employees);
-        } else {
-          console.warn('Réponse API vide pour les employés récents');
-          // Vous pouvez charger des données mockées ici si nécessaire
-        }
-      } catch (error) {
-        console.warn('Erreur lors du chargement des employés récents via API', error);
-        // Vous pouvez charger des données mockées ici si nécessaire
-      }
+      // Données simulées pour le développement
+      setRecentEmployees([
+        { id: 1, name: 'Jean Dupont', matricule: 'EMP001', position: 'Développeur', department: 'IT', joinDate: '15/01/2022' },
+        { id: 2, name: 'Marie Martin', matricule: 'EMP002', position: 'Designer', department: 'Design', joinDate: '22/03/2022' },
+        { id: 3, name: 'Pierre Durand', matricule: 'EMP003', position: 'Chef de projet', department: 'Gestion', joinDate: '10/05/2021' },
+      ]);
+      return true;
     } catch (error) {
       console.error('Erreur lors du chargement des employés récents', error);
       setErrors(prev => ({ ...prev, employees: 'Impossible de charger les employés récents' }));
-      toast.error('Erreur lors du chargement des employés');
+      return false;
     } finally {
       setLoading(prev => ({ ...prev, employees: false }));
     }
-  }, [companyFilter, periodFilter, user?.id]);
+  }, []);
 
+  // Fonction pour gérer le changement de période
+  const handlePeriodFilterChange = useCallback((event) => {
+    const newPeriod = event.target.value;
+    setPeriodFilter(newPeriod);
+  }, []);
+  
+  // Fonction pour gérer le changement de filtre d'entreprise
+  const handleCompanyFilterChange = useCallback((event) => {
+    setCompanyFilter(event.target.value);
+  }, []);
+
+  // Fonction pour rafraîchir toutes les données
+  const handleRefresh = useCallback(() => {
+    setLoading(prev => ({
+      ...prev,
+      summary: true,
+      charts: true,
+      declarations: true,
+      employees: true
+    }));
+    
+    // Exécuter toutes les fonctions de chargement
+    Promise.all([
+      fetchSummaryData(),
+      fetchChartData(),
+      fetchDeclarationsData(),
+      fetchEmployeesData()
+    ]).catch(error => {
+      console.error('Erreur lors du rafraîchissement des données', error);
+      toast.error('Erreur lors du rafraîchissement des données');
+    });
+  }, [fetchSummaryData, fetchChartData, fetchDeclarationsData, fetchEmployeesData]);
+  
+  // Effet pour recharger les données lorsque les filtres changent
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleRefresh();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [companyFilter, periodFilter, handleRefresh]);
+  
   // Effet pour charger les données initiales
   useEffect(() => {
     fetchCompanies();
   }, [fetchCompanies]);
 
-  // Effet pour charger toutes les données lorsque le filtre change
+  // Effet pour charger les données initiales
   useEffect(() => {
-    fetchSummaryData();
-    fetchChartData();
-    fetchDeclarationsData();
-    fetchEmployeesData();
-  }, [fetchSummaryData, fetchChartData, fetchDeclarationsData, fetchEmployeesData]);
-
-  const handleCompanyFilterChange = (event) => {
-    setCompanyFilter(event.target.value);
-  };
+    // Charger les entreprises au montage du composant
+    fetchCompanies();
+    
+    // Charger les autres données initiales
+    const loadInitialData = async () => {
+      try {
+        setLoading(prev => ({
+          ...prev,
+          summary: true,
+          charts: true,
+          declarations: true,
+          employees: true
+        }));
+        
+        await Promise.all([
+          fetchSummaryData(),
+          fetchChartData(),
+          fetchDeclarationsData(),
+          fetchEmployeesData()
+        ]);
+      } catch (error) {
+        console.error('Erreur lors du chargement initial des données', error);
+        toast.error('Erreur lors du chargement des données');
+      }
+    };
+    
+    loadInitialData();
+    
+    // Nettoyage si nécessaire
+    return () => {
+      // Annuler les requêtes en cours si nécessaire
+    };
+  }, [fetchCompanies, fetchSummaryData, fetchChartData, fetchDeclarationsData, fetchEmployeesData]);
   
-  // Fonction pour rafraîchir toutes les données
-  const handleRefresh = () => {
-    fetchSummaryData();
-    fetchChartData();
-    fetchDeclarationsData();
-    fetchEmployeesData();
-  };
+  // Effet pour recharger les données lorsque les filtres changent
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleRefresh();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [companyFilter, periodFilter, handleRefresh]);
 
   return (
-    <Container maxWidth="xl">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
-        <Box>
-          <Typography variant="h4">Tableau de Bord Agent</Typography>
-          {user && (
-            <Typography variant="subtitle2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-              {user.name} | {user.type_name} |
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      {/* En-tête avec filtre et bouton d'action */}
+      <Box sx={{ 
+        mb: 5, 
+        p: 3, 
+        borderRadius: 2,
+        color: 'common.white',
+        boxShadow: 3
+      }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center" justifyContent="space-between">
+          <Box>
+            <Typography variant="h4" component="h1" sx={{ color: 'common.white', fontWeight: 'bold', mb: 0.5 }}>
+              Tableau de bord
             </Typography>
-          )}
-        </Box>
+            <Typography variant="body2" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
+              Bon retour, {user?.name || 'Agent'}. Voici un aperçu de vos activités.
+            </Typography>
+          </Box>
+          
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+           
+            
+            <FormControl 
+              variant="outlined" 
+              size="small" 
+              sx={{ 
+                minWidth: 200,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'background.paper',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.3)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.8)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(255, 255, 255, 0.8)'
+                },
+                '& .MuiInputLabel-root.Mui-focused': {
+                  color: 'rgba(255, 255, 255, 0.9)'
+                },
+                '& .MuiSelect-icon': {
+                  color: 'rgba(255, 255, 255, 0.8)'
+                }
+              }}
+            >
+              <InputLabel id="company-filter-label">Entreprise</InputLabel>
+              <Select
+                labelId="company-filter-label"
+                value={companyFilter}
+                onChange={handleCompanyChange}
+                label="Entreprise"
+                disabled={loading.summary || loading.charts || loading.declarations || loading.employees}
+              >
+                <MenuItem value="all">Toutes les entreprises</MenuItem>
+                {AGENT_COMPANIES.map((company) => (
+                  <MenuItem key={company.id} value={company.id}>
+                    {company.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Stack>
+        </Stack>
+      </Box>
+      
+      {/* Boutons d'action secondaires */}
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Button
+          variant="outlined"
+          startIcon={<Iconify icon="mdi:refresh" />}
+          onClick={handleRefresh}
+          disabled={loading.summary}
+          sx={{
+            '&:hover': {
+              bgcolor: 'action.hover',
+              transform: 'translateY(-1px)',
+              boxShadow: 1
+            },
+            transition: 'all 0.2s ease-in-out'
+          }}
+        >
+          Actualiser
+        </Button>
         
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <FormControl sx={{ minWidth: 200 }} size="small" disabled={loading.companies}>
-            <InputLabel id="company-filter-label">Entreprise</InputLabel>
-            <Select
-              labelId="company-filter-label"
-              value={companyFilter}
-              label="Entreprise"
-              onChange={handleCompanyFilterChange}
-            >
-              <MenuItem value="all">Toutes mes entreprises</MenuItem>
-              {companies.map(company => (
-                <MenuItem key={company} value={company}>{company}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          <FormControl sx={{ minWidth: 150 }} size="small">
-            <InputLabel id="period-filter-label">Période</InputLabel>
-            <Select
-              labelId="period-filter-label"
-              value={periodFilter}
-              label="Période"
-              onChange={handlePeriodFilterChange}
-            >
-              <MenuItem value="month">Ce mois</MenuItem>
-              <MenuItem value="quarter">Ce trimestre</MenuItem>
-              <MenuItem value="year">Cette année</MenuItem>
-            </Select>
-          </FormControl>
-          
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Iconify icon="mdi:refresh" />}
-            onClick={handleRefresh}
-            disabled={loading.summary}
-          >
-            Actualiser
-          </Button>
-          
-          <Button
-            variant="outlined"
-            color="secondary"
-            startIcon={<Iconify icon="mdi:file-export" />}
-            onClick={() => window.open(API.exportAgentData(companyFilter, periodFilter), '_blank')}
-            disabled={loading.summary}
-          >
-            Exporter
-          </Button>
-          
-          <AgentActionButton />
-        </Box>
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<Iconify icon="mdi:file-export" />}
+          onClick={handleExportData}
+          disabled={loading.summary}
+          sx={{
+            '&:hover': {
+              bgcolor: 'secondary.light',
+              color: 'secondary.contrastText',
+              transform: 'translateY(-1px)',
+              boxShadow: 1
+            },
+            transition: 'all 0.2s ease-in-out'
+          }}
+        >
+          Exporter
+        </Button>
+        
+        <AgentActionButton />
       </Box>
       
       {/* Affichage des erreurs */}

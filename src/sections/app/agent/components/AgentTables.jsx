@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTheme, alpha } from '@mui/material/styles';
+import { usePathname } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
@@ -27,9 +29,8 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
 import { CustomPopover, usePopover } from 'src/components/custom-popover';
-import { Label } from 'src/components/label';
 import axios from 'src/utils/axios';
-import API from 'src/utils/api';
+import API from 'src/utils/api';import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
@@ -40,6 +41,7 @@ const CURRENT_USER = {
   company: 'Entreprise ABC',
   role: 'agent',
 };
+
 
 
 
@@ -167,12 +169,12 @@ const ALL_EMPLOYEES = [
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'id', label: 'ID' },
-  { id: 'date', label: 'Date' },
-  { id: 'company', label: 'Entreprise' },
-  { id: 'employees', label: 'Employés' },
-  { id: 'status', label: 'Statut' },
-  { id: 'actions', label: 'Actions', align: 'right' },
+  { id: 'reference', label: 'Référence', width: 180 },
+  { id: 'date', label: 'Date', width: 120 },
+  { id: 'company', label: 'Entreprise', width: 160 },
+  { id: 'period', label: 'Période', width: 120 },
+  { id: 'amount', label: 'Montant', width: 120, align: 'right' },
+  { id: 'status', label: 'Statut', width: 120 },
 ];
 
 // ----------------------------------------------------------------------
@@ -309,21 +311,39 @@ export function AgentRecentDeclarations() {
 function AgentDeclarationRow({ row, isDarkMode }) {
   const theme = useTheme();
   const popover = usePopover();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const handleViewDetails = () => {
+  const handleViewDetails = useCallback(() => {
     popover.onClose();
-    // Ici, on pourrait rediriger vers la page de détails de la déclaration
-  };
+    // Redirection vers la page de détails de la déclaration
+    router.push(`${pathname}/declarations/${row.id}`);
+  }, [row.id, router, popover, pathname]);
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     popover.onClose();
-    // Ici, on pourrait rediriger vers la page d'édition de la déclaration
-  };
+    // Redirection vers la page d'édition de la déclaration
+    router.push(`${pathname}/declarations/${row.id}/edit`);
+  }, [row.id, router, popover, pathname]);
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     popover.onClose();
-    // Ici, on pourrait implémenter la logique de suppression
-  };
+    // Logique de suppression avec confirmation
+    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette déclaration ?')) {
+      console.log('Suppression de la déclaration:', row.id);
+      // Envoyer la requête de suppression
+      API.deleteDeclaration(row.id).then(() => {
+        console.log('Déclaration supprimée avec succès');
+      }).catch((error) => {
+        console.error('Erreur lors de la suppression de la déclaration:', error);
+      });
+    }
+  }, [row.id, popover]);
+
+  const handleClick = useCallback((event) => {
+    event.stopPropagation();
+    popover.onOpen(event);
+  }, [popover]);
 
   return (
     <>
@@ -356,11 +376,16 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         <TableCell align="right">
           <IconButton 
             color={popover.open ? 'primary' : 'default'} 
-            onClick={(event) => { event.stopPropagation(); handleClick(); }}
+            onClick={handleClick}
             sx={{ 
               color: popover.open 
                 ? theme.palette.primary.main 
-                : isDarkMode ? theme.palette.text.secondary : undefined 
+                : isDarkMode ? theme.palette.text.secondary : undefined,
+              '&:hover': {
+                backgroundColor: isDarkMode 
+                  ? alpha(theme.palette.primary.main, 0.16) 
+                  : alpha(theme.palette.primary.main, 0.08)
+              }
             }}
           >
             <Iconify icon="eva:more-vertical-fill" />
@@ -375,7 +400,7 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         sx={{ width: 160 }}
       >
         <MenuItem onClick={handleViewDetails}>
-          <Iconify icon="solar:eye-bold" />
+          <Iconify icon="solar:eye-bold" width={20} sx={{ mr: 1 }} />
           Voir détails
         </MenuItem>
 
@@ -408,10 +433,16 @@ export function AgentRecentEmployees() {
     setLoading(true);
     setError(null);
     try {
-      // Utiliser l'endpoint listEntreprises qui est disponible
+      // Vérifier que l'API est disponible
+      if (!API || !API.listEntreprises) {
+        throw new Error('Configuration API manquante');
+      }
+      
+      // Utiliser l'endpoint listEntreprises
       const response = await axios.get(API.listEntreprises());
+      
       // Vérifier si la réponse contient des données
-      if (response.data && Array.isArray(response.data.results)) {
+      if (response?.data?.results && Array.isArray(response.data.results)) {
         const companiesData = response.data.results;
         setCompanies(companiesData);
         
@@ -755,6 +786,11 @@ function CompanyItem({ company, isDarkMode }) {
   const companyEmployees = company.employees || company.employes || 0;
   const companyStatus = company.status || company.statut || 'Non spécifié';
   
+  // Calculer le nombre d'employés déclarés pour cette entreprise
+  const declaredEmployees = ALL_DECLARATIONS
+    .filter(dec => dec.company === companyName && dec.agentId === CURRENT_USER.id)
+    .reduce((total, dec) => total + (dec.employees || 0), 0);
+  
   return (
     <Stack 
       direction="row" 
@@ -814,20 +850,32 @@ function CompanyItem({ company, isDarkMode }) {
           )}
         </div>
 
-        <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5 }}>
-          <Iconify icon="mdi:domain" width={14} sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }} />
-          <Typography variant="caption" sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }}>
-            {companySector}
-          </Typography>
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5, flexWrap: 'wrap', rowGap: 0.5 }}>
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <Iconify icon="mdi:domain" width={14} sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }} />
+            <Typography variant="caption" sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }}>
+              {companySector}
+            </Typography>
+          </Stack>
 
           {companyEmployees > 0 && (
-            <>
-              <Divider orientation="vertical" sx={{ height: 12, mx: 1 }} />
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Divider orientation="vertical" flexItem sx={{ height: 12, my: 'auto' }} />
               <Iconify icon="mdi:account-group-outline" width={14} sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }} />
               <Typography variant="caption" sx={{ color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'text.secondary' }}>
-                {companyEmployees} employé{companyEmployees > 1 ? 's' : ''}
+                {companyEmployees} employé{companyEmployees > 1 ? 's' : ''} au total
               </Typography>
-            </>
+            </Stack>
+          )}
+
+          {declaredEmployees > 0 && (
+            <Stack direction="row" alignItems="center" spacing={0.5}>
+              <Divider orientation="vertical" flexItem sx={{ height: 12, my: 'auto' }} />
+              <Iconify icon="mdi:account-check-outline" width={14} sx={{ color: 'success.main' }} />
+              <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'medium' }}>
+                {declaredEmployees} déclaré{declaredEmployees > 1 ? 's' : ''}
+              </Typography>
+            </Stack>
           )}
         </Stack>
       </Box>
