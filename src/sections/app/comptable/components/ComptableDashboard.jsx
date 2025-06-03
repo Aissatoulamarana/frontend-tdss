@@ -626,35 +626,91 @@ export function ComptableDashboard() {
       </Card>
 
       <Grid container spacing={3}>
-        {/* Graphique d'évolution des facturations - Pleine largeur */}
-        <Grid item xs={12}>
-          <Card sx={{ p: 3, height: '100%' }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-              <Typography variant="h6">Évolution des facturations</Typography>
-              <FormControl size="small" variant="outlined">
-                <Select
-                  value={chartRange}
-                  onChange={handleChartRangeChange}
-                  displayEmpty
-                  sx={{ '& .MuiSelect-select': { py: 1.5 } }}
-                >
-                  <MenuItem value="week">7 derniers jours</MenuItem>
-                  <MenuItem value="month">30 derniers jours</MenuItem>
-                  <MenuItem value="year">12 derniers mois</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
-            <Box sx={{ height: 300, mt: 3 }}>
-              {loading.charts ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <ComptableFacturationChart />
-              )}
+        {/* Section Évolution des factures */}
+      <Grid item xs={12}>
+        <Card sx={{ p: 3, height: '100%', boxShadow: 3, borderRadius: 2 }}>
+          {/* En-tête de section */}
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: 2 }}>
+            <Box>
+              <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                Évolution des factures
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Analyse des facturations sur la période sélectionnée
+              </Typography>
             </Box>
-          </Card>
-        </Grid>
+            
+            <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
+              <InputLabel id="chart-range-label">Période</InputLabel>
+              <Select
+                labelId="chart-range-label"
+                value={chartRange}
+                onChange={handleChartRangeChange}
+                label="Période"
+              >
+                <MenuItem value="week">7 derniers jours</MenuItem>
+                <MenuItem value="month">30 derniers jours</MenuItem>
+                <MenuItem value="year">12 derniers mois</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          
+          {/* Contenu du graphique */}
+          <Box sx={{ 
+            height: 350, 
+            mt: 2,
+            position: 'relative',
+            backgroundColor: 'background.paper',
+            borderRadius: 1,
+            p: 2,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}>
+            {loading.charts ? (
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                height: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'background.paper',
+                zIndex: 1
+              }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <ComptableFacturationChart />
+            )}
+          </Box>
+          
+          {/* Légende et statistiques */}
+          <Box sx={{ 
+            mt: 3, 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            gap: 2,
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            pt: 2,
+            borderTop: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'primary.main' }} />
+              <Typography variant="body2" color="text.secondary">
+                Montant facturé
+              </Typography>
+            </Box>
+            <Typography variant="body2" color="text.secondary">
+              Données mises à jour à {new Date().toLocaleTimeString()}
+            </Typography>
+          </Box>
+        </Card>
+      </Grid>
 
         {/* Tableau des déclarations récentes */}
         <Grid item xs={12} md={8}>
