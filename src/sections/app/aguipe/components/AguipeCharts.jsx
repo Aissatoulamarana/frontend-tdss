@@ -15,7 +15,7 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 const CHART_DATA = [
   {
     name: 'Déclarations',
-    type: 'column',
+    type: 'area',
     data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 21],
   },
   {
