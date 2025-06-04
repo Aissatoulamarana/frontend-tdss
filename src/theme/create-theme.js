@@ -8,6 +8,9 @@ import { updateCoreWithSettings, updateComponentsWithSettings } from './with-set
 
 export function createTheme(settings) {
   const initialTheme = {
+     palette: {
+    mode: settings.colorScheme || 'light', // 👈 C’est cette ligne qui manquait
+  },
     colorSchemes,
     cssVariables: true,
     shadows: shadows(settings.colorScheme),
