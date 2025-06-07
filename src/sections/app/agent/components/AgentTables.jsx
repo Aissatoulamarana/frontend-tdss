@@ -233,7 +233,8 @@ export function AgentRecentDeclarations() {
     }}>
       <CardHeader 
         title={
-          <Stack direction="row" alignItems="center" spacing={1}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
             <Iconify icon="mdi:clipboard-text-clock" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} />
             <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.white }}>
               Déclarations récentes
@@ -241,7 +242,17 @@ export function AgentRecentDeclarations() {
             <Label color="info" sx={{ ml: 1 }}>
               {declarations.length}
             </Label>
+            <Button
+              size="small"
+              color="inherit"
+              endIcon={<Iconify icon="mdi:arrow-right" />}
+              sx={{ textTransform: 'none', fontWeight: 500, color: 'text.secondary' }}
+            >
+              Voir tout
+            </Button>
           </Stack>
+            
+          </Box>
         }
         
         sx={{ 
