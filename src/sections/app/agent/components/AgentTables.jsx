@@ -173,8 +173,8 @@ const TABLE_HEAD = [
   { id: 'date', label: 'Date', width: 120 },
   { id: 'company', label: 'Entreprise', width: 160 },
   { id: 'period', label: 'Période', width: 120 },
-  { id: 'amount', label: 'Montant', width: 120, align: 'right' },
-  { id: 'status', label: 'Statut', width: 120 },
+  { id: 'amount', label: 'Montant', width: 120 },
+  { id: 'status', label: 'Statut', width: 100, align: 'right' },
 ];
 
 // ----------------------------------------------------------------------
