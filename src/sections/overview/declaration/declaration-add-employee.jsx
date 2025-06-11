@@ -165,10 +165,13 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
           passportExists: true,
           locked: true,
         });
-  
+        setPassportInput(''); 
         renewalModal.onFalse(); // Ferme la modale
+        
       } catch (err) {
-        toast.error("Erreur lors de la récupération des données");
+
+        toast.error(err.details || "Aucun employé trouvé pour ce passeport");
+        // reset({employees: []}); // Réinitialise le formulaire
       }
     };
 
@@ -181,9 +184,10 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
        // s’il y a un passport_number dans la réponse, alors il existe
        setValue(`employees[${index}].passportExists`, !!data.passport_number);
      } catch (error) {
-       if (error.response?.status === 404 || response.details) {
+       if (error.response?.status === 404 || error.details) {
          // pas trouvé → passportExists = false
          setValue(`employees[${index}].passportExists`, false);
+         toast.error("Aucun employé trouvé pour ce passeport");
        } else {
          console.error('Erreur lors de la recherche du passeport', error);
        }
@@ -209,7 +213,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     const handlePassportChange = (e, index) => {
       const {value} = e.target;
       methods.setValue(`employees[${index}].passport_number`, value);
-      
+      methods.setValue(`employees[${index}].passportExists`, false); // Réinitialiser l'état d'existence du passeport
     };
   
 
@@ -254,6 +258,12 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     reset({ employees: mappedEmployees });
   };
 
+  const handleCancelRenew = () => {
+  setPassportInput('');
+  renewalModal.onFalse();
+};
+
+
   return (
     <Dialog
       fullWidth
@@ -292,7 +302,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                       />
                     </DialogContent>
                     <DialogActions>
-                      <Button onClick={renewalModal.onFalse}>Annuler</Button>
+                      <Button onClick={handleCancelRenew}>Annuler</Button>
                       <LoadingButton onClick={handleConfirmRenew} loading={loadingRenew}>
                         Valider
                       </LoadingButton>
