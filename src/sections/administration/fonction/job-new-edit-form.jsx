@@ -105,6 +105,37 @@ export function JobNewEditForm({ currentJob }) {
     }
   });
 
+  const handleSearchJob = async() => {
+    try {
+      const name = methods.getValues('name');
+      const params = {
+        name: name ? name : undefined,
+      }
+      const response = await axios.get(API.listFonctions(), {params});
+      const results = response.data.results || response.data;
+      if (results.length > 0) {
+        toast.error('Une fonction avec ce nom existe déjà !');
+        reset(); // Réinitialiser le formulaire si une fonction existe déjà
+      } else {
+        toast.success('Aucune fonction trouvée, vous pouvez continuer.');
+      }
+
+    } catch (error) {
+      console.error('Erreur lors de la recherche de la fonction', error);
+      toast.error('Une erreur est survenue lors de la recherche de la fonction');
+    }
+  }
+
+  const handleJobBlur = (e, index) => {
+    const value = e.target.value.trim();
+    if (value) {
+      methods.setValue('name', value);
+      handleSearchJob();
+    } else {
+      methods.setError('name', { type: 'manual', message: 'Le nom ne peut pas être vide' });
+    }
+  }
+
   return (
     <Form methods={methods} onSubmit={onSubmit}>
       <Stack spacing={{ xs: 3, md: 5 }} sx={{ mx: 'auto', maxWidth: { xs: 720, xl: 880 } }}>
@@ -116,6 +147,7 @@ export function JobNewEditForm({ currentJob }) {
               name="name"
               label="Nom de la fonction *"
               placeholder="Ex: Développeur Logiciel..."
+              onBlur={handleJobBlur}
             />
             <Field.Select
               name="category"
