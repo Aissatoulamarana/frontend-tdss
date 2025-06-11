@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
+// import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -11,7 +11,7 @@ import debounce from 'lodash.debounce';
 
 import { useState, useEffect, useCallback , useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
+// import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Autocomplete } from '@mui/material';
 
@@ -23,6 +23,7 @@ import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import {toast} from 'src/components/snackbar';
+import { set } from 'nprogress';
 
 
 // ----------------------------------------------------------------------
@@ -191,38 +192,9 @@ export function DeclarationNewEditDetails({ formData }) {
     handleCloseModal();
   };
 
- useEffect(() => {
-  let isMounted = true;
 
-  async function fetchAllFonctions() {
-    try {
-      const resp1 = await axios.get(API.listFonctionAgent(), { params: { offset: 0, limit: 1 } });
-      const total = resp1.data.count;
 
-      const resp2 = await axios.get(API.listFonctionAgent(), { params: { offset: 0, limit: total } });
 
-      if (!isMounted) return;
-
-      // on remplit la Map slug → {label,value}
-      const map = new Map();
-      resp2.data.results.forEach(f => {
-        if (!map.has(f.slug)) {
-          map.set(f.slug, { label: f.name, value: f.slug });
-        }
-      });
-
-      // on récupère uniquement les valeurs uniques
-      setOptions(Array.from(map.values()));
-    } catch (err) {
-      console.error("Erreur chargement fonctions :", err);
-    } finally {
-      if (isMounted) setLoading(false);
-    }
-  }
-
-  fetchAllFonctions();
-  return () => { isMounted = false; };
-}, []);
 useEffect(() => {
   let isMounted = true;
 
@@ -341,23 +313,30 @@ useEffect(() => {
 
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
-  const checkPassportExistence = async (numero, index) => {
-    if (!numero) return;
-  
-    try {
-      const { data } = await axios.get(API.searchPassport(numero));
-      // s’il y a un passport_number dans la réponse, alors il existe
-      setValue(`employees[${index}].passportExists`, !!data.passport_number);
-    } catch (error) {
-      if (error.response?.status === 404) {
-        // pas trouvé → passportExists = false
-        setValue(`employees[${index}].passportExists`, false);
-      } else {
-        console.error('Erreur lors de la recherche du passeport', error);
-      }
+const checkPassportExistence = async (numero, index) => {
+  if (!numero) return;
+
+  try {
+    const { data } = await axios.get(API.searchPassport(numero));
+
+    if (data?.passport_number) {
+      setValue(`employees[${index}].passportExists`, true);
+      toast.error("❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.");
+    } else {
+      setValue(`employees[${index}].passportExists`, false);
+      toast.success("✅ Passeport non trouvé, vous pouvez continuer.");
     }
-  };
-  
+
+  } catch (error) {
+    if (error.detail) {
+      setValue(`employees[${index}].passportExists`, false);
+      toast.success("✅ Passeport non trouvé, vous pouvez continuer.");
+    } else {
+      console.error('Erreur lors de la recherche du passeport', error.detail);
+    }
+  }
+};
+
 
   // Création de la version debounce de la fonction
   // On utilise ici 500ms de délai après la dernière saisie
@@ -372,6 +351,8 @@ useEffect(() => {
   const handlePassportChange = (e, index) => {
     const numero = e.target.value;
     setValue(`employees[${index}].passport_number`, numero);
+     // Réinitialiser passportExists lorsque le numéro de passeport change
+    setValue(`employees[${index}].passportExists`, false);
   };
 
   const handlePassportBlur = (e, index) => {
