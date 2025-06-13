@@ -28,63 +28,99 @@ import {
 import { MultiLineChart } from './CaissierCharts';
 
 // Service pour récupérer toutes les factures avec tous les résultats
-const fetchAllFactures = async () => {
+// const fetchAllFactures = async () => {
+//   try {
+//     // Premier appel pour récupérer le count total
+//     const firstResponse = await axios.get(API.listFactures());
+//     const totalCount = firstResponse.data.count;
+    
+//     // Si on a beaucoup de factures, on récupère tout avec limit élevé
+//     const response = await axios.get(API.listFactures(), {
+//       params: {
+//         limit: totalCount || 1000 // On récupère toutes les factures
+//       }
+//     });
+    
+//     // console.log('All Factures Response:', response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Erreur lors de la récupération des factures:', error);
+//     throw error;
+//   }
+// };
+
+// // Fonction pour filtrer les données par mois
+// const filterDataByMonth = (data, selectedMonth, selectedYear) => {
+//   if (!data || !Array.isArray(data) || !selectedMonth || !selectedYear) return data || [];
+  
+//   return data.filter(item => {
+//     const itemDate = new Date(item.created_on);
+//     return itemDate.getMonth() === selectedMonth - 1 && itemDate.getFullYear() === selectedYear;
+//   });
+// };
+
+// // Fonction pour générer les données de transaction par mois
+// const generateMonthlyTransactionData = (factures, selectedYear) => {
+//   const monthlyData = Array(12).fill(0);
+//   const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+  
+//     // Vérifier que factures existe et est un tableau
+//   if (!factures || !Array.isArray(factures)) {
+//     return {
+//       categories: monthNames,
+//       series: monthlyData
+//     };
+//   }
+
+//   factures.forEach(facture => {
+//     const date = new Date(facture.created_on);
+//     if (date.getFullYear() === selectedYear) {
+//       monthlyData[date.getMonth()]++;
+//     }
+//   });
+  
+//   return {
+//     categories: monthNames,
+//     series: monthlyData
+//   };
+// };
+
+// Services pour recuperer les metriques du dashboard
+const fetchDashboardMetrics = async (month, year) => {
   try {
-    // Premier appel pour récupérer le count total
-    const firstResponse = await axios.get(API.listFactures());
-    const totalCount = firstResponse.data.count;
-    
-    // Si on a beaucoup de factures, on récupère tout avec limit élevé
-    const response = await axios.get(API.listFactures(), {
-      params: {
-        limit: totalCount || 1000 // On récupère toutes les factures
-      }
-    });
-    
-    // console.log('All Factures Response:', response.data);
+    const params = {};
+    if (month) params.month = month;
+    if (year) params.year = year;
+    const response = await axios.get(API.facturesFirstLineDashboardCaissier(month), { params });
+    // console.log('Dashboard Metrics Response:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Erreur lors de la récupération des factures:', error);
+    console.error('Erreur lors de la récupération des métriques du dashboard:', error);
     throw error;
   }
 };
-
-// Fonction pour filtrer les données par mois
-const filterDataByMonth = (data, selectedMonth, selectedYear) => {
-  if (!data || !Array.isArray(data) || !selectedMonth || !selectedYear) return data || [];
-  
-  return data.filter(item => {
-    const itemDate = new Date(item.created_on);
-    return itemDate.getMonth() === selectedMonth - 1 && itemDate.getFullYear() === selectedYear;
-  });
-};
-
-// Fonction pour générer les données de transaction par mois
-const generateMonthlyTransactionData = (factures, selectedYear) => {
-  const monthlyData = Array(12).fill(0);
-  const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-  
-    // Vérifier que factures existe et est un tableau
-  if (!factures || !Array.isArray(factures)) {
-    return {
-      categories: monthNames,
-      series: monthlyData
-    };
+// Service pour récupérer les transactions mensuelles
+const fetchMonthlyTransactionData = async (year) => {
+  try {
+    const response = await axios.get(API.paiementsMonthly(year));
+    // console.log('Monthly Transaction Data Response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération des données de transaction mensuelles:', error);
+    throw error;
   }
-
-  factures.forEach(facture => {
-    const date = new Date(facture.created_on);
-    if (date.getFullYear() === selectedYear) {
-      monthlyData[date.getMonth()]++;
-    }
-  });
-  
-  return {
-    categories: monthNames,
-    series: monthlyData
-  };
 };
-
+// Service pour récupérer les 5 dernières factures non payées
+const fetchLastUnpaidInvoices = async () => {
+  try {
+    const response = await axios.get(API.facturesLastUnpaid());
+    // console.log('Dernières Factures Non Payées Response:', response.data);
+    return response.data.results || [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des dernières factures non payées:', error);
+    throw error;
+  }
+};
 
 // ----------------------------------------------------------------------
 
@@ -105,7 +141,7 @@ export function CaissierAppView() {
     nombrePaiements: 0,
   });
 
-  const [dernieresFactures, setDernieresFactures] = useState([]);
+  // const [dernieresFactures, setDernieresFactures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -114,13 +150,16 @@ export function CaissierAppView() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
   
-  // Nouveaux états pour les données
+  // états pour les données
   const [dernieresFacturesNonPayees, setDernieresFacturesNonPayees] = useState([]);
   const [monthlyTransactionData, setMonthlyTransactionData] = useState({
     categories: [],
     series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   });
-  const [allFactures, setAllFactures] = useState([]);
+
+  // const [allFactures, setAllFactures] = useState([]);
+  
+  // Préparation des données pour le graphique
   const rechartsData = (monthlyTransactionData.categories || []).map((month, index) => ({
     mois: month,
     transactions: monthlyTransactionData.series ? monthlyTransactionData.series[index] : 0,
@@ -144,88 +183,200 @@ export function CaissierAppView() {
   ];
   const years = Array.from({ length: 5}, (_, i) => new Date().getFullYear() - i);
 
-  const calculateMetrics = (factures) => {
-    if (!factures || factures.length === 0) {
-      return {
-        totalFactures: 0,
-        montantTotalFactures: 0,
-        facturesPayees: 0,
-        montantFacturesPayees: 0,
-        facturesEnAttente: 0,
-        montantFacturesEnAttente: 0,
-      };
-    }
-    // filtrer par mois si selectionné
-    const filteredFactures = filterDataByMonth(factures, selectedMonth, selectedYear);
-    // 1. Total Factures
-    const totalFactures = filteredFactures.length;
-    const montantTotalFactures = filteredFactures.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
-    // 2. Factures payées - somme des factures avec status = "PAID"
-    const facturesPayees = filteredFactures.filter(facture => facture.status === 'PAID');
-    const facturesPayeesCount = facturesPayees.length;
-    const montantFacturesPayees = facturesPayees.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
+//   const calculateMetrics = (factures) => {
+//     if (!factures || factures.length === 0) {
+//       return {
+//         totalFactures: 0,
+//         montantTotalFactures: 0,
+//         facturesPayees: 0,
+//         montantFacturesPayees: 0,
+//         facturesEnAttente: 0,
+//         montantFacturesEnAttente: 0,
+//       };
+//     }
+//     // filtrer par mois si selectionné
+//     const filteredFactures = filterDataByMonth(factures, selectedMonth, selectedYear);
+//     // 1. Total Factures
+//     const totalFactures = filteredFactures.length;
+//     const montantTotalFactures = filteredFactures.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
+//     // 2. Factures payées - somme des factures avec status = "PAID"
+//     const facturesPayees = filteredFactures.filter(facture => facture.status === 'PAID');
+//     const facturesPayeesCount = facturesPayees.length;
+//     const montantFacturesPayees = facturesPayees.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
 
-    // FActures en attente
-    const facturesEnAttente = filteredFactures.filter(facture => facture.status !== 'PAID');
-    const facturesEnAttenteCount = facturesEnAttente.length;
-    const montantFacturesEnAttente = facturesEnAttente.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
-    return {
-      totalFactures,
-      montantTotalFactures,
-      facturesPayees: facturesPayeesCount,
-      montantFacturesPayees,
-      facturesEnAttente: facturesEnAttenteCount,
-      montantFacturesEnAttente,
+//     // FActures en attente
+//     const facturesEnAttente = filteredFactures.filter(facture => facture.status !== 'PAID');
+//     const facturesEnAttenteCount = facturesEnAttente.length;
+//     const montantFacturesEnAttente = facturesEnAttente.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
+//     return {
+//       totalFactures,
+//       montantTotalFactures,
+//       facturesPayees: facturesPayeesCount,
+//       montantFacturesPayees,
+//       facturesEnAttente: facturesEnAttenteCount,
+//       montantFacturesEnAttente,
+//     }
+//   }
+
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       try {
+//         setLoading(true);
+//         setError(null);
+//         const facturesData = await fetchAllFactures();
+//         setAllFactures(facturesData.results || []);
+//         // console.log('All Factures Data:', facturesData.results);
+//       } catch (err) {
+//         setError('Erreur lors du chargement des factures');
+//         console.error('Erreur lors du chargement des factures:', err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchData();
+//   }, []);
+
+//   // Recalcul des métriques et des données à chaque changement de filtre
+// useEffect(() => {
+//   if (allFactures && allFactures.length > 0) {
+//     const metrics = calculateMetrics(allFactures);
+//     setDashboardMetrics(metrics);
+
+//     // Génération des données pour le graphique
+//     const chartData = generateMonthlyTransactionData(allFactures, chartYear);
+//     setMonthlyTransactionData(chartData);
+//     // console.log('Monthly Transaction Data:', chartData);
+//     // console.log('Monthly Transaction Data:', chartData.series);
+
+//     // 5 dernières factures non payées
+//     const facturesNonPayees = allFactures
+//       .filter(facture => facture.status !== 'PAID')
+//       .sort((a, b) => new Date(b.created_on) - new Date(a.created_on))
+//       .slice(0, 5);
+//     setDernieresFacturesNonPayees(facturesNonPayees);
+//   }
+// }, [allFactures, selectedMonth, selectedYear, chartYear]);
+
+
+  // fonction pour charger les metriques du dashboard
+  
+  const loadDashboardMetrics = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const metrics = await fetchDashboardMetrics(selectedMonth, selectedYear);
+      setDashboardMetrics({
+        totalFactures: metrics.number_total_factures || 0,
+        montantTotalFactures: metrics.total_factures_amount || 0,
+        facturesPayees: metrics.number_factures_paid || 0,
+        montantFacturesPayees: metrics.factures_paid_amount || 0,
+        facturesEnAttente: metrics.number_factures_unpaid || 0,
+        montantFacturesEnAttente: metrics.factures_unpaid_amount || 0,
+      });
+    } catch (error) {
+      setError('Erreur lors du chargement des métriques');
+      console.error('Erreur lors du chargement des métriques:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // fonction pour charger les transactions mensuelles 
+  const loadMonthlyTransactions = async () => {
+    try {
+      const data = await fetchMonthlyTransactionData(chartYear); 
+      console.log(`Data monthly transactions:`, data);
+      
+      if (data.month && data.data) {
+        // Convertir les numéros de mois en noms de mois
+        const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+        const categories = data.month.map(monthNum => {
+          const index = parseInt(monthNum, 10) - 1; // Convertir "01" -> 0, "02" -> 1, etc.
+          return monthNames[index] || monthNum;
+        });
+        
+        setMonthlyTransactionData({
+          categories: categories,
+          series: data.data
+        });
+        console.log('Données mensuelles (format month/data):', { categories, series: data.data });
+      }
+      // Format par défaut en cas d'échec
+      else {
+        setMonthlyTransactionData({
+          categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
+          series: data.transactions_by_month || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        });
+        console.log('Données mensuelles (par défaut):', data);
+      }
+    } catch (error) {
+      setError('Erreur lors du chargement des transactions mensuelles'); 
+      console.error('Erreur lors du chargement des transactions mensuelles:', error);
+    }
+  }
+  // Fonction pour charger les 5 dernieres factures non payees
+  const loadLastUnpaidInvoices = async () => {
+    try {
+      const data = await fetchLastUnpaidInvoices(); 
+      setDernieresFacturesNonPayees(data.results || data.invoices || data || []); 
+    } catch (err) {
+      console.error('Erreur lors du chargement des factures non payées:', err);
+      setError('Erreur lors du chargement des factures non payées');
     }
   }
 
+  // chargement initial des donnees 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadInitialData = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const facturesData = await fetchAllFactures();
-        setAllFactures(facturesData.results || []);
-        // console.log('All Factures Data:', facturesData.results);
+        setLoading(true); 
+        setError(null); 
+
+        // chargement simultane des data
+        await Promise.all([
+          loadDashboardMetrics(), 
+          loadMonthlyTransactions(), 
+          loadLastUnpaidInvoices()
+        ]); 
       } catch (err) {
-        setError('Erreur lors du chargement des factures');
-        console.error('Erreur lors du chargement des factures:', err);
+        setError('Erreur lors du chargement des data'); 
+        console.error('Erreur lors du chargement initial', err); 
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchData();
+    }; 
+    loadInitialData();  
   }, []);
+  // Recharger les métriques quand les filtres changent
+  useEffect(() => {
+    if (!loading) {
+      loadDashboardMetrics();
+    }
+  }, [selectedMonth, selectedYear]);
 
-  // Recalcul des métriques et des données à chaque changement de filtre
-useEffect(() => {
-  if (allFactures && allFactures.length > 0) {
-    const metrics = calculateMetrics(allFactures);
-    setDashboardMetrics(metrics);
-
-    // Génération des données pour le graphique
-    const chartData = generateMonthlyTransactionData(allFactures, chartYear);
-    setMonthlyTransactionData(chartData);
-    // console.log('Monthly Transaction Data:', chartData);
-    // console.log('Monthly Transaction Data:', chartData.series);
-
-    // 5 dernières factures non payées
-    const facturesNonPayees = allFactures
-      .filter(facture => facture.status !== 'PAID')
-      .sort((a, b) => new Date(b.created_on) - new Date(a.created_on))
-      .slice(0, 5);
-    setDernieresFacturesNonPayees(facturesNonPayees);
-  }
-}, [allFactures, selectedMonth, selectedYear, chartYear]);
-
-  // // Fonction pour formater les nombres  
+  // Recharger les transactions mensuelles quand l'année du graphique change
+  useEffect(() => {
+    if (!loading) {
+      loadMonthlyTransactions();
+    }
+  }, [chartYear]);
+  // Fonction pour formater les nombres  
   function formatNumber(value) {
     return new Intl.NumberFormat('en-US', {
       style: 'decimal',
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(value);
+  }
+
+  if (loading) {
+    return (
+      <DashboardContent maxWidth="xl">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+          <div> Chargement des données ...</div>
+        </Box>
+      </DashboardContent>
+    );
   }
 
 return (
@@ -235,14 +386,16 @@ return (
         {error}
       </div>
     )}
+
     <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <h2>Tableau de bord Caissier</h2>
       <Box sx={{ typography: 'subtitle1', color: 'text.secondary' }}>
         {user ? `Bienvenue, ${user.name}` : 'Bienvenue, utilisateur inconnu'}
       </Box>
     </Box>
+
     {/* Filtres */}
-    <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
+    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
       <FormControl size="small" sx={{ minWidth: 150 }}>
         <InputLabel>Mois</InputLabel>
         <Select
@@ -258,7 +411,7 @@ return (
         </Select>
       </FormControl>
 
-      <FormControl size="small" sx={{ minWidth: 120 }}>
+      {/* <FormControl size="small" sx={{ minWidth: 120 }}>
         <InputLabel>Année</InputLabel>
         <Select
           value={selectedYear}
@@ -271,7 +424,7 @@ return (
             </MenuItem>
           ))}
         </Select>
-      </FormControl>
+      </FormControl> */}
     </Box>
 
     <Grid container spacing={2}>

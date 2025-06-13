@@ -50,10 +50,13 @@ const API = {
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
   paidFacture: (slug) => `${BASE_URL}/factures/${slug}/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
+  facturesFirstLineDashboardCaissier: (month) => `${BASE_URL}/factures/dashboard-caissier/first-line/?month=${month}`, // Premiere ligne du tableau de bord des caissiers
+  facturesLastUnpaid: () => `${BASE_URL}/factures/last-unpaid/`, // dernieres Factures non payées
   // PaidFactures: (slug) => `${BASE_URL}/paid_factures/${slug}/`, // payer plusieurs factures a la fois 
   
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
+  paiementsMonthly: (year) => `${BASE_URL}/payments/payment-monthly/?year=${year}`, // Paiements 
   
   createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
   listFonctions: () => `${BASE_URL}/jobs/`, // Liste des fonctions
