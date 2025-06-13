@@ -223,7 +223,7 @@ export function DeclarationTableRow({
             )}
 
           {user?.type_name === 'Aguipe' &&
-            user?.profile === 'aguipe' &&
+            profil === 'aguipe' &&
             !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
               <MenuItem
                 key="reject"

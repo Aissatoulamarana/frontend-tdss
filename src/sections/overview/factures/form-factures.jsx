@@ -103,7 +103,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       reset();
-      toast.success('Mise à jour réussie !');
+      toast.success('Paiement effectué avec succès !');
       onSuccess();
       onclose();
     } catch (error) {
@@ -165,7 +165,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
               </Grid>
               <Box sx={{ display:'flex', justifyContent:'flex-end' , mt: 3 }}>
                     <Button variant="contained" onClick={handleNext}>
-                         "Suivant" 
+                         Suivant
 
                     </Button>
                 </Box>
