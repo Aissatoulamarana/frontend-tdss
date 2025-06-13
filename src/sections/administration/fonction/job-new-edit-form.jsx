@@ -109,7 +109,7 @@ export function JobNewEditForm({ currentJob }) {
     try {
       const name = methods.getValues('name');
       const params = {
-        name: name ? name : undefined,
+        name: name || '',
       }
       const response = await axios.get(API.listFonctions(), {params});
       const results = response.data.results || response.data;
