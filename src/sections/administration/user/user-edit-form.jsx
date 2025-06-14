@@ -26,7 +26,7 @@ import { fData } from 'src/utils/format-number';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import { toast } from 'src/components/snackbar';
 
-import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
+import { getRegions, getAgences, getProfils, } from 'src/utils/options';
 
 
 
@@ -222,18 +222,49 @@ export function UserNewEditForm({ currentUser , user}) {
 
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProfiles = async () => {
+      try {
+        const resp1 = await axios.get(API.listActiveProfile() , {
+          params:{ offset : 0 , limit : 1}
+        });
+        const total = resp1.data.count ;
+
+        const resp2 = await axios.get(API.listActiveProfile(), {
+          params: { offset: 0, limit: total }
+        });
+        if (!isMounted) return;
+        setProfils(resp2.data.results || resp2.data);
+        if(currentUser?.profile?.type) {
+          const typeLower = currentUser?.profile?.type.toLowerCase();
+          setTypeProfil(typeLower);
+          getRolesProfile(typeLower);
+        }
+
+      } catch (error) {
+        console.error('Erreur lors de la récupération des profils:', error);
+        setError('Erreur lors de la récupération des profils');
+      }
+    };
+    fetchProfiles();
+  return () => {
+    isMounted = false;  
+  };
+  }, [currentUser]);
+
 
   useEffect(() => {
     getRegions().then(data => setRegions(data));
     getAgences().then(data => setAgences(data));
-    getProfils().then(data => {
-      setProfils(data);
-    if (currentUser?.profile?.type) {
-        const typeLower = currentUser?.profile?.type.toLowerCase();
-        setTypeProfil(typeLower);
-        getRolesProfile(typeLower);
-    }
-  });
+  //   getProfils().then(data => {
+  //     setProfils(data);
+  //   if (currentUser?.profile?.type) {
+  //       const typeLower = currentUser?.profile?.type.toLowerCase();
+  //       setTypeProfil(typeLower);
+  //       getRolesProfile(typeLower);
+  //   }
+  // });
   },[currentUser]);
 
   // Pour mettre à jour les valeurs du formulaire dès que currentClient change
