@@ -5,7 +5,7 @@ import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-r
 
 // ----------------------------------------------------------------------
 
-export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx }) {
+export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx , options}) {
   const handleRemoveKeyword = useCallback(() => {
     onResetPage();
     filters.setState({ name: '' });
@@ -41,11 +41,22 @@ export function UserTableFiltersResult({ filters, onResetPage, totalResults, sx 
         />
       </FiltersBlock>
 
-      <FiltersBlock label="Role:" isShow={!!filters.state.type}>
+      {/* <FiltersBlock label="Role:" isShow={!!filters.state.type}>
       
           <Chip {...chipProps} label={filters.state.type} onDelete={ handleRemoveRole} />
       
-      </FiltersBlock>
+      </FiltersBlock> */}
+
+      <FiltersBlock label="Role:" isShow={!!filters.state.type}>
+          <Chip
+            {...chipProps}
+            label={
+              options.roles.find((role) => role.slug === filters.state.type)?.name || filters.state.type
+            }
+            onDelete={handleRemoveRole}
+          />
+    </FiltersBlock>
+
 
       <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
         <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
