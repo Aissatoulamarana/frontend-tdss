@@ -541,7 +541,7 @@ export function DeclarationListView() {
             { name: 'Listes des déclarations' },
           ]}
           action={
-            type_user !== 'admin' && ( //  Cache le bouton si type_user est "admin"
+            type_user === 'agent' && ( //  Cache le bouton si type_user est "admin"
               <>
                 <Button
                   component={RouterLink}
