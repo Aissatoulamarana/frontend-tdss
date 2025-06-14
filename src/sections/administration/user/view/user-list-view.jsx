@@ -291,6 +291,7 @@ useEffect(() => {
               filters={filters}
               totalResults={pagination.count}
               onResetPage={table.onResetPage}
+              options={{ roles: roles }}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
