@@ -145,18 +145,21 @@ export function AgentDeclarationChart({ chartData = [], loading = false, error =
   const [availableYears, setAvailableYears] = useState([]);
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
-  const currentYear = new Date().getFullYear().toString(); // Obtenir l'année courante (2025)
+  const currentYear = new Date().getFullYear(); // Obtenir l'année courante (2025)
 
-  // Définir l'année courante comme année par défaut
+  // Définir les 5 dernières années comme années disponibles
   useEffect(() => {
+    // Générer un tableau des 5 dernières années
+    const years = [];
+    for (let i = 0; i < 5; i++) {
+      years.push((currentYear - i).toString());
+    }
+    setAvailableYears(years);
+    
     // Si aucune année n'est sélectionnée, utiliser l'année courante
     if (!selectedYear) {
-      setSelectedYear(currentYear);
+      setSelectedYear(currentYear.toString());
     }
-    
-    // Définir les années disponibles (pour l'instant, nous utilisons seulement l'année courante)
-    // Vous pouvez ajouter d'autres années si nécessaire
-    setAvailableYears([currentYear]);
   }, [currentYear, selectedYear]);
 
   // Préparer les données pour le graphique
@@ -185,6 +188,9 @@ export function AgentDeclarationChart({ chartData = [], loading = false, error =
 
   const handleYearChange = (event) => {
     setSelectedYear(event.target.value);
+    
+    // Ici, vous pourriez ajouter un appel à une fonction pour charger les données de l'année sélectionnée
+    // Par exemple: onYearChange(event.target.value);
   };
 
   const chartOptions = {
