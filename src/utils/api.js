@@ -1,4 +1,3 @@
-
 //  const BASE_URL = 'http://127.0.0.1:8000'; // Adresse de votre backend
  const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
 
@@ -35,7 +34,14 @@ const API = {
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
   unsubmitDeclaration : (slug) =>  `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre 
 
-
+  // Dashboard Agent
+  agentDashboard: (year = null) => {
+    let url = `${BASE_URL}/declarations/dashboard-agent/`;
+    if (year && year !== 'all') {
+      url += `?year=${year}`;
+    }
+    return url;
+  },
 
   Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
   UpdateEmploye: (declarationSlug, employeeSlug) => `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration

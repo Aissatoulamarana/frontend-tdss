@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import MenuItem from '@mui/material/MenuItem';
@@ -9,79 +9,7 @@ import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import { Iconify } from 'src/components/iconify';
 import { Chart } from 'src/components/chart';
-
-// ----------------------------------------------------------------------
-
-// Contexte utilisateur simulé (à remplacer par un vrai contexte d'authentification)
-const CURRENT_USER = {
-  id: 'AGENT-001',
-  name: 'Jean Dupont',
-  company: 'Entreprise ABC',
-  role: 'agent',
-};
-
-// Données mockées pour le développement
-const ALL_PERMIT_CATEGORIES = [
-  { category: 'Permis A', value: 25, agentId: 'AGENT-001' },
-  { category: 'Permis B', value: 18, agentId: 'AGENT-001' },
-  { category: 'Permis C', value: 12, agentId: 'AGENT-001' },
-  { category: 'Permis D', value: 8, agentId: 'AGENT-002' },
-  { category: 'Permis E', value: 5, agentId: 'AGENT-003' },
-];
-
-const ALL_DECLARATION_SERIES = [
-  {
-    year: 2023,
-    data: [
-      { month: 'Jan', value: 5, agentId: 'AGENT-001' },
-      { month: 'Fév', value: 8, agentId: 'AGENT-001' },
-      { month: 'Mar', value: 12, agentId: 'AGENT-001' },
-      { month: 'Avr', value: 10, agentId: 'AGENT-001' },
-      { month: 'Mai', value: 15, agentId: 'AGENT-001' },
-      { month: 'Juin', value: 0, agentId: 'AGENT-001' },
-      { month: 'Juil', value: 0, agentId: 'AGENT-001' },
-      { month: 'Août', value: 0, agentId: 'AGENT-001' },
-      { month: 'Sep', value: 0, agentId: 'AGENT-001' },
-      { month: 'Oct', value: 0, agentId: 'AGENT-001' },
-      { month: 'Nov', value: 0, agentId: 'AGENT-001' },
-      { month: 'Déc', value: 0, agentId: 'AGENT-001' },
-    ],
-  },
-  {
-    year: 2022,
-    data: [
-      { month: 'Jan', value: 3, agentId: 'AGENT-001' },
-      { month: 'Fév', value: 5, agentId: 'AGENT-001' },
-      { month: 'Mar', value: 8, agentId: 'AGENT-001' },
-      { month: 'Avr', value: 12, agentId: 'AGENT-001' },
-      { month: 'Mai', value: 10, agentId: 'AGENT-001' },
-      { month: 'Juin', value: 15, agentId: 'AGENT-001' },
-      { month: 'Juil', value: 18, agentId: 'AGENT-001' },
-      { month: 'Août', value: 14, agentId: 'AGENT-001' },
-      { month: 'Sep', value: 12, agentId: 'AGENT-001' },
-      { month: 'Oct', value: 10, agentId: 'AGENT-001' },
-      { month: 'Nov', value: 8, agentId: 'AGENT-001' },
-      { month: 'Déc', value: 6, agentId: 'AGENT-001' },
-    ],
-  },
-  {
-    year: 2021,
-    data: [
-      { month: 'Jan', value: 2, agentId: 'AGENT-001' },
-      { month: 'Fév', value: 4, agentId: 'AGENT-001' },
-      { month: 'Mar', value: 6, agentId: 'AGENT-001' },
-      { month: 'Avr', value: 8, agentId: 'AGENT-001' },
-      { month: 'Mai', value: 10, agentId: 'AGENT-001' },
-      { month: 'Juin', value: 12, agentId: 'AGENT-001' },
-      { month: 'Juil', value: 14, agentId: 'AGENT-001' },
-      { month: 'Août', value: 12, agentId: 'AGENT-001' },
-      { month: 'Sep', value: 10, agentId: 'AGENT-001' },
-      { month: 'Oct', value: 8, agentId: 'AGENT-001' },
-      { month: 'Nov', value: 6, agentId: 'AGENT-001' },
-      { month: 'Déc', value: 4, agentId: 'AGENT-001' },
-    ],
-  },
-];
+import CircularProgress from '@mui/material/CircularProgress';
 
 // ----------------------------------------------------------------------
 
@@ -212,28 +140,48 @@ export function AgentPermitCategoryChart() {
 
 // ----------------------------------------------------------------------
 
-export function AgentDeclarationChart() {
-  const [selectedYear, setSelectedYear] = useState('2023');
-  const [chartData, setChartData] = useState([]);
+export function AgentDeclarationChart({ chartData = [], loading = false, error = '' }) {
+  const [selectedYear, setSelectedYear] = useState('');
   const [availableYears, setAvailableYears] = useState([]);
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const currentYear = new Date().getFullYear().toString(); // Obtenir l'année courante (2025)
 
-  // Filtrer les données de déclaration pour n'afficher que celles de l'agent connecté
+  // Définir l'année courante comme année par défaut
   useEffect(() => {
-    // Récupérer les années disponibles pour l'agent
-    const years = ALL_DECLARATION_SERIES.map(series => series.year.toString());
-    setAvailableYears(years);
-
-    // Filtrer les données pour l'année sélectionnée et l'agent connecté
-    const selectedSeries = ALL_DECLARATION_SERIES.find(series => series.year.toString() === selectedYear);
-    if (selectedSeries) {
-      const filteredData = selectedSeries.data.filter(item => item.agentId === CURRENT_USER.id);
-      setChartData(filteredData.map(item => item.value));
-    } else {
-      setChartData([]);
+    // Si aucune année n'est sélectionnée, utiliser l'année courante
+    if (!selectedYear) {
+      setSelectedYear(currentYear);
     }
-  }, [selectedYear]);
+    
+    // Définir les années disponibles (pour l'instant, nous utilisons seulement l'année courante)
+    // Vous pouvez ajouter d'autres années si nécessaire
+    setAvailableYears([currentYear]);
+  }, [currentYear, selectedYear]);
+
+  // Préparer les données pour le graphique
+  const chartSeries = useMemo(() => {
+    // Si pas de données ou chargement en cours, retourner un tableau vide
+    if (!chartData || chartData.length === 0 || loading) {
+      return [{ name: 'Déclarations', data: Array(12).fill(0) }];
+    }
+    
+    // Créer un tableau avec 12 mois initialisés à 0
+    const monthlyData = Array(12).fill(0);
+    
+    // Remplir avec les données disponibles
+    chartData.forEach(item => {
+      // Extraire l'index du mois (0-11) à partir du nom du mois
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      const monthIndex = monthNames.findIndex(m => m === item.month);
+      
+      if (monthIndex !== -1) {
+        monthlyData[monthIndex] = item.value || 0;
+      }
+    });
+    
+    return [{ name: 'Déclarations', data: monthlyData }];
+  }, [chartData, loading]);
 
   const handleYearChange = (event) => {
     setSelectedYear(event.target.value);
@@ -299,6 +247,7 @@ export function AgentDeclarationChart() {
             value={selectedYear}
             label="Année"
             onChange={handleYearChange}
+            disabled={loading || availableYears.length === 0}
           >
             {availableYears.map(year => (
               <MenuItem key={year} value={year}>{year}</MenuItem>
@@ -307,12 +256,22 @@ export function AgentDeclarationChart() {
         </FormControl>
       </Box>
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-        <Chart
-          type="area"
-          series={[{ name: 'Déclarations', data: chartData }]}
-          options={chartOptions}
-          height={320}
-        />
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 320 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 320 }}>
+            <Typography color="error">{error}</Typography>
+          </Box>
+        ) : (
+          <Chart
+            type="area"
+            series={chartSeries}
+            options={chartOptions}
+            height={320}
+          />
+        )}
       </Box>
     </Card>
   );

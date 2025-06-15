@@ -27,7 +27,7 @@ SectionTitle.propTypes = {
   children: PropTypes.node
 };
 
-export default function AgentChartSection({ loading, error, onRetry }) {
+export default function AgentChartSection({ chartData, loading, error, onRetry }) {
   return (
     <Box sx={{ mt: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -54,26 +54,36 @@ export default function AgentChartSection({ loading, error, onRetry }) {
           <Skeleton variant="rectangular" width="100%" height={300} sx={{ mt: 2, borderRadius: 1 }} />
         </Card>
       ) : (
-        <Card sx={{ 
-          p: 3, 
-          height: '100%', 
-          borderRadius: 1, 
-          boxShadow: theme => `0 0 2px ${alpha(theme.palette.common.black, 0.2)}` 
-        }}>
-          <AgentDeclarationChart />
-        </Card>
+        <AgentDeclarationChart 
+          chartData={chartData} 
+          loading={loading} 
+          error={error} 
+        />
       )}
     </Box>
   );
 }
 
 AgentChartSection.propTypes = {
+  chartData: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      reference: PropTypes.string,
+      date: PropTypes.string,
+      company: PropTypes.string,
+      status: PropTypes.string,
+      employees: PropTypes.number,
+      title: PropTypes.string,
+      comment: PropTypes.string
+    })
+  ),
   loading: PropTypes.bool,
   error: PropTypes.string,
   onRetry: PropTypes.func
 };
 
 AgentChartSection.defaultProps = {
+  chartData: [],
   loading: false,
   error: '',
   onRetry: () => {}

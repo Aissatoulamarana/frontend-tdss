@@ -4,6 +4,9 @@ import { toast } from 'src/components/snackbar';
 import { useAuthContext } from 'src/auth/hooks';
 import { useSettingsContext } from 'src/components/settings/context/use-settings-context';
 
+// Import du service API
+import { AgentDashboardService } from 'src/services/api/agent-dashboard';
+
 // Importation des composants modulaires
 import {
   AgentDashboardHeader,
@@ -55,15 +58,16 @@ export default function AgentDashboard() {
   // Fonction pour gérer l'exportation des données
   const handleExportData = async () => {
     try {
-      const exportUrl = `/api/agent/export?company=${encodeURIComponent(companyFilter || '')}&period=${encodeURIComponent(periodFilter || '')}`;
-      const a = document.createElement('a');
-      a.href = exportUrl;
-      a.download = `export-${companyFilter || 'all'}-${periodFilter || 'all'}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      // Utiliser le service API pour exporter les données
+      const filters = {
+        company: companyFilter,
+        period: periodFilter
+      };
+      
+      await AgentDashboardService.exportDashboardData(filters);
       toast.success('Exportation terminée avec succès');
     } catch (error) {
+      console.error('Erreur lors de l\'exportation:', error);
       toast.error('Erreur lors de l\'exportation');
     }
   };
@@ -77,115 +81,65 @@ export default function AgentDashboard() {
       declarations: ''
     });
 
-    // Charger les données de résumé
-    setLoading(prev => ({ ...prev, summary: true }));
+    // Charger les données du dashboard
+    setLoading({
+      summary: true,
+      charts: true,
+      declarations: true
+    });
+    
     try {
-      // Simulation d'un appel API avec un délai
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Appel à l'API pour récupérer les données du dashboard
+      const dashboardData = await AgentDashboardService.getDashboardData(periodFilter !== 'all' ? periodFilter : null);
       
-      // Données simulées - à remplacer par un appel API réel
-      const summaryResponse = {
-        totalDeclarations: 125,
-        unsubmittedDeclarations: 8,
-        rejectedDeclarations: 3
-      };
+      // Mettre à jour les données de résumé
+      setSummaryData({
+        totalDeclarations: dashboardData.statistiques.total_number_declaration || 0,
+        unsubmittedDeclarations: dashboardData.statistiques.unsumit_number_declaration || 0,
+        rejectedDeclarations: dashboardData.statistiques.rejected_number_declaration || 0
+      });
       
-      setSummaryData(summaryResponse);
+      // Transformer les données du graphique
+      const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      const chartDataFormatted = Object.entries(dashboardData.number_declaration_of_year || {}).map(([month, value]) => ({
+        month: monthNames[parseInt(month, 10) - 1],
+        value
+      }));
+      setChartData(chartDataFormatted);
+      
+      // Transformer les données des déclarations
+      const declarationsFormatted = (dashboardData.declarations || []).map(declaration => ({
+        id: declaration.slug,
+        reference: declaration.reference,
+        date: declaration.created_on,
+        company: declaration.company,
+        status: declaration.status.toLowerCase(),
+        employees: declaration.nb_employees,
+        title: declaration.title,
+        comment: declaration.comment
+      }));
+      setRecentDeclarations(declarationsFormatted);
+      
+      // Mettre à jour l'état de chargement
+      setLoading({
+        summary: false,
+        charts: false,
+        declarations: false
+      });
     } catch (error) {
-      console.error('Erreur lors du chargement des données de résumé:', error);
-      setErrors(prev => ({ ...prev, summary: 'Erreur lors du chargement des données de résumé' }));
-    } finally {
-      setLoading(prev => ({ ...prev, summary: false }));
+      console.error('Erreur lors du chargement des données du dashboard:', error);
+      setErrors({
+        summary: 'Erreur lors du chargement des données',
+        charts: 'Erreur lors du chargement des données',
+        declarations: 'Erreur lors du chargement des données'
+      });
+      setLoading({
+        summary: false,
+        charts: false,
+        declarations: false
+      });
     }
-
-    // Charger les données du graphique
-    setLoading(prev => ({ ...prev, charts: true }));
-    try {
-      // Simulation d'un appel API avec un délai
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Données simulées - à remplacer par un appel API réel
-      const chartResponse = [
-        { month: 'Jan', value: 10 },
-        { month: 'Fév', value: 15 },
-        { month: 'Mar', value: 12 },
-        { month: 'Avr', value: 18 },
-        { month: 'Mai', value: 20 },
-        { month: 'Juin', value: 22 },
-        { month: 'Juil', value: 25 },
-        { month: 'Août', value: 28 },
-        { month: 'Sep', value: 30 },
-        { month: 'Oct', value: 32 },
-        { month: 'Nov', value: 35 },
-        { month: 'Déc', value: 40 }
-      ];
-      
-      setChartData(chartResponse);
-    } catch (error) {
-      console.error('Erreur lors du chargement des données du graphique:', error);
-      setErrors(prev => ({ ...prev, charts: 'Erreur lors du chargement des données du graphique' }));
-    } finally {
-      setLoading(prev => ({ ...prev, charts: false }));
-    }
-
-    // Charger les déclarations récentes
-    setLoading(prev => ({ ...prev, declarations: true }));
-    try {
-      // Simulation d'un appel API avec un délai
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Données simulées - à remplacer par un appel API réel
-      const declarationsResponse = [
-        {
-          id: '1',
-          company: 'Entreprise ABC',
-          employee: 'Jean Dupont',
-          date: '2023-05-15',
-          amount: 250000,
-          status: 'pending'
-        },
-        {
-          id: '2',
-          company: 'Société XYZ',
-          employee: 'Marie Martin',
-          date: '2023-05-10',
-          amount: 350000,
-          status: 'approved'
-        },
-        {
-          id: '3',
-          company: 'Entreprise ABC',
-          employee: 'Pierre Durand',
-          date: '2023-05-05',
-          amount: 150000,
-          status: 'rejected'
-        },
-        {
-          id: '4',
-          company: 'Société XYZ',
-          employee: 'Sophie Lefebvre',
-          date: '2023-04-28',
-          amount: 200000,
-          status: 'approved'
-        },
-        {
-          id: '5',
-          company: 'Entreprise ABC',
-          employee: 'Luc Moreau',
-          date: '2023-04-20',
-          amount: 300000,
-          status: 'pending'
-        }
-      ];
-      
-      setRecentDeclarations(declarationsResponse);
-    } catch (error) {
-      console.error('Erreur lors du chargement des déclarations récentes:', error);
-      setErrors(prev => ({ ...prev, declarations: 'Erreur lors du chargement des déclarations récentes' }));
-    } finally {
-      setLoading(prev => ({ ...prev, declarations: false }));
-    }
-  }, []);
+  }, [periodFilter]);
 
   // Charger les données au chargement du composant
   useEffect(() => {
@@ -227,6 +181,7 @@ export default function AgentDashboard() {
 
       {/* Section graphique */}
       <AgentChartSection 
+        chartData={chartData}
         loading={loading.charts}
         error={errors.charts}
         onRetry={() => fetchAgentData()}
@@ -234,6 +189,7 @@ export default function AgentDashboard() {
 
       {/* Section déclarations récentes */}
       <AgentDeclarationsSection 
+        declarations={recentDeclarations}
         loading={loading.declarations}
         error={errors.declarations}
         onRetry={() => fetchAgentData()}

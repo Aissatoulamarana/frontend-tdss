@@ -1,10 +1,40 @@
 // src/utils/axios.js
 import axios from 'axios';
 import { CONFIG } from 'src/config-global';
+import { STORAGE_KEY } from 'src/auth/context/jwt/constant';
 
 // ----------------------------------------------------------------------
 
 const axiosInstance = axios.create({ baseURL: CONFIG.serverUrl });
+
+// Ajouter un intercepteur pour les requêtes
+axiosInstance.interceptors.request.use(
+  (config) => {
+    // Récupérer le token depuis le cookie ou sessionStorage
+    const getCookie = (name) => {
+      const nameWithEqualSign = `${name}=`;
+      const cookies = document.cookie.split(';');
+      
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.indexOf(nameWithEqualSign) === 0) {
+          return decodeURIComponent(cookie.substring(nameWithEqualSign.length, cookie.length));
+        }
+      }
+      return null;
+    };
+
+    // Essayer d'abord de récupérer le token depuis le cookie, puis depuis sessionStorage
+    const token = getCookie(STORAGE_KEY) || sessionStorage.getItem(STORAGE_KEY);
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 axiosInstance.interceptors.response.use(
   (response) => response,

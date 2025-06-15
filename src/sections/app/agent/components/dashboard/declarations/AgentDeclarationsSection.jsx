@@ -27,7 +27,7 @@ SectionTitle.propTypes = {
   children: PropTypes.node
 };
 
-export default function AgentDeclarationsSection({ loading, error, onRetry }) {
+export default function AgentDeclarationsSection({ declarations, loading, error, onRetry }) {
   return (
     <Box sx={{ mt: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -63,7 +63,7 @@ export default function AgentDeclarationsSection({ loading, error, onRetry }) {
           boxShadow: theme => `0 0 2px ${alpha(theme.palette.common.black, 0.2)}`, 
           overflow: 'hidden' 
         }}>
-          <AgentRecentDeclarations />
+          <AgentRecentDeclarations declarations={declarations} />
         </Card>
       )}
     </Box>
@@ -71,12 +71,25 @@ export default function AgentDeclarationsSection({ loading, error, onRetry }) {
 }
 
 AgentDeclarationsSection.propTypes = {
+  declarations: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      reference: PropTypes.string,
+      date: PropTypes.string,
+      company: PropTypes.string,
+      status: PropTypes.string,
+      employees: PropTypes.number,
+      title: PropTypes.string,
+      comment: PropTypes.string
+    })
+  ),
   loading: PropTypes.bool,
   error: PropTypes.string,
   onRetry: PropTypes.func
 };
 
 AgentDeclarationsSection.defaultProps = {
+  declarations: [],
   loading: false,
   error: '',
   onRetry: () => {}
