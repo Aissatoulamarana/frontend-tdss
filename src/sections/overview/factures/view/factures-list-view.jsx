@@ -56,6 +56,7 @@ import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
 
 import { useMockedUser } from 'src/auth/hooks';
+import dayjs from 'dayjs';
 
 // ----------------------------------------------------------------------
 
@@ -72,6 +73,12 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
+/**
+ * @typedef {{ totalCount: number; countByStatus: Record<string, number> }} Summary
+ */
+
+// ----------------------------------------------------------------------
+
 export function FactureListView() {
   const theme = useTheme();
 
@@ -79,7 +86,7 @@ export function FactureListView() {
   
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'createDate' });
+  const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
   const [options, setOptions] = useState([]);
@@ -96,15 +103,20 @@ export function FactureListView() {
     previous: null,
   });
 
+   /** @type {[Summary, Function]} */
+  const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
+  // …
+
   const filters = useSetState({
-    name: '',
+    number: '',
+    declaration_number:'',
     service: [],
-    statut: 'all',
-    startDate: null,
-    endDate: null,
+    status: 'all',
+    date_before: null,
+    date_after: null,
   });
 
-  const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
+  const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -116,39 +128,66 @@ export function FactureListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name ||
+    !!filters.state.number ||
+    !!filters.state.declaration_number ||
     filters.state.service.length > 0 ||
-    filters.state.statut !== 'all' ||
-    (!!filters.state.startDate && !!filters.state.endDate);
+    filters.state.status !== 'all' ||
+    (!!filters.state.date_before && !!filters.state.date_after);
 
   const notFound = pagination.count === 0 && canReset;
 
+  const fetchTotalCount = () => 
+    axios
+      .get(API.listFactures(), {params: {limit:1}})
+      .then((res) => res.data.count);
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+  const fetchCount = (status) => 
+    axios 
+      .get(API.listFactures(), {params : {limit : 1 , status}})
+      .then ((res) => res.data.count );
 
-  const getTotalAmount = (statut) =>
+  useEffect(() => {
+    Promise.all([
+      fetchTotalCount(),
+      fetchCount('PAID'),
+      fetchCount('unpaid'),
+    ]).then (([totalCount, paidCount , unpaidCount]) => {
+      setSummary({
+        totalCount,
+        countByStatus: {all: totalCount, PAID:paidCount, unpaid : unpaidCount},
+
+      });
+    });
+  }, []);
+
+  const getInvoiceLength = (status) => summary.countByStatus[status];
+
+  const getTotalAmount = (status) =>
     sumBy(
-      tableData.filter((item) => item.statut === statut),
-      (facture) => facture.montantusd
+      tableData.filter((item) => item.status === status),
+      (facture) => facture.amount
     );
 
-  const getPercentByStatus = (statut) => (getInvoiceLength(statut) / tableData.length) * 100;
+  const getPercentByStatus = (status) => 
+    summary.totalCount > 0
+    ? (getInvoiceLength(status) / summary.totalCount) * 100
+    : 0;
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
-      count: tableData.length,
+      color: 'white',
+      count: summary.totalCount,
     },
     {
-      value: 'paid',
+      value: 'PAID',
       label: 'Payées',
       color: 'success',
       count: getInvoiceLength('PAID'),
     },
     {
-      value: 'En attente',
+      value: 'unpaid',
       label: 'En attente',
       color: 'warning',
       count: getInvoiceLength('unpaid'),
@@ -192,7 +231,7 @@ export function FactureListView() {
   const handleFilterStatus = useCallback(
     (event, newValue) => {
       table.onResetPage();
-      filters.setState({ statut: newValue });
+      filters.setState({ status: newValue });
     },
     [filters, table]
   );
@@ -213,7 +252,6 @@ export function FactureListView() {
         const response = await axios.post(API.paidFacture(slug));
 
         if (response.data.success) {
-          console.log('Facture payée:', response.data.message);
           toast.success('Facture payée avec succès !');
           router.push(paths.dashboard.factures.list);
         } else {
@@ -247,7 +285,6 @@ export function FactureListView() {
   //       const response = await axios.post(API.PaidFactures(), data);
 
   //       if (response.data.success) {
-  //         console.log('Factures payées:', response.data.message);
   //         toast.success('Factures payées avec succès !');
   //         router.push(paths.dashboard.factures.list);
   //       } else {
@@ -271,11 +308,22 @@ export function FactureListView() {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
       try {
+        setLoading(true); // Démarre le chargement
         const offset = table.page * table.rowsPerPage;
         const params = {
           limit: table.rowsPerPage,
           offset: offset,
-        }
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.number ? { number: filters.state.number } : {}),
+          ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
+          ...(filters.state.date_before && filters.state.date_after && !dateError
+            ? {
+                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
+                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD ')
+              }
+            : {}
+          )
+        };
         const response = await axios.get(API.listFactures(), { params }); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
         setPagination({
@@ -292,7 +340,13 @@ export function FactureListView() {
     };
 
     fetchFactures();
-  }, [table.page, table.rowsPerPage]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, 
+    table.rowsPerPage, 
+    filters.state.status , 
+    filters.state.date_before, 
+    filters.state.date_after , 
+    filters.state.number, 
+    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading factures...');
@@ -320,7 +374,7 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Total"
-              total={tableData.length}
+              total={summary.totalCount}
               percent={100}
               chart={{
                 colors: [theme.vars.palette.info.main],
@@ -332,8 +386,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Payées"
-              percent={2.6}
-              total={18765}
+              percent={getPercentByStatus('PAID')}
+              total={getInvoiceLength('PAID')}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
@@ -343,8 +397,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="En attente"
-              percent={2.6}
-              total={18765}
+              percent={getPercentByStatus('unpaid')}
+              total={getInvoiceLength('unpaid')}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -357,7 +411,7 @@ export function FactureListView() {
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Tabs
-            value={filters?.state?.statut || []}
+            value={filters?.state?.status || []}
             onChange={handleFilterStatus}
             sx={{
               px: 2.5,
@@ -373,7 +427,7 @@ export function FactureListView() {
                 icon={
                   <Label
                     variant={
-                      ((tab.value === 'all' || tab.value === filters.state.statut) && 'filled') ||
+                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
                       'soft'
                     }
                     color={tab.color}
@@ -608,7 +662,7 @@ export function FactureListView() {
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, statut, service, startDate, endDate } = filters;
+  const { name, status, service, startDate, endDate } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -623,13 +677,13 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   if (name) {
     inputData = inputData.filter(
       (facture) =>
-        facture.numero_facture.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        facture.declaration__declaration_number.toLowerCase().indexOf(name.toLowerCase()) !== -1
+        facture.numero.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
+        facture.declaration_ref.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
-  if (statut !== 'all') {
-    inputData = inputData.filter((facture) => facture.statut === statut);
+  if (status !== 'all') {
+    inputData = inputData.filter((facture) => facture.status === status);
   }
 
   if (service.length) {

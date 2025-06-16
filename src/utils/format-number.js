@@ -47,6 +47,42 @@ export function fCurrency(inputValue, options) {
 
 // ----------------------------------------------------------------------
 
+export function fGNF(inputValue, options) {
+  const number = processInput(inputValue);
+  if (number === null) return '';
+
+  const fm = new Intl.NumberFormat('fr-GN', {
+    style: 'currency',
+    currency: 'GNF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0, // Pas de décimales pour le GNF généralement
+    ...options,
+  }).format(number);
+
+  return fm;
+}
+
+
+// ----------------------------------------------------------------------
+export function fEuro (inputValue, options) {
+  const locale = formatNumberLocale() || DEFAULT_LOCALE;
+
+  const number = processInput(inputValue);
+  if (number === null) return '';
+
+  const fm = new Intl.NumberFormat(locale.code, {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+    ...options,
+  }).format(number);
+
+  return fm;
+}
+
+// ----------------------------------------------------------------------
+
 export function fPercent(inputValue, options) {
   const locale = formatNumberLocale() || DEFAULT_LOCALE;
 

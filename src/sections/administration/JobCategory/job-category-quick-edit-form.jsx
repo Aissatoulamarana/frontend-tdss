@@ -84,7 +84,6 @@ export function JobCategoryQuickEditForm({ currentJobCategory, open, onClose, on
 
             // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
             const updatedJobCategory = { ...currentJobCategory, ...modifiedData };
-            console.log("Catégorie fonctionnelle mis à jour :", updatedJobCategory);
             onUpdateRow(updatedJobCategory);
             reset();
             onClose();

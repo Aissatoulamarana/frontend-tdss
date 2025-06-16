@@ -30,32 +30,31 @@ export const UserQuickEditSchema = zod.object({
     .string()
     .min(1, { message: 'Email est obligatoire!' })
     .email({ message: 'Email doit etre un email valide !' }),
-  picture: schemaHelper.file({
-    message: { required_error: 'televerser un image!' },
-  }),
+  // picture: schemaHelper.file({
+  //   message: { required_error: 'televerser un image!' },
+  // }),
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
 
   type: zod.string().min(1, { message: 'le type est requis!' }),
   profile: zod.string().min(1, { message: 'le profil est requis!' }),
   location: zod.string().min(1, { message: 'la région est réquise!' }),
-  agency: zod.string().min(1, { message: " l' agence est requis" }),
+  // agency: zod.string().min(1, { message: " l' agence est requis" }),
 });
 
 // ----------------------------------------------------------------------
 
 export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
 
-
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [profils, setProfils] = useState([]);
-  const [agences, setAgences] = useState([]);
+  // const [agences, setAgences] = useState([]);
 
   const defaultValues = useMemo(() => {
     const currentRegion = regions?.find(region => region.name === currentUser?.location);
     const currentRole = roles?.find(role => role.name === currentUser?.type);
     const currentProfil = profils?.find(profil => profil.name === currentUser?.profile);
-    const currentAgence = agences?.find(agence => agence.name === currentUser?.agency);
+    // const currentAgence = agences?.find(agence => agence.name === currentUser?.agency);
 
     return {
 
@@ -66,9 +65,9 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
       type: currentRole ? currentRole.slug : currentUser.type || '',
       profile: currentProfil ? currentProfil.slug : currentUser.profile || '',
       location: currentRegion ? currentRegion.slug : currentUser.location || '',
-      agency: currentAgence ? currentAgence.slug : currentUser.agency || '',
+      // agency: currentAgence ? currentAgence.slug : currentUser.agency || '',
     }
-  }, [regions, roles, profils, agences, currentUser])
+  }, [regions, roles, profils,  currentUser])
 
   const methods = useForm({
     mode: 'all',
@@ -111,16 +110,16 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
       });
 
       // Ne pas définir manuellement le Content-Type pour laisser le navigateur gérer les délimitations
-      const response = await axios.patch(API.updateUser(currentUser.slug), formData);
+      const response = await axios.patch(API.updateUser(currentUser.slug), data);
 
       toast.success('Mise à jour réussie !');
 
       // Fusionner les données modifiées avec le client courant pour obtenir la version à jour
-      const updatedClient = { ...currentUser, ...modifiedData };
-      console.log("utilisateur  mis à jour :", updatedClient);
-      onUpdateRow(updatedClient);
+      const updatedUser = { ...currentUser, ...modifiedData };
+      onUpdateRow(updatedUser);
       reset();
       onClose();
+      window.location.reload();
     } catch (error) {
       toast.error('Erreur lors de la mise à jour .');
       console.error('Erreur:', error.response?.data || error.message);
@@ -129,10 +128,10 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
 
   useEffect(() => {
     getRegions().then(data => setRegions(data));
-    getAgences().then(data => setAgences(data));
+    // getAgences().then(data => setAgences(data));
     getUserTypes().then(data => setRoles(data));
     getProfils().then(data => setProfils(data));
-  })
+  },[])
 
   // Pour mettre à jour les valeurs du formulaire dès que currentUser change
   useEffect(() => {
@@ -161,9 +160,6 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
             gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
           >
 
-
-
-
             <Field.Text name="name" label="Nom complet" />
             <Field.Text name="email" label="Adresse mail" />
             <Field.Phone name="phone" label="Numéro de Téléphone" />
@@ -184,14 +180,14 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
               ))
               }
             </Field.Select>
-            <Field.Select name="agency" label="Agence" >
+            {/* <Field.Select name="agency" label="Agence" >
               {agences.map((agence) => (
                 <MenuItem key={agence?.slug} value={agence?.slug}>
                   {agence?.name}
                 </MenuItem>
               ))
               }
-            </Field.Select>
+            </Field.Select> */}
             <Field.Select name="type" label="Role" inputlabelprops={{ shrink: true }}>
               {roles?.map((role) => (
                 <MenuItem key={role.slug} value={role.slug}>

@@ -18,7 +18,7 @@ export function ImportFilesButton({ onImport }) {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
-          console.log('Données CSV importées :', results.data);
+          
           onImport(results.data);
         },
         error: (error) => {
@@ -51,7 +51,7 @@ export function ImportFilesButton({ onImport }) {
           }
         });
 
-        console.log('Données Excel importées :', jsonData);
+       
         onImport(jsonData);
       };
 

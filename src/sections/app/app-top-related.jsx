@@ -20,8 +20,8 @@ import { Scrollbar } from 'src/components/scrollbar';
 // ----------------------------------------------------------------------
 
 const TABS = [
-  { value: '7days', label: 'Top 7 ' },
-  { value: '30days', label: 'Top 30 ' },
+  { value: '7days', label: 'Top 3 ' },
+  { value: '30days', label: 'Top 5 ' },
   { value: 'all', label: 'Toutes' },
 ];
 

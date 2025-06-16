@@ -1,18 +1,13 @@
 'use client';
 
-import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 import { useTheme } from '@mui/material/styles';
-import { useState , useEffect } from 'react';
+
 import { _appAuthors, _appRelated, _appInvoices, _appInstalled } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { svgColorClasses } from 'src/components/svg-color';
-
 import { useMockedUser } from 'src/auth/hooks';
-import { useSearchParams } from 'src/routes/hooks';
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
+
 import { AppAreaInstalled } from '../app-area-installed';
 import { AppCurrentDownload } from '../app-current-download';
 import { AppNewInvoice } from '../app-new-invoice';
@@ -21,41 +16,24 @@ import { AppTopInstalledCountries } from '../app-top-installed-countries';
 import { AppTopRelated } from '../app-top-related';
 import { AppWidget } from '../app-widget';
 import { AppWidgetSummary } from '../app-widget-summary';
-import Dialog from '@mui/material/Dialog';
-import Button from '@mui/material/Button';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
+
 
 
 // ----------------------------------------------------------------------
 
-export function OverviewAppView() {
+export function CaissierAppView() {
   const { user } = useMockedUser();
 
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const activated = searchParams.get("activated");
-
-  const [openChangePwd, setOpenChangePwd] = useState(false);
-
+  
   const theme = useTheme();
-
-  useEffect(() => {
-    if (searchParams.get('activated') === 'true') {
-      setOpenChangePwd(true);
-      // On nettoie la query pour ne pas réouvrir au reload
-      const { activated, ...rest } = Object.fromEntries(searchParams.entries());
-      router.replace({ pathname: router.pathname, query: rest });
-    }
-  }, [searchParams, router]);
+  
 
   return (
     <DashboardContent maxWidth="xl">
       <Grid container spacing={2}>
         <Grid size={{ xs: 6, md: 3 }}>
           <AppWidgetSummary
-            title="Employés déclarés"
+            title="Total Factures"
             percent={2.6}
             total={18765}
             chart={{
@@ -67,7 +45,7 @@ export function OverviewAppView() {
 
         <Grid size={{ xs: 6, md: 3 }}>
           <AppWidgetSummary
-            title="Total Paiement"
+            title="Factures payées"
             percent={0.2}
             total={4876}
             chart={{
@@ -79,7 +57,7 @@ export function OverviewAppView() {
         </Grid>
         <Grid size={{ xs: 6, md: 3 }}>
           <AppWidgetSummary
-            title=" En attente de paiement"
+            title=" Montant Total Payé"
             percent={2.6}
             total={18765}
             chart={{
@@ -91,7 +69,7 @@ export function OverviewAppView() {
 
         <Grid size={{ xs: 6, md: 3 }}>
           <AppWidgetSummary
-            title="Total Factures"
+            title="Nombre de Paiements"
             percent={-0.1}
             total={678}
             chart={{
@@ -104,7 +82,7 @@ export function OverviewAppView() {
 
         <Grid size={{ xs: 6, md: 4 }}>
           <AppCurrentDownload
-            title="Catégorie de déclaration"
+            title="Paiements Par type de permis"
             subheader=""
             chart={{
               series: [
@@ -118,7 +96,7 @@ export function OverviewAppView() {
 
         <Grid size={{ xs: 6, md: 8 }}>
           <AppAreaInstalled
-            title="Déclarations"
+            title="Factures"
             subheader="(+43%) Depuis l'année dernière"
             chart={{
               categories: [
@@ -167,7 +145,7 @@ export function OverviewAppView() {
 
         <Grid size={{ xs: 6, md: 8 }}>
           <AppNewInvoice
-            title="Dernières Déclarations"
+            title="Dernières Factures"
             tableData={_appInvoices}
             headLabel={[
               { id: 'id', label: 'Déclaration ' },
@@ -191,7 +169,7 @@ export function OverviewAppView() {
           <AppTopAuthors title="Top Utilisateurs" list={_appAuthors} />
         </Grid>
 
-        <Grid size={{ xs: 6, md: 4 }}>
+        {/* <Grid size={{ xs: 6, md: 4 }}>
           <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
             <AppWidget
               title="Conversion"
@@ -211,44 +189,9 @@ export function OverviewAppView() {
               sx={{ bgcolor: 'info.dark', [`& .${svgColorClasses.root}`]: { color: 'info.light' } }}
             />
           </Box>
-        </Grid>
+        </Grid> */}
       </Grid>
 
-
-         {/* ——— Boîte de dialogue “Pensez à changer votre mot de passe” ——— */}
-    <Dialog
-      open={openChangePwd}
-      onClose={() => {
-        setOpenChangePwd(false);
-         router.push(paths.dashboard.root);
-       }}
-     >
-       <DialogTitle>Bienvenue !</DialogTitle>
-       <DialogContent>
-         Votre compte vient d’être activé. Pour votre sécurité, pensez à changer
-        votre mot de passe dans les paramètres de votre compte.
-       </DialogContent>
-      <DialogActions>
-        <Button
-         onClick={() => {
-             setOpenChangePwd(false);
-             router.push(paths.dashboard.user.account);
-            
-           }}
-         >
-           Changer mon mot de passe
-         </Button>
-         <Button
-           onClick={() => {
-             setOpenChangePwd(false);
-            router.push(paths.dashboard.root);
-          }}
-         color="inherit"
-        >
-           Plus tard
-         </Button>
-       </DialogActions>
-    </Dialog>
 
     </DashboardContent>
   );

@@ -49,7 +49,6 @@ export function PermissionNew({ currentPermission }) {
         axios
             .get("http://localhost:8000/api/profile_type/")
             .then((response) => {
-                console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
                 setProfiles(response.data.results || response.data); // Adapter si c'est sous `results`
             })
             .catch((error) => {
@@ -115,7 +114,6 @@ export function PermissionNew({ currentPermission }) {
             }
 
             reset();
-            console.log('Réponse API:', response.data);
             router.push(paths.dashboard.permission.list);
         } catch (error) {
             console.error('Erreur lors de la soumission', error);

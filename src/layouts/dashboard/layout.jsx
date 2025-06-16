@@ -4,8 +4,8 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import { iconButtonClasses } from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
-import { _notifications } from 'src/_mock';
-import { allLangs } from 'src/locales';
+// import { _notifications } from 'src/_mock';
+// import { allLangs } from 'src/locales';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -15,14 +15,14 @@ import { useSettingsContext } from 'src/components/settings';
 import { layoutClasses } from '../classes';
 import { AccountDrawer } from '../components/account-drawer';
 // import { ContactsPopover } from '../components/contacts-popover';
-import { LanguagePopover } from '../components/language-popover';
+// import { LanguagePopover } from '../components/language-popover';
 // import { _workspaces } from '../config-nav-workspace';
 import { MenuButton } from '../components/menu-button';
-import { NotificationsDrawer } from '../components/notifications-drawer';
+// import { NotificationsDrawer } from '../components/notifications-drawer';
 import { Searchbar } from '../components/searchbar';
 import { SettingsButton } from '../components/settings-button';
 import { _account } from '../config-nav-account';
-import { navData as dashboardNavData } from '../config-nav-dashboard';
+
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
 import { Main } from './main';
@@ -30,6 +30,7 @@ import { NavHorizontal } from './nav-horizontal';
 import { NavMobile } from './nav-mobile';
 import { NavVertical } from './nav-vertical';
 import { StyledDivider, useNavColorVars } from './styles';
+import { useNavData } from '../config-nav-dashboard';
 
 // ----------------------------------------------------------------------
 
@@ -43,6 +44,8 @@ export function DashboardLayout({ sx, children, header, data }) {
   const navColorVars = useNavColorVars(theme, settings);
 
   const layoutQuery = 'lg';
+
+  const dashboardNavData = useNavData();
 
   const navData = data?.nav ?? dashboardNavData;
 
@@ -88,11 +91,13 @@ export function DashboardLayout({ sx, children, header, data }) {
               </Alert>
             ),
             bottomArea: isNavHorizontal ? (
+              <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', pb: 10 }}>
               <NavHorizontal
                 data={navData}
                 layoutQuery={layoutQuery}
                 cssVars={navColorVars.section}
               />
+              </Box>
             ) : null,
             leftArea: (
               <>
@@ -143,9 +148,9 @@ export function DashboardLayout({ sx, children, header, data }) {
                 {/* -- Searchbar -- */}
                 <Searchbar data={navData} />
                 {/* -- Language popover -- */}
-                <LanguagePopover data={allLangs} />
+                {/* <LanguagePopover data={allLangs} /> */}
                 {/* -- Notifications popover -- */}
-                <NotificationsDrawer data={_notifications} />
+                {/* <NotificationsDrawer data={_notifications} /> */}
                 {/* -- Contacts popover -- */}
                 {/* <ContactsPopover data={_contacts} /> */}
                 {/* -- Settings button -- */}

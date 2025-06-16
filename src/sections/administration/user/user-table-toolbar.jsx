@@ -9,7 +9,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { useCallback } from 'react';
+import { useCallback , useState} from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -18,6 +18,7 @@ import { Iconify } from 'src/components/iconify';
 
 export function UserTableToolbar({ filters, options, onResetPage }) {
   const popover = usePopover();
+  const [nameInput, setNameInput] = useState('');
 
   const handleFilterName = useCallback(
     (event) => {
@@ -27,13 +28,26 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
     [filters, onResetPage]
   );
 
+   const handleTitleKeyUp = useCallback(
+      (event) => {
+        if (event.key === 'Enter') {
+          const value = event.target.value;
+          if (filters.state.name !== value) {
+            onResetPage();
+            filters.setState({ name: event.target.value });
+            // Mise à jour combinée du state : on réinitialise company et met à jour title
+           
+          }
+        }
+      },
+      [filters, onResetPage]
+    );
+
   const handleFilterRole = useCallback(
     (event) => {
-      const newValue =
-        typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value;
-
+     
       onResetPage();
-      filters.setState({ role: newValue });
+      filters.setState({ type: event.target.value });
     },
     [filters, onResetPage]
   );
@@ -49,22 +63,22 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
         <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
           <InputLabel htmlFor="user-filter-role-select-label">Role</InputLabel>
           <Select
-            multiple
-            value={filters.state.role}
+            // multiple
+            value={filters.state.type}
             onChange={handleFilterRole}
             input={<OutlinedInput label="Role" />}
-            renderValue={(selected) => selected.map((value) => value).join(', ')}
+            // renderValue={(selected) => selected.map((value) => value).join(', ')}
             inputProps={{ id: 'user-filter-role-select-label' }}
             MenuProps={{ PaperProps: { sx: { maxHeight: 240 } } }}
           >
             {options.roles.map((option) => (
-              <MenuItem key={option} value={option}>
-                <Checkbox
+              <MenuItem key={option.slug} value={option.slug}>
+                {/* <Checkbox
                   disableRipple
                   size="small"
-                  checked={filters.state.role.includes(option)}
-                />
-                {option}
+                  checked={filters.state.type.includes(option.name)}
+                /> */}
+                {option.name}
               </MenuItem>
             ))}
           </Select>
@@ -73,8 +87,9 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            value={filters.state.name}
-            onChange={handleFilterName}
+            value={nameInput}
+            onKeyDown={handleTitleKeyUp}
+            onChange={(e) => setNameInput(e.target.value)}
             placeholder="recherche..."
             slotProps={{
               input: {

@@ -4,6 +4,8 @@ import { paths } from 'src/routes/paths';
 
 import { SvgColor } from 'src/components/svg-color';
 
+import { useMockedUser } from 'src/auth/hooks';
+
 // ----------------------------------------------------------------------
 
 const icon = (name) => <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />;
@@ -31,65 +33,105 @@ const ICONS = {
   disabled: icon('ic-disabled'),
   external: icon('ic-external'),
   menuItem: icon('ic-menu-item'),
-  declaration: icon('ic-ecommerce'),
+  declaration: icon('ic-declaration'),
   analytics: icon('ic-analytics'),
   dashboard: icon('ic-dashboard'),
-  parameter: icon('ic-parameter'),
-  company: icon('ic-company'),
+  parameter: icon('ic-settings'),
+  company: icon('ic-agence'),
+  permis: icon('ic-permit'),
+  devise: icon('ic-devise'),
+  employes: icon('ic-employes'),
+  fonction: icon('ic-job'),
+  fonction_category: icon('ic-fonction-category'),
+  region: icon('ic-region'),
+  permission: icon('ic-permission'),
+  typeUser: icon('ic-type-user'),
+  typeStruct: icon('ic-type-struct'),
+  // sidebar icons
+  
 };
 
 // ----------------------------------------------------------------------
 
-const user = JSON.parse(localStorage.getItem('user'));
-const type = user?.type?.toLowerCase().trim();
+export function useNavData () {
 
-export const navData = [
+  const {user} = useMockedUser();
+
+
+  const type = user?.type_name?.toLowerCase().trim();
+
+
+  const profil = user?.companies[0]?.type_name.toLowerCase().trim();
+
+
+  return [
   /**
    * Overview
    */
   {
     subheader: "Vue d'ensemble",
     items: [
-      { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
-      // {
-      //   title: 'Statistiques',
-      //   path: paths.dashboard.analytics.root,
-      //   icon: ICONS.analytics,
-      //   children: [
-      //     { title: 'Declaration', path: paths.dashboard.analytics.declaration },
-      //     { title: 'Facture', path: paths.dashboard.analytics.facture },
-      //     { title: 'Paiement', path: paths.dashboard.analytics.paiement },
-      //     { title: 'Penalité', path: paths.dashboard.group.root },
-      //     { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
-      //   ],
-      // },
-      {
-        title: 'Déclarations',
-        path: paths.dashboard.declaration.list,
-        icon: ICONS.declaration,
-        // children: [
-        //   { title: 'Nouvelle', path: paths.dashboard.declaration.new.replace(':type', 'nouvelle') },
-        //   { title: 'Renouvellement', path: paths.dashboard.declaration.renew.replace(':type', 'renouvellement') },
-        //   { title: 'Duplicata', path: paths.dashboard.declaration.duplica.replace(':type', 'duplicata') }
-        // ]
-      },
-      {
-        title: 'Factures',
-        path: paths.dashboard.factures.list,
-        icon: ICONS.facture,
-      },
-      {
-        title: 'Employés',
-        path: paths.dashboard.employee.list,
-        icon: ICONS.facture,
-      },
-      {
-        title: 'Paiements',
-        path: paths.dashboard.paiements.list,
-        icon: ICONS.paiement,
-      },
+      ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'aguipe'
+        ? [
+            { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
+            ]
+        : []),
 
-      // { title: 'Penalités', path: paths.dashboard.penalite.list, icon: ICONS.penalite },
+            
+        ...(type === 'admin' || type === 'aguipe' || type === 'ministère' ?
+          [
+            {
+              title: 'Statistiques',
+              path: paths.dashboard.analytics.root,
+              icon: ICONS.analytics,
+              children: [
+                { title: 'Declaration', path: paths.dashboard.analytics.declaration },
+                { title: 'Facture', path: paths.dashboard.analytics.facture },
+                { title: 'Paiement', path: paths.dashboard.analytics.paiement },
+                { title: 'Penalité', path: paths.dashboard.group.root },
+                { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
+              ],
+            },
+            ]
+          : []),
+        
+
+      ...(type === 'comptable' || type === 'agent' || type === 'aguipe' || type === 'admin'
+        ? [
+            {
+              title: 'Déclarations',
+              path: paths.dashboard.declaration.list,
+              icon: ICONS.declaration,
+            },
+          ]
+        : []),
+      ...(type === 'comptable' || type === 'caissier' || type === 'admin'
+        ? [
+            {
+              title: 'Factures',
+              path: paths.dashboard.factures.list,
+              icon: ICONS.facture,
+            },
+          ]
+        : []),
+      ...(type === 'caissier' || type === 'admin'
+        ? [
+            {
+              title: 'Paiements',
+              path: paths.dashboard.paiements.list,
+              icon: ICONS.paiement,
+            },
+          ]
+        : []),
+      ...(type === 'agent' || type === 'admin'
+        ? [
+            {
+              title: 'Employés',
+              path: paths.dashboard.employee.list,
+              icon: ICONS.employes,
+            },
+          ]
+        : []),
     ],
   },
   /**
@@ -109,20 +151,23 @@ export const navData = [
             //   { title: 'Nouveau', path: paths.dashboard.user.new },
             // ],
           },
+
+          ...(profil === 'tdss' ? 
+            [
           {
 
             title: 'Catégories Fonctions',
             path: paths.dashboard.jobCategory.root,
-            // icon: ICONS.job,
+            icon: ICONS.fonction_category,
             // children: [
             //   { title: 'Listes Catégories Professionnelles', path: paths.dashboard.jobCategory.list },
             //   { title: 'Nouvelle', path: paths.dashboard.jobCategory.new },
             // ]
           },
           {
-            title: 'Fonction',
+            title: 'Fonctions',
             path: paths.dashboard.fonction.list,
-            icon: ICONS.job,
+            icon: ICONS.fonction,
             // children: [
             //   { title: 'Listes Fonctions', path: paths.dashboard.fonction.list },
             //   { title: 'Nouvelle', path: paths.dashboard.fonction.new },
@@ -138,40 +183,53 @@ export const navData = [
             path: paths.dashboard.agence.root,
             icon: ICONS.company,
           },
-          {
-            title: 'Permissions',
-            path: paths.dashboard.permission.list,
-            icon: ICONS.company,
-          },
-          {
-            title: 'Regions',
-            path: paths.dashboard.region.root,
-            icon: ICONS.company,
-          },
-          {
-            title: 'Type  Profil',
-            path: paths.dashboard.profilType.root,
-            icon: ICONS.company,
-          },
-          {
-            title: 'Type Utilisateur',
-            path: paths.dashboard.userType.root,
-            icon: ICONS.company,
-          },
-          {
-            title: 'Devises',
-            path: paths.dashboard.devise.root,
-            icon: ICONS.company,
-          },
-          {
-            title: 'Permits',
-            path: paths.dashboard.permit.root,
-            icon: ICONS.company,
-          }
+          // {
+          //   title: 'Permissions',
+          //   path: paths.dashboard.permission.list,
+          //   icon: ICONS.permission,
+            // },
+            {
+            title: 'Paramètres',
+            icon: ICONS.parameter,
+            children: [
+              { title: 'Regions', path: paths.dashboard.region.root, icon: ICONS.region },
+              { title: 'Type Structure', path: paths.dashboard.profilType.root, icon: ICONS.typeStruct },
+              { title: 'Type Utilisateur', path: paths.dashboard.userType.root, icon: ICONS.typeUser },
+              { title: 'Devises', path: paths.dashboard.devise.root, icon: ICONS.devise },
+              { title: 'Permits', path: paths.dashboard.permit.root, icon: ICONS.permis },
+            ],
+            },
+            ]
+          : []),
+          // {
+          //   title: 'Regions',
+          //   path: paths.dashboard.region.root,
+          //   icon: ICONS.region,
+          // },
+          // {
+          //   title: 'Type  Structure',
+          //   path: paths.dashboard.profilType.root,
+          //   icon: ICONS.typeStruct,
+          // },
+          // {
+          //   title: 'Type Utilisateur',
+          //   path: paths.dashboard.userType.root,
+          //   icon: ICONS.typeUser,
+          // },
+          // {
+          //   title: 'Devises',
+          //   path: paths.dashboard.devise.root,
+          //   icon: ICONS.devise,
+          // },
+          // {
+          //   title: 'Permits',
+          //   path: paths.dashboard.permit.root,
+          //   icon: ICONS.permis,
+          // }
         ],
       },
     ]
     : []),
 
-
-];
+]
+};

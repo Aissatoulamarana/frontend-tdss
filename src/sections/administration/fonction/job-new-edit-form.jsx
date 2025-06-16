@@ -40,7 +40,6 @@ export function JobNewEditForm({ currentJob }) {
     axios
       .get(API.listJobCategory())
       .then((response) => {
-        console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
         setCategories(response.data.results || response.data); // Adapter si c'est sous `results`
       })
       .catch((error) => {
@@ -98,13 +97,44 @@ export function JobNewEditForm({ currentJob }) {
       }
 
       reset(); // Réinitialiser les champs du formulaire
-      console.log('Réponse API:', response.data);
+      
       router.push(paths.dashboard.fonction.list); // Rediriger vers la page appropriée
     } catch (error) {
       console.error('Erreur lors de la soumission', error);
       toast.error('Une erreur est survenue');
     }
   });
+
+  const handleSearchJob = async() => {
+    try {
+      const name = methods.getValues('name');
+      const params = {
+        name: name || '',
+      }
+      const response = await axios.get(API.listFonctions(), {params});
+      const results = response.data.results || response.data;
+      if (results.length > 0) {
+        toast.error('Une fonction avec ce nom existe déjà !');
+        reset(); // Réinitialiser le formulaire si une fonction existe déjà
+      } else {
+        toast.success('Aucune fonction trouvée, vous pouvez continuer.');
+      }
+
+    } catch (error) {
+      console.error('Erreur lors de la recherche de la fonction', error);
+      toast.error('Une erreur est survenue lors de la recherche de la fonction');
+    }
+  }
+
+  const handleJobBlur = (e, index) => {
+    const value = e.target.value.trim();
+    if (value) {
+      methods.setValue('name', value);
+      handleSearchJob();
+    } else {
+      methods.setError('name', { type: 'manual', message: 'Le nom ne peut pas être vide' });
+    }
+  }
 
   return (
     <Form methods={methods} onSubmit={onSubmit}>
@@ -117,6 +147,7 @@ export function JobNewEditForm({ currentJob }) {
               name="name"
               label="Nom de la fonction *"
               placeholder="Ex: Développeur Logiciel..."
+              onBlur={handleJobBlur}
             />
             <Field.Select
               name="category"
@@ -135,7 +166,7 @@ export function JobNewEditForm({ currentJob }) {
         <Box display="flex" alignItems="center" flexWrap="wrap">
           <FormControlLabel
             control={<Switch defaultChecked inputProps={{ id: 'publish-switch' }} />}
-            label="Publier"
+            label="Activer"
             sx={{ flexGrow: 1, pl: 3 }}
           />
           <LoadingButton

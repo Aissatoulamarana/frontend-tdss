@@ -3,8 +3,12 @@ import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { useState, useCallback, useEffect } from 'react';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useState, useCallback, useEffect } from 'react';
 import { fDate } from 'src/utils/format-time';
 
 import { usePopover } from 'src/components/custom-popover';
@@ -26,6 +30,7 @@ export function DeclarationDetails({ declaration, employees }) {
 
   const [open, setOpen] = useState(false);
   const [currentStatus, setCurrentStatus] = useState('');
+  const [openDialog, setOpenDialog] = useState(true); // État pour le modal
   // const statusOptions = [{ value: declaration?.status, label: declaration?.status }];
 
   const user = useMockedUser();
@@ -71,28 +76,69 @@ export function DeclarationDetails({ declaration, employees }) {
   const statusOptions = [
     {
       value: declaration?.status,
-      label: statusLabels[declaration.status] || declaration.status
+      label: statusLabels[declaration?.status] || declaration?.status
     }
   ];
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
   
 
   useEffect(() => {
     if (declaration?.status) {
-      setCurrentStatus(declaration.status);
+      setCurrentStatus(declaration?.status);
     }
   }, [declaration?.status]);
 
   return (
+
     <>
+{declaration?.status === 'REJECTED' && (
+      <Dialog
+            open={openDialog}
+            onClose={() => { }}
+            sx={{
+              '& .MuiDialog-paper': {
+                width: '40%', // Réduction de la largeur
+                borderRadius: '12px', // Coins arrondis pour un look plus moderne
+                padding: '5px' // Ajout de padding
+              }
+            }}
+          >
+            <DialogTitle sx={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>
+              Motif de rejet
+            </DialogTitle>
+            <DialogContent sx={{ fontSize: '14px', textAlign: 'center' }}>
+              Cette declaration a été rejetée.
+              <br />  
+              Motif : {declaration?.reject_reason}
+            </DialogContent>
+            <DialogActions sx={{ justifyContent: 'center' }}>
+              <Button
+                onClick={handleCloseDialog}
+                variant="contained"
+                color="primary"
+                sx={{ borderRadius: '8px', padding: '6px 20px', fontSize: '14px' }}
+              >
+                OK
+              </Button>
+            </DialogActions>
+          </Dialog>
+          )}
+
+
       <DeclarationToolbar
         declaration={declaration}
         currentStatus={currentStatus || ''}
-        onChangeStatus={(e) => setCurrentStatus(e.target.value)}
+        onChangeStatus={(e) => {
+        const value = typeof e === 'string' ? e : e.target.value;
+        setCurrentStatus(value);
+          }}
         statusOptions={statusOptions}
         employees={employees}
-
-
       />
+
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: { xs: 1, md: 2 } }}>
         {declaration?.status === 'UNSUBMITTED' && (
           <Button
@@ -138,7 +184,7 @@ export function DeclarationDetails({ declaration, employees }) {
                         {statusLabels[currentStatus] || 'Inconnu'}
              </Label>
 
-            <Typography variant="h6"> {declaration?.reference}</Typography>
+            <Typography variant="h6"> {declaration?.number}</Typography>
           </Stack>
           <Box
             gridColumn={{ xs: '1', sm: 'span 2' }}
@@ -151,7 +197,7 @@ export function DeclarationDetails({ declaration, employees }) {
               <Typography variant="subtitle2" sx={{ mb: 1 }}>
                 Numero de la declaration
                 <br />
-                {declaration?.reference}
+                {declaration?.number}
               </Typography>
             </Stack>
 
@@ -172,7 +218,7 @@ export function DeclarationDetails({ declaration, employees }) {
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
 
-        {declaration && (<FilteredTable declaration={declaration} />)}
+        {declaration && (<FilteredTable declaration={declaration} employees={employees} />)}
 
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
       </Card>

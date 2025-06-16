@@ -74,7 +74,7 @@ export function DeclarationNew({ declaration, type, formData }) {
   }), [declaration, formData]);
 
 
-  console.log("Valeur de type dans DeclarationNew :", type);
+ 
 
   // Initialisation du formulaire
   const methods = useForm({
@@ -96,7 +96,10 @@ export function DeclarationNew({ declaration, type, formData }) {
 
     try {
       let response;
-      let slug;
+
+      //  slug;
+
+
 
       // Simuler un délai pour des actions asynchrones (optionnel)
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -113,11 +116,12 @@ export function DeclarationNew({ declaration, type, formData }) {
         response = await axios.post(API.createDeclaration(), data, {
           headers: { 'Content-Type': 'application/json' },
         });
-        console.log("les données de la déclaration envoyées:", data);
         toast.success('Déclaration créée avec succès');
       }
 
-      slug = response.data.slug;
+
+      const { slug } = response.data;
+
 
       // Réinitialiser le formulaire après succès
       reset();

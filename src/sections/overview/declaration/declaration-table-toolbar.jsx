@@ -38,7 +38,6 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
     (event) => {
       if (event.key === 'Enter') {
         const value = event.target.value;
-        console.log('Entrée détectée sur le filtre Titre avec la valeur :', value);
         if (filters.state.title !== value) {
           onResetPage();
           filters.setState({ title: event.target.value });
@@ -54,7 +53,6 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
     (event) => {
       if (event.key === 'Enter') {
         const value = event.target.value;
-        console.log('Entrée détectée sur le filtre Company avec la valeur :', value);
         if (filters.state.company !== value) {
           onResetPage();
           filters.setState({ company: event.target.value });

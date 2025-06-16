@@ -1,17 +1,19 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
+// import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
-import { useState, useEffect, useCallback } from 'react';
+
+
+import { useState, useEffect, useCallback , useMemo } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
+// import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Autocomplete } from '@mui/material';
 
 
 import API from 'src/utils/api';
@@ -21,6 +23,7 @@ import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import {toast} from 'src/components/snackbar';
+import { set } from 'nprogress';
 
 
 // ----------------------------------------------------------------------
@@ -28,6 +31,8 @@ import {toast} from 'src/components/snackbar';
 
 export function DeclarationNewEditDetails({ formData }) {
   const { control, setValue, watch, reset } = useFormContext();
+  const DEFAULT_LIMIT = 100;
+  const MAX_EMPLOYEES = 20;  
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [nextUrl, setNextUrl] = useState(API.listFonctionAgent()); // première page
@@ -38,11 +43,13 @@ export function DeclarationNewEditDetails({ formData }) {
   const [data, setData] = useState();
   const renewalModal = useBoolean();
   const [loadingRenew, setLoadingRenew] = useState(false);
-
-
   const [passportInput, setPassportInput] = useState('');
-
-  const MAX_EMPLOYEES = 20;
+  const [params, setParams] = useState({
+    offset: 0,
+    limit: DEFAULT_LIMIT,
+    name: '',
+  });
+  
 
 
   // const typedec = type?.trim();
@@ -162,7 +169,6 @@ export function DeclarationNewEditDetails({ formData }) {
   const handleImageUpload = (fieldName) => (event) => {
     const { files } = event.target;
     if (files && files.length > 0) {
-      console.log(`Fichier sélectionné pour ${fieldName}:`, files[0]);
       setValue(fieldName, files[0]);
     } else {
       console.log(`Aucun fichier sélectionné pour ${fieldName}`);
@@ -187,35 +193,43 @@ export function DeclarationNewEditDetails({ formData }) {
   };
 
 
-  const fetchFonctions = async (url, append = false) => {
-    if (!url) return; // plus rien à charger
 
-    setLoading(true);
+
+useEffect(() => {
+  let isMounted = true;
+
+  async function fetchAllFonctions() {
     try {
-      const response = await axios.get(url);
-      const { data } = response;
+      // 1) Premier appel pour count
+      const resp1 = await axios.get(API.listFonctionAgent(), {
+        params: { offset: 0, limit: 1 },
+      });
+      const total = resp1.data.count;
 
-      const newOptions = data.results.map((fonction) => ({
-        value: fonction.slug,
-        label: fonction.name,
-        slug: fonction.slug,
-      }));
+      // 2) Rapatrier tout
+      const resp2 = await axios.get(API.listFonctionAgent(), {
+        params: { offset: 0, limit: total },
+      });
+      if (!isMounted) return;
 
-      setOptions((prev) => append ? [...prev, ...newOptions] : newOptions);
-      setNextUrl(data.next);
-      setPreviousUrl(data.previous);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des fonctions :", error);
+      // Filtre pour n'avoir qu'un slug unique
+      const uniqueBySlug = resp2.data.results
+        .filter((f, idx, arr) =>
+          arr.findIndex(item => item.slug === f.slug) === idx
+        )
+        .map(f => ({ label: f.name, value: f.slug }));
+
+      setOptions(uniqueBySlug);
+    } catch (err) {
+      console.error(err);
     } finally {
-      setLoading(false);
+      if (isMounted) setLoading(false);
     }
-  };
+  }
 
-  useEffect(() => {
-    fetchFonctions(API.listFonctionAgent());
-  }, []);
-
-
+  fetchAllFonctions();
+  return () => { isMounted = false; };
+}, []);
 
 
 
@@ -299,20 +313,30 @@ export function DeclarationNewEditDetails({ formData }) {
 
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
-  const checkPassportExistence = async (numero, index) => {
-    if (!numero) return;
-    try {
-      const response = await axios.get(API.searchPassport(numero));
-      setData(response.data)
-      if (response.data) {
-        setValue(`employees[${index}].passportExists`, true);
-      } else {
-        setValue(`employees[${index}].passportExists`, false);
-      }
-    } catch (error) {
-      console.error('Erreur lors de la recherche du passeport', error);
+const checkPassportExistence = async (numero, index) => {
+  if (!numero) return;
+
+  try {
+    const { data } = await axios.get(API.searchPassport(numero));
+
+    if (data?.passport_number) {
+      setValue(`employees[${index}].passportExists`, true);
+      toast.error("❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.");
+    } else {
+      setValue(`employees[${index}].passportExists`, false);
+      toast.success("✅ Passeport non trouvé, vous pouvez continuer.");
     }
-  };
+
+  } catch (error) {
+    if (error.detail) {
+      setValue(`employees[${index}].passportExists`, false);
+      toast.success("✅ Passeport non trouvé, vous pouvez continuer.");
+    } else {
+      console.error('Erreur lors de la recherche du passeport', error.detail);
+    }
+  }
+};
+
 
   // Création de la version debounce de la fonction
   // On utilise ici 500ms de délai après la dernière saisie
@@ -327,6 +351,8 @@ export function DeclarationNewEditDetails({ formData }) {
   const handlePassportChange = (e, index) => {
     const numero = e.target.value;
     setValue(`employees[${index}].passport_number`, numero);
+     // Réinitialiser passportExists lorsque le numéro de passeport change
+    setValue(`employees[${index}].passportExists`, false);
   };
 
   const handlePassportBlur = (e, index) => {
@@ -439,19 +465,19 @@ export function DeclarationNewEditDetails({ formData }) {
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 onBlur={(e) => handlePassportBlur(e, index)}
-                error={values.employees[index].passportExists && !values.employees[index].locked}
+                error={values.employees[index].passportExists}       // true = duplication
                 helperText={
-                      values.employees[index].passportExists
-                       ? values.employees[index].locked
-                         ? "✅ Ce passeport existe déjà, il est bien enregistré."
-                        : "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
-                        : ""
-                   }
-                   FormHelperTextProps={{
-                        sx: {
-                          color: values.employees[index].locked ? 'success.main' : 'error.main'
-                       }
-                      }}
+                  values.employees[index].passportExists
+                    ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
+                    : ""
+                }
+                FormHelperTextProps={{
+                  sx: {
+                    color: values.employees[index].passportExists
+                      ? 'error.main'     // bordure/texte en rouge si existe déjà
+                      : 'success.main',  // vert sinon
+                  },
+                }}
               />
 
               <Field.Phone
@@ -479,62 +505,52 @@ export function DeclarationNewEditDetails({ formData }) {
                 disabled={values.employees[index].locked}
               />
 
+              <Autocomplete
+                  options={options}
+                  getOptionLabel={opt => opt.label}
+                  loading={loading}
+                  fullWidth
+                  filterOptions={(opts, state) =>
+                    opts.filter(o =>
+                      o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
+                    )
+                  }
+                  onChange={(e, option) => {
+                    if (option) {
+                      setValue(`employees[${index}].job`, option.value);
+                    }
+                  }}
 
-              <Field.Select
-                name={`employees[${index}].job`}
-                size="small"
-                label="Fonction *"
-                inputlabelprops={{ shrink: true }}
-                sx={{ maxWidth: { md: 160 } }}
-                slotProps={{
-                  select: {
-                    MenuProps: {
-                      PaperProps: {
-                        onScroll: (event) => {
-                          const bottom =
-                            event.target.scrollHeight - event.target.scrollTop === event.target.clientHeight;
+                  // On surcharge renderOption pour forcer une key unique
+                  renderOption={(props, option, { index }) => (
+                    <li
+                      {...props}
+                      key={`${option.value}-${index}`} // utilisez le slug + index
+                    >
+                      {option.label}
+                    </li>
+                  )}
 
-                          if (bottom && nextUrl && !loading) {
-                            fetchFonctions(nextUrl, true); // charger les suivants
-                          }
-
-                          const top = event.target.scrollTop === 0;
-                          if (top && previousUrl && !loading) {
-                            fetchFonctions(previousUrl, true); // charger les précédents
-                          }
-                        },
-                        style: {
-                          maxHeight: 200, // pour activer le scroll
-                        },
-                      },
-                    },
-                  },
-                }}
-              >
-                <MenuItem sx={{ fontStyle: 'italic', color: 'text.secondary' }} value="">
-                  None
-                </MenuItem>
-                <Divider sx={{ borderStyle: 'dashed' }} />
-                {options.map((fonction) => (
-                  <MenuItem
-                    key={fonction.slug}
-                    value={fonction.value}
-                    onClick={() => handleSelectService(index, fonction.value)}
-                  >
-                    {fonction.label}
-                  </MenuItem>
-                ))}
-                {loading && (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                  </MenuItem>
-                )}
-              </Field.Select>
-
-
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Fonction *"
+                      size="small"
+                      fullWidth
+                      InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                          <>
+                            {loading && <CircularProgress size={20} />}
+                            {params.InputProps.endAdornment}
+                          </>
+                        ),
+                      }}
+                    />
+                  )}
+                />
 
             </Stack>
-
 
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
               {/* {typedec !== "Duplicata" && (

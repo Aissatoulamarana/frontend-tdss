@@ -76,7 +76,6 @@ export function AgenceNew({ currentAgence }) {
     axios
       .get(API.listRegions())
       .then((response) => {
-        console.log("Données reçues :", response.data); // 🔍 Vérifier les données reçues
         setRegions(response.data.results || response.data); // Adapter si c'est sous `results`
       })
       .catch((error) => {

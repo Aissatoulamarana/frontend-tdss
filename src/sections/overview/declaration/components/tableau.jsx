@@ -141,7 +141,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
       setLoading(true);
       try {
-        const response = await axios.get(API.Employe(declaration.slug));
+        const params = {
+          limit: rowsPerPage,
+          offset: page * rowsPerPage,
+        }
+        const response = await axios.get(API.Employe(declaration.slug), {params});
         const employees = response.data.results;
         setEmployee(employees);
         setPagination({
@@ -161,6 +165,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       fetchEmployees();
     }
   }, [declaration, page, rowsPerPage]);
+  
 
   const handleMove = useCallback(
     async () => {
@@ -202,7 +207,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
         setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
         setSelected([]);
         setIsDialogSup(false);
-        console.log('Employé supprimé avec succès:', response.data.message);
         toast.success('Suppression reussie!');
         window.location.reload();
       } else {
@@ -358,7 +362,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           {fixedCategories.map((cat) => {
             const count =
               cat.value === 'All'
-                ? employee.length
+                ? pagination?.count
                 : employee.filter((emp) => emp?.job.category === cat.value).length;
             return (
               <Button
@@ -398,7 +402,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           </TableHead>
           <TableBody>
             {rows
-              ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              // ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <React.Fragment key={`${row.id}-${row.slug}`}>
                   <TableRow

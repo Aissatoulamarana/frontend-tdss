@@ -24,7 +24,6 @@ export function UserEditView({ slug }) {
       try {
         const response = await axios.get(API.userDetails(slug));
         setUser(response.data);
-        console.log('Données user a modifier ', response.data)
       } catch (error) {
         setError(error.message || 'Erreurs lors du chargement des données');
       } finally {

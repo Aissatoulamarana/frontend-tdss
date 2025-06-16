@@ -3,12 +3,14 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import IconButton from '@mui/material/IconButton';
+
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
-import Tooltip from '@mui/material/Tooltip';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -31,20 +33,21 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
   useTable,
-  emptyRows,
   rowInPage,
   TableNoData,
   getComparator,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
+
   TablePaginationCustom,
 } from 'src/components/table';
 
 import { UserTableFiltersResult } from '../user-table-filters-result';
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
-import { fabClasses } from '@mui/material';
+import { CircularProgress } from '@mui/material'
+
+import { getUserTypes } from 'src/utils/options';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [
@@ -78,7 +81,7 @@ export function UserListView() {
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
-  const filters = useSetState({ name: '', role: [], status: 'all' });
+  const filters = useSetState({ name: '', type: '', status: 'all' });
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -96,7 +99,7 @@ export function UserListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name || filters.state.role.length > 0 || filters.state.status !== 'all';
+    !!filters.state.name || filters.state.type || filters.state.status !== 'all';
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -177,12 +180,14 @@ export function UserListView() {
       const params = {
         limit: table.rowsPerPage,
         offset: offset,
+        ...(filters.state.name && { name: filters.state.name }),
+        ...(filters.state.type && { type: filters.state.type }),
       };
       const response = await axios.get(url, { params });
       setTableData(response.data.results);
-      setRoles([
-        ...new Set(response.data.results.map((role) => role.type.trim()))
-      ]);
+      // setRoles([
+      //   ...new Set(response.data.results.map((role) => role.type.trim()))
+      // ]);
 
       setPagination((prev) => ({
         count: response.data.count,
@@ -200,7 +205,7 @@ export function UserListView() {
   // Chargement initial
   useEffect(() => {
     fetchUtilisateurs();
-  }, [table.page, table.rowsPerPage]);
+  }, [table.page, table.rowsPerPage , filters.state.name, filters.state.type]);
 
   if (loading) {
     console.info('Loading utilisateurs...');
@@ -210,6 +215,9 @@ export function UserListView() {
     console.error(`Error: ${error}`);
   }
 
+useEffect(() => {
+  getUserTypes().then(data => setRoles(data));
+})
 
 
   return (
@@ -261,12 +269,12 @@ export function UserListView() {
                       (tab.value === true && 'success') ||
                       (tab.value === false && 'warning') ||
 
-                      'default'
+                      'main'
                     }
                   >
                     {['actif', 'inactif'].includes(tab.value)
                       ? tableData.filter((user) => user.status === tab.value).length
-                      : tableData.length}
+                      : pagination.count}
                   </Label>
                 }
               />
@@ -284,6 +292,7 @@ export function UserListView() {
               filters={filters}
               totalResults={pagination.count}
               onResetPage={table.onResetPage}
+              options={{ roles: roles }}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
@@ -324,7 +333,18 @@ export function UserListView() {
                     )
                   }
                 />
-
+              { loading ? (
+                <TableBody>
+                 <TableRow>
+                <TableCell colSpan={100}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                    <CircularProgress />
+                  </Box>
+                </TableCell>
+              </TableRow>
+                </TableBody>
+              ) : (
+             
                 <TableBody>
                   {tableData
 
@@ -351,6 +371,7 @@ export function UserListView() {
 
                   <TableNoData notFound={notFound} />
                 </TableBody>
+                 )}
               </Table>
             </Scrollbar>
           </Box>
@@ -394,7 +415,7 @@ export function UserListView() {
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-  const { name, status, role } = filters;
+  const { name, status, type } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -416,8 +437,8 @@ function applyFilter({ inputData, comparator, filters }) {
     inputData = inputData.filter((user) => user.status === status);
   }
 
-  if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role));
+  if (type.length) {
+    inputData = inputData.filter((user) => type.includes(user.type));
   }
 
   return inputData;

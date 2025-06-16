@@ -1,32 +1,50 @@
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
+"use client";
+
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback } from 'react';
+import { useCallback , useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
+
+
 
 // ----------------------------------------------------------------------
 
 export function FactureTableToolbar({ filters, options, dateError, onResetPage }) {
   const popover = usePopover();
+  const [numberInput, setNumberInput] = useState('');
+  const [declarationInput, setDeclarationInput] = useState('');
 
-  const handleFilterName = useCallback(
+  const handleNumberKeyUp = useCallback(
     (event) => {
-      onResetPage();
-      filters.setState({ name: event.target.value });
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.number !== value) {
+          onResetPage();
+          filters.setState({ number: event.target.value });
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
+  const handleNumberDecKeyUp = useCallback(
+    (event) => {
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.declaration_number !== value) {
+          onResetPage();
+          filters.setState({ declaration_number: event.target.value });
+        }
+      }
     },
     [filters, onResetPage]
   );
@@ -45,7 +63,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ startDate: newValue });
+      filters.setState({ date_before: newValue });
     },
     [filters, onResetPage]
   );
@@ -53,7 +71,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterEndDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ endDate: newValue });
+      filters.setState({ date_after: newValue });
     },
     [filters, onResetPage]
   );
@@ -66,7 +84,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         direction={{ xs: 'column', md: 'row' }}
         sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
       >
-        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
+        {/* <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
           <InputLabel htmlFor="invoice-filter-service-select-label">Type Déclarations</InputLabel>
 
           <Select
@@ -85,12 +103,12 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl> */}
 
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.endDate}
+            value={filters.state.date_before}
             onChange={handleFilterStartDate}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -100,13 +118,13 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.endDate}
+            value={filters.state.date_after}
             onChange={handleFilterEndDate}
             slotProps={{
               textField: {
                 fullWidth: true,
                 error: dateError,
-                helperText: dateError ? 'End date must be later than start date' : null,
+                helperText: dateError ? 'La date de fin doit être postérieure à la date de début.' : null,
               },
             }}
             sx={{
@@ -122,8 +140,26 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            onChange={handleFilterName}
-            placeholder="rechercher par nom ou par numéro"
+            onChange={(e) => setNumberInput(e.target.value)} 
+            onKeyDown={handleNumberKeyUp}
+            value={numberInput}
+            placeholder="rechercher par numero de facture.."
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
+            }}
+          />
+          <TextField
+            fullWidth
+            onChange={(e) => setDeclarationInput(e.target.value)}
+            onKeyDown={handleNumberDecKeyUp}
+            value={declarationInput}
+            placeholder="rechercher par numero de declaration.."
             slotProps={{
               input: {
                 startAdornment: (
@@ -135,9 +171,9 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
             }}
           />
 
-          <IconButton onClick={popover.onOpen}>
+          {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
       </Stack>
       <CustomPopover

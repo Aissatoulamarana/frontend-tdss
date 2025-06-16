@@ -149,7 +149,6 @@ export function ClientListView() {
 
 
     const handleUpdateRow = useCallback((updatedClient) => {
-        console.log("Mise à jour dans le parent :", updatedClient);
         setTableData((prevData) =>
             prevData.map((row) =>
                 row.slug === updatedClient.slug ? updatedClient : row
@@ -272,12 +271,12 @@ useEffect(() => {
                                             (tab.value === 'ON' && 'success') ||
                                             (tab.value === 'pending' && 'warning') ||
                                             (tab.value === 'banned' && 'error') ||
-                                            'default'
+                                            'main'
                                         }
                                     >
                                         {['ON', 'inactif'].includes(tab.value)
                                             ? tableData.filter((client) => client.status === tab.value).length
-                                            : tableData.length}
+                                            : pagination.count}
                                     </Label>
                                 }
                             />

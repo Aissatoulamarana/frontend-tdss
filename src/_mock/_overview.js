@@ -3,16 +3,16 @@ import { CONFIG } from 'src/config-global';
 import { today } from 'src/utils/format-time';
 
 import { _mock } from './_mock';
+import { date } from 'zod';
 
 // APP
 // ----------------------------------------------------------------------
 
 export const _appRelated = [
-  'Microsoft office 365',
-  'Opera',
-  'Adobe acrobat reader DC',
-  'Joplin',
-  'Topaz photo AI',
+  'CERI',
+  'Risha',
+  'mamyero & freres',
+ 
 ].map((name, index) => ({
   id: _mock.id(index),
   name,
@@ -20,8 +20,8 @@ export const _appRelated = [
   ratingNumber: _mock.number.rating(index),
   size: _mock.number.nativeL(index) * 1024,
   totalReviews: _mock.number.nativeL(index),
-  shortcut: `${CONFIG.assetsDir}/assets/icons/apps/ic-app-${index + 1}.webp`,
-  price: [2, 4].includes(index) ? _mock.number.price(index) : 0,
+  // shortcut: `${CONFIG.assetsDir}/assets/icons/apps/ic-app-${index + 1}.webp`,
+  // price: [2, 4].includes(index) ? _mock.number.price(index) : 0,
 }));
 
 export const _appInstalled = ['Germany', 'England', 'France', 'Korean', 'USA'].map(
@@ -45,12 +45,13 @@ export const _appAuthors = [...Array(3)].map((_, index) => ({
 export const _appInvoices = [...Array(5)].map((_, index) => {
   const category = ['Android', 'Mac', 'Windows', 'Android', 'Mac'][index];
 
-  const status = ['paid', 'out of date', 'progress', 'paid', 'paid'][index];
+  const status = ['soumise', 'non soumise', 'soumise', 'non soumise','non soumise'][index];
 
   return {
     id: _mock.id(index),
-    invoiceNumber: `INV-199${index}`,
-    price: _mock.number.price(index),
+    invoiceNumber: `000001-202${index}`,
+    price: _mock.number.nativeM(index),
+    date: _mock.time(index),
     category,
     status,
   };

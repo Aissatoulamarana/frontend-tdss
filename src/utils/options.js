@@ -55,7 +55,7 @@ const fetchAndCache = async (cacheKey, apiCall, dataPath = 'data') => {
 export const getRegions = () => fetchAndCache('regions', API.listRegions, 'results');
 export const getPermits = () => fetchAndCache('permits', API.listPermits, 'results');
 export const getCategories = () => fetchAndCache('categories', API.listCategories);
-export const getDevises = () => fetchAndCache('devises', API.listDevises, 'results');
+export const getDevises = () => fetchAndCache('devises', API.Devises, 'results');
 export const getProfileTypes = () => fetchAndCache('profileTypes', API.listProfilesTypes, 'results');
 export const getPermissions = () => fetchAndCache('permissions', API.listPermissions);
 export const getAgences = () => fetchAndCache('agences', API.listAgences , 'results');
@@ -63,7 +63,7 @@ export const getDeclarations = () => fetchAndCache('declarations', API.listDecla
 export const getEntreprises = () => fetchAndCache('entreprises', API.listEntreprises , 'results');
 
 export const getBanks = () => fetchAndCache('banks', API.listProfiles);
-export const getProfils = () => fetchAndCache('profils', API.listProfiles , 'results');
+export const getProfils = () => fetchAndCache('profils', API.listActiveProfile , 'results');
 export const getUserTypes = () => fetchAndCache('userTypes', API.listUserTypes, 'results');
 export const getJob = () => fetchAndCache('job', API.listFonctions, 'results');
 export const getJobCategories = () => fetchAndCache('job_categories', API.listJobCategory, 'results');
