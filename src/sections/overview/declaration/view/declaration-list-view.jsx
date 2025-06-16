@@ -13,6 +13,9 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -722,6 +725,18 @@ export function DeclarationListView() {
                   }
                 />
 
+                   {loading ? (
+                      <TableBody>
+                         <TableRow>
+                            <TableCell colSpan={100}>
+                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                                  <CircularProgress />
+                                </Box>
+                            </TableCell>
+                          </TableRow>
+                      </TableBody>
+                     ):
+                 (
                 <TableBody>
 
                   {tableData
@@ -755,6 +770,7 @@ export function DeclarationListView() {
                   <TableNoData notFound={notFound} />
 
                 </TableBody>
+                 )}
               </Table>
             </Scrollbar>
           </Box>
