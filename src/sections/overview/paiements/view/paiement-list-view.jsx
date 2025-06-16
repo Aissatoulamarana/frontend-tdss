@@ -7,6 +7,9 @@ import { useTheme } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import { CircularProgress } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
@@ -46,6 +49,7 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 import { fCurrency, fGNF } from 'src/utils/format-number';
 
 import dayjs from 'dayjs';
+
 
 // ----------------------------------------------------------------------
 
@@ -199,6 +203,7 @@ export function PaiementListView() {
   useEffect(() => {
     // Fonction pour récupérer les données
     const fetchPaiements = async () => {
+      setLoading(true);
       try {
         const offset = table.page * table.rowsPerPage;
         const limit = table.rowsPerPage;
@@ -325,7 +330,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: ['TRANSFERT', 'CHEQUE', 'DEPOSIT'] }}
+            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />
@@ -358,7 +363,18 @@ export function PaiementListView() {
                     )
                   }
                 />
-
+          {loading ? (
+            <TableBody>
+              <TableRow>
+                 <TableCell colSpan={100}>
+                   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                      <CircularProgress />
+                    </Box>
+                  </TableCell>
+              </TableRow>
+            </TableBody>
+            ):
+               (
                 <TableBody>
                   {tableData
                     .map((row) => (
@@ -379,6 +395,7 @@ export function PaiementListView() {
                 )}
                   <TableNoData notFound={notFound} />
                 </TableBody>
+              )}
               </Table>
             </Scrollbar>
           </Box>
