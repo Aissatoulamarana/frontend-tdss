@@ -27,64 +27,6 @@ import {
 
 import { MultiLineChart } from './CaissierCharts';
 
-// Service pour récupérer toutes les factures avec tous les résultats
-// const fetchAllFactures = async () => {
-//   try {
-//     // Premier appel pour récupérer le count total
-//     const firstResponse = await axios.get(API.listFactures());
-//     const totalCount = firstResponse.data.count;
-    
-//     // Si on a beaucoup de factures, on récupère tout avec limit élevé
-//     const response = await axios.get(API.listFactures(), {
-//       params: {
-//         limit: totalCount || 1000 // On récupère toutes les factures
-//       }
-//     });
-    
-//     // console.log('All Factures Response:', response.data);
-//     return response.data;
-//   } catch (error) {
-//     console.error('Erreur lors de la récupération des factures:', error);
-//     throw error;
-//   }
-// };
-
-// // Fonction pour filtrer les données par mois
-// const filterDataByMonth = (data, selectedMonth, selectedYear) => {
-//   if (!data || !Array.isArray(data) || !selectedMonth || !selectedYear) return data || [];
-  
-//   return data.filter(item => {
-//     const itemDate = new Date(item.created_on);
-//     return itemDate.getMonth() === selectedMonth - 1 && itemDate.getFullYear() === selectedYear;
-//   });
-// };
-
-// // Fonction pour générer les données de transaction par mois
-// const generateMonthlyTransactionData = (factures, selectedYear) => {
-//   const monthlyData = Array(12).fill(0);
-//   const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
-  
-//     // Vérifier que factures existe et est un tableau
-//   if (!factures || !Array.isArray(factures)) {
-//     return {
-//       categories: monthNames,
-//       series: monthlyData
-//     };
-//   }
-
-//   factures.forEach(facture => {
-//     const date = new Date(facture.created_on);
-//     if (date.getFullYear() === selectedYear) {
-//       monthlyData[date.getMonth()]++;
-//     }
-//   });
-  
-//   return {
-//     categories: monthNames,
-//     series: monthlyData
-//   };
-// };
-
 // Services pour recuperer les metriques du dashboard
 const fetchDashboardMetrics = async (month, year) => {
   try {
@@ -99,22 +41,26 @@ const fetchDashboardMetrics = async (month, year) => {
     throw error;
   }
 };
+
 // Service pour récupérer les transactions mensuelles
-const fetchMonthlyTransactionData = async (year) => {
+const fetchMonthlyTransactionData = async (year, month = null) => {
   try {
-    const response = await axios.get(API.paiementsMonthly(year));
-    // console.log('Monthly Transaction Data Response:', response.data);
+    const params = { year };
+    if (month) params.month = month;
+    const response = await axios.get(API.paiementsMonthly(year), { params });
+    console.log('Monthly Transaction Data Response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la récupération des données de transaction mensuelles:', error);
     throw error;
   }
 };
+
 // Service pour récupérer les 5 dernières factures non payées
 const fetchLastUnpaidInvoices = async () => {
   try {
     const response = await axios.get(API.facturesLastUnpaid());
-    // console.log('Dernières Factures Non Payées Response:', response.data);
+    console.log('Dernières Factures Non Payées Response:', response.data);
     return response.data.results || [];
   } catch (error) {
     console.error('Erreur lors de la récupération des dernières factures non payées:', error);
@@ -141,13 +87,15 @@ export function CaissierAppView() {
     nombrePaiements: 0,
   });
 
-  // const [dernieresFactures, setDernieresFactures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // États pour les filtres
+  // États pour les filtres - Première ligne (métriques)
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  
+  // États pour les filtres - Deuxième ligne (graphique transactions)
+  const [chartMonth, setChartMonth] = useState('');
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
   
   // états pour les données
@@ -156,8 +104,6 @@ export function CaissierAppView() {
     categories: [],
     series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   });
-
-  // const [allFactures, setAllFactures] = useState([]);
   
   // Préparation des données pour le graphique
   const rechartsData = (monthlyTransactionData.categories || []).map((month, index) => ({
@@ -183,84 +129,7 @@ export function CaissierAppView() {
   ];
   const years = Array.from({ length: 5}, (_, i) => new Date().getFullYear() - i);
 
-//   const calculateMetrics = (factures) => {
-//     if (!factures || factures.length === 0) {
-//       return {
-//         totalFactures: 0,
-//         montantTotalFactures: 0,
-//         facturesPayees: 0,
-//         montantFacturesPayees: 0,
-//         facturesEnAttente: 0,
-//         montantFacturesEnAttente: 0,
-//       };
-//     }
-//     // filtrer par mois si selectionné
-//     const filteredFactures = filterDataByMonth(factures, selectedMonth, selectedYear);
-//     // 1. Total Factures
-//     const totalFactures = filteredFactures.length;
-//     const montantTotalFactures = filteredFactures.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
-//     // 2. Factures payées - somme des factures avec status = "PAID"
-//     const facturesPayees = filteredFactures.filter(facture => facture.status === 'PAID');
-//     const facturesPayeesCount = facturesPayees.length;
-//     const montantFacturesPayees = facturesPayees.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
-
-//     // FActures en attente
-//     const facturesEnAttente = filteredFactures.filter(facture => facture.status !== 'PAID');
-//     const facturesEnAttenteCount = facturesEnAttente.length;
-//     const montantFacturesEnAttente = facturesEnAttente.reduce((total, facture) => total + parseFloat(facture.amount || 0), 0);
-//     return {
-//       totalFactures,
-//       montantTotalFactures,
-//       facturesPayees: facturesPayeesCount,
-//       montantFacturesPayees,
-//       facturesEnAttente: facturesEnAttenteCount,
-//       montantFacturesEnAttente,
-//     }
-//   }
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         setLoading(true);
-//         setError(null);
-//         const facturesData = await fetchAllFactures();
-//         setAllFactures(facturesData.results || []);
-//         // console.log('All Factures Data:', facturesData.results);
-//       } catch (err) {
-//         setError('Erreur lors du chargement des factures');
-//         console.error('Erreur lors du chargement des factures:', err);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, []);
-
-//   // Recalcul des métriques et des données à chaque changement de filtre
-// useEffect(() => {
-//   if (allFactures && allFactures.length > 0) {
-//     const metrics = calculateMetrics(allFactures);
-//     setDashboardMetrics(metrics);
-
-//     // Génération des données pour le graphique
-//     const chartData = generateMonthlyTransactionData(allFactures, chartYear);
-//     setMonthlyTransactionData(chartData);
-//     // console.log('Monthly Transaction Data:', chartData);
-//     // console.log('Monthly Transaction Data:', chartData.series);
-
-//     // 5 dernières factures non payées
-//     const facturesNonPayees = allFactures
-//       .filter(facture => facture.status !== 'PAID')
-//       .sort((a, b) => new Date(b.created_on) - new Date(a.created_on))
-//       .slice(0, 5);
-//     setDernieresFacturesNonPayees(facturesNonPayees);
-//   }
-// }, [allFactures, selectedMonth, selectedYear, chartYear]);
-
-
   // fonction pour charger les metriques du dashboard
-  
   const loadDashboardMetrics = async () => {
     try {
       setLoading(true);
@@ -281,11 +150,12 @@ export function CaissierAppView() {
       setLoading(false);
     }
   };
+
   // fonction pour charger les transactions mensuelles 
   const loadMonthlyTransactions = async () => {
     try {
-      const data = await fetchMonthlyTransactionData(chartYear); 
-      console.log(`Data monthly transactions:`, data);
+      const data = await fetchMonthlyTransactionData(chartYear, chartMonth); 
+      // console.log(`Data monthly transactions:`, data);
       
       if (data.month && data.data) {
         // Convertir les numéros de mois en noms de mois
@@ -299,7 +169,7 @@ export function CaissierAppView() {
           categories: categories,
           series: data.data
         });
-        console.log('Données mensuelles (format month/data):', { categories, series: data.data });
+        // console.log('Données mensuelles (format month/data):', { categories, series: data.data });
       }
       // Format par défaut en cas d'échec
       else {
@@ -307,13 +177,14 @@ export function CaissierAppView() {
           categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
           series: data.transactions_by_month || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         });
-        console.log('Données mensuelles (par défaut):', data);
+        // console.log('Données mensuelles (par défaut):', data);
       }
     } catch (error) {
       setError('Erreur lors du chargement des transactions mensuelles'); 
       console.error('Erreur lors du chargement des transactions mensuelles:', error);
     }
   }
+
   // Fonction pour charger les 5 dernieres factures non payees
   const loadLastUnpaidInvoices = async () => {
     try {
@@ -347,19 +218,21 @@ export function CaissierAppView() {
     }; 
     loadInitialData();  
   }, []);
-  // Recharger les métriques quand les filtres changent
+
+  // Recharger les métriques quand les filtres de la première ligne changent
   useEffect(() => {
     if (!loading) {
       loadDashboardMetrics();
     }
   }, [selectedMonth, selectedYear]);
 
-  // Recharger les transactions mensuelles quand l'année du graphique change
+  // Recharger les transactions mensuelles quand les filtres de la deuxième ligne changent
   useEffect(() => {
     if (!loading) {
       loadMonthlyTransactions();
     }
-  }, [chartYear]);
+  }, [chartYear, chartMonth]);
+
   // Fonction pour formater les nombres  
   function formatNumber(value) {
     return new Intl.NumberFormat('en-US', {
@@ -394,37 +267,40 @@ return (
       </Box>
     </Box>
 
-    {/* Filtres */}
-    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-      <FormControl size="small" sx={{ minWidth: 150 }}>
-        <InputLabel>Mois</InputLabel>
-        <Select
-          value={selectedMonth}
-          label="Mois"
-          onChange={(e) => setSelectedMonth(e.target.value)}
-        >
-          {months.map((month) => (
-            <MenuItem key={month.value} value={month.value}>
-              {month.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+    {/* Filtres pour la première ligne - Métriques */}
+    <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <h3>Métriques des Factures</h3>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>Mois</InputLabel>
+          <Select
+            value={selectedMonth}
+            label="Mois"
+            onChange={(e) => setSelectedMonth(e.target.value)}
+          >
+            {months.map((month) => (
+              <MenuItem key={month.value} value={month.value}>
+                {month.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      {/* <FormControl size="small" sx={{ minWidth: 120 }}>
-        <InputLabel>Année</InputLabel>
-        <Select
-          value={selectedYear}
-          label="Année"
-          onChange={(e) => setSelectedYear(e.target.value)}
-        >
-          {years.map((year) => (
-            <MenuItem key={year} value={year}>
-              {year}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl> */}
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel>Année</InputLabel>
+          <Select
+            value={selectedYear}
+            label="Année"
+            onChange={(e) => setSelectedYear(e.target.value)}
+          >
+            {years.map((year) => (
+              <MenuItem key={year} value={year}>
+                {year}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
     </Box>
 
     <Grid container spacing={2}>
@@ -470,24 +346,41 @@ return (
         />
       </Grid>
 
-      {/* Deuxième ligne - Graphique des transactions */}
+      {/* Deuxième ligne - Graphique des transactions avec filtres */}
       <Grid size={{ xs: 12 }}>
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3>Transactions par Mois</h3>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Année</InputLabel>
-            <Select
-              value={chartYear}
-              label="Année"
-              onChange={(e) => setChartYear(e.target.value)}
-            >
-              {years.map((year) => (
-                <MenuItem key={year} value={year}>
-                  {year}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Mois</InputLabel>
+              <Select
+                value={chartMonth}
+                label="Mois"
+                onChange={(e) => setChartMonth(e.target.value)}
+              >
+                {months.map((month) => (
+                  <MenuItem key={month.value} value={month.value}>
+                    {month.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl size="small" sx={{ minWidth: 120 }}>
+              <InputLabel>Année</InputLabel>
+              <Select
+                value={chartYear}
+                label="Année"
+                onChange={(e) => setChartYear(e.target.value)}
+              >
+                {years.map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
         <MultiLineChart data={rechartsData} />
       </Grid>
