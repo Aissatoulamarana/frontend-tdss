@@ -13,6 +13,8 @@ import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 
 import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
@@ -182,6 +184,7 @@ export function ClientListView() {
     useEffect(() => {
         // Fonction pour récupérer les données
         const fetchClient = async () => {
+            setLoading(true); // Indique que le chargement commence
             try {
                 const offset = table.page * table.rowsPerPage;
                 const params = {
@@ -333,6 +336,19 @@ useEffect(() => {
                                         )
                                     }
                                 />
+                                {loading ? (
+                                     <TableBody>
+                                         <TableRow>
+                                <TableCell colSpan={100}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                                    <CircularProgress />
+                                    </Box>
+                                </TableCell>
+                                </TableRow>
+                            </TableBody>
+                                ):
+                                (
+                            
 
                                 <TableBody>
                                     {tableData
@@ -360,6 +376,8 @@ useEffect(() => {
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
+                                )
+                                }
                             </Table>
                         </Scrollbar>
                     </Box>
