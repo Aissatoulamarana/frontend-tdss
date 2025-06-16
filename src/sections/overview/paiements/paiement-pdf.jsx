@@ -1,8 +1,7 @@
 // Updated PaiementPDF component to fix formatting and duplicate receipt
 import { Page, View, Text, Image, Document, StyleSheet } from '@react-pdf/renderer';
 // import PropTypes from 'prop-types';
-import { fDate } from 'src/utils/format-time';
-// Remove fGNF/fCurrency/fEuro imports since we handle formatting manually
+
 
 export function PaiementPDF({ payment }) {
   // Fonction pour formater les montants en GNF avec séparateurs de milliers
@@ -10,6 +9,8 @@ export function PaiementPDF({ payment }) {
     if (amount == null) return `0 ${sign}`;
     return `${Number(amount).toLocaleString('en-US')} ${sign}`;
   };
+
+
 
   // Convertit le montant selon la devise
   const convertirMontant = (montant) => {
@@ -58,7 +59,7 @@ export function PaiementPDF({ payment }) {
   });
 
   // URL du QR code
-  const qrData = encodeURIComponent(`Paiement: ${payment?.reference} - Facture: ${payment?.facture_number || ''} - Montant: ${payment?.amount || ''} ${payment?.devise?.sign || 'GNF'}`);
+  const qrData = encodeURIComponent(`Paiement: ${payment?.number} - Facture: ${payment?.facture_number || ''} - Montant: ${payment?.amount || ''} ${payment?.devise?.sign || 'GNF'}`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
   // Fonction pour rendre un reçu
