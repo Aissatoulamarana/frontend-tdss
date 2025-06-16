@@ -22,8 +22,11 @@ import {
   InputLabel, 
   Select, 
   MenuItem, 
-  Box 
+  Box,
+  Menu,
+  IconButton
 } from '@mui/material';
+import { Download as DownloadIcon } from '@mui/icons-material';
 
 import { MultiLineChart } from './CaissierCharts';
 
@@ -48,7 +51,7 @@ const fetchMonthlyTransactionData = async (year, month = null) => {
     const params = { year };
     if (month) params.month = month;
     const response = await axios.get(API.paiementsMonthly(year), { params });
-    console.log('Monthly Transaction Data Response:', response.data);
+    // console.log('Monthly Transaction Data Response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Erreur lors de la récupération des données de transaction mensuelles:', error);
@@ -60,7 +63,7 @@ const fetchMonthlyTransactionData = async (year, month = null) => {
 const fetchLastUnpaidInvoices = async () => {
   try {
     const response = await axios.get(API.facturesLastUnpaid());
-    console.log('Dernières Factures Non Payées Response:', response.data);
+    // console.log('Dernières Factures Non Payées Response:', response.data);
     return response.data.results || [];
   } catch (error) {
     console.error('Erreur lors de la récupération des dernières factures non payées:', error);
@@ -104,6 +107,10 @@ export function CaissierAppView() {
     categories: [],
     series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   });
+
+  // État pour le menu d'export
+  const [exportAnchorEl, setExportAnchorEl] = useState(null);
+  const exportMenuOpen = Boolean(exportAnchorEl);
   
   // Préparation des données pour le graphique
   const rechartsData = (monthlyTransactionData.categories || []).map((month, index) => ({
@@ -155,7 +162,7 @@ export function CaissierAppView() {
   const loadMonthlyTransactions = async () => {
     try {
       const data = await fetchMonthlyTransactionData(chartYear, chartMonth); 
-      // console.log(`Data monthly transactions:`, data);
+      console.log(`Data monthly transactions:`, data);
       
       if (data.month && data.data) {
         // Convertir les numéros de mois en noms de mois
@@ -169,7 +176,7 @@ export function CaissierAppView() {
           categories: categories,
           series: data.data
         });
-        // console.log('Données mensuelles (format month/data):', { categories, series: data.data });
+        console.log('Données mensuelles (format month/data):', { categories, series: data.data });
       }
       // Format par défaut en cas d'échec
       else {
@@ -177,7 +184,7 @@ export function CaissierAppView() {
           categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'],
           series: data.transactions_by_month || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         });
-        // console.log('Données mensuelles (par défaut):', data);
+        console.log('Données mensuelles (par défaut):', data);
       }
     } catch (error) {
       setError('Erreur lors du chargement des transactions mensuelles'); 
@@ -241,6 +248,121 @@ export function CaissierAppView() {
       maximumFractionDigits: 2,
     }).format(value);
   }
+
+  // Fonctions d'export
+  const handleExportMenuOpen = (event) => {
+    setExportAnchorEl(event.currentTarget);
+  };
+
+  const handleExportMenuClose = () => {
+    setExportAnchorEl(null);
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Mois', 'Nombre de Transactions'];
+    const csvContent = [
+      headers.join(','),
+      ...rechartsData.map(row => `${row.mois},${row.transactions}`)
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transactions_mensuelles_${chartYear}${chartMonth ? `_${chartMonth}` : ''}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    handleExportMenuClose();
+  };
+
+  const exportToJSON = () => {
+    const jsonData = {
+      periode: {
+        annee: chartYear,
+        mois: chartMonth || 'Tous les mois'
+      },
+      donnees: rechartsData,
+      totalTransactions: rechartsData.reduce((sum, item) => sum + item.transactions, 0),
+      dateExport: new Date().toISOString()
+    };
+
+    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transactions_mensuelles_${chartYear}${chartMonth ? `_${chartMonth}` : ''}.json`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    handleExportMenuClose();
+  };
+
+  const exportToExcel = () => {
+    // Simuler un export Excel basique avec format TSV
+    const headers = ['Mois', 'Nombre de Transactions'];
+    const tsvContent = [
+      headers.join('\t'),
+      ...rechartsData.map(row => `${row.mois}\t${row.transactions}`)
+    ].join('\n');
+
+    const blob = new Blob([tsvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `transactions_mensuelles_${chartYear}${chartMonth ? `_${chartMonth}` : ''}.xls`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    handleExportMenuClose();
+  };
+
+  const printChart = () => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Transactions Mensuelles - ${chartYear}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .period { color: #666; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f5f5f5; }
+            .summary { margin-top: 20px; padding: 15px; background-color: #f9f9f9; border-radius: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Rapport des Transactions Mensuelles</h1>
+            <div class="period">Période: ${chartMonth ? months.find(m => m.value === chartMonth)?.label : 'Tous les mois'} ${chartYear}</div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Mois</th><th>Nombre de Transactions</th></tr>
+            </thead>
+            <tbody>
+              ${rechartsData.map(row => `<tr><td>${row.mois}</td><td>${row.transactions}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <div class="summary">
+            <strong>Total des transactions: ${rechartsData.reduce((sum, item) => sum + item.transactions, 0)}</strong>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+    handleExportMenuClose();
+  };
 
   if (loading) {
     return (
@@ -350,7 +472,7 @@ return (
       <Grid size={{ xs: 12 }}>
         <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3>Transactions par Mois</h3>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <FormControl size="small" sx={{ minWidth: 150 }}>
               <InputLabel>Mois</InputLabel>
               <Select
@@ -380,6 +502,41 @@ return (
                 ))}
               </Select>
             </FormControl>
+
+            {/* Bouton d'export */}
+            <IconButton
+              onClick={handleExportMenuOpen}
+              sx={{ 
+                bgcolor: 'primary.main', 
+                color: 'white',
+                '&:hover': { bgcolor: 'primary.dark' }
+              }}
+              title="Exporter les données"
+            >
+              <DownloadIcon />
+            </IconButton>
+
+            {/* Menu d'export */}
+            <Menu
+              anchorEl={exportAnchorEl}
+              open={exportMenuOpen}
+              onClose={handleExportMenuClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <MenuItem onClick={exportToExcel}>
+                📊 Exporter en Excel
+              </MenuItem>
+              <MenuItem onClick={printChart}>
+                🖨️ Imprimer le rapport
+              </MenuItem>
+            </Menu>
           </Box>
         </Box>
         <MultiLineChart data={rechartsData} />
