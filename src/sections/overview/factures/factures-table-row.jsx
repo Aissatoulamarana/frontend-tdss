@@ -200,7 +200,7 @@ export function FactureTableRow({
       open={payeurForm.value} 
       onclose={payeurForm.onFalse} 
       onSuccess ={() => {
-        setLocalStatus('PAID'); // Met à jour le statut local de la facture
+        setLocalStatus('paid'); // Met à jour le statut local de la facture
         payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
       }} />
       {/* <ConfirmDialog

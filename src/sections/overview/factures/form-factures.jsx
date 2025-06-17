@@ -46,9 +46,9 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
   const [step, setStep] = useState(1);
 
   const paymentTypes = [
-    { id: 'TRANSFER', label: 'Virement' },
-    { id: 'DEPOSIT',  label: 'Dêpot' },
-    { id: 'CHEQUE',   label: 'Chèques' }
+    { id: 'transfer', label: 'Virement' },
+    { id: 'deposit',  label: 'Dêpot' },
+    { id: 'cheque',   label: 'Chèques' }
   ];
 
   const defaultValues = useMemo(() => ({
