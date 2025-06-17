@@ -59,14 +59,14 @@ export function FactureTableRow({
   };
 
   const statusLabels = {
-    PAID: 'Payée',
+    paid: 'Payée',
     unpaid: 'En attente'
   }
   const getStatusColor = (status) => {
     switch (status) {
       case 'unpaid':
         return 'warning';
-      case 'PAID':
+      case 'paid':
         return 'success';
       default:
         return 'default';

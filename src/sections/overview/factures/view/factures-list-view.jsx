@@ -151,12 +151,12 @@ export function FactureListView() {
   useEffect(() => {
     Promise.all([
       fetchTotalCount(),
-      fetchCount('PAID'),
+      fetchCount('paid'),
       fetchCount('unpaid'),
     ]).then (([totalCount, paidCount , unpaidCount]) => {
       setSummary({
         totalCount,
-        countByStatus: {all: totalCount, PAID:paidCount, unpaid : unpaidCount},
+        countByStatus: {all: totalCount, paid:paidCount, unpaid : unpaidCount},
 
       });
     });
@@ -183,10 +183,10 @@ export function FactureListView() {
       count: summary.totalCount,
     },
     {
-      value: 'PAID',
+      value: 'paid',
       label: 'Payées',
       color: 'success',
-      count: getInvoiceLength('PAID'),
+      count: getInvoiceLength('paid'),
     },
     {
       value: 'unpaid',
@@ -388,8 +388,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Payées"
-              percent={getPercentByStatus('PAID')}
-              total={getInvoiceLength('PAID')}
+              percent={getPercentByStatus('paid')}
+              total={getInvoiceLength('paid')}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],

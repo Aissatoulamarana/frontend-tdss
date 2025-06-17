@@ -106,7 +106,7 @@ export function FactureToolbar({
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip> */}
-      {(type === 'caissier' && currentStatus === 'UNPAID') && (
+      {(type === 'caissier' && currentStatus === 'unpaid') && (
           <Tooltip title="Payer la facture">
             <IconButton onClick={() => payeurForm.onTrue()}>
               <Iconify icon="mdi:credit-card" />
@@ -144,7 +144,7 @@ export function FactureToolbar({
             open={payeurForm.value} 
             onclose={payeurForm.onFalse} 
             onSuccess ={() => {
-              onChangeStatus('PAID'); // Met à jour le statut local de la facture
+              onChangeStatus('paid'); // Met à jour le statut local de la facture
               payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
             }} />
     </>
