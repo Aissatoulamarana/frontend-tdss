@@ -153,11 +153,11 @@ export function DeclarationListView() {
   useEffect (() => {
     Promise.all([
       fetchTotalCount(),
-      fetchCountByStatus('UNSUBMITTED'),
-      fetchCountByStatus('SUBMITTED'),
-      fetchCountByStatus('VALIDATED'),
-      fetchCountByStatus('BILLED'),
-      fetchCountByStatus('REJECTED')
+      fetchCountByStatus('unsubmitted'),
+      fetchCountByStatus('submitted'),
+      fetchCountByStatus('validated'),
+      fetchCountByStatus('billed'),
+      fetchCountByStatus('rejected'),
     ])
     .then(([totalCount, 
       unsubmitCount, 
@@ -168,15 +168,15 @@ export function DeclarationListView() {
         setSummary({
           totalCount,
           countByStatus: { 
-            UNSUBMITTED : unsubmitCount,
-            SUBMITTED : submitCount,
-            VALIDATED : validatCount,
-            BILLED : billedCount,
-            REJECTED : rejectCount
+            unsubmitted : unsubmitCount,
+            submitted : submitCount,
+            validated : validatCount,
+            billed : billedCount,
+            rejected : rejectCount
            }
         });
       }) ;
-  }, [])
+  }, [user])
 
   const getDeclarationLength = (status) => summary.countByStatus[status];
 
@@ -192,12 +192,110 @@ export function DeclarationListView() {
   const getPercentByStatus = (status) => (getDeclarationLength(status) / summary.totalCount) * 100;
 
   const allowedStatusByRole = {
-    admin:       ['all','SUBMITTED','VALIDATED','BILLED','UNSUBMITTED','REJECTED'],
-    agent:       ['all','SUBMITTED','VALIDATED','UNSUBMITTED','REJECTED'],
-    superviseur: ['all','SUBMITTED','REJECTED'],
-    comptable:   ['all', 'BILLED', 'VALIDATED'],
+    admin:       ['all','submitted','validated','billed','unsubmitted','rejected'],
+    agent:       ['all','submitted','validated','unsubmitted','rejected'],
+    aguipe:      ['all','submitted','rejected'],
+    comptable:   ['all', 'billed', 'validated'],
     default:     ['all'],
   };
+
+  const allowedStatus = {
+    admin:       ['all','submitted','validated','billed'],
+    agent:       ['all','submitted','validated','unsubmitted'],
+    aguipe:      ['all','submitted','rejected'],
+    comptable:   ['all', 'billed', 'validated'],
+    default:     ['all'],
+  };
+
+
+// Mapping des statuts aux composants/cards
+const statusCards = {
+  all: (
+    <Grid  size={{ xs: 6, md: 3 }} key="all">
+      <DeclarationSummary
+        title="Total"
+        total={summary.totalCount}
+        percent={100}
+        chart={{
+          colors: [theme.vars.palette.info.main],
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+          series: [20, 41, 63, 33, 28, 35, 50, 46],
+        }}
+      />
+    </Grid>
+  ),
+  validated: (
+    <Grid size={{ xs: 6, md: 3 }} key="validated">
+      <DeclarationSummary
+        title="Validées"
+        total={getDeclarationLength('validated')}
+        percent={getPercentByStatus('validated')}
+        chart={{
+          colors: [theme.vars.palette.success.main],
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+          series: [15, 18, 12, 51, 68, 11, 39, 37],
+        }}
+      />
+    </Grid>
+  ),
+  unsubmitted: (
+    <Grid size={{ xs: 6, md: 3 }} key="unsubmitted">
+      <DeclarationSummary
+        title="Brouillon"
+        total={getDeclarationLength('unsubmitted')}
+        percent={getPercentByStatus('unsubmitted')}
+        chart={{
+          colors: [theme.vars.palette.warning.main],
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+          series: [18, 19, 31, 8, 16, 37, 12, 33],
+        }}
+      />
+    </Grid>
+  ),
+  rejected: (
+    <Grid size={{ xs: 6, md: 3 }} key="rejected">
+      <DeclarationSummary
+        title="Rejetées"
+        total={getDeclarationLength('rejected')}
+        percent={getPercentByStatus('rejected')}
+        chart={{
+          colors: [theme.vars.palette.error.main],
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+          series: [18, 19, 31, 8, 16, 37, 12, 33],
+        }}
+      />
+    </Grid>
+  ),
+  billed: (
+    <Grid size={{ xs: 6, md: 3 }} key="billed">
+      <DeclarationSummary
+        title="Facturées"
+        total={getDeclarationLength('billed')}
+        percent={getPercentByStatus('billed')}
+        chart={{
+          colors: [theme.vars.palette.primary.main],
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+          series: [10, 22, 15, 44, 30, 25, 20, 40],
+        }}
+      />
+    </Grid>
+  ),
+  submitted: (
+    <Grid size={{ xs: 6, md: 3 }} key="submitted">
+      <DeclarationSummary
+        title="Soumises"
+        total={getDeclarationLength('submitted')}
+        percent={getPercentByStatus('submitted')}
+        chart={{
+          colors: [theme.vars.palette.secondary.main],
+          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+          series: [12, 34, 22, 40, 45, 36, 28, 50],
+        }}
+      />
+    </Grid>
+  ),
+};
+
 
 
   const TABS = [
@@ -208,35 +306,35 @@ export function DeclarationListView() {
       count: summary.totalCount,
     },
     {
-      value: 'SUBMITTED',
+      value: 'submitted',
       label: 'Soumises',
       color: 'warnning',
-      count: getDeclarationLength('SUBMITTED'),
+      count: getDeclarationLength('submitted'),
     },
     {
-      value: 'VALIDATED',
+      value: 'validated',
       label: 'Validées',
       color: 'success',
-      count: getDeclarationLength('VALIDATED'),
+      count: getDeclarationLength('validated'),
     },
     {
-      value: 'BILLED',
+      value: 'billed',
       label: 'Facturées',
       color: 'primary',
-      count: getDeclarationLength('BILLED'),
+      count: getDeclarationLength('billed'),
     },
     {
-      value: 'UNSUBMITTED',
+      value: 'unsubmitted',
       label: 'Brouillon',
       color: 'warning',
-      count: getDeclarationLength('UNSUBMITTED'),
+      count: getDeclarationLength('unsubmitted'),
     },
 
     {
-      value: 'REJECTED',
+      value: 'rejected',
       label: 'Rejetées',
       color: 'error',
-      count: getDeclarationLength('REJECTED'),
+      count: getDeclarationLength('rejected'),
     },
 
   ];
@@ -302,7 +400,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'SUBMITTED' } : item
+              item.slug === slug ? { ...item, status: 'submitted' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -335,7 +433,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'UNSUBMITTED' } : item
+              item.slug === slug ? { ...item, status: 'unsubmitted' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -367,7 +465,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'VALIDATED' } : item
+              item.slug === slug ? { ...item, status: 'validated' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -397,7 +495,7 @@ export function DeclarationListView() {
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'BILLED' } : item
+              item.slug === slug ? { ...item, status: 'billed' } : item
             )
           );
           router.push(paths.dashboard.factures.list);
@@ -426,7 +524,7 @@ export function DeclarationListView() {
           toast.success('Déclaration rejetée avec succès !');
           setTableData((prevData) =>
             prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'REJECTED' } : item
+              item.slug === slug ? { ...item, status: 'rejected' } : item
             )
           );
           router.push(paths.dashboard.declaration.list);
@@ -532,6 +630,8 @@ export function DeclarationListView() {
   const open = Boolean(anchorEl);
   const id = open ? 'declaration-popover' : undefined;
 
+  const allowedStatuses = allowedStatus[type_user] || allowedStatus['default'];
+
 
   return (
     <>
@@ -563,7 +663,8 @@ export function DeclarationListView() {
 
 
         <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} >
-          <Grid size={{ xs: 6, md: 3 }}>
+          {allowedStatuses.map((status) => statusCards[status]).filter(Boolean)}
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
               total={summary.totalCount}
@@ -574,44 +675,44 @@ export function DeclarationListView() {
                 series: [20, 41, 63, 33, 28, 35, 50, 46],
               }}
             />
-          </Grid>
-          <Grid size={{ xs: 6, md: 3 }}>
+          </Grid> */}
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Validées"
-              total={getDeclarationLength('VALIDATED')}
-              percent={getPercentByStatus('VALIDATED')}
+              total={getDeclarationLength('validated')}
+              percent={getPercentByStatus('validated')}
               chart={{
                 // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
               }}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid size={{ xs: 6, md: 3 }}>
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Brouillon"
-              total={getDeclarationLength('UNSUBMITTED')}
-              percent={getPercentByStatus('UNSUBMITTED')}
+              total={getDeclarationLength('unsubmitted')}
+              percent={getPercentByStatus('unsubmitted')}
               chart={{
                 colors: [theme.vars.palette.warning.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [18, 19, 31, 8, 16, 37, 12, 33],
               }}
             />
-          </Grid>
-          <Grid size={{ xs: 6, md: 3 }}>
+          </Grid> */}
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Rejetées"
-              total={getDeclarationLength('REJECTED')}
-              percent={getPercentByStatus('REJECTED')}
+              total={getDeclarationLength('rejected')}
+              percent={getPercentByStatus('rejected')}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [18, 19, 31, 8, 16, 37, 12, 33],
               }}
             />
-          </Grid>
+          </Grid> */}
         </Grid>
 
         <Card>

@@ -112,7 +112,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
         const params = {
           limit: 100,
           offset: offset,
-          status: 'UNSUBMITTED',
+          status: 'unsubmitted',
 
         };
         const response = await axios.get(API.listDeclarations(), { params });
@@ -385,7 +385,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                {declaration?.status === 'UNSUBMITTED' && (
+                {declaration?.status === 'unsubmitted' && (
                   <Checkbox
                     indeterminate={selected.length > 0 && selected.length < rows?.length}
                     checked={rows?.length > 0 && selected.length === rows?.length}
@@ -412,7 +412,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
                   >
                     <TableCell padding="checkbox">
-                      {declaration?.status === 'UNSUBMITTED' && (
+                      {declaration?.status === 'unsubmitted' && (
                         <Checkbox
                           color="primary"
                           checked={isSelected(row.slug)}
@@ -437,7 +437,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                     <TableCell>{row.job.name}</TableCell>
                     <TableCell>{row.job.permit}</TableCell>
                   </TableRow>
-                  {declaration?.status === 'UNSUBMITTED' && (
+                  {declaration?.status === 'unsubmitted' && (
                     <EmployeeQuickEditForm
                       currentEmployee={row}
                       open={quickEditOpen && currentEmployee?.slug === row.slug}

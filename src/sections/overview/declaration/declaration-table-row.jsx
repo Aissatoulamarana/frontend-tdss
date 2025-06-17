@@ -66,25 +66,25 @@ export function DeclarationTableRow({
   };
 
   const statusLabels = {
-    UNSUBMITTED: 'Non soumise',
-    SUBMITTED: 'Soumise',
-    REJECTED: 'Rejetée',
-    VALIDATED: 'Validée',
-    BILLED: 'Facturée',
+    unsubmitted: 'Non soumise',
+    submitted: 'Soumise',
+    rejected: 'Rejetée',
+    validated: 'Validée',
+    billed: 'Facturée',
   };
 
   // Ajoute la couleur correspondante au statut
   const getStatusColor = (status) => {
     switch (status) {
-      case 'VALIDATED':
+      case 'validated':
         return 'success';
-      case 'SUBMITTED':
+      case 'submitted':
         return 'info';
-      case 'UNSUBMITTED':
+      case 'unsubmitted':
         return 'warning';
-      case 'REJECTED':
+      case 'rejected':
         return 'error';
-      case 'BILLED':
+      case 'billed':
         return 'primary';
       default:
         return 'default';
@@ -170,7 +170,7 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type_name === 'Admin' && ['UNSUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 onEditRow();
@@ -182,7 +182,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {( user?.type_name === 'Agent') && ['REJECTED'].includes(row.status) && (
+          {( user?.type_name === 'Agent') && ['rejected'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 unsubmitConfirm.onTrue();
@@ -194,7 +194,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type_name === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Agent' && !['validated', 'billed', 'rejected', 'sublitted'].includes(row.status) && (
             <MenuItem
               key="submit"
               onClick={() => {
@@ -209,7 +209,7 @@ export function DeclarationTableRow({
 
           {user?.type_name === 'Aguipe' &&
             profil === 'aguipe' &&
-            !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
+            !['validated', 'billed', 'rejected', 'unsubmitted'].includes(row.status) && (
               <MenuItem
                 key="validate"
                 onClick={() => {
@@ -224,7 +224,7 @@ export function DeclarationTableRow({
 
           {user?.type_name === 'Aguipe' &&
             profil === 'aguipe' &&
-            !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
+            !['rejected', 'billed', 'validated', 'unsubmitted'].includes(row.status) && (
               <MenuItem
                 key="reject"
                 onClick={() => {
@@ -252,7 +252,7 @@ export function DeclarationTableRow({
             )} */}
 
           {user?.type_name === 'Comptable' &&
-            !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
+            !['billed', 'rejected', 'unsublitted', 'submitted'].includes(row.status) && (
               <MenuItem
                 key="facture"
                 onClick={() => {
