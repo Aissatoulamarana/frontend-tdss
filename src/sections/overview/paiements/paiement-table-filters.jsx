@@ -23,14 +23,14 @@ export function PaiementTableFiltersResult({ filters, totalResults, onResetPage,
 
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>      
-      {/* <FiltersBlock label="Status:" isShow={filters.state.status !== 'all'}>
+      <FiltersBlock label="Methode de paiement:" isShow={filters.state.payment_method }>
         <Chip
           {...chipProps}
-          label={filters.state.status}
-          onDelete={handleRemoveStatus}
+          label={filters.state.payment_method}
+          onDelete={handleRemoveKeyword}
           sx={{ textTransform: 'capitalize' }}
         />
-      </FiltersBlock> */}
+      </FiltersBlock>
 
       <FiltersBlock
         label="Date:"

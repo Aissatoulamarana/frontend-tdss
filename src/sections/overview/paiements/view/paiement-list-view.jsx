@@ -190,6 +190,11 @@ export function PaiementListView() {
 
   ];
 
+  const PaymentMethods = [
+    { id: 'transfer', label: 'Virement' },
+    { id: 'deposit', label: 'Dêpot' },
+    { id: 'cheque', label: 'Chèques' },
+  ]
   
   const handleViewRow = useCallback(
     (slug) => {
@@ -330,7 +335,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
+            options={{ payment_method: PaymentMethods }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />
