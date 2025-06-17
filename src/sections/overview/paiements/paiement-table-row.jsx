@@ -40,6 +40,12 @@ export function PaiementTableRow({
       return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
     }
   };
+
+  const methodsLabels = {
+    transfer : 'Virement',
+    cheque: 'Chèque', 
+    deposit : 'Dépôt'
+  }
   
 
   return (
@@ -89,7 +95,7 @@ export function PaiementTableRow({
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.payment_method}
+                  {methodsLabels[row.payment_method]}
                 </Typography>
               }
               secondary={

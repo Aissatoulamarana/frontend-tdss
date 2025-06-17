@@ -100,13 +100,13 @@ export function PaiementTableToolbar({
             sx={{ textTransform: 'capitalize' }}
           >
             {options?.payment_method?.map((option) => (
-              <MenuItem key={option} value={option}>
+              <MenuItem key={option.id} value={option.id}>
                 <Checkbox
                   disableRipple
                   size="small"
                   checked={filters.state.payment_method.includes(option)}
                 />
-                {option}
+                {option.label}
               </MenuItem>
             ))}
           </Select>
