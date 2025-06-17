@@ -48,25 +48,25 @@ export function DeclarationDetails({ declaration, employees }) {
   const handleClose = () => setOpen(false);
 
   const statusLabels = {
-    UNSUBMITTED: 'Non soumise',
-    SUBMITTED: 'Soumise',
-    REJECTED: 'Rejetée',
-    VALIDATED: 'Validée',
-    BILLED: 'Facturée',
+    unsubmitted: 'Non soumise',
+    submitted: 'Soumise',
+    rejected: 'Rejetée',
+    validated: 'Validée',
+    billed: 'Facturée',
   };
 
   // Ajoute la couleur correspondante au statut
   const getStatusColor = (status) => {
     switch (status) {
-      case 'VALIDATED':
+      case 'validated':
         return 'success';
-      case 'SUBMITTED':
+      case 'submitted':
         return 'info';
-      case 'UNSUBMITTED':
+      case 'unsubmitted':
         return 'warning';
-      case 'REJECTED':
+      case 'rejected':
         return 'error';
-      case 'BILLED':
+      case 'billed':
         return 'primary';
       default:
         return 'default';
@@ -94,7 +94,7 @@ export function DeclarationDetails({ declaration, employees }) {
   return (
 
     <>
-{declaration?.status === 'REJECTED' && (
+{declaration?.status === 'rejected' && (
       <Dialog
             open={openDialog}
             onClose={() => { }}
@@ -140,7 +140,7 @@ export function DeclarationDetails({ declaration, employees }) {
       />
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: { xs: 1, md: 2 } }}>
-        {declaration?.status === 'UNSUBMITTED' && (
+        {declaration?.status === 'unsubmitted' && (
           <Button
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}

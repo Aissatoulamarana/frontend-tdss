@@ -126,7 +126,7 @@ export function DeclarationEdit({ declaration }) {
           label="Status"
           InputLabelProps={{ shrink: true }}
         >
-          {['REJECTED', 'SUBMITTED', 'VALIDATED', 'UNSUBMITTED'].map((option) => (
+          {['rejected', 'submitted', 'validated', 'unsubmitted'].map((option) => (
             <MenuItem key={option} value={option} sx={{ textTransform: 'capitalize' }}>
               {option}
             </MenuItem>

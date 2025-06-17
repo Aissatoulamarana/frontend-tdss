@@ -228,7 +228,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         }
       };
   
-      if (declaration?.status === 'UNSUBMITTED') {
+      if (declaration?.status === 'unsubmitted') {
         fetchFonctions();
       }
     }, [declaration?.status]);

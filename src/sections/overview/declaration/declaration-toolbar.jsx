@@ -104,7 +104,7 @@ export function DeclarationToolbar({
             // Si succès, rediriger ou mettre à jour l'interface utilisateur
             toast.success('Déclaration soumise avec succès !');
             // Mise à jour locale du statut dans tableData
-            onChangeStatus('SUBMITTED');
+            onChangeStatus('submitted');
           } else {
             console.error('Erreur lors de la validation:', response.data.error);
             toast.error('Une erreur est survenue.');
@@ -132,7 +132,7 @@ export function DeclarationToolbar({
             // Si succès, rediriger ou mettre à jour l'interface utilisateur
             toast.success('Le statut de la déclaration a été remis à non soumis avec succès !');
             // Mise à jour locale du statut dans tableData
-           onChangeStatus('UNSUBMITTED');
+           onChangeStatus('unsubmitted');
           } else {
             console.error('Erreur lors de la validation:', response.data.error);
             toast.error('Une erreur est survenue.');
@@ -159,7 +159,7 @@ export function DeclarationToolbar({
             // Si succès, rediriger ou mettre à jour l'interface utilisateur
             toast.success('Déclaration validée avec succès !');
             // Mise à jour locale du statut dans tableData
-            onChangeStatus('VALIDATED');
+            onChangeStatus('validated');
           } else {
             console.error('Erreur lors de la validation:', response.data.error);
             toast.error('Une erreur est survenue.');
@@ -183,7 +183,7 @@ export function DeclarationToolbar({
             // Si succès, rediriger ou mettre à jour l'interface utilisateur
             toast.success('Déclaration facturée avec succès !');
             // Mise à jour locale du statut dans tableData
-            onChangeStatus('BILLED');
+            onChangeStatus('billed');
           } else {
             console.error('Erreur lors de la facturation:', response.data.error);
             toast.error('Une erreur est survenue.');
@@ -206,7 +206,7 @@ export function DeclarationToolbar({
           });
           if (response) {
           toast.success('Déclaration rejetée avec succès !');
-          onChangeStatus('REJECTED');
+          onChangeStatus('rejected');
           } else {
             console.error('Erreur lors du rejet :', response.data.error);
             toast.error('Une erreur est survenue.');
@@ -257,7 +257,7 @@ export function DeclarationToolbar({
       >
 
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-          {(type === 'admin' && profil === 'tdss') && declaration?.status === 'UNSUBMITTED' && (
+          {(type === 'admin' && profil === 'tdss') && declaration?.status === 'unsubmitted' && (
             <Tooltip title="Modifier">
               <IconButton 
               onClick={handleEdit}>
@@ -276,7 +276,7 @@ export function DeclarationToolbar({
             </IconButton>
           </Tooltip>
 
-          {(type === 'agent' && currentStatus ==='REJECTED') && (
+          {(type === 'agent' && currentStatus ==='rejected') && (
           <Tooltip title="Mettre en edition">
             <IconButton onClick={() => unsubmitConfirm.onTrue()}>
               <Iconify icon="solar:pen-bold" />
@@ -284,7 +284,7 @@ export function DeclarationToolbar({
           </Tooltip>
           )}
 
-          {(type === 'agent' && currentStatus ==='UNSUBMITTED') && (
+          {(type === 'agent' && currentStatus ==='unsubmitted') && (
           <Tooltip title="Soumettre">
             <IconButton onClick={() => submitConfirm.onTrue()}>
               <Iconify icon="mdi:check-bold" />
@@ -294,7 +294,7 @@ export function DeclarationToolbar({
 
           {(type === 'aguipe' && 
           profil === 'aguipe' && 
-          currentStatus ==='SUBMITTED') && (
+          currentStatus ==='submitted') && (
           <>
            <Tooltip title="Valider">
             <IconButton onClick={() => validateConfirm.onTrue()}>
@@ -313,7 +313,7 @@ export function DeclarationToolbar({
           )}
 
           {(type === 'comptable' && 
-          currentStatus ==='VALIDATED') && (
+          currentStatus ==='validated') && (
        <Tooltip title="Facturer">
             <IconButton onClick={() => factureConfirm.onTrue()}>
               <Iconify icon="mdi:credit-card" />
