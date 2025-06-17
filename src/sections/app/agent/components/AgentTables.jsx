@@ -32,6 +32,7 @@ import { Label } from 'src/components/label';
 
 const TABLE_HEAD = [
   { id: 'reference', label: 'Référence', width: 120 },
+  { id: 'title', label: 'Titre', width: 120},
   { id: 'date', label: 'Date', width: 120 },
   { id: 'company', label: 'Entreprise', width: 180 },
   { id: 'employees', label: 'Employés', width: 100 },
@@ -149,7 +150,7 @@ export function AgentRecentDeclarations({ declarations = [] }) {
           <Table sx={{ 
             minWidth: 720,
             '& .MuiTableCell-head': {
-              color: theme.palette.common.white,
+              color: isDarkMode ? theme.palette.common.white : theme.palette.common.black,
               fontWeight: 600
             }
           }}>
@@ -226,7 +227,8 @@ function AgentDeclarationRow({ row, isDarkMode }) {
           },
         }}
       >
-        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.id}</TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.number}</TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.title}</TableCell>
         <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{fDate(row.date)}</TableCell>
         <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>{row.company}</TableCell>
         <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.employees}</TableCell>
@@ -277,6 +279,7 @@ AgentRecentDeclarations.propTypes = {
     PropTypes.shape({
       id: PropTypes.string,
       reference: PropTypes.string,
+      number: PropTypes.string,
       date: PropTypes.string,
       company: PropTypes.string,
       status: PropTypes.string,

@@ -12,47 +12,7 @@ import { fShortenNumber } from 'src/utils/format-number';
 
 // Les données utilisateur seront obtenues via le contexte d'authentification
 
-// Données mockées pour le développement
-const ALL_SUMMARY_DATA = {
-  // Anciennes données conservées pour compatibilité
-  totalEmployees: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 12 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 30 },
-  ],
-  totalPayments: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 48 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 5 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 15 },
-  ],
-  pendingPayments: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 18 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 3 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 10 },
-  ],
-  totalInvoices: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 67 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 2 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 5 },
-  ],
-  
-  // Nouvelles données demandées par le boss
-  totalDeclarations: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 85 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 42 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 63 },
-  ],
-  unsubmittedDeclarations: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 12 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 8 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 15 },
-  ],
-  rejectedDeclarations: [
-    { agentId: 'AGENT-001', company: 'Entreprise ABC', count: 5 },
-    { agentId: 'AGENT-001', company: 'Société XYZ', count: 3 },
-    { agentId: 'AGENT-002', company: 'Compagnie 123', count: 7 },
-  ],
-};
+
 
 // ----------------------------------------------------------------------
 

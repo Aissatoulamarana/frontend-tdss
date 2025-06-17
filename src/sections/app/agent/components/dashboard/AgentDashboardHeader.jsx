@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { 
   Box, 
   Button, 
@@ -22,6 +22,8 @@ export default function AgentDashboardHeader({
   onExport, 
   loading 
 }) {
+  const theme = useTheme();
+  const isDarkMode = theme.palette.mode === 'dark';
   return (
     <>
       {/* En-tête avec filtre et bouton d'action */}
@@ -56,7 +58,7 @@ export default function AgentDashboardHeader({
             }}>
               Tableau de bord
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' } }}>
+            <Typography variant="body2" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' }, color : isDarkMode ? theme.palette.text.primary : theme.palette.text.secondary}}>
               Bon retour, {user?.name || 'Agent'}. Voici un aperçu de vos activités.
             </Typography>
           </Box>

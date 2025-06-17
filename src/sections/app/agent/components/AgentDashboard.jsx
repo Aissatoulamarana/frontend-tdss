@@ -111,6 +111,7 @@ export default function AgentDashboard() {
       const declarationsFormatted = (dashboardData.declarations || []).map(declaration => ({
         id: declaration.slug,
         reference: declaration.reference,
+        number: declaration.number,
         date: declaration.created_on,
         company: declaration.company,
         status: declaration.status.toLowerCase(),
