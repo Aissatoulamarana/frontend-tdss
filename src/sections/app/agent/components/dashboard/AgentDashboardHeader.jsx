@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { alpha, useTheme } from '@mui/material/styles';
+import { alpha } from '@mui/material/styles';
 import { 
   Box, 
   Button, 
@@ -22,21 +22,18 @@ export default function AgentDashboardHeader({
   onExport, 
   loading 
 }) {
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
   return (
     <>
       {/* En-tête avec filtre et bouton d'action */}
-      <Box sx={{ 
+      <Box sx={(theme) => ({ 
         mb: 4, 
         p: 3, 
         borderRadius: 1,
-        color: 'common.white',
         boxShadow: 'none',
-        background: theme => alpha(theme.palette.background.neutral, 0.1),
+        backgroundColor: alpha(theme.palette.background.paper, 0.1),
         backdropFilter: 'blur(8px)',
-        border: theme => `1px solid ${alpha(theme.palette.divider, 0.1)}`
-      }}>
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+      })}>
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center" justifyContent="space-between">
           <Box>
             <Typography variant="h4" sx={{ 
@@ -58,7 +55,7 @@ export default function AgentDashboardHeader({
             }}>
               Tableau de bord
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' }, color : isDarkMode ? theme.palette.text.primary : theme.palette.text.secondary}}>
+            <Typography variant="body2" sx={{ opacity: 0.9, display: { xs: 'none', sm: 'block' }, color: 'text.secondary' }}>
               Bon retour, {user?.name || 'Agent'}. Voici un aperçu de vos activités.
             </Typography>
           </Box>
@@ -67,30 +64,30 @@ export default function AgentDashboardHeader({
             <FormControl 
               variant="outlined" 
               size="small" 
-              sx={{ 
+              sx={(theme) => ({ 
                 minWidth: 200,
                 '& .MuiOutlinedInput-root': {
-                  backgroundColor: 'background.paper',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.1),
                   '& fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.3)'
+                    borderColor: alpha(theme.palette.divider, 0.3)
                   },
                   '&:hover fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.5)'
+                    borderColor: alpha(theme.palette.primary.main, 0.5)
                   },
                   '&.Mui-focused fieldset': {
-                    borderColor: 'rgba(255, 255, 255, 0.8)'
+                    borderColor: 'primary.main'
                   }
                 },
                 '& .MuiInputLabel-root': {
-                  color: 'rgba(255, 255, 255, 0.8)'
+                  color: 'text.secondary'
                 },
                 '& .MuiInputLabel-root.Mui-focused': {
-                  color: 'rgba(255, 255, 255, 0.9)'
+                  color: 'primary.main'
                 },
                 '& .MuiSelect-icon': {
-                  color: 'rgba(255, 255, 255, 0.8)'
+                  color: 'text.secondary'
                 }
-              }}
+              })}
             >
               <InputLabel id="company-filter-label">Entreprise</InputLabel>
               <Select
@@ -119,14 +116,19 @@ export default function AgentDashboardHeader({
           startIcon={<Iconify icon="mdi:refresh" />}
           onClick={onRefresh}
           disabled={loading}
-          sx={{
+          sx={(theme) => ({
+            borderColor: theme.palette.mode === 'dark'
+              ? alpha(theme.palette.primary.main, 0.5) 
+              : theme.palette.divider,
+            color: 'primary.main',
             '&:hover': {
-              bgcolor: 'action.hover',
+              bgcolor: alpha(theme.palette.primary.main, 0.08),
+              borderColor: 'primary.main',
               transform: 'translateY(-1px)',
               boxShadow: 1
             },
             transition: 'all 0.2s ease-in-out'
-          }}
+          })}
         >
           Actualiser
         </Button>
@@ -137,15 +139,16 @@ export default function AgentDashboardHeader({
           startIcon={<Iconify icon="mdi:file-export" />}
           onClick={onExport}
           disabled={loading}
-          sx={{
+          sx={(theme) => ({
+            borderColor: alpha(theme.palette.secondary.main, 0.5),
             '&:hover': {
-              bgcolor: 'secondary.light',
-              color: 'secondary.contrastText',
+              bgcolor: alpha(theme.palette.secondary.main, 0.08),
+              borderColor: 'secondary.main',
               transform: 'translateY(-1px)',
               boxShadow: 1
             },
             transition: 'all 0.2s ease-in-out'
-          }}
+          })}
         >
           Exporter
         </Button>

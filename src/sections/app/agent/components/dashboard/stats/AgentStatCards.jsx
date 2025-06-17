@@ -7,17 +7,22 @@ import { Iconify } from 'src/components/iconify';
 const StatCard = styled(Card)(({ theme, color = 'primary' }) => ({
   padding: 0,
   height: '100%',
-  background: 'transparent',
+  background: alpha(theme.palette.background.paper, 0.1),
   backdropFilter: 'blur(10px)',
-  backgroundColor: alpha(theme.palette.background.paper, 0.1),
   borderRadius: theme.shape.borderRadius,
-  border: 'none',
-  boxShadow: 'none',
+  border: `1px solid ${theme.palette.mode === 'dark'
+    ? alpha(theme.palette.divider, 0.1) 
+    : alpha(theme.palette.divider, 0.15)}`,
+  boxShadow: theme.palette.mode === 'dark'
+    ? `0 4px 12px 0 ${alpha(theme.palette.common.black, 0.1)}` 
+    : `0 4px 12px 0 ${alpha(theme.palette.common.black, 0.04)}`,
   transition: 'all 0.3s ease',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
-    backgroundColor: alpha(theme.palette.background.paper, 0.3),
+    backgroundColor: alpha(theme.palette.background.paper, 0.2),
+    boxShadow: `0 6px 18px 0 ${alpha(theme.palette.common.black, 0.06)}`,
+    transform: 'translateY(-2px)',
   },
   '&::before': {
     content: '""',
@@ -32,7 +37,7 @@ const StatCard = styled(Card)(({ theme, color = 'primary' }) => ({
 
 const StatNumber = styled(Typography)(({ theme }) => ({
   fontWeight: 800,
-  color: theme.palette.common.white,
+  color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
   display: 'inline-block',
   letterSpacing: '0.5px',
   fontSize: '1.75rem',
@@ -42,10 +47,17 @@ const StatNumber = styled(Typography)(({ theme }) => ({
 // Composant pour une carte de statistique individuelle
 const StatisticCard = ({ title, value, icon, color, loading }) => {
   const theme = useTheme();
-  
+  console.log("Voici le theme : ", theme.palette.mode);
   if (loading) {
     return (
-      <Card sx={{ p: 2, height: '100%', minHeight: 100, borderRadius: 1 }}>
+      <Card sx={{ 
+        p: 2, 
+        height: '100%', 
+        minHeight: 100, 
+        borderRadius: 1,
+        backgroundColor: alpha(theme.palette.background.paper, 0.1),
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+      }}>
         <Skeleton variant="text" width="60%" height={30} />
         <Skeleton variant="text" width="40%" height={40} sx={{ mt: 1 }} />
       </Card>
@@ -59,7 +71,7 @@ const StatisticCard = ({ title, value, icon, color, loading }) => {
           <Box>
             <Typography variant="subtitle2" sx={{ 
               fontWeight: 600, 
-              color: 'text.secondary', 
+              color: theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.7) : undefined, 
               textTransform: 'uppercase', 
               letterSpacing: '0.5px', 
               fontSize: '0.75rem',
@@ -77,7 +89,8 @@ const StatisticCard = ({ title, value, icon, color, loading }) => {
             borderRadius: '50%',
             width: 48,
             height: 48,
-            mr: 1
+            mr: 1,
+            border: `1px solid ${alpha(theme.palette[color].main, 0.1)}`
           }}>
             <Iconify icon={icon} width={24} height={24} sx={{ color: theme.palette[color].main }} />
           </Box>
