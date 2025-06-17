@@ -153,7 +153,7 @@ const afficherMontant = (montant) => {
   
 
   const statusLabels = {
-    PAID: 'Payée',
+    paid: 'Payée',
     unpaid: 'En attente',
     
   }
@@ -161,7 +161,7 @@ const afficherMontant = (montant) => {
     switch (status) {
       case 'unpaid':
         return 'warning';
-      case 'PAID':
+      case 'paid':
         return 'success';
       default:
         return 'default';
