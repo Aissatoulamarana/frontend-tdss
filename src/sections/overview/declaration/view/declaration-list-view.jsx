@@ -630,7 +630,7 @@ const statusCards = {
   const open = Boolean(anchorEl);
   const id = open ? 'declaration-popover' : undefined;
 
-  const allowedStatuses = allowedStatus[type_user] || allowedStatus['default'];
+  const allowedStatuses = allowedStatus[type_user] || allowedStatus.default;
 
 
   return (
