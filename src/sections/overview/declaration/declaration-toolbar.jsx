@@ -52,7 +52,7 @@ export function DeclarationToolbar({
 
  
   // const [logoData, setLogoData] = useState(null);
-  const logoUrl = declaration?.company.picture;
+  const logoUrl = declaration?.company?.picture;
   const proxyBase = 'https://api.allorigins.win/raw?url=';
   const proxiedLogoUrl = logoUrl
   ? proxyBase + encodeURIComponent(logoUrl)
@@ -257,6 +257,13 @@ export function DeclarationToolbar({
       >
 
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
+           {/* Bouton d'aperçu PDF */}
+      <Tooltip title="Aperçu PDF">
+        <IconButton onClick={view.onTrue}>
+          <Iconify icon="eva:eye-fill" />
+        </IconButton>
+      </Tooltip>
+
           {(type === 'admin' && profil === 'tdss') && declaration?.status === 'unsubmitted' && (
             <Tooltip title="Modifier">
               <IconButton 
@@ -342,11 +349,16 @@ export function DeclarationToolbar({
         </TextField>
       </Stack>
       
-      <Dialog fullScreen open={view.value}>
+      <Dialog fullScreen 
+      open={view.value}
+      onClose={view.onFalse}
+      PaperProps={{
+        sx: { maxWidth: 'calc(100% - 24px)', maxHeight: 'calc(100% - 24px)' },
+      }}>
         <Box sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
           <DialogActions sx={{ p: 1.5 }}>
             <Button color="inherit" variant="contained" onClick={view.onFalse}>
-              Close
+              Fermer
             </Button>
           </DialogActions>
 
@@ -355,9 +367,9 @@ export function DeclarationToolbar({
               width="100%"
               height="100%"
               style={{ border: 'none' }}
-              declaration={declaration}
-              currentStatus={currentStatus}
-            />
+            >
+              <DeclarationPDF declaration={declaration} employees={employees} logoUrl={proxiedLogoUrl} />
+            </PDFViewer>
           </Box>
         </Box>
       </Dialog>
