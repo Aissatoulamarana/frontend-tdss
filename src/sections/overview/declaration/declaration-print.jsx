@@ -24,13 +24,13 @@ const DeclarationDetailsPrint = forwardRef(({ declaration, employees }, ref) => 
         '& img': { width: 50, height: 50, mr: 2 }
       }}
     >
-      <Box component="img" alt="logo" src={declaration?.company.picture} />
+      <Box component="img" alt="logo" src={declaration?.company?.picture} />
       <Box sx={{ flex: 1, textAlign: 'right' }}>
-        <Typography variant="h6">{declaration?.company.name}</Typography>
-        <Typography variant="body2">{declaration?.company.adresse}</Typography>
-        <Typography variant="body2">{declaration?.company.location}</Typography>
-        <Typography variant="body2">{declaration?.company.contact}</Typography>
-        <Typography variant="body2">{declaration?.company.email}</Typography>
+        <Typography variant="h6">{declaration?.company?.name}</Typography>
+        <Typography variant="body2">{declaration?.company?.adresse}</Typography>
+        <Typography variant="body2">{declaration?.company?.location}</Typography>
+        <Typography variant="body2">{declaration?.company?.contact}</Typography>
+        <Typography variant="body2">{declaration?.company?.email}</Typography>
         
       </Box>
     </Box>
