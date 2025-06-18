@@ -25,6 +25,8 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import WorkIcon from '@mui/icons-material/Work';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LoadingButton from '@mui/lab/LoadingButton';
+// import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import { toast } from 'sonner';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -96,6 +98,11 @@ export function UserDetailsView({ slug }) {
         mr: 1,
         flexShrink: 0,
     };
+
+    const handleEditRow = async (slug) => {
+  router.push(paths.dashboard.user.edit(slug));
+};
+
 
     const onSubmit = handleSubmit(async () => {
         try {
@@ -190,7 +197,7 @@ export function UserDetailsView({ slug }) {
                         borderRadius: 3,
                     }}
                 >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: 3,  position: 'relative' }}>
                         {/* Titre de section */}
                         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
                             {{
@@ -200,6 +207,13 @@ export function UserDetailsView({ slug }) {
                                 3: 'Entreprises associées',
                             }[tabIndex]}
                         </Typography>
+                          <Tooltip title="Modifier">
+                            <Button variant='contained' onClick={() => handleEditRow(slug)} sx={{ position: 'absolute', top: 6, right: 8 }}>
+                                
+                            <Iconify icon="solar:pen-bold" />
+                            
+                            </Button>
+                        </Tooltip>
 
                         {/* Contenu selon l'onglet */}
                         {tabIndex === 0 && (
