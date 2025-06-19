@@ -14,6 +14,9 @@ const API = {
   changePassword : () => `${BASE_URL}/users/set_password/`, // changer le mot de passe
   changeEmail: () => `${BASE_URL}/users/set_email/`, // changer l'email de l'utilisateur
 
+
+  dashboardAdmin: () => `${BASE_URL}/declarations/dashboard-admin/`, // Dashboard admin
+
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
   listUsers: () => `${BASE_URL}/users/`, // Liste des utilisateurs
   listUserTypes: () => `${BASE_URL}/profiles/user-types/`, // Liste des types d'utilisateurs

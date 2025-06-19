@@ -5,23 +5,23 @@ import autoTable from "jspdf-autotable"
 import { Box, Button, Stack } from "@mui/material"
 
 
-export function ExportButtons({ data, type , company }) {
+export function ExportButtons({ data, type , year }) {
   const handleExportExcel = () => {
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, "Données")
-    XLSX.writeFile(wb, `export_${type}.xlsx`)
+    XLSX.writeFile(wb, `export_${type}-${year}.xlsx`)
   }
 
   const handleExportPDF = () => {
     const doc = new jsPDF()
-    doc.text(`Export ${type}`, 10, 10)
+    doc.text(`Export ${type}-${year}`, 10, 10)
 
     let head = []
     let body = []
 
     if (type === "declarations") {
-      head = [["Mois", "Déclarations"]]
+      head = [["Mois", "Déclarations", "Year"]]
       body = data.map(d => [d.mois, d.declarations ?? "-"])
     } else if (type === "factures") {
       head = [["Mois", "Factures"]]

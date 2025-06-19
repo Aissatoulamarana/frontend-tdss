@@ -3,78 +3,41 @@ import { Card, CardContent, Typography, Button, Box, Divider } from "@mui/materi
 import { Icon } from "@iconify/react";
 import { paths } from 'src/routes/paths';
 import { status } from "nprogress";
+import { fDate } from "src/utils/format-time";
+import { fGNF } from "src/utils/format-number";
+import { fCurrency } from "src/utils/format-number";
 
-const DashboardAdmin = () => {
-  const allMockData = {
-    "2025": {
-      "Déc": {
-        declarations: [
-          {
-            numero: "DD001",
-            entreprise: "Entreprise Omega",
-            nbEmployes: 18,
-            status: "validée",
-          },
-          {
-            numero: "DD002",
-            entreprise: "Entreprise Delta",
-            nbEmployes: 12,
-           status: "brouillon",
-          },
-          {
-            numero: "DD003",
-            entreprise: "Entreprise Alpha",
-            nbEmployes: 20,
-            status: "non-soumise",
-          },
-        ],
-        factures: [
-          {
-            numero: "FD001",
-            montant: 450000,
-            statut: "payé",
-            entreprise: "Entreprise Omega",
-          },
-          {
-            numero: "FD002",
-            montant: 520000,
-            statut: "non payé",
-            entreprise: "Entreprise Delta",
-          },
-          {
-            numero: "FD003",
-            montant: 500000,
-            statut: "non payé",
-            entreprise: "Entreprise Alpha",
-          },
-        ],
-        paiements: [
-          {
-            numero: "PD001",
-            montant: 450000,
-            entreprise: "Entreprise Omega",
-            date : "2025-12-01",
-          },
-          {
-            numero: "PD002",
-            montant: 320000,
-            entreprise: "Entreprise Alpha",
-            date : "2025-12-05",
-          },
-           {
-            numero: "PD003",
-            montant: 420000,
-            entreprise: "Entreprise Alpha",
-            date : "2025-12-07",
-          },
-        ],
-      },
-    },
-  };
-
+const DashboardAdmin = ({lastData}) => {
+  
   const latestYear = "2025";
   const latestMonth = "Déc";
-  const data = allMockData[latestYear][latestMonth];
+   const data = lastData || {};
+
+  function formatMontantParDevise(amount, devise) {
+  if (!amount || isNaN(amount)) return "-";
+  switch (devise) {
+    case "Franc Guinéen":
+      return fGNF(amount);
+    case "US dollar":
+      return fCurrency(amount); // utilise `$` ou `€` selon config
+    default:
+      return `${parseFloat(amount).toLocaleString()} ${devise || ''}`;
+  }
+}
+
+const statusDec = {
+    unsubmitted: 'Non soumise',
+    submitted: 'Soumise',
+    rejected: 'Rejetée',
+    validated: 'Validée',
+    billed: 'Facturée',
+  };
+
+  const statusFac = {
+    unpaid: 'Non Payée',
+    paid: 'Payée',
+   
+  };
 
   const displayData = [
     {
@@ -83,9 +46,9 @@ const DashboardAdmin = () => {
       items: data.declarations,
       renderItem: (item) => (
         <>
-          <Typography variant="subtitle2">{item.numero} - {item.entreprise}</Typography>
-          <Typography variant="body2">Employés: {item.nbEmployes}</Typography>
-          <Typography variant="body2">Status: {item.status} </Typography>
+          <Typography variant="subtitle2">{item.number} - {item.company}</Typography>
+          <Typography variant="body2">Employés: {item.nb_employees}</Typography>
+          <Typography variant="body2">Status: {statusDec[item.status] || 'Inconnu'} </Typography>
         </>
       ),
       link: paths.dashboard.declaration.list
@@ -96,9 +59,9 @@ const DashboardAdmin = () => {
       items: data.factures,
       renderItem: (item) => (
         <>
-          <Typography variant="subtitle2">{item.numero} - {item.entreprise}</Typography>
-          <Typography variant="body2">Montant: {item.montant.toLocaleString()} FCFA</Typography>
-          <Typography variant="body2">Statut: {item.statut}</Typography>
+          <Typography variant="subtitle2">{item.number} - {item.client}</Typography>
+          <Typography variant="body2">Montant: {fGNF(item.amount)}</Typography>
+          <Typography variant="body2">Statut:  {statusFac[item.status] || 'Inconnu'}</Typography>
         </>
       ),
       link: paths.dashboard.factures.list
@@ -106,12 +69,12 @@ const DashboardAdmin = () => {
     {
       title: "Derniers Paiements",
       icon: <Icon icon="mdi:credit-card-outline" style={{ color: '#8e24aa', fontSize: 28 }} />,
-      items: data.paiements,
+      items: data.payments,
       renderItem: (item) => (
         <>
-          <Typography variant="subtitle2">{item.numero} - {item.entreprise}</Typography>
-          <Typography variant="body2">Montant: {item.montant.toLocaleString()} FCFA</Typography>
-           <Typography variant="body2">Date: {item.date}</Typography>
+          <Typography variant="subtitle2">{item.number} - {item.payer}</Typography>
+          <Typography variant="body2"> Montant: {formatMontantParDevise(item.amount, item.devise)} </Typography>
+           <Typography variant="body2">Date: {fDate (item.created_on)}</Typography>
         </>
       ),
       link: paths.dashboard.paiements.list
@@ -128,9 +91,9 @@ const DashboardAdmin = () => {
                 {icon}
                 <Typography variant="h6">{title}</Typography>
               </Box>
-              <Typography variant="body2" color="text.secondary">{items.length} total</Typography>
+              <Typography variant="body2" color="text.secondary">{items?.length} total</Typography>
             </Box>
-            {items.slice(0, 3).map((item, i) => (
+            {items?.slice(0, 3).map((item, i) => (
               <Box key={i} mb={2}>
                 {renderItem(item)}
                 {i < 2 && <Divider sx={{ mt: 1 }} />}

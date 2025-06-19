@@ -23,7 +23,7 @@ export function MultiLineChart({ data, type }) {
           {(type === "all" || type === "factures") && (
             <Line type="monotone" dataKey="factures" stroke="#10B981" />
           )}
-          {(type === "all" || type === "paiements") && (
+          {(type === "all"   || type === "paiements") && (
             <Line type="monotone" dataKey="paiements" stroke="#F59E0B" />
           )}
         </LineChart>

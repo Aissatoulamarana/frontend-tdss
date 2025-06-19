@@ -13,7 +13,7 @@ import MonthSelect from './month-select';
 
 
 export function Filters({ onFilterChange }) {
-  const [year, setYear] = useState('2024');
+  const [year, setYear] = useState('2025');
   const [months, setMonths] = useState([]);
   const [type, setType] = useState('all');
   const [company, setCompany] = useState('Toutes');
@@ -21,7 +21,7 @@ export function Filters({ onFilterChange }) {
 
   const handleChange = () => {
     onFilterChange({ year, months, type });
-    toast.info(`Filtres appliqués :\nAnnée : ${year}\nMois : ${months.join(', ')}\nType : ${type} \nEntreprise : ${company}\nPays : ${country}`, {
+    toast.info(`Filtres appliqués :\nAnnée : ${year}\nMois : ${months.join(', ')}\nType : ${type} `, {
       duration: 5000,
       style: {
         whiteSpace: 'pre-line',
@@ -60,7 +60,7 @@ export function Filters({ onFilterChange }) {
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
         {/* Entreprise (TextField) */}
-         <FormControl size="small" sx={{ minWidth: 100 }}>
+         {/* <FormControl size="small" sx={{ minWidth: 100 }}>
         <InputLabel id="company-label">Entreprise</InputLabel>
         <Select
           labelId="company-label"
@@ -72,7 +72,7 @@ export function Filters({ onFilterChange }) {
                 <MenuItem key={index} value={company}>{company}</MenuItem>
             ))}
         </Select>
-      </FormControl>
+      </FormControl> */}
 
         {/* Pays (TextField) */}
         {/* <FormControl size="small">
