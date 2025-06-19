@@ -106,7 +106,7 @@ const useStyles = () =>
           borderColor: '#ddd',
         },
         tableHeader: {
-          backgroundColor: '#f7f7f7',
+          backgroundColor: '#e0e0e0',
         },
         headerCell: {
           flex: 1,
