@@ -1,8 +1,8 @@
 
 
-//  const BASE_URL = 'http://192.168.1.101:8000/api'; // Adresse de votre backend
+//  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
 
- const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
+  const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js
@@ -13,6 +13,9 @@ const API = {
   resetPasswordConfirmation: () => `${BASE_URL}/users/reset_password_confirm/`,// reinitialisation du password
   changePassword : () => `${BASE_URL}/users/set_password/`, // changer le mot de passe
   changeEmail: () => `${BASE_URL}/users/set_email/`, // changer l'email de l'utilisateur
+
+
+  dashboardAdmin: () => `${BASE_URL}/declarations/dashboard-admin/`, // Dashboard admin
 
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
   listUsers: () => `${BASE_URL}/users/`, // Liste des utilisateurs
