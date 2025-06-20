@@ -240,7 +240,7 @@ function transformBackendData(rawData) {
 </Card>
         </Grid>
 
-       
+{/*        
          <Grid size={{ xs: 6, md: 4 }}>
           <AppCurrentDownload
             title="Permis Delivrés"
@@ -253,10 +253,10 @@ function transformBackendData(rawData) {
               ],
             }}
           />
-        </Grid>
+        </Grid> */}
          
           
-        <Grid size={{ xs: 6, md: 8 }}>
+        {/* <Grid size={{ xs: 6, md: 8 }}>
           <AppAreaInstalled
             title="Nombre Total Permis declarés"
             subheader="(+43%) Depuis l'année dernière"
@@ -303,7 +303,7 @@ function transformBackendData(rawData) {
               ],
             }}
           />
-        </Grid>
+        </Grid> */}
        
         <Grid size={{ xs: 6, md: 12 }}>
           <DashboardAdmin
@@ -311,7 +311,7 @@ function transformBackendData(rawData) {
         </Grid>
                 
          
-        
+{/*         
         <Grid size={{ xs: 6, md: 4 }}>
           <AppTopRelated title="Entreprises" list={_appRelated} />
         </Grid>
@@ -322,7 +322,7 @@ function transformBackendData(rawData) {
 
         <Grid size={{ xs: 6, md: 4 }}>
           <AppTopAuthors title="Utilisateurs" list={_appAuthors} />
-        </Grid>
+        </Grid> */}
 
         {/* <Grid size={{ xs: 6, md: 4 }}>
           <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
