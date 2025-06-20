@@ -1,8 +1,8 @@
 import React from 'react';
 import { Autocomplete, TextField } from '@mui/material';
 
-const MonthSelect = ({ months, setMonths, allMonths }) => {
-  return (
+const MonthSelect = ({ months, setMonths, allMonths }) => 
+ 
     <Autocomplete
       multiple
       size="small" 
@@ -19,8 +19,6 @@ const MonthSelect = ({ months, setMonths, allMonths }) => {
           placeholder="Choisissez les mois"
         />
       )}
-    />
-  );
-};
+    />;
 
 export default MonthSelect;

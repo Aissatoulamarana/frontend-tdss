@@ -1,6 +1,6 @@
 
 import * as XLSX from "xlsx"
-import jsPDF from "jspdf"
+import {jsPDF as JsPDF}  from "jspdf"
 import autoTable from "jspdf-autotable"
 import { Box, Button, Stack } from "@mui/material"
 
@@ -14,7 +14,7 @@ export function ExportButtons({ data, type , year }) {
   }
 
   const handleExportPDF = () => {
-    const doc = new jsPDF()
+    const doc = new JsPDF()
     doc.text(`Export ${type}-${year}`, 10, 10)
 
     let head = []
