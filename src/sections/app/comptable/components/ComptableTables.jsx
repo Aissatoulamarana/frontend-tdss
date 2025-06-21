@@ -176,7 +176,7 @@ export function ComptableDeclarationTable({ title }) {
     }}>
       <CardHeader 
         title={
-          <Stack direction="row" alignItems="center" spacing={1} sx={{color: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral, }}>
+          <Stack direction="row" alignItems="center" spacing={1} sx={{color: isDarkMode ? theme.palette.background.paper : theme.palette.common.dark }}>
             <Iconify icon="mdi:clipboard-text-clock" width={24} />
             <Typography variant="h6" >
              

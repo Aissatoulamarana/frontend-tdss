@@ -61,7 +61,7 @@ export function ComptableWidgetSummary({ title, total, icon, color = 'primary', 
               sx={{ 
                 color: theme.palette.common.white,
                 fontWeight: 800,
-                fontSize: '1.8rem',
+                fontSize: '1.5rem',
                 lineHeight: 1.2,
                 textShadow: '0 1px 2px rgba(0,0,0,0.1)'
               }}

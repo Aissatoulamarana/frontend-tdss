@@ -25,6 +25,7 @@ import { useAuthContext } from 'src/auth/hooks/use-auth-context';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useResponsive } from 'src/hooks/use-responsive';
+import { fShortenNumber } from 'src/utils/format-number';
 
 import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
@@ -415,12 +416,7 @@ export function ComptableDashboard() {
                 <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
                   {summaryData.declarationsToInvoice}
                 </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-up" width={16} color="success.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    +12% vs mois dernier
-                  </Typography>
-                </Stack>
+                
               </Box>
               <Box
                 sx={{
@@ -462,12 +458,7 @@ export function ComptableDashboard() {
                 <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
                   {summaryData.totalInvoices}
                 </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-up" width={16} color="success.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    +8% vs mois dernier
-                  </Typography>
-                </Stack>
+                
               </Box>
               <Box
                 sx={{
@@ -509,12 +500,7 @@ export function ComptableDashboard() {
                 <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
                   {summaryData.pendingPayments}
                 </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-down" width={16} color="error.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    -3% vs mois dernier
-                  </Typography>
-                </Stack>
+                
               </Box>
               <Box
                 sx={{
@@ -554,14 +540,9 @@ export function ComptableDashboard() {
                   Revenu total
                 </Typography>
                 <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
-                  {formatAmount(summaryData.totalRevenue)}
+                  {fShortenNumber(summaryData.totalRevenue)}
                 </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-up" width={16} color="success.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    +15% vs mois dernier
-                  </Typography>
-                </Stack>
+                
               </Box>
               <Box
                 sx={{
