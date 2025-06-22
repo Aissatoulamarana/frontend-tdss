@@ -78,6 +78,19 @@ export function ComptableDashboard() {
   const [period, setPeriod] = useState('month');
   const [statusFilter, setStatusFilter] = useState([]);
   const [chartRange, setChartRange] = useState('month');
+
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const years = Array.from({length: 5}, (_, i) => currentYear - i); // 5 dernières années
+
+  const handleYearChange = (newYear) => {
+    setSelectedYear(newYear);
+    // Recharger les données pour la nouvelle année sélectionnée
+    fetchInvoicesData();
+  };
+
+
+
   
   // États pour les données du dashboard
   const [dashboardData, setDashboardData] = useState({
@@ -108,19 +121,22 @@ export function ComptableDashboard() {
   const progress = Math.min(Math.round((dashboardData.totalRevenue / targetAmount) * 100), 100);
   
   const chartData = useMemo(() => ({
-    series: [
-      {
-        name: 'Facturation',
-        data: dashboardData.monthlyData.data,
-      },
-    ],
-    categories: dashboardData.monthlyData.months,
+    series: [{
+      name: 'Nombre de factures',
+      data: dashboardData.monthlyData.data || [],
+    }],
+    categories: dashboardData.monthlyData.months?.map(month => {
+      // Convertir le numéro du mois en nom de mois
+      const date = new Date(2023, parseInt(month, 10) - 1, 1);
+      return date.toLocaleString('fr-FR', { month: 'short' });
+    }) || [],
     stats: [
-      { label: 'Ce mois', value: fCurrency(dashboardData.monthlyData.data[dashboardData.monthlyData.data.length - 1] || 0), trend: 12 },
-      { label: 'Mois dernier', value: fCurrency(dashboardData.monthlyData.data[dashboardData.monthlyData.data.length - 2] || 0), trend: 8 },
-      { label: 'Total annuel', value: fCurrency(dashboardData.totalRevenue), trend: 15 },
+      { 
+        label: 'Total annuel', 
+        value: dashboardData.monthlyData.data?.reduce((sum, val) => sum + val, 0) || 0 
+      }
     ],
-  }), [dashboardData.monthlyData, dashboardData.totalRevenue]);
+  }), [dashboardData.monthlyData]);
   
   const chartOptions = useMemo(
     () => ({
@@ -134,9 +150,12 @@ export function ComptableDashboard() {
         categories: chartData.categories,
       },
       yaxis: {
-        labels: {
-          formatter: (value) => fCurrency(value),
+        title: {
+          text: 'Nombre de factures'
         },
+        labels: {
+          formatter: (value) => Math.round(value) === value ? value : '' // Affiche uniquement les entiers
+        }
       },
       tooltip: {
         y: {
@@ -265,7 +284,7 @@ export function ComptableDashboard() {
   const fetchInvoicesData = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, invoices: true }));
-      const data = await ComptableService.getMonthlyInvoices();
+      const data = await ComptableService.getMonthlyInvoices(selectedYear);
       setDashboardData(prev => ({
         ...prev,
         monthlyData: {
@@ -279,9 +298,9 @@ export function ComptableDashboard() {
     } finally {
       setLoading(prev => ({ ...prev, invoices: false }));
     }
-  }, []);
-
-  // Charger les données au chargement du composant
+  }, [selectedYear]); // N'oubliez pas d'ajouter selectedYear aux dépendances
+  
+  // 4. Ensuite le useEffect qui appelle ces fonctions
   useEffect(() => {
     fetchSummaryData();
     fetchDeclarationsData();
@@ -475,7 +494,7 @@ export function ComptableDashboard() {
               </Typography>
             </Box>
             
-            <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
+            {/* <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
               <InputLabel id="chart-range-label">Période</InputLabel>
               <Select
                 labelId="chart-range-label"
@@ -487,7 +506,7 @@ export function ComptableDashboard() {
                 <MenuItem value="month">30 derniers jours</MenuItem>
                 <MenuItem value="year">12 derniers mois</MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
           </Box>
           
           {/* Contenu du graphique */}
@@ -518,7 +537,16 @@ export function ComptableDashboard() {
                 <CircularProgress />
               </Box>
             ) : (
-              <ComptableFacturationChart />
+              <ComptableFacturationChart 
+                series={[{
+                  name: 'Factures',
+                  data: dashboardData.monthlyData.data || []
+                }]}
+                options={chartOptions}
+                selectedYear={selectedYear}
+                years={years}
+                onYearChange={handleYearChange}
+              />
             )}
           </Box>
           
