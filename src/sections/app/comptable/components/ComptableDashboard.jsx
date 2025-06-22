@@ -78,6 +78,7 @@ export function ComptableDashboard() {
   const [period, setPeriod] = useState('month');
   const [statusFilter, setStatusFilter] = useState([]);
   const [chartRange, setChartRange] = useState('month');
+  const [declarations, setDeclarations] = useState([]);
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -179,12 +180,12 @@ export function ComptableDashboard() {
     [chartData.categories, theme.palette.primary.main]
   );
 
-  // Gestion des changements de filtre
+  /* // Gestion des changements de filtre
   const handlePeriodChange = (event) => {
     setPeriod(event.target.value);
     // Ici, vous pourriez ajouter une logique pour recharger les données en fonction de la période sélectionnée
     console.log('Période sélectionnée:', event.target.value);
-  };
+  }; */
   
   const handleStatusChange = (event) => {
     setStatusFilter(event.target.value);
@@ -263,6 +264,21 @@ export function ComptableDashboard() {
     }
   }, []);
 
+
+  // Recuper les declarations dernierement validated 
+  const fetchLastValidatedDeclarations = useCallback(async () => {
+    try {
+      setLoading(prev => ({ ...prev, declarations: true }));
+      const data = await ComptableService.getLastValidatedDeclarations();
+      setDeclarations(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des déclarations:', error);
+      setErrors(prev => ({ ...prev, declarations: 'Erreur lors du chargement des déclarations' }));
+    } finally {
+      setLoading(prev => ({ ...prev, declarations: false }));
+    }
+  }, []);
+
   // Récupérer les déclarations
   const fetchDeclarationsData = useCallback(async () => {
     try {
@@ -305,7 +321,8 @@ export function ComptableDashboard() {
     fetchSummaryData();
     fetchDeclarationsData();
     fetchInvoicesData();
-  }, [fetchSummaryData, fetchDeclarationsData, fetchInvoicesData]);
+    fetchLastValidatedDeclarations();
+  }, [fetchSummaryData, fetchDeclarationsData, fetchInvoicesData, fetchLastValidatedDeclarations]);
 
   return (
     <Container maxWidth="xl">
@@ -437,7 +454,7 @@ export function ComptableDashboard() {
       </Grid>
 
       {/* Filtres avancés */}
-      <Card sx={{ p: 3, mb: 3 }}>
+      {/* <Card sx={{ p: 3, mb: 3 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
           <Typography variant="h6">Filtres avancés</Typography>
           <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', md: 'auto' } }}>
@@ -477,7 +494,7 @@ export function ComptableDashboard() {
             </Button>
           </Stack>
         </Stack>
-      </Card>
+      </Card> */}
 
       <Grid container spacing={3}>
         {/* Section Évolution des factures */}
@@ -603,6 +620,8 @@ export function ComptableDashboard() {
                 <ComptableDeclarationTable 
                   title="" 
                   onRowClick={handleRowClick} 
+                  declarations={declarations}
+                  loading={loading.declarations}
                 />
               )}
             </Box>

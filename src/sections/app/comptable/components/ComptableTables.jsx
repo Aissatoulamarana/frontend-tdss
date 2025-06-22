@@ -18,7 +18,8 @@ import TablePagination from '@mui/material/TablePagination';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
-
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
 import { Iconify } from 'src/components/iconify';
@@ -29,54 +30,6 @@ import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-// Données mockées pour le développement
-const ALL_DECLARATIONS = [
-  {
-    id: 'DEC-001',
-    date: new Date('2023-05-20'),
-    company: 'Entreprise ABC',
-    employees: 12,
-    amount: 240000,
-    agent: 'Jean Dupont',
-    status: 'validated',
-  },
-  {
-    id: 'DEC-002',
-    date: new Date('2023-05-18'),
-    company: 'Société XYZ',
-    employees: 8,
-    amount: 160000,
-    agent: 'Marie Martin',
-    status: 'validated',
-  },
-  {
-    id: 'DEC-003',
-    date: new Date('2023-05-16'),
-    company: 'Compagnie 123',
-    employees: 15,
-    amount: 300000,
-    agent: 'Pierre Dubois',
-    status: 'validated',
-  },
-  {
-    id: 'DEC-004',
-    date: new Date('2023-05-15'),
-    company: 'Entreprise DEF',
-    employees: 5,
-    amount: 100000,
-    agent: 'Sophie Leroy',
-    status: 'validated',
-  },
-  {
-    id: 'DEC-005',
-    date: new Date('2023-05-14'),
-    company: 'Société GHI',
-    employees: 10,
-    amount: 200000,
-    agent: 'Thomas Bernard',
-    status: 'validated',
-  },
-];
 
 const ALL_INVOICES = [
   {
@@ -132,9 +85,9 @@ const DECLARATION_TABLE_HEAD = [
   { id: 'id', label: 'ID' },
   { id: 'date', label: 'Date' },
   { id: 'company', label: 'Entreprise' },
-  { id: 'employees', label: 'Employés' },
+  { id: 'nb_employees', label: 'Nombre d\'employés' },
   { id: 'amount', label: 'Montant', align: 'right' },
-  { id: 'agent', label: 'Agent' },
+  { id: 'status', label: 'Statut' },
   { id: 'actions', label: 'Actions', align: 'right' },
 ];
 
@@ -142,14 +95,14 @@ const INVOICE_TABLE_HEAD = [
   { id: 'id', label: 'ID' },
   { id: 'date', label: 'Date' },
   { id: 'company', label: 'Entreprise' },
-  { id: 'amount', label: 'Montant', align: 'right' },
+  { id: 'comment', label: 'Commentaire', align: 'right' },
   { id: 'status', label: 'Statut' },
   { id: 'actions', label: 'Actions', align: 'right' },
 ];
 
 // ----------------------------------------------------------------------
 
-export function ComptableDeclarationTable({ title }) {
+export function ComptableDeclarationTable({ title, declarations, loading }) {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const [page, setPage] = useState(0);
@@ -183,7 +136,7 @@ export function ComptableDeclarationTable({ title }) {
               {title || 'Déclarations à facturer'}
             </Typography>
             <Label color="info" sx={{ ml: 1 }}>
-              {ALL_DECLARATIONS.length}
+              {declarations.length}
             </Label>
           </Stack>
         }
@@ -222,9 +175,27 @@ export function ComptableDeclarationTable({ title }) {
             <TableHeadCustom headLabel={DECLARATION_TABLE_HEAD} />
 
             <TableBody>
-              {ALL_DECLARATIONS.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                <DeclarationRow key={row.id} row={row} isDarkMode={isDarkMode} />
-              ))}
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={DECLARATION_TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
+                      <CircularProgress />
+                    </TableCell>
+                  </TableRow>
+                ) : declarations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={DECLARATION_TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Aucune déclaration trouvée
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  declarations
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row) => (
+                      <DeclarationRow key={row.slug} row={row} isDarkMode={isDarkMode} />
+                    ))
+                )}
             </TableBody>
           </Table>
         </Scrollbar>
@@ -233,7 +204,7 @@ export function ComptableDeclarationTable({ title }) {
       <TablePagination
         page={page}
         component="div"
-        count={ALL_DECLARATIONS.length}
+        count={declarations.length}
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}
         rowsPerPageOptions={[5, 10, 25]}
@@ -250,12 +221,12 @@ function DeclarationRow({ row, isDarkMode }) {
   const popover = usePopover();
 
   const handleGenerateInvoice = () => {
-    console.log('Générer facture pour:', row.id);
+    console.log('Générer facture pour:', row.slug);
     popover.onClose();
   };
 
   const handleViewDetails = () => {
-    console.log('Voir détails de la déclaration:', row.id);
+    console.log('Voir détails de la déclaration:', row.slug);
     popover.onClose();
   };
 
@@ -272,14 +243,29 @@ function DeclarationRow({ row, isDarkMode }) {
         },
       }}
     >
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.id}</TableCell>
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{fDate(row.date)}</TableCell>
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>{row.company}</TableCell>
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.employees}</TableCell>
-      <TableCell align="right" sx={{ color: isDarkMode ? theme.palette.success.lighter : theme.palette.success.darker, fontWeight: 600 }}>
-        {fCurrency(row.amount)}
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+        {row.number}
       </TableCell>
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.agent}</TableCell>
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+        {new Date(row.created_on).toLocaleDateString('fr-FR')}
+      </TableCell>
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>
+        {row.title}
+      </TableCell>
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+        {row.nb_employees}
+      </TableCell>
+      <TableCell align="right" sx={{ color: isDarkMode ? theme.palette.success.lighter : theme.palette.success.darker, fontWeight: 600 }}>
+        {/* À adapter selon les données disponibles */}
+        {row.amount ? fCurrency(row.amount) : '-'}
+      </TableCell>
+      <TableCell>
+        <Chip 
+          label={row.status} 
+          color={row.status === 'validated' ? 'success' : 'default'}
+          size="small"
+        />
+      </TableCell>
       <TableCell align="right">
         <IconButton 
           color={popover.open ? 'primary' : 'default'} 
@@ -313,7 +299,6 @@ function DeclarationRow({ row, isDarkMode }) {
     </TableRow>
   );
 }
-
 // ----------------------------------------------------------------------
 
 export function ComptableFactureTable({ title }) {
