@@ -27,6 +27,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { fShortenNumber, fCurrency } from 'src/utils/format-number';
 import ComptableService from 'src/services/comptableService';
+import { CurrencySelector, CURRENCIES } from 'src/components/CurrencySelector';
 
 import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
@@ -79,6 +80,7 @@ export function ComptableDashboard() {
   const [statusFilter, setStatusFilter] = useState([]);
   const [chartRange, setChartRange] = useState('month');
   const [declarations, setDeclarations] = useState([]);
+  const [currency, setCurrency] = useState('XOF');
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -221,7 +223,20 @@ export function ComptableDashboard() {
     // Ici, vous pourriez mettre à jour l'état pour masquer la notification
   };
   
-
+  // Fonction utilitaire pour le choix de la money 
+  const formatAmount = (amount) => {
+    const formatter = CURRENCIES[currency]?.formatter || 'fCurrency';
+    const formatFn = {
+      'fCurrency': fCurrency,
+      'fEuro': fEuro,
+      'fGNF': fGNF
+    }[formatter] || fCurrency;
+    
+    return formatFn(amount, { 
+      minimumFractionDigits: 0,
+      maximumFractionDigits: currency === 'GNF' ? 0 : 2
+    });
+  };
   
   // Fonction pour obtenir la couleur en fonction du statut
   const getStatusColor = (status) => {
@@ -360,6 +375,14 @@ export function ComptableDashboard() {
           <Typography variant="h3" sx={{ mb: 1, fontWeight: 700 }}>
             Tableau de bord Comptable
           </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="body2" color="text.secondary">Devise :</Typography>
+            <CurrencySelector 
+              value={currency}
+              onChange={setCurrency}
+            />
+          </Stack>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
             <Box sx={{ 
               p: 1.5, 
@@ -418,6 +441,7 @@ export function ComptableDashboard() {
             icon="mdi:file-document-edit"
             color="info"
             loading={loading.summary}
+            
           />
         </Grid>
 
@@ -449,6 +473,8 @@ export function ComptableDashboard() {
             color="primary"
             isCurrency
             loading={loading.summary}
+            currency={currency}
+
           />
         </Grid>
       </Grid>
@@ -593,7 +619,7 @@ export function ComptableDashboard() {
       </Grid>
 
         {/* Tableau des déclarations récentes */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -629,7 +655,7 @@ export function ComptableDashboard() {
         </Grid>
 
         {/* Échéances à venir */}
-        <Grid item xs={12} md={4}>
+        {/* <Grid item xs={12} md={4}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -725,7 +751,7 @@ export function ComptableDashboard() {
               </Button>
             </Box>
           </Card>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Container>
   );
