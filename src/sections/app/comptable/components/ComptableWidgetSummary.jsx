@@ -11,7 +11,7 @@ import { fCurrency, fEuro, fGNF } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
-export function ComptableWidgetSummary({ title, total, icon, color = 'primary', isCurrency = false, loading = false, sx, percent = 0, currency = 'XOF', ...other }) {
+export function ComptableWidgetSummary({ title, total, icon, color = 'primary', isCurrency = false, loading = false, sx, percent = 0, currency = 'XOF', isRevenue = false, ...other }) {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
 
@@ -36,21 +36,29 @@ export function ComptableWidgetSummary({ title, total, icon, color = 'primary', 
   }
 
   // Fonction de formatage qui tient compte de la devise
-  const formatValue = (value, isCurrencyValue = false) => {
+  const formatValue = (value, isCurrencyValue = false, isRevenue = false) => {
     if (!isCurrencyValue) {
       return formatLargeNumber(value);
     }
     
-    const formatFn = {
-      'XOF': fCurrency,
-      'EUR': fEuro,
-      'GNF': fGNF
-    }[currency] || fCurrency;
+    // Si c'est le revenu, on applique le formatage de devise avec format court
+    if (isRevenue) {
+      // D'abord, on formate le nombre en version courte
+      const formattedNumber = formatLargeNumber(value);
+      
+      // On récupère le symbole de la devise
+      const currencySymbol = {
+        'XOF': 'FCFA',
+        'EUR': '€',
+        'GNF': 'FG'
+      }[currency] || 'FG';
+      
+      // On combine le nombre formaté avec le symbole de la devise
+      return `${formattedNumber} ${currencySymbol}`;
+    }
     
-    return formatFn(value, { 
-      minimumFractionDigits: 0,
-      maximumFractionDigits: currency === 'GNF' ? 0 : 2
-    });
+    // Pour les autres montants monétaires (non-soumis à conversion)
+    return fCurrency(value, { minimumFractionDigits: 0 });
   };
 
   const formatLargeNumber = (num) => {
@@ -95,9 +103,9 @@ export function ComptableWidgetSummary({ title, total, icon, color = 'primary', 
             {title}
           </Typography>
           <Typography variant="h4" sx={{ fontWeight: 600 }}>
-            {isCurrency ? formatValue(total, true) : formatValue(total)}
+            {isCurrency ? formatValue(total, true, isRevenue) : formatValue(total)}
           </Typography>
-          
+                    
         </Stack>
 
       <Box
