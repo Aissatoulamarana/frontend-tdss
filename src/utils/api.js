@@ -133,6 +133,21 @@ const API = {
   editJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
   deleteJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
 
+  // Tableau de bord comptable
+  getDeclarationsToInvoice: (month = null) => {
+    const url = `${BASE_URL}/declarations/to-invoice/`;
+    return month ? `${url}?month=${month}` : url;
+  },
+  getAccountantFirstLine: (month = null) => {
+    const url = `${BASE_URL}/factures/accountant-dashboard/first-line/`;
+    return month ? `${url}?month=${month}` : url;
+  },
+  getMonthlyInvoices: (year = null) => {
+    const url = `${BASE_URL}/factures/facture-monthly/`;
+    return year ? `${url}?year=${year}` : url;
+  },
+  getLastValidatedDeclarations: () => `${BASE_URL}/declarations/last-validated/`,
+
 };
 
 export default API;

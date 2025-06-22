@@ -4,15 +4,35 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import Skeleton from '@mui/material/Skeleton';
 import { alpha, useTheme } from '@mui/material/styles';
+import { Iconify } from 'src/components/iconify';
 
 import { fShortenNumber, fCurrency } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
-export function ComptableWidgetSummary({ title, total, icon, color = 'primary', isCurrency = false, sx, ...other }) {
+export function ComptableWidgetSummary({ title, total, icon, color = 'primary', isCurrency = false, loading = false, sx, ...other }) {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+
+  if (loading) {
+    return (
+      <Card
+        sx={{
+          height: 120,
+          p: 2,
+          ...sx,
+        }}
+        {...other}
+      >
+        <Stack spacing={1}>
+          <Skeleton variant="text" width="60%" height={20} />
+          <Skeleton variant="text" width="40%" height={32} />
+        </Stack>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -90,7 +110,7 @@ export function ComptableWidgetSummary({ title, total, icon, color = 'primary', 
               }
             }}
           >
-            {icon}
+            {typeof icon === 'string' ? <Iconify icon={icon} width={24} height={24} /> : icon}
           </Box>
         </Stack>
       </Box>
@@ -102,6 +122,7 @@ ComptableWidgetSummary.propTypes = {
   color: PropTypes.string,
   icon: PropTypes.oneOfType([PropTypes.element, PropTypes.string]),
   isCurrency: PropTypes.bool,
+  loading: PropTypes.bool,
   sx: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
   title: PropTypes.string,
   total: PropTypes.number,
