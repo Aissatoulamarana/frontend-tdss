@@ -25,7 +25,7 @@ const AGENT_COMPANIES = [
 
 // ----------------------------------------------------------------------
 
-export default function AgentDashboard() {
+export  function AgentDashboard() {
   // Utiliser le contexte d'authentification pour obtenir l'utilisateur actuel
   const { user } = useAuthContext();
   const settings = useSettingsContext();

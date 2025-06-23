@@ -1,7 +1,7 @@
 'use client';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import AgentDashboard from './components/AgentDashboard';
+import {AgentDashboard} from './components/AgentDashboard';
 
 
 
