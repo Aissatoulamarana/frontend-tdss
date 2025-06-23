@@ -46,7 +46,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
 
     const defaultValues = useMemo(() => {
-        const currentJob = jobs?.find(job => job.name === currentEmployee?.job);
+        const currentJob = jobs?.find(job => job?.name === currentEmployee?.job);
 
         return {
             first: currentEmployee?.first || '',
@@ -55,7 +55,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
             phone: currentEmployee?.phone || '',
 
-            job: currentJob ? currentJob.slug : currentEmployee.job.slug || '',
+            job: currentJob ? currentJob?.slug : currentEmployee?.job.slug || '',
 
         }
     }, [jobs, currentEmployee])
@@ -81,7 +81,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
             // Adaptation spéciale pour job
             if (key === "job" && typeof originalValue === "object") {
-                originalValue = originalValue.slug;
+                originalValue = originalValue?.slug;
             }
 
             if (newData[key] !== originalValue) {
@@ -109,7 +109,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             });
 
             // Ne pas définir manuellement le Content-Type pour laisser le navigateur gérer les délimitations
-            const response = await axios.patch(API.UpdateEmploye(dec_slug, currentEmployee.slug), formData);
+            const response = await axios.patch(API.UpdateEmploye(dec_slug, currentEmployee?.slug), formData);
 
             if (response) {
                 toast.success('Mise à jour réussie !');

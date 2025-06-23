@@ -85,13 +85,13 @@ export default function FilteredTablePrint({ employees }) {
                 }}
               >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{row.passport_number}</TableCell>
+                <TableCell>{row?.passport_number}</TableCell>
                 <TableCell>
-                  {row.last} {row.first}
+                  {row?.last} {row?.first}
                 </TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{row.job.name}</TableCell>
-                <TableCell>{row.job.permit}</TableCell>
+                <TableCell>{row?.phone}</TableCell>
+                <TableCell>{row.job?.name}</TableCell>
+                <TableCell>{row?.job?.permit}</TableCell>
               </TableRow>
             ))}
           </TableBody>
