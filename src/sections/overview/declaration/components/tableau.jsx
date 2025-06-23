@@ -78,7 +78,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows?.map((row) => row.slug);
+      const newSelected = rows?.map((row) => row?.slug);
       setSelected(newSelected);
     } else {
       setSelected([]);
@@ -135,7 +135,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      if (!declaration || !declaration.slug) {
+      if (!declaration || !declaration?.slug) {
         toast("La déclaration n'est pas définie.");
         return;
       }
@@ -145,7 +145,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           limit: rowsPerPage,
           offset: page * rowsPerPage,
         }
-        const response = await axios.get(API.Employe(declaration.slug), {params});
+        const response = await axios.get(API.Employe(declaration?.slug), {params});
         const employees = response.data.results;
         setEmployee(employees);
         setPagination({
@@ -161,7 +161,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
     };
 
-    if (declaration && declaration.slug) {
+    if (declaration && declaration?.slug) {
       fetchEmployees();
     }
   }, [declaration, page, rowsPerPage]);
@@ -169,7 +169,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
   const handleMove = useCallback(
     async () => {
-      if (!declaration || !declaration.slug) {
+      if (!declaration || !declaration?.slug) {
         toast("La déclaration n'est pas définie.");
         return;
       }
@@ -179,10 +179,10 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           target_reference: selectedDeclaration?.value,
         };
 
-        const response = await axios.post(API.move(declaration.slug), payload);
+        const response = await axios.post(API.move(declaration?.slug), payload);
         if (response.status === 200) {
           toast.success('Déplacement effectué avec succès !');
-          setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
+          setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
           setSelected([]);
           setIsDialogOpen(false);
           // router.push(paths.dashboard.declaration.list);
@@ -204,7 +204,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
       const response = await axios.post(API.DeleteEmploye(declaration?.slug), slugs);
       if (response.status === 200) {
-        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
+        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
         setSelected([]);
         setIsDialogSup(false);
         toast.success('Suppression reussie!');
