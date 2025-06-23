@@ -11,8 +11,9 @@ import axios from 'src/utils/axios';
 import { toast } from 'sonner';
 import { Form } from 'src/components/hook-form';
 import { Field } from 'src/components/hook-form';
-import { Stack, MenuItem } from '@mui/material';
+import { Stack, MenuItem , Autocomplete , TextField, CircularProgress } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
+import {  Controller } from 'react-hook-form';
 import { getEntreprises } from 'src/utils/options';
 
 export const NewInvoiceSchema = zod.object({
@@ -24,6 +25,10 @@ export const NewInvoiceSchema = zod.object({
 
 export function DeclarationEdit({ declaration }) {
   const [entreprises, setEntreprises] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [inputValue, setInputValue] = useState(''); 
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const router = useRouter();
   const loadingSend = useBoolean();
 
@@ -51,15 +56,69 @@ export function DeclarationEdit({ declaration }) {
         company: declaration?.company?.slug,
         status: declaration?.status,
         title: declaration?.title,
-        reference: declaration?.reference,
+        reference: declaration?.number,
       });
     }
   }, [declaration, reset]);
 
+  
+    // Charger les entreprises initiales au chargement du composant (API réelle)
+    useEffect(() => {
+      let isMounted = true;
+      setLoading(true);
+   
+      async function fetchCompanies() {
+        try {
+        const resp1 = await axios.get(API.listEntreprises(), {
+          params: {offset : 0, limit: 1},
+        });
+        const total = resp1.data.count;
+      
+        const response = await axios.get(API.listEntreprises(),{
+            params:{offset : 0 , limit : total}
+          });
+        if (!isMounted) return;
+          
+          // Transformer les données pour le format attendu par l'autocomplete
+          const initialCompanies = response.data.results.map(company => ({
+            value: company.slug,
+            label: company.name,
+            slug: company.slug,
+          }));
+  
+          setEntreprises(initialCompanies);
+        } catch (error) {
+          console.error("Erreur lors du chargement initial des entreprises:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchCompanies();
+      return () => {
+        isMounted = false; // Nettoyage pour éviter les fuites de mémoire
+      };
+    }, []);
+
   // Récupération des entreprises pour le select
-  useEffect(() => {
-    getEntreprises().then((data) => setEntreprises(data));
-  }, []);
+  // useEffect(() => {
+  //   getEntreprises().then((data) => setEntreprises(data));
+  // }, []);
+
+  // Handler pour la sélection d'une entreprise
+  const handleCompanyChange = (event, newValue) => {
+    setSelectedCompany(newValue);
+    // Fermer le menu après sélection
+    setOpen(false);
+    
+    // Mettre à jour la valeur dans le formulaire
+    if (newValue) {
+      setValue('company', newValue.value);
+    } else {
+      setValue('company', '');
+    }
+  };
+
 
   const handleUpdate = handleSubmit(async (data) => {
     loadingSend.onTrue();
@@ -107,7 +166,7 @@ export function DeclarationEdit({ declaration }) {
           sx={{ width: '100%' }}
           disabled
         />
-        <Field.Select
+        {/* <Field.Select
           fullWidth
           name="company"
           label="Entreprise"
@@ -118,8 +177,62 @@ export function DeclarationEdit({ declaration }) {
               {company.name}
             </MenuItem>
           ))}
-        </Field.Select>
+        </Field.Select> */}
 
+        <Controller
+  name="company"
+  control={methods.control}
+  render={({ field, fieldState: { error } }) => (
+    <Autocomplete
+      {...field}
+      fullWidth
+      options={entreprises}
+      loading={loading}
+      open={open}
+      value={entreprises.find(opt => opt.value === field.value) || null}
+      inputValue={inputValue}
+      onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+      onChange={(event, newValue) => {
+        setSelectedCompany(newValue);
+        field.onChange(newValue ? newValue.value : '');
+      }}
+      onOpen={() => setOpen(true)}
+      onClose={() => setOpen(false)}
+      getOptionLabel={(option) => option.label || ''}
+      isOptionEqualToValue={(option, value) => option.value === value?.value}
+      filterOptions={(options, state) =>
+        options.filter((option) =>
+          option.label.toLowerCase().includes(state.inputValue.toLowerCase())
+        )
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Entreprise *"
+          placeholder="Rechercher une entreprise..."
+          error={!!error}
+          helperText={error?.message}
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+      renderOption={(props, option) => (
+        <MenuItem {...props} key={option.slug} value={option.value}>
+          {option.label}
+        </MenuItem>
+      )}
+      noOptionsText="Aucune entreprise trouvée"
+      loadingText="Chargement..."
+    />
+  )}
+/>
         <Field.Select
           fullWidth
           name="status"
