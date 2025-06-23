@@ -154,9 +154,9 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
 
   // Stats
   const total = employees?.length || 0;
-  const cadres = employees?.filter(e => e?.job?.category === 'Cadre').length;
-  const agents = employees?.filter(e => e?.job?.category === 'Agent de maitrise').length;
-  const ouvriers = employees?.filter(e => e?.job?.category === 'Ouvrier').length;
+  const cadres = employees?.filter(e => e?.job?.category === 'Cadre')?.length;
+  const agents = employees?.filter(e => e?.job?.category === 'Agent de maitrise')?.length;
+  const ouvriers = employees?.filter(e => e?.job?.category === 'Ouvrier')?.length;
 
   const qrData = encodeURIComponent(`Declaration- ${number} - ${total} personnes`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
