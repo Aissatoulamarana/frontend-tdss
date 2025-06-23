@@ -72,7 +72,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
   const rows =
     filter === 'All'
       ? employee
-      : employee?.filter((row) => row.job.category === filter);
+      : employee?.filter((row) => row?.job?.category === filter);
 
   const isSelected = (slug) => selected.includes(slug);
 
@@ -236,7 +236,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
   const handleUpdateRow = useCallback((updatedEmployee) => {
     setEmployee((prevData) =>
-      prevData.map((row) => (row.slug === updatedEmployee.slug ? updatedEmployee : row))
+      prevData.map((row) => (row?.slug === updatedEmployee?.slug ? updatedEmployee : row))
     );
   }, []);
 
@@ -254,7 +254,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       >
         {selected.length > 0 ? (
           <Typography variant="subtitle1" color="primary">
-            {selected.length} sélectionné(s)
+            {selected?.length} sélectionné(s)
           </Typography>
         ) : (
           <Typography variant="h6" />
@@ -279,11 +279,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <DialogTitle>Déplacer</DialogTitle>
           <DialogContent>
             <Typography sx={{ mb: 4 }}>
-              Êtes-vous sûr de vouloir déplacer <strong>{selected.length}</strong> personnes ?
+              Êtes-vous sûr de vouloir déplacer <strong>{selected?.length}</strong> personnes ?
             </Typography>
             <Autocomplete
               options={options}
-              getOptionLabel={(option) => (option.label ? option.label.toString() : '')}
+              getOptionLabel={(option) => (option?.label ? option?.label.toString() : '')}
               loading={loading}
               value={selectedDeclaration}
               onChange={(event, newValue) => setSelectedDeclaration(newValue)}
@@ -329,7 +329,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <DialogTitle>Supprimer</DialogTitle>
           <DialogContent>
             <Typography sx={{ mb: 2 }}>
-              Êtes-vous sûr de vouloir suprimer <strong>{selected.length}</strong> employés ?
+              Êtes-vous sûr de vouloir suprimer <strong>{selected?.length}</strong> employés ?
             </Typography>
 
           </DialogContent>
@@ -359,20 +359,20 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             marginBottom: 5
           }}
         >
-          {fixedCategories.map((cat) => {
+          {fixedCategories?.map((cat) => {
             const count =
               cat.value === 'All'
                 ? pagination?.count
-                : employee.filter((emp) => emp?.job.category === cat.value).length;
+                : employee.filter((emp) => emp?.job?.category === cat.value).length;
             return (
               <Button
                 key={cat.value}
-                variant={filter === cat.value ? 'contained' : 'text'}
+                variant={filter === cat?.value ? 'contained' : 'text'}
                 size="small"
-                onClick={() => setFilter(cat.value)}
+                onClick={() => setFilter(cat?.value)}
                 sx={{ flexDirection: 'column', alignItems: 'center', minWidth: 80 }}
               >
-                <Typography variant="body1">{cat.label}</Typography>
+                <Typography variant="body1">{cat?.label}</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
                   {count}
                 </Typography>
@@ -387,7 +387,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               <TableCell padding="checkbox">
                 {declaration?.status === 'unsubmitted' && (
                   <Checkbox
-                    indeterminate={selected.length > 0 && selected.length < rows?.length}
+                    indeterminate={selected?.length > 0 && selected?.length < rows?.length}
                     checked={rows?.length > 0 && selected.length === rows?.length}
                     onChange={handleSelectAllClick}
                   />
@@ -404,11 +404,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             {rows
               // ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
-                <React.Fragment key={`${row.id}-${row.slug}`}>
+                <React.Fragment key={`${row?.id}-${row?.slug}`}>
                   <TableRow
 
                     hover
-                    selected={isSelected(row.slug)}
+                    selected={isSelected(row?.slug)}
 
                   >
                     <TableCell padding="checkbox">
@@ -416,11 +416,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                         <Checkbox
                           color="primary"
                           checked={isSelected(row.slug)}
-                          onChange={(event) => handleSelectRow(event, row.slug)}
+                          onChange={(event) => handleSelectRow(event, row?.slug)}
                         />
                       )}
                     </TableCell>
-                    <TableCell>{row.passport_number}</TableCell>
+                    <TableCell>{row?.passport_number}</TableCell>
                     <TableCell>
                       <ListItemText
                         onClick={() => openQuickEdit(row)}
@@ -433,14 +433,14 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                         }}
                       />
                     </TableCell>
-                    <TableCell>{row.phone}</TableCell>
-                    <TableCell>{row.job.name}</TableCell>
-                    <TableCell>{row.job.permit}</TableCell>
+                    <TableCell>{row?.phone}</TableCell>
+                    <TableCell>{row?.job?.name}</TableCell>
+                    <TableCell>{row?.job?.permit}</TableCell>
                   </TableRow>
                   {declaration?.status === 'unsubmitted' && (
                     <EmployeeQuickEditForm
                       currentEmployee={row}
-                      open={quickEditOpen && currentEmployee?.slug === row.slug}
+                      open={quickEditOpen && currentEmployee?.slug === row?.slug}
                       onClose={closeQuickEdit}
                       onUpdateRow={handleUpdateRow}
                       dec_slug={declaration.slug}
