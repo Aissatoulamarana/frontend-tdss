@@ -47,10 +47,10 @@ export function FactureDetails({ facture, user }) {
 const afficherMontant = (montant) => {
   if (devise === 'GNF') {
     return fGNF(montant);
-  } else if (devise === 'USD') {
-    return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
+  } else if (devise === 'US dollar') {
+    return fCurrency(montant ); // Exemple: 1 USD = 9200 GNF
   } else if (devise === 'EUR') {
-    return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+    return fEuro(montant ); // Exemple: 1 EUR = 10000 GNF
   }
 };
 

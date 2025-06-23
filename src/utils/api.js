@@ -2,7 +2,7 @@
 
 //  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
 
-  const BASE_URL = 'https://api-prod.tdss.com.gn/api'; // Adresse de votre backend
+  const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js
