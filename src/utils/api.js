@@ -1,8 +1,10 @@
 
 
+
 //  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
 
   const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
+
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js
@@ -40,7 +42,14 @@ const API = {
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
   unsubmitDeclaration : (slug) =>  `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre 
 
-
+  // Dashboard Agent
+  agentDashboard: (year = null) => {
+    let url = `${BASE_URL}/declarations/dashboard-agent/`;
+    if (year && year !== 'all') {
+      url += `?year=${year}`;
+    }
+    return url;
+  },
 
   Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
   UpdateEmploye: (declarationSlug, employeeSlug) => `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
@@ -107,6 +116,21 @@ const API = {
     const searchParams = new URLSearchParams({ type: 'entreprise', ...params }).toString();
     return `${BASE_URL}/profiles/active-profiles/?${searchParams}`;
   }, // Liste des entreprises avec des params
+  
+  // Endpoints pour le dashboard agent
+  getAgentCompanies: () => `${BASE_URL}/agent/companies/`, // Liste des entreprises gérées par l'agent
+  getAgentSummary: (companyId = 'all') => `${BASE_URL}/agent/summary/?company=${companyId}`, // Résumé des données de l'agent
+  getAgentChartData: (companyId = 'all') => `${BASE_URL}/agent/charts/?company=${companyId}`, // Données pour les graphiques
+  getAgentRecentDeclarations: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/agent/declarations/?${searchParams}`;
+  }, // Déclarations récentes de l'agent
+  getAgentRecentEmployees: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/agent/employees/?${searchParams}`;
+  }, // Employés récents de l'agent
+  getAgentNotifications: () => `${BASE_URL}/agent/notifications/`, // Notifications de l'agent
+  exportAgentData: (companyId = 'all', period = 'month') => `${BASE_URL}/agent/export/?company=${companyId}&period=${period}`, // Exporter les données de l'agent
 
   listDevises: () => `${BASE_URL}/devises/`,
   Devises : () => `${BASE_URL}/devises/list/`,

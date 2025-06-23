@@ -1,7 +1,6 @@
-import { listClasses } from '@mui/material/List';
 import { menuItemClasses } from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
-
+import { listClasses } from '@mui/material/List';
 import { StyledArrow } from './styles';
 import { calculateAnchorOrigin } from './utils';
 
@@ -21,8 +20,11 @@ export function CustomPopover({ open, onClose, children, anchorEl, slotProps, ..
       open={!!open}
       anchorEl={anchorEl}
       onClose={onClose}
+      disableRestoreFocus
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
+      disablePortal={false}
+      keepMounted={false}
       slotProps={{
         ...slotProps,
         paper: {

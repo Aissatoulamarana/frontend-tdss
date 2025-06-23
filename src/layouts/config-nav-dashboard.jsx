@@ -58,10 +58,12 @@ export function useNavData () {
   const {user} = useMockedUser();
 
 
+
   const type = user?.type_name?.toLowerCase().trim();
 
 
   const profil = user?.companies[0]?.type_name.toLowerCase().trim();
+
 
 
   return [
@@ -71,11 +73,15 @@ export function useNavData () {
   {
     subheader: "Vue d'ensemble",
     items: [
+
       ...(type === 'admin' || type === 'caissier' || type === 'comptable' || type === 'agent' || type === 'aguipe'
+
+
         ? [
             { title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard },
             ]
         : []),
+
 
             
         ...(type === 'admin' || type === 'aguipe' || type === 'ministère' ?
@@ -97,6 +103,9 @@ export function useNavData () {
         
 
       ...(type === 'comptable' || type === 'agent' || type === 'aguipe' || type === 'admin'
+
+    
+
         ? [
             {
               title: 'Déclarations',
@@ -105,7 +114,7 @@ export function useNavData () {
             },
           ]
         : []),
-      ...(type === 'comptable' || type === 'caissier' || type === 'admin'
+      ...(type === 'comptable' || type === 'caissier' || type === 'admin' || type === 'aguipe'
         ? [
             {
               title: 'Factures',
@@ -114,7 +123,7 @@ export function useNavData () {
             },
           ]
         : []),
-      ...(type === 'caissier' || type === 'admin'
+      ...(type === 'caissier' || type === 'admin' || type === 'aguipe'
         ? [
             {
               title: 'Paiements',
