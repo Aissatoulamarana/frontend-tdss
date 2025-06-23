@@ -28,48 +28,24 @@ export function DeclarationEditStatusDate({ type }) {
 
   const values = watch();
 
-  // Fonction pour rechercher des entreprises en fonction de la saisie (API réelle)
-  const searchCompanies = useCallback(async (searchText) => {
-    setLoading(true);
-    try {
-      // Utiliser l'API réelle avec des paramètres de recherche
-      const params = searchText && searchText.length > 0 
-        ? { search: searchText, limit: 10 }
-        : { limit: 10 }; // Si pas de texte, charger les 10 premières entreprises
-      
-      const response = await axios.get(API.listEntreprises(params));
-      
-      // Transformer les données pour le format attendu par l'autocomplete
-      const formattedCompanies = response.data.results.map((company) => ({
-        value: company.slug,
-        label: company.name,
-        slug: company.slug,
-      }));
-
-      setCompanies(formattedCompanies);
-    } catch (error) {
-      console.error("Erreur lors de la recherche des entreprises:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  // Créer une version debounced de la fonction de recherche
-  // pour éviter trop d'appels API pendant la saisie
-  const debouncedSearch = useCallback(
-    debounce((text) => {
-      searchCompanies(text);
-    }, 400),
-    [searchCompanies]
-  );
+  
 
   // Charger les entreprises initiales au chargement du composant (API réelle)
   useEffect(() => {
-    const loadInitialCompanies = async () => {
-      setLoading(true);
+    let isMounted = true;
+    setLoading(true);
+ 
+    async function fetchCompanies() {
       try {
-        // Utiliser l'API réelle pour charger les entreprises initiales
-        const response = await axios.get(API.listEntreprises({ limit: 10 }));
+      const resp1 = await axios.get(API.listEntreprises(), {
+        params: {offset : 0, limit: 1},
+      });
+      const total = resp1.data.count;
+    
+      const response = await axios.get(API.listEntreprises(),{
+          params:{offset : 0 , limit : total}
+        });
+      if (!isMounted) return;
         
         // Transformer les données pour le format attendu par l'autocomplete
         const initialCompanies = response.data.results.map(company => ({
@@ -86,7 +62,10 @@ export function DeclarationEditStatusDate({ type }) {
       }
     };
 
-    loadInitialCompanies();
+    fetchCompanies();
+    return () => {
+      isMounted = false; // Nettoyage pour éviter les fuites de mémoire
+    };
   }, []);
 
   // Handler pour la sélection d'une entreprise
@@ -103,33 +82,8 @@ export function DeclarationEditStatusDate({ type }) {
     }
   };
 
-  // Handler pour la saisie dans le champ de recherche
-  const handleInputChange = (event, newInputValue) => {
-    setInputValue(newInputValue);
-    
-    // Si l'utilisateur tape quelque chose, ouvrir le menu
-    if (newInputValue) {
-      setOpen(true);
-    }
-    
-    debouncedSearch(newInputValue);
-  };
-
-  // Handler pour le focus sur le champ
-  const handleFocus = () => {
-    // Ouvrir le menu au focus
-    setOpen(true);
-    
-    // Si la liste est vide, charger les entreprises initiales
-    if (companies.length === 0) {
-      searchCompanies('');
-    }
-  };
   
-  // Handler pour fermer le menu
-  const handleClose = () => {
-    setOpen(false);
-  };
+  
 
 
   return (
@@ -144,45 +98,51 @@ export function DeclarationEditStatusDate({ type }) {
         control={control}
         render={({ field, fieldState: { error } }) => (
           <Autocomplete
-            {...field}
-            fullWidth
-            options={companies}
-            loading={loading}
-            value={selectedCompany}
-            inputValue={inputValue}
-            onChange={handleCompanyChange}
-            onInputChange={handleInputChange}
-            onFocus={handleFocus}
-            onClose={handleClose}
-            open={open && companies.length > 0} // Contrôler l'ouverture du menu
-            getOptionLabel={(option) => option.label || ''}
-            isOptionEqualToValue={(option, value) => option.value === value?.value}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Entreprise *"
-                placeholder="Rechercher une entreprise..."
-                error={!!error}
-                helperText={error?.message}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-            renderOption={(props, option) => (
-              <MenuItem {...props} key={option.slug} value={option.value}>
-                {option.label}
-              </MenuItem>
-            )}
-            noOptionsText="Aucune entreprise trouvée"
-            loadingText="Chargement..."
-          />
+  {...field}
+  fullWidth
+  options={companies}
+  loading={loading}
+  value={selectedCompany}
+  inputValue={inputValue}
+  onChange={handleCompanyChange}
+  onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+  open={open && companies.length > 0}
+  onOpen={() => setOpen(true)}
+  onClose={() => setOpen(false)}
+  getOptionLabel={(option) => option.label || ''}
+  isOptionEqualToValue={(option, value) => option.value === value?.value}
+  filterOptions={(options, state) =>
+    options.filter((option) =>
+      option.label.toLowerCase().includes(state.inputValue.toLowerCase())
+    )
+  }
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Entreprise *"
+      placeholder="Rechercher une entreprise..."
+      error={!!error}
+      helperText={error?.message}
+      InputProps={{
+        ...params.InputProps,
+        endAdornment: (
+          <>
+            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+            {params.InputProps.endAdornment}
+          </>
+        ),
+      }}
+    />
+  )}
+  renderOption={(props, option) => (
+    <MenuItem {...props} key={option.slug} value={option.value}>
+      {option.label}
+    </MenuItem>
+  )}
+  noOptionsText="Aucune entreprise trouvée"
+  loadingText="Chargement..."
+/>
+
         )}
       />
       {/* } */}
