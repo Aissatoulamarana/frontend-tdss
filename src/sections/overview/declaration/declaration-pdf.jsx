@@ -226,8 +226,8 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
               <Text style={styles.cell}>{emp?.passport_number}</Text>
               <Text style={styles.cell}>{emp?.first}</Text>
               <Text style={styles.cell}>{emp?.last}</Text>
-              <Text style={styles.cell}>{emp?.job.name}</Text>
-              <Text style={styles.cell}>{emp?.job.category}</Text>
+              <Text style={styles.cell}>{emp?.job?.name}</Text>
+              <Text style={styles.cell}>{emp?.job?.category}</Text>
               <Text style={[styles.cell, styles.noBorderRight]}>
                 {typeLabels[emp?.type] || emp?.type}
               </Text>

@@ -33,10 +33,10 @@ export function JobItem({ job, onView, onEdit, onDelete }) {
           <ListItemText
             sx={{ mb: 1 }}
             primary={`
-                ${job.name}
+                ${job?.name}
             `}
             // secondary={`Date d'ajout: ${fDate(job.created_at)}`}
-            secondary={`Categorie: ${job.category}`}
+            secondary={`Categorie: ${job?.category}`}
             slotProps={{
               primary: { typography: 'subtitle1' },
               secondary: {

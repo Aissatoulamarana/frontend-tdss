@@ -23,7 +23,7 @@ export default function FilteredTablePrint({ employees }) {
   const rows =
     filter === 'All'
       ? employees
-      : employees.filter(emp => emp.job.category === filter);
+      : employees.filter(emp => emp?.job?.category === filter);
 
   return (
     <>
@@ -45,7 +45,7 @@ export default function FilteredTablePrint({ employees }) {
               <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
                 {cat.value === 'All'
                   ? employees.length
-                  : employees.filter(emp => emp.job.category === cat.value).length}
+                  : employees.filter(emp => emp?.job?.category === cat.value).length}
               </Typography>
             </Box>
           </Button>
