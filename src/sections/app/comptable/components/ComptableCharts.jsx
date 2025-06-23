@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Typography from '@mui/material/Typography';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import { CardHeader, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Iconify } from 'src/components/iconify';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 
 import { Chart } from 'src/components/chart';
-import { fCurrency } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -145,34 +144,24 @@ export function ComptableStatusChart() {
 
 // ----------------------------------------------------------------------
 
-export function ComptableFacturationChart() {
-  const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
-  
-  const [selectedYear, setSelectedYear] = useState('2023');
-  
-  const availableYears = ['2021', '2022', '2023'];
-  
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-  };
 
-  const chartData = MONTHLY_INVOICE_DATA.map(item => item.value);
+export function ComptableFacturationChart({ series, options, selectedYear, years, onYearChange }) {
+  const theme = useTheme();
   
+  // Utilisez les options passées en props ou définissez des valeurs par défaut
   const chartOptions = {
     chart: {
       background: 'transparent',
-      stacked: false,
       toolbar: { show: false },
     },
     colors: [theme.palette.primary.main],
     dataLabels: { enabled: false },
     stroke: {
-      width: 2,
+      width: 3,
       curve: 'smooth',
     },
     xaxis: {
-      categories: MONTHLY_INVOICE_DATA.map(item => item.month),
+      categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
       labels: {
         style: {
           colors: theme.palette.text.secondary,
@@ -180,74 +169,55 @@ export function ComptableFacturationChart() {
       },
     },
     yaxis: {
+      title: {
+        text: 'Nombre de factures',
+        style: {
+          color: theme.palette.text.secondary,
+        },
+      },
       labels: {
+        formatter: (value) => Math.round(value) === value ? value : '',
         style: {
           colors: theme.palette.text.secondary,
         },
-        formatter: (value) => fCurrency(value),
       },
     },
     tooltip: {
       y: {
-        formatter: (value) => fCurrency(value),
+        formatter: (value) => `${value} facture${value > 1 ? 's' : ''}`,
       },
-      theme: isDarkMode ? 'light' : 'dark',
     },
     grid: {
       borderColor: theme.palette.divider,
-      strokeDashArray: 3,
-      xaxis: {
-        lines: { show: false },
-      },
-      yaxis: {
-        lines: { show: true },
-      },
     },
-    markers: {
-      size: 5,
-      strokeColors: theme.palette.background.paper,
-      fillOpacity: 1,
-      strokeOpacity: 1,
-      hover: {
-        size: 7,
-      },
-    },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.5,
-        opacityTo: 0.3,
-      },
-    },
+    ...options, // Permet de surcharger les options par défaut
   };
 
   return (
     <Card>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 2, pb: 1 }}>
-        <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-          <Iconify icon="mdi:chart-line" width={24} sx={{ mr: 1 }} />
-          Évolution des facturations
-        </Typography>
-        
-        <FormControl sx={{ minWidth: 120 }} size="small">
-          <InputLabel id="year-select-label">Année</InputLabel>
-          <Select
-            labelId="year-select-label"
-            value={selectedYear}
-            label="Année"
-            onChange={handleYearChange}
-          >
-            {availableYears.map(year => (
-              <MenuItem key={year} value={year}>{year}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
+      <CardHeader 
+        title="Évolution des factures mensuelles"
+        subheader="Nombre de factures par mois"
+        action={
+          <FormControl sx={{ minWidth: 120 }} size="small">
+            <InputLabel id="year-select-label">Année</InputLabel>
+            <Select
+              labelId="year-select-label"
+              value={selectedYear}
+              label="Année"
+              onChange={(e) => onYearChange(e.target.value)}
+            >
+              {years.map(year => (
+                <MenuItem key={year} value={year}>{year}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        }
+      />
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
         <Chart
           type="area"
-          series={[{ name: 'Facturations', data: chartData }]}
+          series={series}
           options={chartOptions}
           height={320}
         />

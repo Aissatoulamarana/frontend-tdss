@@ -25,9 +25,13 @@ import { useAuthContext } from 'src/auth/hooks/use-auth-context';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useResponsive } from 'src/hooks/use-responsive';
+import { fShortenNumber, fCurrency } from 'src/utils/format-number';
+import ComptableService from 'src/services/comptableService';
+import { CurrencySelector, CURRENCIES } from 'src/components/CurrencySelector';
 
 import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
+import { ComptableWidgetSummary } from './ComptableWidgetSummary';
 
 // ----------------------------------------------------------------------
 
@@ -75,14 +79,30 @@ export function ComptableDashboard() {
   const [period, setPeriod] = useState('month');
   const [statusFilter, setStatusFilter] = useState([]);
   const [chartRange, setChartRange] = useState('month');
-  const [hasNewNotifications] = useState(true);
-  const [unreadNotifications] = useState(3);
+  const [declarations, setDeclarations] = useState([]);
+  const [currency, setCurrency] = useState('XOF');
+
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const years = Array.from({length: 5}, (_, i) => currentYear - i); // 5 dernières années
+
+  const handleYearChange = (newYear) => {
+    setSelectedYear(newYear);
+    // Recharger les données pour la nouvelle année sélectionnée
+    fetchInvoicesData();
+  };
+
+
+
   
-  const [summaryData, setSummaryData] = useState({
-    declarationsToInvoice: 24,
-    totalInvoices: 156,
-    pendingPayments: 32,
-    totalRevenue: 15680000, // en FCFA
+  // États pour les données du dashboard
+  const [dashboardData, setDashboardData] = useState({
+    declarationsToInvoice: 0,
+    totalInvoices: 0,
+    pendingPayments: 0,
+    totalRevenue: 0,
+    monthlyData: { months: [], data: [] },
+    lastDeclarations: []
   });
 
   const [loading, setLoading] = useState({
@@ -101,23 +121,25 @@ export function ComptableDashboard() {
   
   // Données pour le graphique d'objectif mensuel
   const targetAmount = 20000000; // 20 000 000 FCFA
-  const currentAmount = 15680000; // 15 680 000 FCFA
-  const progress = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+  const progress = Math.min(Math.round((dashboardData.totalRevenue / targetAmount) * 100), 100);
   
   const chartData = useMemo(() => ({
-    series: [
-      {
-        name: 'Facturation',
-        data: [1200000, 1500000, 1800000, 1600000, 2100000, 1900000, 2200000, 2000000, 2300000, 2500000, 2700000, 3000000],
-      },
-    ],
-    categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+    series: [{
+      name: 'Nombre de factures',
+      data: dashboardData.monthlyData.data || [],
+    }],
+    categories: dashboardData.monthlyData.months?.map(month => {
+      // Convertir le numéro du mois en nom de mois
+      const date = new Date(2023, parseInt(month, 10) - 1, 1);
+      return date.toLocaleString('fr-FR', { month: 'short' });
+    }) || [],
     stats: [
-      { label: 'Ce mois', value: formatAmount(3000000), trend: 12 },
-      { label: 'Mois dernier', value: formatAmount(2700000), trend: 8 },
-      { label: 'Total annuel', value: formatAmount(24800000), trend: 15 },
+      { 
+        label: 'Total annuel', 
+        value: dashboardData.monthlyData.data?.reduce((sum, val) => sum + val, 0) || 0 
+      }
     ],
-  }), []);
+  }), [dashboardData.monthlyData]);
   
   const chartOptions = useMemo(
     () => ({
@@ -131,9 +153,12 @@ export function ComptableDashboard() {
         categories: chartData.categories,
       },
       yaxis: {
-        labels: {
-          formatter: (value) => fCurrency(value),
+        title: {
+          text: 'Nombre de factures'
         },
+        labels: {
+          formatter: (value) => Math.round(value) === value ? value : '' // Affiche uniquement les entiers
+        }
       },
       tooltip: {
         y: {
@@ -157,12 +182,12 @@ export function ComptableDashboard() {
     [chartData.categories, theme.palette.primary.main]
   );
 
-  // Gestion des changements de filtre
+  /* // Gestion des changements de filtre
   const handlePeriodChange = (event) => {
     setPeriod(event.target.value);
     // Ici, vous pourriez ajouter une logique pour recharger les données en fonction de la période sélectionnée
     console.log('Période sélectionnée:', event.target.value);
-  };
+  }; */
   
   const handleStatusChange = (event) => {
     setStatusFilter(event.target.value);
@@ -198,7 +223,20 @@ export function ComptableDashboard() {
     // Ici, vous pourriez mettre à jour l'état pour masquer la notification
   };
   
-
+  // Fonction utilitaire pour le choix de la money 
+  const formatAmount = (amount) => {
+    const formatter = CURRENCIES[currency]?.formatter || 'fCurrency';
+    const formatFn = {
+      'fCurrency': fCurrency,
+      'fEuro': fEuro,
+      'fGNF': fGNF
+    }[formatter] || fCurrency;
+    
+    return formatFn(amount, { 
+      minimumFractionDigits: 0,
+      maximumFractionDigits: currency === 'GNF' ? 0 : 2
+    });
+  };
   
   // Fonction pour obtenir la couleur en fonction du statut
   const getStatusColor = (status) => {
@@ -222,89 +260,84 @@ export function ComptableDashboard() {
     return statusIcons[status] || 'mdi:circle';
   };
 
-  // Fonction pour récupérer les données de synthèse
+  // Récupérer les données de synthèse
   const fetchSummaryData = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, summary: true }));
-      setErrors(prev => ({ ...prev, summary: null }));
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Mise à jour des données de synthèse
-      setSummaryData({
-        declarationsToInvoice: 12,
-        totalInvoices: 45,
-        pendingPayments: 5,
-        totalRevenue: 24800000,
-      });
-      
-      setLoading(prev => ({ ...prev, summary: false }));
+      const data = await ComptableService.getAccountantFirstLine();
+      setDashboardData(prev => ({
+        ...prev,
+        totalInvoices: data.number_total_factures || 0,
+        pendingPayments: data.number_factures_unpaid || 0,
+        totalRevenue: data.total_factures_amount || 0,
+      }));
     } catch (error) {
       console.error('Erreur lors de la récupération des données de synthèse:', error);
-      setErrors(prev => ({ ...prev, summary: 'Erreur lors de la récupération des données de synthèse' }));
+      setErrors(prev => ({ ...prev, summary: 'Erreur lors du chargement des données de synthèse' }));
+    } finally {
       setLoading(prev => ({ ...prev, summary: false }));
     }
   }, []);
 
-  // Fonction pour récupérer les données des déclarations
+
+  // Recuper les declarations dernierement validated 
+  const fetchLastValidatedDeclarations = useCallback(async () => {
+    try {
+      setLoading(prev => ({ ...prev, declarations: true }));
+      const data = await ComptableService.getLastValidatedDeclarations();
+      setDeclarations(data);
+    } catch (error) {
+      console.error('Erreur lors du chargement des déclarations:', error);
+      setErrors(prev => ({ ...prev, declarations: 'Erreur lors du chargement des déclarations' }));
+    } finally {
+      setLoading(prev => ({ ...prev, declarations: false }));
+    }
+  }, []);
+
+  // Récupérer les déclarations
   const fetchDeclarationsData = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, declarations: true }));
-      setErrors(prev => ({ ...prev, declarations: null }));
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setLoading(prev => ({ ...prev, declarations: false }));
+      const data = await ComptableService.getDeclarationsToInvoice();
+      setDashboardData(prev => ({
+        ...prev,
+        declarationsToInvoice: data.number_declarations_to_invoice || 0,
+      }));
     } catch (error) {
       console.error('Erreur lors de la récupération des déclarations:', error);
-      setErrors(prev => ({ ...prev, declarations: 'Erreur lors de la récupération des déclarations' }));
+      setErrors(prev => ({ ...prev, declarations: 'Erreur lors du chargement des déclarations' }));
+    } finally {
       setLoading(prev => ({ ...prev, declarations: false }));
     }
   }, []);
 
-  // Fonction pour récupérer les données des factures
+  // Récupérer les données des factures
   const fetchInvoicesData = useCallback(async () => {
     try {
       setLoading(prev => ({ ...prev, invoices: true }));
-      setErrors(prev => ({ ...prev, invoices: null }));
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setLoading(prev => ({ ...prev, invoices: false }));
+      const data = await ComptableService.getMonthlyInvoices(selectedYear);
+      setDashboardData(prev => ({
+        ...prev,
+        monthlyData: {
+          months: data.month || [],
+          data: data.data || []
+        }
+      }));
     } catch (error) {
       console.error('Erreur lors de la récupération des factures:', error);
-      setErrors(prev => ({ ...prev, invoices: 'Erreur lors de la récupération des factures' }));
+      setErrors(prev => ({ ...prev, invoices: 'Erreur lors du chargement des factures' }));
+    } finally {
       setLoading(prev => ({ ...prev, invoices: false }));
     }
-  }, []);
-
-  // Fonction pour récupérer les données des graphiques
-  const fetchChartData = useCallback(async () => {
-    try {
-      setLoading(prev => ({ ...prev, charts: true }));
-      setErrors(prev => ({ ...prev, charts: null }));
-      
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setLoading(prev => ({ ...prev, charts: false }));
-    } catch (error) {
-      console.error('Erreur lors de la récupération des données des graphiques:', error);
-      setErrors(prev => ({ ...prev, charts: 'Erreur lors de la récupération des données des graphiques' }));
-      setLoading(prev => ({ ...prev, charts: false }));
-    }
-  }, []);
-
-  // Charger les données au chargement du composant
+  }, [selectedYear]); // N'oubliez pas d'ajouter selectedYear aux dépendances
+  
+  // 4. Ensuite le useEffect qui appelle ces fonctions
   useEffect(() => {
     fetchSummaryData();
     fetchDeclarationsData();
     fetchInvoicesData();
-    fetchChartData();
-  }, [fetchSummaryData, fetchDeclarationsData, fetchInvoicesData, fetchChartData]);
+    fetchLastValidatedDeclarations();
+  }, [fetchSummaryData, fetchDeclarationsData, fetchInvoicesData, fetchLastValidatedDeclarations]);
 
   return (
     <Container maxWidth="xl">
@@ -342,6 +375,14 @@ export function ComptableDashboard() {
           <Typography variant="h3" sx={{ mb: 1, fontWeight: 700 }}>
             Tableau de bord Comptable
           </Typography>
+          <Box sx={{ flexGrow: 1 }} />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Typography variant="body2" color="text.secondary">Devise :</Typography>
+            <CurrencySelector 
+              value={currency}
+              onChange={setCurrency}
+            />
+          </Stack>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
             <Box sx={{ 
               p: 1.5, 
@@ -367,7 +408,7 @@ export function ComptableDashboard() {
       </Box>
 
       {/* Notification d'alerte */}
-      {hasNewNotifications && (
+      {false && (
         <Alert 
           severity="info" 
           icon={<Iconify icon="mdi:bell-alert" />}
@@ -384,7 +425,7 @@ export function ComptableDashboard() {
           sx={{ mb: 3 }}
         >
           <AlertTitle>Nouvelles notifications</AlertTitle>
-          Vous avez {unreadNotifications} nouvelles notifications non lues.
+          Vous avez 3 nouvelles notifications non lues.
           <Button color="inherit" size="small" sx={{ ml: 1, textTransform: 'none' }}>
             Voir
           </Button>
@@ -394,196 +435,52 @@ export function ComptableDashboard() {
       {/* Widgets de résumé améliorés */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            p: 3, 
-            height: '100%',
-            borderLeft: '4px solid',
-            borderColor: 'info.main',
-            transition: theme.transitions.create(['transform', 'box-shadow'], {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.customShadows.z16,
-            },
-          }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Déclarations à facturer
-                </Typography>
-                <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
-                  {summaryData.declarationsToInvoice}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-up" width={16} color="success.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    +12% vs mois dernier
-                  </Typography>
-                </Stack>
-              </Box>
-              <Box
-                sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  bgcolor: 'info.lighter',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'info.main',
-                }}
-              >
-                <Iconify icon="mdi:file-document-edit" width={32} />
-              </Box>
-            </Stack>
-          </Card>
+          <ComptableWidgetSummary
+            title="Déclarations à facturer"
+            total={dashboardData.declarationsToInvoice}
+            icon="mdi:file-document-edit"
+            color="info"
+            loading={loading.summary}
+            
+          />
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            p: 3, 
-            height: '100%',
-            borderLeft: '4px solid',
-            borderColor: 'success.main',
-            transition: theme.transitions.create(['transform', 'box-shadow'], {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.customShadows.z16,
-            },
-          }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Total Factures
-                </Typography>
-                <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
-                  {summaryData.totalInvoices}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-up" width={16} color="success.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    +8% vs mois dernier
-                  </Typography>
-                </Stack>
-              </Box>
-              <Box
-                sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  bgcolor: 'success.lighter',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'success.main',
-                }}
-              >
-                <Iconify icon="mdi:file-document-multiple" width={32} />
-              </Box>
-            </Stack>
-          </Card>
+          <ComptableWidgetSummary
+            title="Total Factures"
+            total={dashboardData.totalInvoices}
+            icon="mdi:file-document-multiple"
+            color="success"
+            loading={loading.summary}
+          />
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            p: 3, 
-            height: '100%',
-            borderLeft: '4px solid',
-            borderColor: 'warning.main',
-            transition: theme.transitions.create(['transform', 'box-shadow'], {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.customShadows.z16,
-            },
-          }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Paiements en attente
-                </Typography>
-                <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
-                  {summaryData.pendingPayments}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-down" width={16} color="error.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    -3% vs mois dernier
-                  </Typography>
-                </Stack>
-              </Box>
-              <Box
-                sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  bgcolor: 'warning.lighter',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'warning.main',
-                }}
-              >
-                <Iconify icon="mdi:clock-time-four" width={32} />
-              </Box>
-            </Stack>
-          </Card>
+          <ComptableWidgetSummary
+            title="Paiements en attente"
+            total={dashboardData.pendingPayments}
+            icon="mdi:clock-time-four"
+            color="warning"
+            loading={loading.summary}
+          />
         </Grid>
 
         <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ 
-            p: 3, 
-            height: '100%',
-            borderLeft: '4px solid',
-            borderColor: 'primary.main',
-            transition: theme.transitions.create(['transform', 'box-shadow'], {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '&:hover': {
-              transform: 'translateY(-4px)',
-              boxShadow: theme.customShadows.z16,
-            },
-          }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Revenu total
-                </Typography>
-                <Typography variant="h3" sx={{ mt: 1, mb: 0.5 }}>
-                  {formatAmount(summaryData.totalRevenue)}
-                </Typography>
-                <Stack direction="row" alignItems="center" spacing={0.5}>
-                  <Iconify icon="mdi:trending-up" width={16} color="success.main" />
-                  <Typography variant="caption" color="text.secondary">
-                    +15% vs mois dernier
-                  </Typography>
-                </Stack>
-              </Box>
-              <Box
-                sx={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: '50%',
-                  bgcolor: 'primary.lighter',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'primary.main',
-                }}
-              >
-                <Iconify icon="mdi:cash-multiple" width={32} />
-              </Box>
-            </Stack>
-          </Card>
+          <ComptableWidgetSummary
+            title="Revenu total"
+            total={dashboardData.totalRevenue}
+            icon="mdi:cash-multiple"
+            color="primary"
+            isCurrency
+            loading={loading.summary}
+            currency={currency}
+            isRevenue
+          />
         </Grid>
       </Grid>
 
       {/* Filtres avancés */}
-      <Card sx={{ p: 3, mb: 3 }}>
+      {/* <Card sx={{ p: 3, mb: 3 }}>
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
           <Typography variant="h6">Filtres avancés</Typography>
           <Stack direction="row" spacing={2} sx={{ width: { xs: '100%', md: 'auto' } }}>
@@ -623,7 +520,7 @@ export function ComptableDashboard() {
             </Button>
           </Stack>
         </Stack>
-      </Card>
+      </Card> */}
 
       <Grid container spacing={3}>
         {/* Section Évolution des factures */}
@@ -640,7 +537,7 @@ export function ComptableDashboard() {
               </Typography>
             </Box>
             
-            <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
+            {/* <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
               <InputLabel id="chart-range-label">Période</InputLabel>
               <Select
                 labelId="chart-range-label"
@@ -652,7 +549,7 @@ export function ComptableDashboard() {
                 <MenuItem value="month">30 derniers jours</MenuItem>
                 <MenuItem value="year">12 derniers mois</MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
           </Box>
           
           {/* Contenu du graphique */}
@@ -683,7 +580,16 @@ export function ComptableDashboard() {
                 <CircularProgress />
               </Box>
             ) : (
-              <ComptableFacturationChart />
+              <ComptableFacturationChart 
+                series={[{
+                  name: 'Factures',
+                  data: dashboardData.monthlyData.data || []
+                }]}
+                options={chartOptions}
+                selectedYear={selectedYear}
+                years={years}
+                onYearChange={handleYearChange}
+              />
             )}
           </Box>
           
@@ -713,7 +619,7 @@ export function ComptableDashboard() {
       </Grid>
 
         {/* Tableau des déclarations récentes */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -740,6 +646,8 @@ export function ComptableDashboard() {
                 <ComptableDeclarationTable 
                   title="" 
                   onRowClick={handleRowClick} 
+                  declarations={declarations}
+                  loading={loading.declarations}
                 />
               )}
             </Box>
@@ -747,7 +655,7 @@ export function ComptableDashboard() {
         </Grid>
 
         {/* Échéances à venir */}
-        <Grid item xs={12} md={4}>
+        {/* <Grid item xs={12} md={4}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -843,7 +751,7 @@ export function ComptableDashboard() {
               </Button>
             </Box>
           </Card>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Container>
   );
