@@ -107,6 +107,7 @@ export function DeclarationListView() {
     fonction: [],
     title: '',
     company: '',
+    passport_number: '',
     status: 'all',
     starts_at: null,
     ends_at: null,
@@ -128,6 +129,7 @@ export function DeclarationListView() {
     !!filters.state.type ||
     !!filters.state.title ||
     !!filters.state.company ||
+    !!filters.state.passport_number ||
     filters.state.fonction.length > 0 ||
     filters.state.status !== 'all' ||
     (!!filters.state.starts_at && !!filters.state.ends_at);
@@ -469,8 +471,9 @@ export function DeclarationListView() {
           ? { company: filters.state.company }
           : filters.state.title
             ? { title: filters.state.title }
-
-            : {}
+            : filters.state.passport_number
+              ? { passport_number: filters.state.passport_number }
+              : {}
         ),
 
         ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
@@ -505,7 +508,7 @@ export function DeclarationListView() {
  
     fetchDeclarations();
 
-  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status, filters.state.starts_at, filters.state.ends_at]);
+  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.passport_number, filters.state.status, filters.state.starts_at, filters.state.ends_at]);
 
 
   if (loading) {

@@ -110,6 +110,7 @@ export function FactureListView() {
   const filters = useSetState({
     number: '',
     declaration_number:'',
+    company: '',
     service: [],
     status: 'all',
     date_before: null,
@@ -130,6 +131,7 @@ export function FactureListView() {
   const canReset =
     !!filters.state.number ||
     !!filters.state.declaration_number ||
+    !!filters.state.company ||
     filters.state.service.length > 0 ||
     filters.state.status !== 'all' ||
     (!!filters.state.date_before && !!filters.state.date_after);
@@ -307,46 +309,46 @@ export function FactureListView() {
   useEffect(() => {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
+      setLoading(true);
       try {
-        setLoading(true); // Démarre le chargement
         const offset = table.page * table.rowsPerPage;
         const params = {
           limit: table.rowsPerPage,
           offset: offset,
+          ...(filters.state.number
+            ? { number: filters.state.number }
+            : filters.state.declaration_number
+              ? { declaration_number: filters.state.declaration_number }
+              : filters.state.company
+                ? { company: filters.state.company }
+                : {}
+          ),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-          ...(filters.state.number ? { number: filters.state.number } : {}),
-          ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
-                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
-                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD ')
-              }
+              date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD'),
+              date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD')
+            }
             : {}
-          )
+          ),
         };
-        const response = await axios.get(API.listFactures(), { params }); // Remplacez l'URL par celle de votre backend
-        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+
+        const response = await axios.get(API.listFactures(), { params });
+        setTableData(response.data.results);
         setPagination({
           count: response.data.count,
           next: response.data.next,
-          previous: response.data.previous
-        })
+          previous: response.data.previous,
+        });
       } catch (err) {
-        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
-        toast(error);
+        setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchFactures();
-  }, [table.page, 
-    table.rowsPerPage, 
-    filters.state.status , 
-    filters.state.date_before, 
-    filters.state.date_after , 
-    filters.state.number, 
-    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage, filters.state.number, filters.state.declaration_number, filters.state.company, filters.state.status, filters.state.date_before, filters.state.date_after]);
 
   if (loading) {
     console.info('Loading factures...');

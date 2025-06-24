@@ -25,6 +25,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const popover = usePopover();
   const [titleInput, setTitleInput] = useState('');
   const [companyInput, setCompanyInput] = useState('');
+  const [passportInput, setPassportInput] = useState('');
 
   const handleFilterName = useCallback(
     (event) => {
@@ -41,8 +42,8 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         if (filters.state.title !== value) {
           onResetPage();
           filters.setState({ title: event.target.value });
-          // Mise à jour combinée du state : on réinitialise company et met à jour title
-          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+          // Mise à jour combinée du state : on réinitialise company et passport et met à jour title
+          filters.setState((prev) => ({ ...prev, title: value, company: '', passport_number: '' }));
         }
       }
     },
@@ -56,14 +57,28 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         if (filters.state.company !== value) {
           onResetPage();
           filters.setState({ company: event.target.value });
-          // Mise à jour combinée du state : on réinitialise company et met à jour title
-          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+          // Mise à jour combinée du state : on réinitialise title et passport et met à jour company
+          filters.setState((prev) => ({ ...prev, company: value, title: '', passport_number: '' }));
         }
       }
     },
     [filters, onResetPage]
   );
 
+  const handlePassportKeyUp = useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.passport_number !== value) {
+          onResetPage();
+          filters.setState({ passport_number: event.target.value });
+          // Mise à jour combinée du state : on réinitialise title et company et met à jour passport
+          filters.setState((prev) => ({ ...prev, passport_number: value, title: '', company: '' }));
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
 
   const handleFilterService = useCallback(
     (event) => {
@@ -193,6 +208,23 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
                 startAdornment: (
                   <InputAdornment position="start">
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
+            }}
+          />
+          
+          <TextField
+            fullWidth
+            value={passportInput}
+            onChange={(e) => setPassportInput(e.target.value)}
+            onKeyDown={handlePassportKeyUp}
+            placeholder="Rechercher par numéro de passeport"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="mdi:passport" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
               }

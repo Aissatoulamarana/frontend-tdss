@@ -8,12 +8,15 @@ import { default as API } from 'src/utils/api';
 export const AgentDashboardService = {
   /**
    * Récupère les données du dashboard agent
-   * @param {number|string|null} year - Année pour filtrer les données (optionnel)
+   * @param {string} year - Année pour filtrer les données (optionnel)
    * @returns {Promise} Promesse contenant les données du dashboard
    */
-  getDashboardData: async (year = null) => {
+  getDashboardData: async ( year = null) => {
     try {
-      const response = await axiosInstance.get(API.agentDashboard(year));
+      // Construire l'URL avec le paramètre year si fourni
+      const url = API.agentDashboard(year);
+      console.log("Appel API avec URL ", url);
+      const response = await axiosInstance.get(url);
       return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération des données du dashboard agent:', error);

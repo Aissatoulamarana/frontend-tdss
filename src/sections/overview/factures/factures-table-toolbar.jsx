@@ -22,6 +22,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const popover = usePopover();
   const [numberInput, setNumberInput] = useState('');
   const [declarationInput, setDeclarationInput] = useState('');
+  const [companyInput, setCompanyInput] = useState('');
 
   const handleNumberKeyUp = useCallback(
     (event) => {
@@ -43,6 +44,19 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         if (filters.state.declaration_number !== value) {
           onResetPage();
           filters.setState({ declaration_number: event.target.value });
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
+  const handleCompanyKeyUp = useCallback(
+    (event) => {
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.company !== value) {
+          onResetPage();
+          filters.setState({ company: event.target.value });
         }
       }
     },
@@ -165,6 +179,22 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
                 startAdornment: (
                   <InputAdornment position="start">
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
+            }}
+          />
+          <TextField
+            fullWidth
+            onChange={(e) => setCompanyInput(e.target.value)}
+            onKeyDown={handleCompanyKeyUp}
+            value={companyInput}
+            placeholder="rechercher par nom de l'entreprise.."
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="mingcute:building-2-line" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
               }

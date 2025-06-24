@@ -18,6 +18,11 @@ export function FactureTableFilters({ filters, totalResults, onResetPage, sx }) 
     filters.setState({ declaration_number: '' });
   }, [filters, onResetPage]);
 
+  const handleRemoveCompany = useCallback(() => {
+    onResetPage();
+    filters.setState({ company: '' });
+  }, [filters, onResetPage]);
+
   const handleRemoveService = useCallback(
     (inputValue) => {
       const newValue = filters.state.service.filter((item) => item !== inputValue);
@@ -71,6 +76,10 @@ export function FactureTableFilters({ filters, totalResults, onResetPage, sx }) 
       </FiltersBlock>
       <FiltersBlock label="Numero Declaration:" isShow={!!filters.state.declaration_number}>
         <Chip {...chipProps} label={filters.state.declaration_number} onDelete={handleRemoveNumberDec} />
+      </FiltersBlock>
+
+      <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
+        <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
       </FiltersBlock>
     </FiltersResult>
   );
