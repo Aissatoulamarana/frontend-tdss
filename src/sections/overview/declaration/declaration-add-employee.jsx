@@ -390,7 +390,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         loading={loadingOptions}
                         fullWidth
                         value={getJobOption(values.employees[index]?.job)}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                         filterOptions={(opts, state) =>
                           opts.filter((o) =>
                             o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
