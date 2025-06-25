@@ -7,12 +7,7 @@ import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Link from '@mui/material/Link';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import { useState , useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 import { useSearchParams } from 'src/routes/hooks';
@@ -45,16 +40,13 @@ export const SignInSchema = zod.object({
 // ----------------------------------------------------------------------
 
 export function JwtSignInView() {
-
   const searchParams = useSearchParams();
-  const activated = searchParams.get("activated");
+  const activated = searchParams.get('activated');
 
   const router = useRouter();
   const { checkUserSession } = useAuthContext();
   const [errorMsg, setErrorMsg] = useState('');
   const password = useBoolean();
-
-
 
   const defaultValues = {
     email: '',
@@ -84,7 +76,6 @@ export function JwtSignInView() {
 
       // si pas d’activation on redirige simplement
       router.push(paths.dashboard.root);
-
     } catch (error) {
       console.error('Sign in error dans la vue :', error);
       setErrorMsg(typeof error === 'string' ? error : error.message || 'Authentication failed');
@@ -153,9 +144,6 @@ export function JwtSignInView() {
     </Box>
   );
 
- 
-  
-
   return (
     <Box
       sx={{
@@ -166,7 +154,7 @@ export function JwtSignInView() {
         border: '1px solid #e0e0e0', // Bordure légère
         borderRadius: 2,
         boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', // Ombre subtile
-        backgroundColor: 'background.paper'
+        backgroundColor: 'background.paper',
       }}
     >
       <FormHead
@@ -174,11 +162,11 @@ export function JwtSignInView() {
         description={
           <>
             {activated
-              ? "✅ Votre compte a été activé avec succès !"
+              ? '✅ Votre compte a été activé avec succès !'
               : "Vous ne pouvez pas accéder à cette plateforme si vous n'avez pas de compte."}
           </>
         }
-        sx={{ textAlign: { xs: "center", md: "left" } }}
+        sx={{ textAlign: { xs: 'center', md: 'left' } }}
       />
 
       <Alert severity="info" sx={{ mb: 3 }}>
@@ -191,13 +179,9 @@ export function JwtSignInView() {
         </Alert>
       )}
 
-      
-
       <Form methods={methods} onSubmit={onSubmit}>
         {renderForm}
       </Form>
-
-     
     </Box>
   );
 }

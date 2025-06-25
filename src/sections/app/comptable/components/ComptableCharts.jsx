@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import { CardHeader, Typography } from '@mui/material';
@@ -45,16 +44,10 @@ export function ComptableStatusChart() {
     chart: {
       background: 'transparent',
     },
-    colors: [
-      theme.palette.success.main,
-      theme.palette.warning.main,
-      theme.palette.error.main,
-    ],
-    labels: INVOICE_STATUS_DATA.map(i => i.label),
+    colors: [theme.palette.success.main, theme.palette.warning.main, theme.palette.error.main],
+    labels: INVOICE_STATUS_DATA.map((i) => i.label),
     stroke: {
-      colors: [
-        isDarkMode ? theme.palette.background.default : theme.palette.background.paper,
-      ],
+      colors: [isDarkMode ? theme.palette.background.default : theme.palette.background.paper],
     },
     legend: {
       floating: false,
@@ -67,15 +60,15 @@ export function ComptableStatusChart() {
         radius: 8,
         width: 12,
         height: 12,
-        offsetX: -5
+        offsetX: -5,
       },
       itemMargin: {
         horizontal: 15,
-        vertical: 5
+        vertical: 5,
       },
       labels: {
         colors: isDarkMode ? '#ffffff' : theme.palette.text.primary,
-        useSeriesColors: false
+        useSeriesColors: false,
       },
     },
     dataLabels: {
@@ -84,9 +77,7 @@ export function ComptableStatusChart() {
       style: {
         fontSize: '14px',
         fontWeight: 600,
-        colors: [
-          isDarkMode ? theme.palette.background.default : theme.palette.background.paper,
-        ],
+        colors: [isDarkMode ? theme.palette.background.default : theme.palette.background.paper],
       },
       formatter: (value) => `${value}%`,
     },
@@ -124,7 +115,16 @@ export function ComptableStatusChart() {
 
   return (
     <Card>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, pt: 2, pb: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: 2,
+          pt: 2,
+          pb: 1,
+        }}
+      >
         <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center' }}>
           <Iconify icon="mdi:chart-pie" width={24} sx={{ mr: 1 }} />
           Répartition des factures
@@ -133,7 +133,7 @@ export function ComptableStatusChart() {
       <Box sx={{ p: 3, pt: 1 }} dir="ltr">
         <Chart
           type="donut"
-          series={INVOICE_STATUS_DATA.map(i => i.value)}
+          series={INVOICE_STATUS_DATA.map((i) => i.value)}
           options={chartOptions}
           height={300}
         />
@@ -144,10 +144,9 @@ export function ComptableStatusChart() {
 
 // ----------------------------------------------------------------------
 
-
 export function ComptableFacturationChart({ series, options, selectedYear, years, onYearChange }) {
   const theme = useTheme();
-  
+
   // Utilisez les options passées en props ou définissez des valeurs par défaut
   const chartOptions = {
     chart: {
@@ -161,7 +160,20 @@ export function ComptableFacturationChart({ series, options, selectedYear, years
       curve: 'smooth',
     },
     xaxis: {
-      categories: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+      categories: [
+        'Jan',
+        'Fév',
+        'Mar',
+        'Avr',
+        'Mai',
+        'Juin',
+        'Juil',
+        'Août',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Déc',
+      ],
       labels: {
         style: {
           colors: theme.palette.text.secondary,
@@ -176,7 +188,7 @@ export function ComptableFacturationChart({ series, options, selectedYear, years
         },
       },
       labels: {
-        formatter: (value) => Math.round(value) === value ? value : '',
+        formatter: (value) => (Math.round(value) === value ? value : ''),
         style: {
           colors: theme.palette.text.secondary,
         },
@@ -195,7 +207,7 @@ export function ComptableFacturationChart({ series, options, selectedYear, years
 
   return (
     <Card>
-      <CardHeader 
+      <CardHeader
         title="Évolution des factures mensuelles"
         subheader="Nombre de factures par mois"
         action={
@@ -207,20 +219,17 @@ export function ComptableFacturationChart({ series, options, selectedYear, years
               label="Année"
               onChange={(e) => onYearChange(e.target.value)}
             >
-              {years.map(year => (
-                <MenuItem key={year} value={year}>{year}</MenuItem>
+              {years.map((year) => (
+                <MenuItem key={year} value={year}>
+                  {year}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
         }
       />
       <Box sx={{ p: 3, pb: 1 }} dir="ltr">
-        <Chart
-          type="area"
-          series={series}
-          options={chartOptions}
-          height={320}
-        />
+        <Chart type="area" series={series} options={chartOptions} height={320} />
       </Box>
     </Card>
   );

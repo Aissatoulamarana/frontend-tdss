@@ -1,16 +1,7 @@
 import { useState } from 'react';
-import {
-  TextField,
-  Select,
-  MenuItem,
-  Button,
-  FormControl,
-  InputLabel,
-  Stack
-} from '@mui/material';
+import { Select, MenuItem, Button, FormControl, InputLabel, Stack } from '@mui/material';
 import { toast } from 'sonner';
 import MonthSelect from './month-select';
-
 
 export function Filters({ onFilterChange }) {
   const [year, setYear] = useState('2025');
@@ -21,46 +12,118 @@ export function Filters({ onFilterChange }) {
 
   const handleChange = () => {
     onFilterChange({ year, months, type });
-    toast.info(`Filtres appliqués :\nAnnée : ${year}\nMois : ${months.join(', ')}\nType : ${type} `, {
-      duration: 5000,
-      style: {
-        whiteSpace: 'pre-line',
-      },
-    });
+    toast.info(
+      `Filtres appliqués :\nAnnée : ${year}\nMois : ${months.join(', ')}\nType : ${type} `,
+      {
+        duration: 5000,
+        style: {
+          whiteSpace: 'pre-line',
+        },
+      }
+    );
   };
 
   const allMonths = [
-    'Jan', 'Fév', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'
+    'Jan',
+    'Fév',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juil',
+    'Août',
+    'Sept',
+    'Oct',
+    'Nov',
+    'Déc',
   ];
 
   const allCompanies = [
-    "Toutes", // Option for all companies
-    'Entreprise A', 'Entreprise B', 'Entreprise C', 'Entreprise D', 'Entreprise E',
-    'Entreprise F', 'Entreprise G', 'Entreprise H', 'Entreprise I', 'Entreprise J',
-    'Entreprise K', 'Entreprise L', 'Entreprise M', 'Entreprise N', 'Entreprise O',
-    'Entreprise P', 'Entreprise Q', 'Entreprise R', 'Entreprise S', 'Entreprise T',
-    'Entreprise U', 'Entreprise V', 'Entreprise W', 'Entreprise X', 'Entreprise Y',
-    'Entreprise Z'
-
-    
-  ]
+    'Toutes', // Option for all companies
+    'Entreprise A',
+    'Entreprise B',
+    'Entreprise C',
+    'Entreprise D',
+    'Entreprise E',
+    'Entreprise F',
+    'Entreprise G',
+    'Entreprise H',
+    'Entreprise I',
+    'Entreprise J',
+    'Entreprise K',
+    'Entreprise L',
+    'Entreprise M',
+    'Entreprise N',
+    'Entreprise O',
+    'Entreprise P',
+    'Entreprise Q',
+    'Entreprise R',
+    'Entreprise S',
+    'Entreprise T',
+    'Entreprise U',
+    'Entreprise V',
+    'Entreprise W',
+    'Entreprise X',
+    'Entreprise Y',
+    'Entreprise Z',
+  ];
 
   const countryname = [
-    'France', 'Belgique', 'Suisse', 'Luxembourg', 'Canada',
-    'Guinée', 'Mali', 'Côte d\'Ivoire', 'Sénégal', 'Togo', 'Bénin', 'Burkina Faso', 
-    'Niger', 'Tchad', 'Cameroun', 'Gabon', 'République Centrafricaine', 'Congo-Brazzaville', 
-    'Congo-Kinshasa', 'Rwanda', 'Burundi', 'Tanzanie', 'Ouganda', 'Kenya', 'Somalie',
-    'Éthiopie', 'Djibouti', 'Erythrée', 'Soudan', 'Soudan du Sud', 'Angola', 'Namibie',
-    'Botswana', 'Afrique du Sud', 'Lesotho', 'Eswatini', 'Mozambique', 'Zambie',
-    'Chine', 'Japon', 'Corée du Sud', 'Inde', 'Pakistan',
-    'Bangladesh', 'Sri Lanka', 'Maldives', 'Népal', 'Bhoutan', 'Afghanistan',
-  ]
+    'France',
+    'Belgique',
+    'Suisse',
+    'Luxembourg',
+    'Canada',
+    'Guinée',
+    'Mali',
+    "Côte d'Ivoire",
+    'Sénégal',
+    'Togo',
+    'Bénin',
+    'Burkina Faso',
+    'Niger',
+    'Tchad',
+    'Cameroun',
+    'Gabon',
+    'République Centrafricaine',
+    'Congo-Brazzaville',
+    'Congo-Kinshasa',
+    'Rwanda',
+    'Burundi',
+    'Tanzanie',
+    'Ouganda',
+    'Kenya',
+    'Somalie',
+    'Éthiopie',
+    'Djibouti',
+    'Erythrée',
+    'Soudan',
+    'Soudan du Sud',
+    'Angola',
+    'Namibie',
+    'Botswana',
+    'Afrique du Sud',
+    'Lesotho',
+    'Eswatini',
+    'Mozambique',
+    'Zambie',
+    'Chine',
+    'Japon',
+    'Corée du Sud',
+    'Inde',
+    'Pakistan',
+    'Bangladesh',
+    'Sri Lanka',
+    'Maldives',
+    'Népal',
+    'Bhoutan',
+    'Afghanistan',
+  ];
 
   return (
     <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-        {/* Entreprise (TextField) */}
-         {/* <FormControl size="small" sx={{ minWidth: 100 }}>
+      {/* Entreprise (TextField) */}
+      {/* <FormControl size="small" sx={{ minWidth: 100 }}>
         <InputLabel id="company-label">Entreprise</InputLabel>
         <Select
           labelId="company-label"
@@ -74,8 +137,8 @@ export function Filters({ onFilterChange }) {
         </Select>
       </FormControl> */}
 
-        {/* Pays (TextField) */}
-        {/* <FormControl size="small">
+      {/* Pays (TextField) */}
+      {/* <FormControl size="small">
         <InputLabel id="country-label">Pays</InputLabel>
         <Select
             labelId="country-label"
@@ -95,7 +158,7 @@ export function Filters({ onFilterChange }) {
         <Select
           labelId="year-label"
           value={year}
-          onChange={e => setYear(e.target.value)}
+          onChange={(e) => setYear(e.target.value)}
           label="Année"
         >
           <MenuItem value="2023">2023</MenuItem>
@@ -113,7 +176,7 @@ export function Filters({ onFilterChange }) {
         <Select
           labelId="type-label"
           value={type}
-          onChange={e => setType(e.target.value)}
+          onChange={(e) => setType(e.target.value)}
           label="Type"
         >
           <MenuItem value="all">Toutes</MenuItem>

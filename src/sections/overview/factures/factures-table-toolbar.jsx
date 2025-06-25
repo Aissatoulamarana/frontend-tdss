@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -9,12 +9,10 @@ import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback , useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
-
-
 
 // ----------------------------------------------------------------------
 
@@ -25,8 +23,8 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
 
   const handleNumberKeyUp = useCallback(
     (event) => {
-      if(event.key === 'Enter') {
-        const value = event.target.value;
+      if (event.key === 'Enter') {
+        const { value } = event.target;
         if (filters.state.number !== value) {
           onResetPage();
           filters.setState({ number: event.target.value });
@@ -38,8 +36,8 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
 
   const handleNumberDecKeyUp = useCallback(
     (event) => {
-      if(event.key === 'Enter') {
-        const value = event.target.value;
+      if (event.key === 'Enter') {
+        const { value } = event.target;
         if (filters.state.declaration_number !== value) {
           onResetPage();
           filters.setState({ declaration_number: event.target.value });
@@ -124,7 +122,9 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
               textField: {
                 fullWidth: true,
                 error: dateError,
-                helperText: dateError ? 'La date de fin doit être postérieure à la date de début.' : null,
+                helperText: dateError
+                  ? 'La date de fin doit être postérieure à la date de début.'
+                  : null,
               },
             }}
             sx={{
@@ -140,7 +140,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            onChange={(e) => setNumberInput(e.target.value)} 
+            onChange={(e) => setNumberInput(e.target.value)}
             onKeyDown={handleNumberKeyUp}
             value={numberInput}
             placeholder="rechercher par numero de facture.."
@@ -151,7 +151,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
-              }
+              },
             }}
           />
           <TextField
@@ -167,7 +167,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
-              }
+              },
             }}
           />
 

@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -187,7 +186,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const handleConfirmRenew = async () => {
     try {
       const response = await axios.get(API.searchPassport(passportInput));
-      const data = response.data;
+      const { data } = response;
 
       if (!data) {
         toast.error('Aucun utilisateur trouvé pour ce passeport');

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme, alpha } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import { usePathname } from 'next/navigation';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
@@ -32,7 +32,7 @@ import { Label } from 'src/components/label';
 
 const TABLE_HEAD = [
   { id: 'reference', label: 'Référence', width: 120 },
-  { id: 'title', label: 'Titre', width: 120},
+  { id: 'title', label: 'Titre', width: 120 },
   { id: 'date', label: 'Date', width: 120 },
   { id: 'company', label: 'Entreprise', width: 180 },
   { id: 'employees', label: 'Employés', width: 100 },
@@ -49,21 +49,21 @@ export function AgentRecentDeclarations({ declarations = [] }) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   // Filtrer les déclarations par statut
-  const filteredDeclarations = declarations.filter(dec => {
+  const filteredDeclarations = declarations.filter((dec) => {
     const matchesFilter = filter === 'all' || dec.status === filter;
     return matchesFilter;
   });
-  
+
   // Prioriser les déclarations non soumises (pending) et rejetées (rejected)
   const sortedDeclarations = [...filteredDeclarations].sort((a, b) => {
     // Priorité 1: Non soumises (pending)
     if (a.status === 'pending' && b.status !== 'pending') return -1;
     if (a.status !== 'pending' && b.status === 'pending') return 1;
-    
+
     // Priorité 2: Rejetées (rejected)
     if (a.status === 'rejected' && b.status !== 'rejected') return -1;
     if (a.status !== 'rejected' && b.status === 'rejected') return 1;
-    
+
     // Priorité 3: Date (plus récente en premier)
     return new Date(b.date) - new Date(a.date);
   });
@@ -83,48 +83,56 @@ export function AgentRecentDeclarations({ declarations = [] }) {
   };
 
   return (
-    <Card sx={{
-      boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
-      borderRadius: 1,
-      overflow: 'hidden',
-      transition: 'all 0.2s ease-in-out',
-      '&:hover': {
-        boxShadow: isDarkMode ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
-      },
-    }}>
-      <CardHeader 
+    <Card
+      sx={{
+        boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+        borderRadius: 1,
+        overflow: 'hidden',
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          boxShadow: isDarkMode
+            ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)'
+            : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+        },
+      }}
+    >
+      <CardHeader
         title={
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-            <Iconify icon="mdi:clipboard-text-clock" width={24} sx={{ color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.white }}>
-              Déclarations récentes
-            </Typography>
-            <Label color="info" sx={{ ml: 1 }}>
-              {declarations.length}
-            </Label>
-            <Button
-              size="small"
-              color="inherit"
-              endIcon={<Iconify icon="mdi:arrow-right" />}
-              sx={{ textTransform: 'none', fontWeight: 500, color: 'text.secondary' }}
-            >
-              Voir tout
-            </Button>
-          </Stack>
-            
+              <Iconify
+                icon="mdi:clipboard-text-clock"
+                width={24}
+                sx={{
+                  color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main,
+                }}
+              />
+              <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.white }}>
+                Déclarations récentes
+              </Typography>
+              <Label color="info" sx={{ ml: 1 }}>
+                {declarations.length}
+              </Label>
+              <Button
+                size="small"
+                color="inherit"
+                endIcon={<Iconify icon="mdi:arrow-right" />}
+                sx={{ textTransform: 'none', fontWeight: 500, color: 'text.secondary' }}
+              >
+                Voir tout
+              </Button>
+            </Stack>
           </Box>
         }
-        
-        sx={{ 
+        sx={{
           pb: 0,
-          
+
           '& .MuiCardHeader-title': {
             color: theme.palette.common.white,
             display: 'block',
-            width: '100%'
-          }
-        }} 
+            width: '100%',
+          },
+        }}
         action={
           <Stack direction="row" spacing={1} alignItems="center" marginBottom={3}>
             <FormControl sx={{ minWidth: 150 }} size="small">
@@ -134,7 +142,9 @@ export function AgentRecentDeclarations({ declarations = [] }) {
                 value={filter}
                 label="Statut"
                 onChange={handleFilterChange}
-                startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />}
+                startAdornment={
+                  <Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />
+                }
               >
                 <MenuItem value="all">Toutes</MenuItem>
                 <MenuItem value="submitted">Soumises</MenuItem>
@@ -147,19 +157,23 @@ export function AgentRecentDeclarations({ declarations = [] }) {
       />
       <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>
-          <Table sx={{ 
-            minWidth: 720,
-            '& .MuiTableCell-head': {
-              color: isDarkMode ? theme.palette.common.white : theme.palette.common.black,
-              fontWeight: 600
-            }
-          }}>
+          <Table
+            sx={{
+              minWidth: 720,
+              '& .MuiTableCell-head': {
+                color: isDarkMode ? theme.palette.common.white : theme.palette.common.black,
+                fontWeight: 600,
+              },
+            }}
+          >
             <TableHeadCustom headLabel={TABLE_HEAD} />
 
             <TableBody>
-              {sortedDeclarations.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
-                <AgentDeclarationRow key={row.id} row={row} isDarkMode={isDarkMode} />
-              ))}
+              {sortedDeclarations
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row) => (
+                  <AgentDeclarationRow key={row.id} row={row} isDarkMode={isDarkMode} />
+                ))}
             </TableBody>
           </Table>
         </Scrollbar>
@@ -202,18 +216,23 @@ function AgentDeclarationRow({ row, isDarkMode }) {
     if (window.confirm('Êtes-vous sûr de vouloir supprimer cette déclaration ?')) {
       console.log('Suppression de la déclaration:', row.id);
       // Envoyer la requête de suppression
-      API.deleteDeclaration(row.id).then(() => {
-        console.log('Déclaration supprimée avec succès');
-      }).catch((error) => {
-        console.error('Erreur lors de la suppression de la déclaration:', error);
-      });
+      API.deleteDeclaration(row.id)
+        .then(() => {
+          console.log('Déclaration supprimée avec succès');
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la suppression de la déclaration:', error);
+        });
     }
   }, [row.id, popover]);
 
-  const handleClick = useCallback((event) => {
-    event.stopPropagation();
-    popover.onOpen(event);
-  }, [popover]);
+  const handleClick = useCallback(
+    (event) => {
+      event.stopPropagation();
+      popover.onOpen(event);
+    },
+    [popover]
+  );
 
   return (
     <>
@@ -221,27 +240,43 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         hover
         sx={{
           '&:hover': {
-            backgroundColor: isDarkMode 
-              ? theme.palette.action.hover 
+            backgroundColor: isDarkMode
+              ? theme.palette.action.hover
               : theme.palette.background.neutral,
           },
         }}
       >
-        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.number}</TableCell>
-        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.title}</TableCell>
-        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{fDate(row.date)}</TableCell>
-        <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>{row.company}</TableCell>
-        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.employees}</TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+          {row.number}
+        </TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+          {row.title}
+        </TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+          {fDate(row.date)}
+        </TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>
+          {row.company}
+        </TableCell>
+        <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+          {row.employees}
+        </TableCell>
         <TableCell>
           <Label
             variant="soft"
             color={
-              row.status === 'submitted' ? 'success' : 
-              row.status === 'rejected' ? 'error' : 'warning'
+              row.status === 'submitted'
+                ? 'success'
+                : row.status === 'rejected'
+                  ? 'error'
+                  : 'warning'
             }
           >
-            {row.status === 'submitted' ? 'Soumise' : 
-             row.status === 'rejected' ? 'Rejetée' : 'Non Soumise'}
+            {row.status === 'submitted'
+              ? 'Soumise'
+              : row.status === 'rejected'
+                ? 'Rejetée'
+                : 'Non Soumise'}
           </Label>
         </TableCell>
       </TableRow>
@@ -285,9 +320,9 @@ AgentRecentDeclarations.propTypes = {
       status: PropTypes.string,
       employees: PropTypes.number,
       title: PropTypes.string,
-      comment: PropTypes.string
+      comment: PropTypes.string,
     })
-  )
+  ),
 };
 
 // ----------------------------------------------------------------------

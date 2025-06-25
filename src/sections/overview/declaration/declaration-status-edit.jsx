@@ -1,18 +1,16 @@
-"use client";
+'use client';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import { useFormContext, Controller } from 'react-hook-form';
-import { useEffect, useState, useCallback } from 'react';
-import debounce from 'lodash.debounce';
+import { useEffect, useState } from 'react';
 import axios from 'src/utils/axios';
 
 import { Field } from 'src/components/hook-form';
 import { useMockedUser } from 'src/auth/hooks';
 import API from 'src/utils/api';
-
 
 // ----------------------------------------------------------------------
 
@@ -28,27 +26,25 @@ export function DeclarationEditStatusDate({ type }) {
 
   const values = watch();
 
-  
-
   // Charger les entreprises initiales au chargement du composant (API réelle)
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
- 
+
     async function fetchCompanies() {
       try {
-      const resp1 = await axios.get(API.listEntreprises(), {
-        params: {offset : 0, limit: 1},
-      });
-      const total = resp1.data.count;
-    
-      const response = await axios.get(API.listEntreprises(),{
-          params:{offset : 0 , limit : total}
+        const resp1 = await axios.get(API.listEntreprises(), {
+          params: { offset: 0, limit: 1 },
         });
-      if (!isMounted) return;
-        
+        const total = resp1.data.count;
+
+        const response = await axios.get(API.listEntreprises(), {
+          params: { offset: 0, limit: total },
+        });
+        if (!isMounted) return;
+
         // Transformer les données pour le format attendu par l'autocomplete
-        const initialCompanies = response.data.results.map(company => ({
+        const initialCompanies = response.data.results.map((company) => ({
           value: company.slug,
           label: company.name,
           slug: company.slug,
@@ -56,11 +52,11 @@ export function DeclarationEditStatusDate({ type }) {
 
         setCompanies(initialCompanies);
       } catch (error) {
-        console.error("Erreur lors du chargement initial des entreprises:", error);
+        console.error('Erreur lors du chargement initial des entreprises:', error);
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchCompanies();
     return () => {
@@ -73,7 +69,7 @@ export function DeclarationEditStatusDate({ type }) {
     setSelectedCompany(newValue);
     // Fermer le menu après sélection
     setOpen(false);
-    
+
     // Mettre à jour la valeur dans le formulaire
     if (newValue) {
       setValue('company', newValue.value);
@@ -81,10 +77,6 @@ export function DeclarationEditStatusDate({ type }) {
       setValue('company', '');
     }
   };
-
-  
-  
-
 
   return (
     <Stack
@@ -98,51 +90,50 @@ export function DeclarationEditStatusDate({ type }) {
         control={control}
         render={({ field, fieldState: { error } }) => (
           <Autocomplete
-  {...field}
-  fullWidth
-  options={companies}
-  loading={loading}
-  value={selectedCompany}
-  inputValue={inputValue}
-  onChange={handleCompanyChange}
-  onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
-  open={open && companies.length > 0}
-  onOpen={() => setOpen(true)}
-  onClose={() => setOpen(false)}
-  getOptionLabel={(option) => option.label || ''}
-  isOptionEqualToValue={(option, value) => option.value === value?.value}
-  filterOptions={(options, state) =>
-    options.filter((option) =>
-      option.label.toLowerCase().includes(state.inputValue.toLowerCase())
-    )
-  }
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Entreprise *"
-      placeholder="Rechercher une entreprise..."
-      error={!!error}
-      helperText={error?.message}
-      InputProps={{
-        ...params.InputProps,
-        endAdornment: (
-          <>
-            {loading ? <CircularProgress color="inherit" size={20} /> : null}
-            {params.InputProps.endAdornment}
-          </>
-        ),
-      }}
-    />
-  )}
-  renderOption={(props, option) => (
-    <MenuItem {...props} key={option.slug} value={option.value}>
-      {option.label}
-    </MenuItem>
-  )}
-  noOptionsText="Aucune entreprise trouvée"
-  loadingText="Chargement..."
-/>
-
+            {...field}
+            fullWidth
+            options={companies}
+            loading={loading}
+            value={selectedCompany}
+            inputValue={inputValue}
+            onChange={handleCompanyChange}
+            onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+            open={open && companies.length > 0}
+            onOpen={() => setOpen(true)}
+            onClose={() => setOpen(false)}
+            getOptionLabel={(option) => option.label || ''}
+            isOptionEqualToValue={(option, value) => option.value === value?.value}
+            filterOptions={(options, state) =>
+              options.filter((option) =>
+                option.label.toLowerCase().includes(state.inputValue.toLowerCase())
+              )
+            }
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Entreprise *"
+                placeholder="Rechercher une entreprise..."
+                error={!!error}
+                helperText={error?.message}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            renderOption={(props, option) => (
+              <MenuItem {...props} key={option.slug} value={option.value}>
+                {option.label}
+              </MenuItem>
+            )}
+            noOptionsText="Aucune entreprise trouvée"
+            loadingText="Chargement..."
+          />
         )}
       />
       {/* } */}
@@ -162,12 +153,10 @@ export function DeclarationEditStatusDate({ type }) {
       </Field.Select>
 
       <Field.Text
-
         name="title"
         label="Titre de la declaration *"
         InputLabelProps={{ shrink: true }}
       />
-
     </Stack>
   );
 }

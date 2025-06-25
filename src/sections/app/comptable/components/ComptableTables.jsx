@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { getTableStyles } from './ComptableStyles';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
 import Stack from '@mui/material/Stack';
@@ -29,7 +28,6 @@ import { CustomPopover, usePopover } from 'src/components/custom-popover';
 import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
-
 
 const ALL_INVOICES = [
   {
@@ -85,7 +83,7 @@ const DECLARATION_TABLE_HEAD = [
   { id: 'id', label: 'ID' },
   { id: 'date', label: 'Date' },
   { id: 'company', label: 'Entreprise' },
-  { id: 'nb_employees', label: 'Nombre d\'employés' },
+  { id: 'nb_employees', label: "Nombre d'employés" },
   { id: 'amount', label: 'Montant', align: 'right' },
   { id: 'status', label: 'Statut' },
   { id: 'actions', label: 'Actions', align: 'right' },
@@ -118,23 +116,29 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
   };
 
   return (
-    <Card sx={{
-      boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
-      borderRadius: 1,
-      overflow: 'hidden',
-      transition: 'all 0.2s ease-in-out',
-      '&:hover': {
-        boxShadow: isDarkMode ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
-      },
-    }}>
-      <CardHeader 
+    <Card
+      sx={{
+        boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+        borderRadius: 1,
+        overflow: 'hidden',
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          boxShadow: isDarkMode
+            ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)'
+            : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+        },
+      }}
+    >
+      <CardHeader
         title={
-          <Stack direction="row" alignItems="center" spacing={1} sx={{color: isDarkMode ? theme.palette.background.paper : theme.palette.common.dark }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{ color: isDarkMode ? theme.palette.background.paper : theme.palette.common.dark }}
+          >
             <Iconify icon="mdi:clipboard-text-clock" width={24} />
-            <Typography variant="h6" >
-             
-              {title || 'Déclarations à facturer'}
-            </Typography>
+            <Typography variant="h6">{title || 'Déclarations à facturer'}</Typography>
             <Label color="info" sx={{ ml: 1 }}>
               {declarations.length}
             </Label>
@@ -145,15 +149,15 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
             Liste des déclarations validées en attente de facturation
           </Typography>
         }
-        sx={{ 
+        sx={{
           pb: 0,
           '& .MuiCardHeader-title': {
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-          }
-        }} 
+          },
+        }}
         action={
-          <Button 
-            size="medium" 
+          <Button
+            size="medium"
             startIcon={<Iconify icon="mdi:file-document-plus" />}
             variant="contained"
             color="primary"
@@ -164,38 +168,40 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
       />
       <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>
-          <Table sx={{ 
-            minWidth: 720,
-            '& .MuiTableCell-head': {
-              color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-              backgroundColor: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral,
-              fontWeight: 600
-            }
-          }}>
+          <Table
+            sx={{
+              minWidth: 720,
+              '& .MuiTableCell-head': {
+                color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+                backgroundColor: isDarkMode
+                  ? theme.palette.background.paper
+                  : theme.palette.background.neutral,
+                fontWeight: 600,
+              },
+            }}
+          >
             <TableHeadCustom headLabel={DECLARATION_TABLE_HEAD} />
 
             <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={DECLARATION_TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
-                      <CircularProgress />
-                    </TableCell>
-                  </TableRow>
-                ) : declarations.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={DECLARATION_TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Aucune déclaration trouvée
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  declarations
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => (
-                      <DeclarationRow key={row.slug} row={row} isDarkMode={isDarkMode} />
-                    ))
-                )}
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={DECLARATION_TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
+                    <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : declarations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={DECLARATION_TABLE_HEAD.length} align="center" sx={{ py: 3 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Aucune déclaration trouvée
+                    </Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                declarations
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row) => <DeclarationRow key={row.slug} row={row} isDarkMode={isDarkMode} />)
+              )}
             </TableBody>
           </Table>
         </Scrollbar>
@@ -237,8 +243,8 @@ function DeclarationRow({ row, isDarkMode }) {
         borderBottom: `1px solid ${theme.palette.divider}`,
         '&:last-child td, &:last-child th': { border: 0 },
         '&:hover': {
-          backgroundColor: isDarkMode 
-            ? theme.palette.action.hover 
+          backgroundColor: isDarkMode
+            ? theme.palette.action.hover
             : theme.palette.background.neutral,
         },
       }}
@@ -255,25 +261,33 @@ function DeclarationRow({ row, isDarkMode }) {
       <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
         {row.nb_employees}
       </TableCell>
-      <TableCell align="right" sx={{ color: isDarkMode ? theme.palette.success.lighter : theme.palette.success.darker, fontWeight: 600 }}>
+      <TableCell
+        align="right"
+        sx={{
+          color: isDarkMode ? theme.palette.success.lighter : theme.palette.success.darker,
+          fontWeight: 600,
+        }}
+      >
         {/* À adapter selon les données disponibles */}
         {row.amount ? fCurrency(row.amount) : '-'}
       </TableCell>
       <TableCell>
-        <Chip 
-          label={row.status} 
+        <Chip
+          label={row.status}
           color={row.status === 'validated' ? 'success' : 'default'}
           size="small"
         />
       </TableCell>
       <TableCell align="right">
-        <IconButton 
-          color={popover.open ? 'primary' : 'default'} 
+        <IconButton
+          color={popover.open ? 'primary' : 'default'}
           onClick={popover.onOpen}
-          sx={{ 
-            color: popover.open 
-              ? theme.palette.primary.main 
-              : isDarkMode ? theme.palette.text.secondary : undefined 
+          sx={{
+            color: popover.open
+              ? theme.palette.primary.main
+              : isDarkMode
+                ? theme.palette.text.secondary
+                : undefined,
           }}
         >
           <Iconify icon="eva:more-vertical-fill" />
@@ -309,9 +323,8 @@ export function ComptableFactureTable({ title }) {
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
   // Filtrer les factures par statut
-  const invoices = filter === 'all' 
-    ? ALL_INVOICES 
-    : ALL_INVOICES.filter(inv => inv.status === filter);
+  const invoices =
+    filter === 'all' ? ALL_INVOICES : ALL_INVOICES.filter((inv) => inv.status === filter);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -328,38 +341,47 @@ export function ComptableFactureTable({ title }) {
   };
 
   return (
-    <Card sx={{
-      boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
-      borderRadius: 1,
-      overflow: 'hidden',
-      transition: 'all 0.2s ease-in-out',
-      '&:hover': {
-        boxShadow: isDarkMode ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)' : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
-      },
-    }}>
-      <CardHeader 
+    <Card
+      sx={{
+        boxShadow: isDarkMode ? '0 4px 8px 0 rgba(0, 0, 0, 0.4)' : '0 2px 4px 0 rgba(0, 0, 0, 0.1)',
+        borderRadius: 1,
+        overflow: 'hidden',
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          boxShadow: isDarkMode
+            ? '0 6px 12px 0 rgba(0, 0, 0, 0.5)'
+            : '0 4px 8px 0 rgba(0, 0, 0, 0.15)',
+        },
+      }}
+    >
+      <CardHeader
         title={
-          <Stack direction="row" alignItems="center" spacing={1} sx={{color: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral, }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            sx={{
+              color: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral,
+            }}
+          >
             <Iconify icon="mdi:file-document-multiple" width={24} />
-            <Typography variant="h6">
-              {title || 'Factures récentes'}
-            </Typography>
+            <Typography variant="h6">{title || 'Factures récentes'}</Typography>
             <Label color="info" sx={{ ml: 1 }}>
               {invoices.length}
             </Label>
           </Stack>
         }
         subheader={
-          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, mb: 1, }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5, mb: 1 }}>
             Liste des factures générées et leur statut de paiement
           </Typography>
         }
-        sx={{ 
+        sx={{
           pb: 0,
           '& .MuiCardHeader-title': {
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-          }
-        }} 
+          },
+        }}
         action={
           <Stack direction="row" spacing={1} alignItems="center">
             <FormControl sx={{ minWidth: 150 }} size="small">
@@ -369,7 +391,9 @@ export function ComptableFactureTable({ title }) {
                 value={filter}
                 label="Statut"
                 onChange={handleFilterChange}
-                startAdornment={<Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />}
+                startAdornment={
+                  <Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />
+                }
               >
                 <MenuItem value="all">Toutes</MenuItem>
                 <MenuItem value="paid">Payées</MenuItem>
@@ -377,8 +401,8 @@ export function ComptableFactureTable({ title }) {
                 <MenuItem value="overdue">En retard</MenuItem>
               </Select>
             </FormControl>
-            <Button 
-              size="medium" 
+            <Button
+              size="medium"
               startIcon={<Iconify icon="mdi:file-export" />}
               variant="outlined"
               color="primary"
@@ -390,14 +414,18 @@ export function ComptableFactureTable({ title }) {
       />
       <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>
-          <Table sx={{ 
-            minWidth: 720,
-            '& .MuiTableCell-head': {
-              color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
-              backgroundColor: isDarkMode ? theme.palette.background.paper : theme.palette.background.neutral,
-              fontWeight: 600
-            }
-          }}>
+          <Table
+            sx={{
+              minWidth: 720,
+              '& .MuiTableCell-head': {
+                color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
+                backgroundColor: isDarkMode
+                  ? theme.palette.background.paper
+                  : theme.palette.background.neutral,
+                fontWeight: 600,
+              },
+            }}
+          >
             <TableHeadCustom headLabel={INVOICE_TABLE_HEAD} />
 
             <TableBody>
@@ -451,20 +479,28 @@ function InvoiceRow({ row, isDarkMode }) {
   // Déterminer la couleur du statut
   const getStatusColor = (status) => {
     switch (status) {
-      case 'paid': return 'success';
-      case 'pending': return 'warning';
-      case 'overdue': return 'error';
-      default: return 'default';
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'overdue':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
   // Traduire le statut
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'paid': return 'Payée';
-      case 'pending': return 'En attente';
-      case 'overdue': return 'En retard';
-      default: return status;
+      case 'paid':
+        return 'Payée';
+      case 'pending':
+        return 'En attente';
+      case 'overdue':
+        return 'En retard';
+      default:
+        return status;
     }
   };
 
@@ -475,34 +511,45 @@ function InvoiceRow({ row, isDarkMode }) {
         borderBottom: `1px solid ${theme.palette.divider}`,
         '&:last-child td, &:last-child th': { border: 0 },
         '&:hover': {
-          backgroundColor: isDarkMode 
-            ? theme.palette.action.hover 
+          backgroundColor: isDarkMode
+            ? theme.palette.action.hover
             : theme.palette.background.neutral,
         },
       }}
     >
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{row.id}</TableCell>
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>{fDate(row.date)}</TableCell>
-      <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>{row.company}</TableCell>
-      <TableCell align="right" sx={{ color: isDarkMode ? theme.palette.success.lighter : theme.palette.success.darker, fontWeight: 600 }}>
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+        {row.id}
+      </TableCell>
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.secondary : undefined }}>
+        {fDate(row.date)}
+      </TableCell>
+      <TableCell sx={{ color: isDarkMode ? theme.palette.text.primary : undefined }}>
+        {row.company}
+      </TableCell>
+      <TableCell
+        align="right"
+        sx={{
+          color: isDarkMode ? theme.palette.success.lighter : theme.palette.success.darker,
+          fontWeight: 600,
+        }}
+      >
         {fCurrency(row.amount)}
       </TableCell>
       <TableCell>
-        <Label
-          variant="soft"
-          color={getStatusColor(row.status)}
-        >
+        <Label variant="soft" color={getStatusColor(row.status)}>
           {getStatusLabel(row.status)}
         </Label>
       </TableCell>
       <TableCell align="right">
-        <IconButton 
-          color={popover.open ? 'primary' : 'default'} 
+        <IconButton
+          color={popover.open ? 'primary' : 'default'}
           onClick={popover.onOpen}
-          sx={{ 
-            color: popover.open 
-              ? theme.palette.primary.main 
-              : isDarkMode ? theme.palette.text.secondary : undefined 
+          sx={{
+            color: popover.open
+              ? theme.palette.primary.main
+              : isDarkMode
+                ? theme.palette.text.secondary
+                : undefined,
           }}
         >
           <Iconify icon="eva:more-vertical-fill" />

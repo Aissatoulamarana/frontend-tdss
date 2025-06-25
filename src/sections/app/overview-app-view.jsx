@@ -5,23 +5,12 @@ import Grid from '@mui/material/Grid2';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
-import { useState , useEffect, use } from 'react';
-import { _appAuthors, _appRelated, _appInvoices, _appInstalled } from 'src/_mock';
+import { useState, useEffect } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
-
-import { svgColorClasses } from 'src/components/svg-color';
 
 import { useMockedUser } from 'src/auth/hooks';
 import { useSearchParams } from 'src/routes/hooks';
 import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
-import { AppAreaInstalled } from './app-area-installed';
-import { AppCurrentDownload } from './app-current-download';
-import { AppNewInvoice } from './app-new-invoice';
-import { AppTopAuthors } from './app-top-authors';
-import { AppTopInstalledCountries } from './app-top-installed-countries';
-import { AppTopRelated } from './app-top-related';
-import { AppWidget } from './app-widget';
 import { AppWidgetSummary } from './app-widget-summary';
 
 import { Filters } from './app-filters';
@@ -32,148 +21,143 @@ import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 // import { allMockData } from 'src/_mock/allMockData';
 
-
-
 // ----------------------------------------------------------------------
 const allMockData = {
-  "2024": [
-    { mois: "Jan", declarations: 12, factures: 20, paiements: 15 },
-    { mois: "Fév", declarations: 15, factures: 25, paiements: 20 },
-    { mois: "Mars", declarations: 18, factures: 30, paiements: 22 },
-    { mois: "Avril", declarations: 22, factures: 35, paiements: 28 },
-    { mois: "Mai", declarations: 30, factures: 40, paiements: 35 },
-    { mois: "Juin", declarations: 28, factures: 38, paiements: 32 },
-    { mois: "Juil", declarations: 34, factures: 45, paiements: 40 },
-    { mois: "Août", declarations: 40, factures: 50, paiements: 42 },
-    { mois: "Sept", declarations: 38, factures: 55, paiements: 48 },
-    { mois: "Oct", declarations: 42, factures: 58, paiements: 50 },
-    { mois: "Nov", declarations: 45, factures: 60, paiements: 52 },
-    { mois: "Déc", declarations: 50, factures: 65, paiements: 55 }
+  2024: [
+    { mois: 'Jan', declarations: 12, factures: 20, paiements: 15 },
+    { mois: 'Fév', declarations: 15, factures: 25, paiements: 20 },
+    { mois: 'Mars', declarations: 18, factures: 30, paiements: 22 },
+    { mois: 'Avril', declarations: 22, factures: 35, paiements: 28 },
+    { mois: 'Mai', declarations: 30, factures: 40, paiements: 35 },
+    { mois: 'Juin', declarations: 28, factures: 38, paiements: 32 },
+    { mois: 'Juil', declarations: 34, factures: 45, paiements: 40 },
+    { mois: 'Août', declarations: 40, factures: 50, paiements: 42 },
+    { mois: 'Sept', declarations: 38, factures: 55, paiements: 48 },
+    { mois: 'Oct', declarations: 42, factures: 58, paiements: 50 },
+    { mois: 'Nov', declarations: 45, factures: 60, paiements: 52 },
+    { mois: 'Déc', declarations: 50, factures: 65, paiements: 55 },
   ],
-  "2025": [
-    { mois: "Jan", declarations: 10, factures: 10, paiements: 15 },
-    { mois: "Fév", declarations: 25, factures: 25, paiements: 25 },
-    { mois: "Mars", declarations: 18, factures: 30, paiements: 30 },
-    { mois: "Avril", declarations: 22, factures: 56, paiements: 28 },
-    { mois: "Mai", declarations: 30, factures: 12, paiements: 35 },
-    { mois: "Juin", declarations: 28, factures: 20, paiements: 36 },
-    { mois: "Juil", declarations: 34, factures: 45, paiements: 20 },
-    { mois: "Août", declarations: 40, factures: 50, paiements: 85 },
-    { mois: "Sept", declarations: 58, factures: 32, paiements: 96 },
-    { mois: "Oct", declarations: 36, factures: 10, paiements: 12 },
-    { mois: "Nov", declarations: 85, factures: 45, paiements: 54 },
-    { mois: "Déc", declarations: 100, factures: 32, paiements: 23 }
-  ]
-}
-
-
-
-
+  2025: [
+    { mois: 'Jan', declarations: 10, factures: 10, paiements: 15 },
+    { mois: 'Fév', declarations: 25, factures: 25, paiements: 25 },
+    { mois: 'Mars', declarations: 18, factures: 30, paiements: 30 },
+    { mois: 'Avril', declarations: 22, factures: 56, paiements: 28 },
+    { mois: 'Mai', declarations: 30, factures: 12, paiements: 35 },
+    { mois: 'Juin', declarations: 28, factures: 20, paiements: 36 },
+    { mois: 'Juil', declarations: 34, factures: 45, paiements: 20 },
+    { mois: 'Août', declarations: 40, factures: 50, paiements: 85 },
+    { mois: 'Sept', declarations: 58, factures: 32, paiements: 96 },
+    { mois: 'Oct', declarations: 36, factures: 10, paiements: 12 },
+    { mois: 'Nov', declarations: 85, factures: 45, paiements: 54 },
+    { mois: 'Déc', declarations: 100, factures: 32, paiements: 23 },
+  ],
+};
 
 export function OverviewAppView() {
   const { user } = useMockedUser();
 
- 
-
   const searchParams = useSearchParams();
   const router = useRouter();
 
-
   const theme = useTheme();
 
-  const [filteredData, setFilteredData] = useState()
-  const [currentType, setCurrentType] = useState("all")
+  const [filteredData, setFilteredData] = useState();
+  const [currentType, setCurrentType] = useState('all');
   const [statistiquesCards, setStatistiquesCards] = useState();
   const [data, setData] = useState();
   const [lastData, setLastData] = useState(); // Utiliser les données mockées par défaut
-  const [currentYear, setCurrentYear] = useState("2025")
-  const [currentCompany, setCurrentCompany] = useState("all")
-  const [currentCountry, setCurrentCountry] = useState("all")
+  const [currentYear, setCurrentYear] = useState('2025');
+  const [currentCompany, setCurrentCompany] = useState('all');
+  const [currentCountry, setCurrentCountry] = useState('all');
 
- const handleFilterChange = async ({ year, months, type, company, country }) => {
-  try {
-    // Appel au backend avec l'année sélectionnée
-    const response = await axios.get(API.dashboardAdmin(), {
-      params: { year }
-    });
-
-
-    const rawData = response.data?.statistiques_sharts;
-    const transformed = transformBackendData(rawData); // Convertir pour le frontend
-
-    // Appliquer le filtre mois côté frontend
-    const filtered = months.length > 0
-      ? transformed.filter(d => months.includes(d.mois))
-      : transformed;
-
-    // Mise à jour des states
-    setFilteredData(filtered);
-    setCurrentType(type);
-    setCurrentYear(year);
-    setCurrentCompany(company);
-    setCurrentCountry(country);
-    setData(prev => ({ ...prev, [year]: transformed })); // Caching si besoin
-  } catch (error) {
-    console.error("Erreur lors du filtrage des données:", error);
-  }
-};
-
-
-  const moisLabels = [
-  "", "Jan", "Fév", "Mars", "Avril", "Mai", "Juin", 
-  "Juil", "Août", "Sept", "Oct", "Nov", "Déc"
-];
-
-function transformBackendData(rawData) {
-  const result = [];
-  for (let i = 1; i <= 12; i++) {
-    result.push({
-      mois: moisLabels[i],
-      declarations: rawData.declarations?.[i] ?? 0,
-      factures: rawData.factures?.[i] ?? 0,
-      paiements: rawData.payments?.[i] ?? 0,
-    });
-  }
-  return result;
-}
-
-
-  useEffect(() => {
-  const fetchData = async () => {
+  const handleFilterChange = async ({ year, months, type, company, country }) => {
     try {
-      const response = await axios.get(API.dashboardAdmin());
-      // Assuming the response data is structured as expected
-      const data = response.data;
-      // Process the data as needed
-      console.log("Dashboard Admin Data:", data);
-      setStatistiquesCards(data.statistiques_cards); // Assuming the data contains statistiquesCards
-      const transformedData = transformBackendData(data.statistiques_sharts);
-      setLastData(response?.data?.declaration_facture_payment_list)
-      setData((prev) => ({ ...prev, [currentYear]: transformedData }));
-      setFilteredData(transformedData); 
-      // You can set the data to state or do something with it
+      // Appel au backend avec l'année sélectionnée
+      const response = await axios.get(API.dashboardAdmin(), {
+        params: { year },
+      });
+
+      const rawData = response.data?.statistiques_sharts;
+      const transformed = transformBackendData(rawData); // Convertir pour le frontend
+
+      // Appliquer le filtre mois côté frontend
+      const filtered =
+        months.length > 0 ? transformed.filter((d) => months.includes(d.mois)) : transformed;
+
+      // Mise à jour des states
+      setFilteredData(filtered);
+      setCurrentType(type);
+      setCurrentYear(year);
+      setCurrentCompany(company);
+      setCurrentCountry(country);
+      setData((prev) => ({ ...prev, [year]: transformed })); // Caching si besoin
     } catch (error) {
-      console.error("Error fetching dashboard admin data:", error);
+      console.error('Erreur lors du filtrage des données:', error);
     }
   };
-  fetchData();
-}, []);
 
+  const moisLabels = [
+    '',
+    'Jan',
+    'Fév',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juil',
+    'Août',
+    'Sept',
+    'Oct',
+    'Nov',
+    'Déc',
+  ];
+
+  function transformBackendData(rawData) {
+    const result = [];
+    for (let i = 1; i <= 12; i++) {
+      result.push({
+        mois: moisLabels[i],
+        declarations: rawData.declarations?.[i] ?? 0,
+        factures: rawData.factures?.[i] ?? 0,
+        paiements: rawData.payments?.[i] ?? 0,
+      });
+    }
+    return result;
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(API.dashboardAdmin());
+        // Assuming the response data is structured as expected
+        const { data } = response;
+        // Process the data as needed
+        console.log('Dashboard Admin Data:', data);
+        setStatistiquesCards(data.statistiques_cards); // Assuming the data contains statistiquesCards
+        const transformedData = transformBackendData(data.statistiques_sharts);
+        setLastData(response?.data?.declaration_facture_payment_list);
+        setData((prev) => ({ ...prev, [currentYear]: transformedData }));
+        setFilteredData(transformedData);
+        // You can set the data to state or do something with it
+      } catch (error) {
+        console.error('Error fetching dashboard admin data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <DashboardContent maxWidth="xl">
-      <Box sx={{ mb: 5, p: 3,  borderRadius: 2, boxShadow: 1 }}>
-  <Typography variant="h4" fontWeight="bold" gutterBottom>
-    Tableau de Bord Administrateur
-  </Typography>
-  <Typography variant="subtitle1" color="text.secondary">
-    Bienvenue, <strong>{user?.name}</strong> — {user?.type_name}
-  </Typography>
-</Box>
-
+      <Box sx={{ mb: 5, p: 3, borderRadius: 2, boxShadow: 1 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Tableau de Bord Administrateur
+        </Typography>
+        <Typography variant="subtitle1" color="text.secondary">
+          Bienvenue, <strong>{user?.name}</strong> — {user?.type_name}
+        </Typography>
+      </Box>
 
       <Grid container spacing={2}>
-       
         <Grid size={{ xs: 6, md: 3 }}>
           <AppWidgetSummary
             title="Employés"
@@ -223,24 +207,30 @@ function transformBackendData(rawData) {
           />
         </Grid>
 
-        <Grid size={{xs:6 , md:12}}>
-      <Card>
-      <Box
-      sx={{
-        p: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 3,
-        borderRadius: 1,
-      }} >
-      <Filters onFilterChange={handleFilterChange} />
-      <MultiLineChart data={filteredData} type={currentType} company={currentCompany} />
-      <ExportButtons data={filteredData} type={currentType} company={currentCompany} year={currentYear} />
-    </Box>
-</Card>
+        <Grid size={{ xs: 6, md: 12 }}>
+          <Card>
+            <Box
+              sx={{
+                p: 3,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 3,
+                borderRadius: 1,
+              }}
+            >
+              <Filters onFilterChange={handleFilterChange} />
+              <MultiLineChart data={filteredData} type={currentType} company={currentCompany} />
+              <ExportButtons
+                data={filteredData}
+                type={currentType}
+                company={currentCompany}
+                year={currentYear}
+              />
+            </Box>
+          </Card>
         </Grid>
 
-{/*        
+        {/*
          <Grid size={{ xs: 6, md: 4 }}>
           <AppCurrentDownload
             title="Permis Delivrés"
@@ -254,8 +244,7 @@ function transformBackendData(rawData) {
             }}
           />
         </Grid> */}
-         
-          
+
         {/* <Grid size={{ xs: 6, md: 8 }}>
           <AppAreaInstalled
             title="Nombre Total Permis declarés"
@@ -304,14 +293,12 @@ function transformBackendData(rawData) {
             }}
           />
         </Grid> */}
-       
+
         <Grid size={{ xs: 6, md: 12 }}>
-          <DashboardAdmin
-          lastData={lastData}/>
+          <DashboardAdmin lastData={lastData} />
         </Grid>
-                
-         
-{/*         
+
+        {/*
         <Grid size={{ xs: 6, md: 4 }}>
           <AppTopRelated title="Entreprises" list={_appRelated} />
         </Grid>
@@ -346,9 +333,6 @@ function transformBackendData(rawData) {
           </Box>
         </Grid> */}
       </Grid>
-
-
-
     </DashboardContent>
   );
 }

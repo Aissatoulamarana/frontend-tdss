@@ -8,13 +8,18 @@ import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
 
-
-import { useState, useEffect, useCallback , useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 // import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Autocomplete } from '@mui/material';
-
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Autocomplete,
+} from '@mui/material';
 
 import API from 'src/utils/api';
 
@@ -22,17 +27,14 @@ import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import {toast} from 'src/components/snackbar';
-import { set } from 'nprogress';
-
+import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
-
 
 export function DeclarationNewEditDetails({ formData }) {
   const { control, setValue, watch, reset } = useFormContext();
   const DEFAULT_LIMIT = 100;
-  const MAX_EMPLOYEES = 20;  
+  const MAX_EMPLOYEES = 20;
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [nextUrl, setNextUrl] = useState(API.listFonctionAgent()); // première page
@@ -49,8 +51,6 @@ export function DeclarationNewEditDetails({ formData }) {
     limit: DEFAULT_LIMIT,
     name: '',
   });
-  
-
 
   // const typedec = type?.trim();
 
@@ -70,7 +70,7 @@ export function DeclarationNewEditDetails({ formData }) {
       first: '',
       phone: '',
       // type:'NEW',
-      locked:false,
+      locked: false,
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
       // recto: null,
@@ -90,18 +90,16 @@ export function DeclarationNewEditDetails({ formData }) {
   };
 
   const handleRenew = () => {
-   
     renewalModal.onTrue(); // Ouvre la modale
   };
-
 
   const handleConfirmRenew = async () => {
     try {
       const response = await axios.get(API.searchPassport(passportInput));
-      const data = response.data;
+      const { data } = response;
 
       if (!data) {
-        toast.error("Aucun utilisateur trouvé pour ce passeport");
+        toast.error('Aucun utilisateur trouvé pour ce passeport');
         return;
       }
 
@@ -110,7 +108,7 @@ export function DeclarationNewEditDetails({ formData }) {
         last: data.last,
         first: data.first,
         phone: data.phone,
-        type: 'RENEWAL', 
+        type: 'RENEWAL',
         reference: data.reference,
         job: data.job.slug, // champ libre
         passportExists: true,
@@ -119,15 +117,13 @@ export function DeclarationNewEditDetails({ formData }) {
 
       renewalModal.onFalse(); // Ferme la modale
     } catch (err) {
-      toast.error("Erreur lors de la récupération des données");
+      toast.error('Erreur lors de la récupération des données');
     }
   };
-
 
   const handleRemove = (index) => {
     remove(index);
   };
-
 
   // Ouvre le modal pour les données biométriques
   const handleOpenModal = () => {
@@ -138,11 +134,8 @@ export function DeclarationNewEditDetails({ formData }) {
     setOpenModalDoc(true);
   };
 
-
   const handleCloseModalDoc = () => {
-
     renewalModal.onFalse();
-
   };
   // Ferme le modal et réinitialise le stepper
   const handleCloseModal = () => {
@@ -182,56 +175,49 @@ export function DeclarationNewEditDetails({ formData }) {
     } else {
       console.log(`Aucun fichier sélectionné pour ${fieldName}`);
     }
-  }
+  };
 
   // Exemple de fonction "finish" : ici, on ferme simplement le modal.
   // Vous pouvez ajouter d'autres traitements si besoin.
   const handleFinish = () => {
-
-
     handleCloseModal();
   };
 
+  useEffect(() => {
+    let isMounted = true;
 
+    async function fetchAllFonctions() {
+      try {
+        // 1) Premier appel pour count
+        const resp1 = await axios.get(API.listFonctionAgent(), {
+          params: { offset: 0, limit: 1 },
+        });
+        const total = resp1.data.count;
 
+        // 2) Rapatrier tout
+        const resp2 = await axios.get(API.listFonctionAgent(), {
+          params: { offset: 0, limit: total },
+        });
+        if (!isMounted) return;
 
-useEffect(() => {
-  let isMounted = true;
+        // Filtre pour n'avoir qu'un slug unique
+        const uniqueBySlug = resp2.data.results
+          .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
+          .map((f) => ({ label: f.name, value: f.slug }));
 
-  async function fetchAllFonctions() {
-    try {
-      // 1) Premier appel pour count
-      const resp1 = await axios.get(API.listFonctionAgent(), {
-        params: { offset: 0, limit: 1 },
-      });
-      const total = resp1.data.count;
-
-      // 2) Rapatrier tout
-      const resp2 = await axios.get(API.listFonctionAgent(), {
-        params: { offset: 0, limit: total },
-      });
-      if (!isMounted) return;
-
-      // Filtre pour n'avoir qu'un slug unique
-      const uniqueBySlug = resp2.data.results
-        .filter((f, idx, arr) =>
-          arr.findIndex(item => item.slug === f.slug) === idx
-        )
-        .map(f => ({ label: f.name, value: f.slug }));
-
-      setOptions(uniqueBySlug);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      if (isMounted) setLoading(false);
+        setOptions(uniqueBySlug);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
     }
-  }
 
-  fetchAllFonctions();
-  return () => { isMounted = false; };
-}, []);
-
-
+    fetchAllFonctions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSelectService = useCallback(
     (index, option) => {
@@ -278,13 +264,7 @@ useEffect(() => {
       });
 
       formData.slice(1).forEach((data, index) => {
-        const {
-          Fonction = '',
-          Numero = '',
-          Nom = '',
-          Prenom = '',
-          Telephone = '',
-        } = data;
+        const { Fonction = '', Numero = '', Nom = '', Prenom = '', Telephone = '' } = data;
 
         const fonctionImportee = Fonction.trim();
         const matchingOption = options.find(
@@ -309,34 +289,31 @@ useEffect(() => {
     }
   }, [formData, options, reset, append]);
 
-
-
-
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
-const checkPassportExistence = async (numero, index) => {
-  if (!numero) return;
+  const checkPassportExistence = async (numero, index) => {
+    if (!numero) return;
 
-  try {
-    const { data } = await axios.get(API.searchPassport(numero));
+    try {
+      const { data } = await axios.get(API.searchPassport(numero));
 
-    if (data?.passport_number) {
-      setValue(`employees[${index}].passportExists`, true);
-      toast.error("❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.");
-    } else {
-      setValue(`employees[${index}].passportExists`, false);
-      toast.success("✅ Passeport non trouvé, vous pouvez continuer.");
+      if (data?.passport_number) {
+        setValue(`employees[${index}].passportExists`, true);
+        toast.error(
+          '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
+        );
+      } else {
+        setValue(`employees[${index}].passportExists`, false);
+        toast.success('✅ Passeport non trouvé, vous pouvez continuer.');
+      }
+    } catch (error) {
+      if (error.detail) {
+        setValue(`employees[${index}].passportExists`, false);
+        toast.success('✅ Passeport non trouvé, vous pouvez continuer.');
+      } else {
+        console.error('Erreur lors de la recherche du passeport', error.detail);
+      }
     }
-
-  } catch (error) {
-    if (error.detail) {
-      setValue(`employees[${index}].passportExists`, false);
-      toast.success("✅ Passeport non trouvé, vous pouvez continuer.");
-    } else {
-      console.error('Erreur lors de la recherche du passeport', error.detail);
-    }
-  }
-};
-
+  };
 
   // Création de la version debounce de la fonction
   // On utilise ici 500ms de délai après la dernière saisie
@@ -351,17 +328,17 @@ const checkPassportExistence = async (numero, index) => {
   const handlePassportChange = (e, index) => {
     const numero = e.target.value;
     setValue(`employees[${index}].passport_number`, numero);
-     // Réinitialiser passportExists lorsque le numéro de passeport change
+    // Réinitialiser passportExists lorsque le numéro de passeport change
     setValue(`employees[${index}].passportExists`, false);
   };
 
   const handlePassportBlur = (e, index) => {
-        const numero = e.target.value;
-        if (numero) {
-          // appel direct (ou debouncedPassportCheck si vous préférez laisser un très léger délai)
-          checkPassportExistence(numero, index);
-      }
-      };
+    const numero = e.target.value;
+    if (numero) {
+      // appel direct (ou debouncedPassportCheck si vous préférez laisser un très léger délai)
+      checkPassportExistence(numero, index);
+    }
+  };
 
   //  Créer la fonction qui vérifie l'identifier
   const checkIdentifier = async (identifier, index) => {
@@ -377,7 +354,7 @@ const checkPassportExistence = async (numero, index) => {
       setValue(`employees[${index}].job`, person.fonction);
       // debouncedPassportCheck(person.numero, index);
     } catch (error) {
-      console.error("Erreur lors de la récupération des données:", error);
+      console.error('Erreur lors de la récupération des données:', error);
     }
   };
 
@@ -397,15 +374,15 @@ const checkPassportExistence = async (numero, index) => {
   };
 
   const allDocuments = [
-    { label: "Déclaration d'attestation", key: "attestation" },
-    { label: "Certificat de régulation sociale", key: "certificat" },
-    { label: "Contrat de travail", key: "contrat" },
-    { label: "Dossier criminel", key: "dossierCriminel" },
-    { label: "Dossier médical (3 derniers mois)", key: "dossierMedical" },
-    { label: "Copies des diplômes", key: "diplomes" },
-    { label: "CV", key: "cv" },
-    { label: "Passeport", key: "passeport" },
-    { label: "Plan de panafricanisation", key: "planPanafricanisation" },
+    { label: "Déclaration d'attestation", key: 'attestation' },
+    { label: 'Certificat de régulation sociale', key: 'certificat' },
+    { label: 'Contrat de travail', key: 'contrat' },
+    { label: 'Dossier criminel', key: 'dossierCriminel' },
+    { label: 'Dossier médical (3 derniers mois)', key: 'dossierMedical' },
+    { label: 'Copies des diplômes', key: 'diplomes' },
+    { label: 'CV', key: 'cv' },
+    { label: 'Passeport', key: 'passeport' },
+    { label: 'Plan de panafricanisation', key: 'planPanafricanisation' },
   ];
 
   // Si le type est "Duplicata", on ne garde que "Certificat de perte" et "CV"
@@ -413,13 +390,11 @@ const checkPassportExistence = async (numero, index) => {
   //   ? [{ label: "Certificat de perte", key: "certificatPerte" }, { label: "CV", key: "cv" }]
   //   : allDocuments;
 
-
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
         Informations Personnelles
       </Typography>
-
 
       {/* Renewal Modal */}
       <Dialog open={renewalModal.value} onClose={renewalModal.off} fullWidth>
@@ -431,7 +406,7 @@ const checkPassportExistence = async (numero, index) => {
             label="Numéro de passeport"
             fullWidth
             value={passportInput}
-            onChange={e => setPassportInput(e.target.value)}
+            onChange={(e) => setPassportInput(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
@@ -441,7 +416,6 @@ const checkPassportExistence = async (numero, index) => {
           </LoadingButton>
         </DialogActions>
       </Dialog>
-
 
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
         {fields.map((item, index) => (
@@ -465,17 +439,17 @@ const checkPassportExistence = async (numero, index) => {
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 onBlur={(e) => handlePassportBlur(e, index)}
-                error={values.employees[index].passportExists}       // true = duplication
+                error={values.employees[index].passportExists} // true = duplication
                 helperText={
                   values.employees[index].passportExists
-                    ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
-                    : ""
+                    ? '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
+                    : ''
                 }
                 FormHelperTextProps={{
                   sx: {
                     color: values.employees[index].passportExists
-                      ? 'error.main'     // bordure/texte en rouge si existe déjà
-                      : 'success.main',  // vert sinon
+                      ? 'error.main' // bordure/texte en rouge si existe déjà
+                      : 'success.main', // vert sinon
                   },
                 }}
               />
@@ -506,50 +480,47 @@ const checkPassportExistence = async (numero, index) => {
               />
 
               <Autocomplete
-                  options={options}
-                  getOptionLabel={opt => opt.label}
-                  loading={loading}
-                  fullWidth
-                  filterOptions={(opts, state) =>
-                    opts.filter(o =>
-                      o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
-                    )
+                options={options}
+                getOptionLabel={(opt) => opt.label}
+                loading={loading}
+                fullWidth
+                filterOptions={(opts, state) =>
+                  opts.filter((o) =>
+                    o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
+                  )
+                }
+                onChange={(e, option) => {
+                  if (option) {
+                    setValue(`employees[${index}].job`, option.value);
                   }
-                  onChange={(e, option) => {
-                    if (option) {
-                      setValue(`employees[${index}].job`, option.value);
-                    }
-                  }}
-
-                  // On surcharge renderOption pour forcer une key unique
-                  renderOption={(props, option, { index }) => (
-                    <li
-                      {...props}
-                      key={`${option.value}-${index}`} // utilisez le slug + index
-                    >
-                      {option.label}
-                    </li>
-                  )}
-
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Fonction *"
-                      size="small"
-                      fullWidth
-                      InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
-                          <>
-                            {loading && <CircularProgress size={20} />}
-                            {params.InputProps.endAdornment}
-                          </>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-
+                }}
+                // On surcharge renderOption pour forcer une key unique
+                renderOption={(props, option, { index }) => (
+                  <li
+                    {...props}
+                    key={`${option.value}-${index}`} // utilisez le slug + index
+                  >
+                    {option.label}
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Fonction *"
+                    size="small"
+                    fullWidth
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loading && <CircularProgress size={20} />}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
             </Stack>
 
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
@@ -607,8 +578,8 @@ const checkPassportExistence = async (numero, index) => {
                         />
                       </IconButton> */}
 
-                      {/* Icône pour voir le fichier s'il est téléchargé */}
-                      {/* {watch(`items[${index}].${doc.key}`) && (
+            {/* Icône pour voir le fichier s'il est téléchargé */}
+            {/* {watch(`items[${index}].${doc.key}`) && (
                         <IconButton
                           color="primary"
                           component="a"
@@ -625,7 +596,6 @@ const checkPassportExistence = async (numero, index) => {
 
               </Box>
             </Modal> */}
-
 
             {/* Modal pour les données biométriques */}
             {/* <Modal open={openModal} onClose={handleCloseModal}>
@@ -644,8 +614,8 @@ const checkPassportExistence = async (numero, index) => {
                 }}
 
               > */}
-                {/* Condition : Si Renouvellement -> Upload seul, sinon Stepper */}
-                {/* {typedec === "Renouvellement" ? (
+            {/* Condition : Si Renouvellement -> Upload seul, sinon Stepper */}
+            {/* {typedec === "Renouvellement" ? (
                   <>
                     <Typography variant="h6" align="center" gutterBottom>
                       Upload de l'Ancien Permis
@@ -686,8 +656,8 @@ const checkPassportExistence = async (numero, index) => {
                           {['Recto', 'Verso', 'Signature', 'Empreinte'][activeStep]}
                         </Typography> */}
 
-                        {/* Utilisation du composant UploadWithPreview pour chaque étape */}
-                        {/* {activeStep === 0 && (
+            {/* Utilisation du composant UploadWithPreview pour chaque étape */}
+            {/* {activeStep === 0 && (
                           <Field.UploadAvatar
                             name={`items[${index}].recto`}
                             maxSize={3145728}
@@ -751,16 +721,14 @@ const checkPassportExistence = async (numero, index) => {
               Supprimer
             </Button>
           </Stack>
-
-
-
         ))}
       </Stack>
 
       <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
       <Stack
-        spacing={2} sx={{ mb: 2 }}
+        spacing={2}
+        sx={{ mb: 2 }}
         direction={{ xs: 'column', md: 'row' }}
         alignItems={{ xs: 'flex-end', md: 'center' }}
       >
@@ -784,11 +752,10 @@ const checkPassportExistence = async (numero, index) => {
         >
           Renouvellement
         </Button> */}
-         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {fields.length} / {MAX_EMPLOYEES} employés ajoutés
         </Typography>
       </Stack>
-
     </Box>
   );
 }

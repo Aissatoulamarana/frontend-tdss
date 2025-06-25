@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Table,
-  Paper,
   Stack,
   Button,
   Dialog,
@@ -23,7 +22,7 @@ import {
   TableContainer,
   TablePagination,
   FormControlLabel,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -34,7 +33,6 @@ import { Iconify } from 'src/components/iconify';
 import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
 import { EmployeeQuickEditForm } from './employe-quick-edit-form';
-
 
 const fixedCategories = [
   { label: 'Tous', value: 'All' },
@@ -63,16 +61,13 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     count: 0,
     next: null,
     previous: null,
-
   });
 
   const router = useRouter();
 
   // Calcul des lignes selon le filtre
   const rows =
-    filter === 'All'
-      ? employee
-      : employee?.filter((row) => row?.job?.category === filter);
+    filter === 'All' ? employee : employee?.filter((row) => row?.job?.category === filter);
 
   const isSelected = (slug) => selected.includes(slug);
 
@@ -113,15 +108,14 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           limit: 100,
           offset: offset,
           status: 'unsubmitted',
-
         };
         const response = await axios.get(API.listDeclarations(), { params });
         const declarations = response.data.results
-        .filter((d) => d.reference !== declaration?.reference)
-        .map((declaration) => ({
-          value: declaration?.reference,
-          label: declaration?.reference,
-        }));
+          .filter((d) => d.reference !== declaration?.reference)
+          .map((declaration) => ({
+            value: declaration?.reference,
+            label: declaration?.reference,
+          }));
         setOptions(declarations);
       } catch (error) {
         console.error('Erreur lors de la récupération des déclarations :', error);
@@ -144,15 +138,14 @@ const FilteredTable = ({ declaration, printMode = false }) => {
         const params = {
           limit: rowsPerPage,
           offset: page * rowsPerPage,
-        }
-        const response = await axios.get(API.Employe(declaration?.slug), {params});
+        };
+        const response = await axios.get(API.Employe(declaration?.slug), { params });
         const employees = response.data.results;
         setEmployee(employees);
         setPagination({
           count: response.data.count,
           next: response.data.next,
           previous: response.data.previous,
-
         });
       } catch (error) {
         console.error('Erreur lors de la récupération des employés :', error);
@@ -165,43 +158,38 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       fetchEmployees();
     }
   }, [declaration, page, rowsPerPage]);
-  
 
-  const handleMove = useCallback(
-    async () => {
-      if (!declaration || !declaration?.slug) {
-        toast("La déclaration n'est pas définie.");
-        return;
-      }
-      try {
-        const payload = {
-          selected_slugs: selected,
-          target_reference: selectedDeclaration?.value,
-        };
+  const handleMove = useCallback(async () => {
+    if (!declaration || !declaration?.slug) {
+      toast("La déclaration n'est pas définie.");
+      return;
+    }
+    try {
+      const payload = {
+        selected_slugs: selected,
+        target_reference: selectedDeclaration?.value,
+      };
 
-        const response = await axios.post(API.move(declaration?.slug), payload);
-        if (response.status === 200) {
-          toast.success('Déplacement effectué avec succès !');
-          setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
-          setSelected([]);
-          setIsDialogOpen(false);
-          // router.push(paths.dashboard.declaration.list);
-        }
-      } catch (error) {
-        console.error('Erreur lors du déplacement :', error);
-        const errorMessage =
-          error.error || error.details || error.message;
-        toast.error(`Erreur : ${errorMessage}`);
+      const response = await axios.post(API.move(declaration?.slug), payload);
+      if (response.status === 200) {
+        toast.success('Déplacement effectué avec succès !');
+        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
+        setSelected([]);
+        setIsDialogOpen(false);
+        // router.push(paths.dashboard.declaration.list);
       }
-    },
-    [declaration, selected, selectedDeclaration, router]
-  );
+    } catch (error) {
+      console.error('Erreur lors du déplacement :', error);
+      const errorMessage = error.error || error.details || error.message;
+      toast.error(`Erreur : ${errorMessage}`);
+    }
+  }, [declaration, selected, selectedDeclaration, router]);
 
   const handleDeleteRows = async () => {
     try {
       const slugs = {
         slugs: selected,
-      }
+      };
       const response = await axios.post(API.DeleteEmploye(declaration?.slug), slugs);
       if (response.status === 200) {
         setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
@@ -216,11 +204,9 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     } catch (error) {
       console.error('Erreur réseau ou serveur:', error);
 
-      const errorMessage =
-        error.error || error.details || error.message;
+      const errorMessage = error.error || error.details || error.message;
       toast.error(`Erreur : ${errorMessage}`);
     }
-
   };
 
   // Gestion de l'ouverture du formulaire d'édition rapide
@@ -303,7 +289,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                           {params.InputProps.endAdornment}
                         </>
                       ),
-                    }
+                    },
                   }}
                 />
               )}
@@ -331,7 +317,6 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             <Typography sx={{ mb: 2 }}>
               Êtes-vous sûr de vouloir suprimer <strong>{selected?.length}</strong> employés ?
             </Typography>
-
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsDialogSup(false)}>Annuler</Button>
@@ -356,7 +341,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             justifyContent: 'space-around',
             backgroundColor: printMode ? 'transparent' : 'transparent',
             padding: 1,
-            marginBottom: 5
+            marginBottom: 5,
           }}
         >
           {fixedCategories?.map((cat) => {
@@ -373,7 +358,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                 sx={{ flexDirection: 'column', alignItems: 'center', minWidth: 80 }}
               >
                 <Typography variant="body1">{cat?.label}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                >
                   {count}
                 </Typography>
               </Button>
@@ -405,12 +394,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               // ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <React.Fragment key={`${row?.id}-${row?.slug}`}>
-                  <TableRow
-
-                    hover
-                    selected={isSelected(row?.slug)}
-
-                  >
+                  <TableRow hover selected={isSelected(row?.slug)}>
                     <TableCell padding="checkbox">
                       {declaration?.status === 'unsubmitted' && (
                         <Checkbox
@@ -429,7 +413,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                         secondary={row.first}
                         slotProps={{
                           primary: { typography: 'body2', noWrap: true },
-                          secondary: { mt: 0.5, component: 'span', typography: 'body2' }
+                          secondary: { mt: 0.5, component: 'span', typography: 'body2' },
                         }}
                       />
                     </TableCell>

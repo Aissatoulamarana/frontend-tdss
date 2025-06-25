@@ -10,8 +10,6 @@ import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 
 import { Iconify } from 'src/components/iconify';
-import { SearchNotFound } from 'src/components/search-not-found';
-
 // ----------------------------------------------------------------------
 
 export function JobSearch({ search, onSearch }) {
@@ -71,7 +69,7 @@ export function JobSearch({ search, onSearch }) {
                   <Iconify icon="eva:search-fill" sx={{ ml: 1, color: 'text.disabled' }} />
                 </InputAdornment>
               ),
-            }
+            },
           }}
         />
       )}

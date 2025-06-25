@@ -1,19 +1,11 @@
-import { CONFIG } from 'src/config-global';
-
 import { today } from 'src/utils/format-time';
 
 import { _mock } from './_mock';
-import { date } from 'zod';
 
 // APP
 // ----------------------------------------------------------------------
 
-export const _appRelated = [
-  'CERI',
-  'Risha',
-  'mamyero & freres',
- 
-].map((name, index) => ({
+export const _appRelated = ['CERI', 'Risha', 'mamyero & freres'].map((name, index) => ({
   id: _mock.id(index),
   name,
   downloaded: _mock.number.nativeL(index),
@@ -45,7 +37,7 @@ export const _appAuthors = [...Array(3)].map((_, index) => ({
 export const _appInvoices = [...Array(5)].map((_, index) => {
   const category = ['Android', 'Mac', 'Windows', 'Android', 'Mac'][index];
 
-  const status = ['soumise', 'non soumise', 'soumise', 'non soumise','non soumise'][index];
+  const status = ['soumise', 'non soumise', 'soumise', 'non soumise', 'non soumise'][index];
 
   return {
     id: _mock.id(index),

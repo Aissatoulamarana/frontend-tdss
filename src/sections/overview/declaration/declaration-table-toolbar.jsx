@@ -21,7 +21,6 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export function DeclarationTableToolbar({ filters, options, dateError, onResetPage }) {
-
   const popover = usePopover();
   const [titleInput, setTitleInput] = useState('');
   const [companyInput, setCompanyInput] = useState('');
@@ -37,7 +36,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const handleTitleKeyUp = useCallback(
     (event) => {
       if (event.key === 'Enter') {
-        const value = event.target.value;
+        const { value } = event.target;
         if (filters.state.title !== value) {
           onResetPage();
           filters.setState({ title: event.target.value });
@@ -52,7 +51,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const handleCompanyKeyUp = useCallback(
     (event) => {
       if (event.key === 'Enter') {
-        const value = event.target.value;
+        const { value } = event.target;
         if (filters.state.company !== value) {
           onResetPage();
           filters.setState({ company: event.target.value });
@@ -63,7 +62,6 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
     },
     [filters, onResetPage]
   );
-
 
   const handleFilterService = useCallback(
     (event) => {
@@ -158,7 +156,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         </LocalizationProvider>
 
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
-          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} >
+          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }}>
             <TextField
               fullWidth
               value={titleInput}
@@ -172,14 +170,10 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
                       <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                     </InputAdornment>
                   ),
-                }
+                },
               }}
             />
-
           </Box>
-
-
-
         </Stack>
 
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
@@ -195,7 +189,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
-              }
+              },
             }}
           />
 
@@ -203,7 +197,6 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton> */}
         </Stack>
-
       </Stack>
       <CustomPopover
         open={popover.open}

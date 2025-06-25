@@ -8,7 +8,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import MenuItem from '@mui/material/MenuItem';
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
@@ -18,8 +17,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { TextField, Autocomplete } from '@mui/material';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
-
-import { getJobAgent } from 'src/utils/options';
 
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';

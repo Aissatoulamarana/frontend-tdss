@@ -57,7 +57,6 @@ import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 import { useMockedUser } from 'src/auth/hooks';
 import dayjs from 'dayjs';
 
-
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -78,12 +77,10 @@ export function DeclarationListView() {
   const [anchorEl, setAnchorEl] = useState(null);
   const theme = useTheme();
 
-
   const { user } = useMockedUser();
 
   const type_user = user?.type_name?.toLowerCase().trim();
   // console.log('type_user:', type_user);
-
 
   const router = useRouter();
 
@@ -94,18 +91,16 @@ export function DeclarationListView() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
-  const [selectedFilter, setSelectedFilter] = useState('title'); // options de recherche 
+  const [selectedFilter, setSelectedFilter] = useState('title'); // options de recherche
   const [count, setCount] = useState();
 
   const [pagination, setPagination] = useState({
     count: 0,
     next: null,
     previous: null,
-
   });
 
   const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
-
 
   const filters = useSetState({
     name: '', // mot-clé pour filtrer par numéro ou type de déclaration
@@ -115,7 +110,6 @@ export function DeclarationListView() {
     status: 'all',
     starts_at: null,
     ends_at: null,
-    
   });
 
   const dateError = fIsAfter(filters.state.starts_at, filters.state.ends_at);
@@ -137,20 +131,17 @@ export function DeclarationListView() {
     filters.state.status !== 'all' ||
     (!!filters.state.starts_at && !!filters.state.ends_at);
 
-
-  const notFound = pagination.count === 0 && canReset;;
+  const notFound = pagination.count === 0 && canReset;
 
   const fetchTotalCount = () =>
-    axios 
-      .get(API.listDeclarations(), {params: {limit: 1}})
-      .then((res) => res.data.count);
-  
+    axios.get(API.listDeclarations(), { params: { limit: 1 } }).then((res) => res.data.count);
+
   const fetchCountByStatus = (status) =>
-    axios 
-      .get(API.listDeclarations(), {params: {limit: 1, status}})
+    axios
+      .get(API.listDeclarations(), { params: { limit: 1, status } })
       .then((res) => res.data.count);
-      
-  useEffect (() => {
+
+  useEffect(() => {
     Promise.all([
       fetchTotalCount(),
       fetchCountByStatus('unsubmitted'),
@@ -158,29 +149,21 @@ export function DeclarationListView() {
       fetchCountByStatus('validated'),
       fetchCountByStatus('billed'),
       fetchCountByStatus('rejected'),
-    ])
-    .then(([totalCount, 
-      unsubmitCount, 
-      submitCount, 
-      validatCount, 
-      billedCount, 
-      rejectCount]) => {
-        setSummary({
-          totalCount,
-          countByStatus: { 
-            unsubmitted : unsubmitCount,
-            submitted : submitCount,
-            validated : validatCount,
-            billed : billedCount,
-            rejected : rejectCount
-           }
-        });
-      }) ;
-  }, [user])
+    ]).then(([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
+      setSummary({
+        totalCount,
+        countByStatus: {
+          unsubmitted: unsubmitCount,
+          submitted: submitCount,
+          validated: validatCount,
+          billed: billedCount,
+          rejected: rejectCount,
+        },
+      });
+    });
+  }, [user]);
 
   const getDeclarationLength = (status) => summary.countByStatus[status];
-
- 
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -192,111 +175,108 @@ export function DeclarationListView() {
   const getPercentByStatus = (status) => (getDeclarationLength(status) / summary.totalCount) * 100;
 
   const allowedStatusByRole = {
-    admin:       ['all','submitted','validated','billed','unsubmitted','rejected'],
-    agent:       ['all','submitted','validated','unsubmitted','rejected'],
-    aguipe:      ['all','submitted','rejected'],
-    comptable:   ['all', 'billed', 'validated'],
-    default:     ['all'],
+    admin: ['all', 'submitted', 'validated', 'billed', 'unsubmitted', 'rejected'],
+    agent: ['all', 'submitted', 'validated', 'unsubmitted', 'rejected'],
+    aguipe: ['all', 'submitted', 'rejected'],
+    comptable: ['all', 'billed', 'validated'],
+    default: ['all'],
   };
 
   const allowedStatus = {
-    admin:       ['all','submitted','validated','billed'],
-    agent:       ['all','submitted','validated','unsubmitted'],
-    aguipe:      ['all','submitted','rejected'],
-    comptable:   ['all', 'billed', 'validated'],
-    default:     ['all'],
+    admin: ['all', 'submitted', 'validated', 'billed'],
+    agent: ['all', 'submitted', 'validated', 'unsubmitted'],
+    aguipe: ['all', 'submitted', 'rejected'],
+    comptable: ['all', 'billed', 'validated'],
+    default: ['all'],
   };
 
-
-// Mapping des statuts aux composants/cards
-const statusCards = {
-  all: (
-    <Grid  size={{ xs: 6, md: 3 }} key="all">
-      <DeclarationSummary
-        title="Total"
-        total={summary.totalCount}
-        percent={100}
-        chart={{
-          colors: [theme.vars.palette.info.main],
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-          series: [20, 41, 63, 33, 28, 35, 50, 46],
-        }}
-      />
-    </Grid>
-  ),
-  validated: (
-    <Grid size={{ xs: 6, md: 3 }} key="validated">
-      <DeclarationSummary
-        title="Validées"
-        total={getDeclarationLength('validated')}
-        percent={getPercentByStatus('validated')}
-        chart={{
-          colors: [theme.vars.palette.success.main],
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-          series: [15, 18, 12, 51, 68, 11, 39, 37],
-        }}
-      />
-    </Grid>
-  ),
-  unsubmitted: (
-    <Grid size={{ xs: 6, md: 3 }} key="unsubmitted">
-      <DeclarationSummary
-        title="Brouillon"
-        total={getDeclarationLength('unsubmitted')}
-        percent={getPercentByStatus('unsubmitted')}
-        chart={{
-          colors: [theme.vars.palette.warning.main],
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-          series: [18, 19, 31, 8, 16, 37, 12, 33],
-        }}
-      />
-    </Grid>
-  ),
-  rejected: (
-    <Grid size={{ xs: 6, md: 3 }} key="rejected">
-      <DeclarationSummary
-        title="Rejetées"
-        total={getDeclarationLength('rejected')}
-        percent={getPercentByStatus('rejected')}
-        chart={{
-          colors: [theme.vars.palette.error.main],
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-          series: [18, 19, 31, 8, 16, 37, 12, 33],
-        }}
-      />
-    </Grid>
-  ),
-  billed: (
-    <Grid size={{ xs: 6, md: 3 }} key="billed">
-      <DeclarationSummary
-        title="Facturées"
-        total={getDeclarationLength('billed')}
-        percent={getPercentByStatus('billed')}
-        chart={{
-          colors: [theme.vars.palette.primary.main],
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-          series: [10, 22, 15, 44, 30, 25, 20, 40],
-        }}
-      />
-    </Grid>
-  ),
-  submitted: (
-    <Grid size={{ xs: 6, md: 3 }} key="submitted">
-      <DeclarationSummary
-        title="Soumises"
-        total={getDeclarationLength('submitted')}
-        percent={getPercentByStatus('submitted')}
-        chart={{
-          colors: [theme.vars.palette.secondary.main],
-          categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-          series: [12, 34, 22, 40, 45, 36, 28, 50],
-        }}
-      />
-    </Grid>
-  ),
-};
-
-
+  // Mapping des statuts aux composants/cards
+  const statusCards = {
+    all: (
+      <Grid size={{ xs: 6, md: 3 }} key="all">
+        <DeclarationSummary
+          title="Total"
+          total={summary.totalCount}
+          percent={100}
+          chart={{
+            colors: [theme.vars.palette.info.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [20, 41, 63, 33, 28, 35, 50, 46],
+          }}
+        />
+      </Grid>
+    ),
+    validated: (
+      <Grid size={{ xs: 6, md: 3 }} key="validated">
+        <DeclarationSummary
+          title="Validées"
+          total={getDeclarationLength('validated')}
+          percent={getPercentByStatus('validated')}
+          chart={{
+            colors: [theme.vars.palette.success.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [15, 18, 12, 51, 68, 11, 39, 37],
+          }}
+        />
+      </Grid>
+    ),
+    unsubmitted: (
+      <Grid size={{ xs: 6, md: 3 }} key="unsubmitted">
+        <DeclarationSummary
+          title="Brouillon"
+          total={getDeclarationLength('unsubmitted')}
+          percent={getPercentByStatus('unsubmitted')}
+          chart={{
+            colors: [theme.vars.palette.warning.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [18, 19, 31, 8, 16, 37, 12, 33],
+          }}
+        />
+      </Grid>
+    ),
+    rejected: (
+      <Grid size={{ xs: 6, md: 3 }} key="rejected">
+        <DeclarationSummary
+          title="Rejetées"
+          total={getDeclarationLength('rejected')}
+          percent={getPercentByStatus('rejected')}
+          chart={{
+            colors: [theme.vars.palette.error.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [18, 19, 31, 8, 16, 37, 12, 33],
+          }}
+        />
+      </Grid>
+    ),
+    billed: (
+      <Grid size={{ xs: 6, md: 3 }} key="billed">
+        <DeclarationSummary
+          title="Facturées"
+          total={getDeclarationLength('billed')}
+          percent={getPercentByStatus('billed')}
+          chart={{
+            colors: [theme.vars.palette.primary.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [10, 22, 15, 44, 30, 25, 20, 40],
+          }}
+        />
+      </Grid>
+    ),
+    submitted: (
+      <Grid size={{ xs: 6, md: 3 }} key="submitted">
+        <DeclarationSummary
+          title="Soumises"
+          total={getDeclarationLength('submitted')}
+          percent={getPercentByStatus('submitted')}
+          chart={{
+            colors: [theme.vars.palette.secondary.main],
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            series: [12, 34, 22, 40, 45, 36, 28, 50],
+          }}
+        />
+      </Grid>
+    ),
+  };
 
   const TABS = [
     {
@@ -336,13 +316,11 @@ const statusCards = {
       color: 'error',
       count: getDeclarationLength('rejected'),
     },
-
   ];
-
 
   function getTabsForUser(userType) {
     const allowed = allowedStatusByRole[userType] || allowedStatusByRole.default;
-    return TABS.filter(tab => allowed.includes(tab.value));
+    return TABS.filter((tab) => allowed.includes(tab.value));
   }
 
   const tabs = getTabsForUser(type_user);
@@ -358,7 +336,7 @@ const statusCards = {
       }
     } catch (error) {
       const errorMessage = error?.error || error?.details || error?.message || error?.detail;
-      setError(errorMessage)
+      setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
     }
@@ -384,24 +362,18 @@ const statusCards = {
     [router]
   );
 
- 
-
   const handleSubmitRow = useCallback(
     async (slug) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.submitDeclaration(slug), {
-
-        });
+        const response = await axios.post(API.submitDeclaration(slug), {});
 
         if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
           toast.success('Déclaration soumise avec succès !');
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
-            prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'submitted' } : item
-            )
+            prevData.map((item) => (item.slug === slug ? { ...item, status: 'submitted' } : item))
           );
           router.push(paths.dashboard.declaration.list);
         } else {
@@ -410,7 +382,7 @@ const statusCards = {
         }
       } catch (error) {
         const errorMessage = error?.error || error?.details || error?.message || error?.detail;
-        setError(errorMessage)
+        setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
       }
@@ -418,23 +390,18 @@ const statusCards = {
     [router]
   );
 
-
   const handleUnSubmitRow = useCallback(
     async (slug) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.unsubmitDeclaration(slug), {
-
-        });
+        const response = await axios.post(API.unsubmitDeclaration(slug), {});
 
         if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
           toast.success('Le statut de la déclaration a été remis à non soumis avec succès !');
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
-            prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'unsubmitted' } : item
-            )
+            prevData.map((item) => (item.slug === slug ? { ...item, status: 'unsubmitted' } : item))
           );
           router.push(paths.dashboard.declaration.list);
         } else {
@@ -443,7 +410,7 @@ const statusCards = {
         }
       } catch (error) {
         const errorMessage = error?.error || error?.details || error?.message || error?.detail;
-        setError(errorMessage)
+        setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
       }
@@ -455,18 +422,14 @@ const statusCards = {
     async (slug) => {
       try {
         // Appel à l'API backend pour valider la déclaration en envoyant l'action
-        const response = await axios.post(API.validateDeclaration(slug), {
-
-        });
+        const response = await axios.post(API.validateDeclaration(slug), {});
 
         if (response) {
           // Si succès, rediriger ou mettre à jour l'interface utilisateur
           toast.success('Déclaration validée avec succès !');
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
-            prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'validated' } : item
-            )
+            prevData.map((item) => (item.slug === slug ? { ...item, status: 'validated' } : item))
           );
           router.push(paths.dashboard.declaration.list);
         } else {
@@ -475,14 +438,13 @@ const statusCards = {
         }
       } catch (error) {
         const errorMessage = error?.error || error?.details || error?.message || error?.detail;
-        setError(errorMessage)
+        setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
       }
     },
     [router]
   );
-
 
   const handleFacturer = useCallback(
     async (slug) => {
@@ -494,9 +456,7 @@ const statusCards = {
           toast.success('Déclaration facturée avec succès !');
           // Mise à jour locale du statut dans tableData
           setTableData((prevData) =>
-            prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'billed' } : item
-            )
+            prevData.map((item) => (item.slug === slug ? { ...item, status: 'billed' } : item))
           );
           router.push(paths.dashboard.factures.list);
         } else {
@@ -505,7 +465,7 @@ const statusCards = {
         }
       } catch (error) {
         const errorMessage = error?.error || error?.details || error?.message || error?.detail;
-        setError(errorMessage)
+        setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
       }
@@ -518,14 +478,12 @@ const statusCards = {
       try {
         // Appel à l'API backend pour rejeter la déclaration
         const response = await axios.post(API.rejetterDeclaration(slug), {
-          reject_reason: motifRejet
+          reject_reason: motifRejet,
         });
         if (response) {
           toast.success('Déclaration rejetée avec succès !');
           setTableData((prevData) =>
-            prevData.map((item) =>
-              item.slug === slug ? { ...item, status: 'rejected' } : item
-            )
+            prevData.map((item) => (item.slug === slug ? { ...item, status: 'rejected' } : item))
           );
           router.push(paths.dashboard.declaration.list);
         } else {
@@ -534,14 +492,13 @@ const statusCards = {
         }
       } catch (error) {
         const errorMessage = error?.error || error?.details || error?.message || error?.detail;
-        setError(errorMessage)
+        setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
       }
     },
     [router]
   );
-
 
   const handleViewRow = useCallback(
     (slug) => {
@@ -558,58 +515,59 @@ const statusCards = {
     [filters, table]
   );
 
-
   useEffect(() => {
-  // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
-  const fetchDeclarations = async () => {
-    setLoading(true);
-    try {
-      const offset = table.page * table.rowsPerPage;
-      const params = {
-        limit: table.rowsPerPage,
-        offset: offset,
-        ...(filters.state.company
-          ? { company: filters.state.company }
-          : filters.state.title
-            ? { title: filters.state.title }
+    // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
+    const fetchDeclarations = async () => {
+      setLoading(true);
+      try {
+        const offset = table.page * table.rowsPerPage;
+        const params = {
+          limit: table.rowsPerPage,
+          offset: offset,
+          ...(filters.state.company
+            ? { company: filters.state.company }
+            : filters.state.title
+              ? { title: filters.state.title }
+              : {}),
 
-            : {}
-        ),
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.starts_at && filters.state.ends_at && !dateError
+            ? {
+                starts_at: dayjs(filters.state.dstarts_at).format('YYYY-MM-DD '),
+                ends_at: dayjs(filters.state.ends_at).format('YYYY-MM-DD '),
+              }
+            : {}),
+        };
 
-        ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-         ...(filters.state.starts_at && filters.state.ends_at && !dateError
-                              ? {
-                                starts_at: dayjs(filters.state.dstarts_at).format('YYYY-MM-DD '),
-                                ends_at: dayjs(filters.state.ends_at).format('YYYY-MM-DD ')
-                              }
-                              : {}
-                            ),
-      };
+        const response = await axios.get(API.listDeclarations(), { params });
+        setTableData(response.data.results);
+        setCount(response.data.count);
+        setPagination({
+          count: response.data.count,
+          next: response.data.next,
+          previous: response.data.previous,
+        });
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+        const errormessage = err?.message || err?.details || err?.error;
+        toast.error(errormessage);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      const response = await axios.get(API.listDeclarations(), { params });
-      setTableData(response.data.results);
-      setCount(response.data.count);
-      setPagination({
-        count: response.data.count,
-        next: response.data.next,
-        previous: response.data.previous,
+    // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
 
-      });
-    } catch (err) {
-      setError(err.message || 'Erreur lors du chargement des données.');
-      const errormessage = err?.message || err?.details || err?.error;
-      toast.error(errormessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
- 
     fetchDeclarations();
-
-  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.status, filters.state.starts_at, filters.state.ends_at]);
-
+  }, [
+    table.page,
+    table.rowsPerPage,
+    filters.state.company,
+    filters.state.title,
+    filters.state.status,
+    filters.state.starts_at,
+    filters.state.ends_at,
+  ]);
 
   if (loading) {
     console.info('Loading declarations...');
@@ -632,7 +590,6 @@ const statusCards = {
 
   const allowedStatuses = allowedStatus[type_user] || allowedStatus.default;
 
-
   return (
     <>
       <DashboardContent maxWidth="xl">
@@ -645,24 +602,20 @@ const statusCards = {
           ]}
           action={
             type_user === 'agent' && ( //  Cache le bouton si type_user est "admin"
-              <>
-                <Button
-                  component={RouterLink}
-                  href={paths.dashboard.declaration.new}
-                  variant="contained"
-                  startIcon={<Iconify icon="mingcute:add-line" />}
-                >
-                  Ajouter
-                </Button>
-
-              </>
+              <Button
+                component={RouterLink}
+                href={paths.dashboard.declaration.new}
+                variant="contained"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+              >
+                Ajouter
+              </Button>
             )
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-
-        <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} >
+        <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }}>
           {allowedStatuses.map((status) => statusCards[status]).filter(Boolean)}
           {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
@@ -730,19 +683,17 @@ const statusCards = {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-              icon={
-                <Label
-                  variant={
-                    ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                    'soft'
-                  }
-
-                color={tab.color}
-                >
-                   {tab.count} 
-
-                </Label>
-              }
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                      'soft'
+                    }
+                    color={tab.color}
+                  >
+                    {tab.count}
+                  </Label>
+                }
               />
             ))}
           </Tabs>
@@ -754,9 +705,7 @@ const statusCards = {
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
             options={{
-
               fonctions: [...new Set(tableData.map((option) => option.title.trim()))],
-
             }}
           />
 
@@ -826,22 +775,26 @@ const statusCards = {
                   }
                 />
 
-                   {loading ? (
-                      <TableBody>
-                         <TableRow>
-                            <TableCell colSpan={100}>
-                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
-                                  <CircularProgress />
-                                </Box>
-                            </TableCell>
-                          </TableRow>
-                      </TableBody>
-                     ):
-                 (
-                <TableBody>
-
-                  {tableData
-                    .map((row) => (
+                {loading ? (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell colSpan={100}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            py: 6,
+                          }}
+                        >
+                          <CircularProgress />
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                ) : (
+                  <TableBody>
+                    {tableData.map((row) => (
                       <DeclarationTableRow
                         user={user}
                         key={row.slug}
@@ -859,19 +812,16 @@ const statusCards = {
                       />
                     ))}
 
-                  {tableData.length > 0 &&
-                    tableData.length < table.rowsPerPage && (
+                    {tableData.length > 0 && tableData.length < table.rowsPerPage && (
                       <TableEmptyRows
                         height={table.dense ? 56 : 76}
                         emptyRows={table.rowsPerPage - tableData.length}
                       />
                     )}
 
-
-                  <TableNoData notFound={notFound} />
-
-                </TableBody>
-                 )}
+                    <TableNoData notFound={notFound} />
+                  </TableBody>
+                )}
               </Table>
             </Scrollbar>
           </Box>
@@ -885,8 +835,6 @@ const statusCards = {
             onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
-
-
         </Card>
       </DashboardContent>
 
@@ -932,9 +880,10 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   // Filtrage par numéro de déclaration ou type de déclaration
   // Filtrage par numéro de déclaration ou par type via le mot-clé
   if (name) {
-    inputData = inputData?.filter((declaration) =>
-      declaration?.reference?.toLowerCase().includes(name.toLowerCase()) ||
-      declaration?.title?.toLowerCase().includes(name.toLowerCase())
+    inputData = inputData?.filter(
+      (declaration) =>
+        declaration?.reference?.toLowerCase().includes(name.toLowerCase()) ||
+        declaration?.title?.toLowerCase().includes(name.toLowerCase())
     );
   }
 

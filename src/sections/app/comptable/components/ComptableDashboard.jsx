@@ -1,31 +1,23 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  Box, 
-  Button, 
-  Card, 
+import {
+  Box,
+  Button,
+  Card,
   CircularProgress,
-  Container, 
-  Divider, 
-  FormControl, 
-  Grid, 
-  InputLabel, 
-  MenuItem, 
-  Select, 
-  Skeleton, 
-  Stack, 
+  Container,
+  Divider,
+  Grid,
+  Skeleton,
+  Stack,
   Typography,
   Alert,
   AlertTitle,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
-import { fDate } from 'src/utils/format-time';
-
 import { useAuthContext } from 'src/auth/hooks/use-auth-context';
 import { Iconify } from 'src/components/iconify';
-import { Scrollbar } from 'src/components/scrollbar';
 import { useResponsive } from 'src/hooks/use-responsive';
-import { fShortenNumber, fCurrency } from 'src/utils/format-number';
 import ComptableService from 'src/services/comptableService';
 import { CurrencySelector, CURRENCIES } from 'src/components/CurrencySelector';
 
@@ -65,12 +57,13 @@ const UPCOMING_DUE_DATES = [
 // ----------------------------------------------------------------------
 
 // Fonction utilitaire pour formater les montants
-const formatAmount = (amount) => new Intl.NumberFormat('fr-FR', {
-  style: 'currency',
-  currency: 'XOF',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-}).format(amount);
+const formatAmount = (amount) =>
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 
 export function ComptableDashboard() {
   const theme = useTheme();
@@ -84,7 +77,7 @@ export function ComptableDashboard() {
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const years = Array.from({length: 5}, (_, i) => currentYear - i); // 5 dernières années
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // 5 dernières années
 
   const handleYearChange = (newYear) => {
     setSelectedYear(newYear);
@@ -92,9 +85,6 @@ export function ComptableDashboard() {
     fetchInvoicesData();
   };
 
-
-
-  
   // États pour les données du dashboard
   const [dashboardData, setDashboardData] = useState({
     declarationsToInvoice: 0,
@@ -102,7 +92,7 @@ export function ComptableDashboard() {
     pendingPayments: 0,
     totalRevenue: 0,
     monthlyData: { months: [], data: [] },
-    lastDeclarations: []
+    lastDeclarations: [],
   });
 
   const [loading, setLoading] = useState({
@@ -118,29 +108,35 @@ export function ComptableDashboard() {
     invoices: null,
     charts: null,
   });
-  
+
   // Données pour le graphique d'objectif mensuel
   const targetAmount = 20000000; // 20 000 000 FCFA
   const progress = Math.min(Math.round((dashboardData.totalRevenue / targetAmount) * 100), 100);
-  
-  const chartData = useMemo(() => ({
-    series: [{
-      name: 'Nombre de factures',
-      data: dashboardData.monthlyData.data || [],
-    }],
-    categories: dashboardData.monthlyData.months?.map(month => {
-      // Convertir le numéro du mois en nom de mois
-      const date = new Date(2023, parseInt(month, 10) - 1, 1);
-      return date.toLocaleString('fr-FR', { month: 'short' });
-    }) || [],
-    stats: [
-      { 
-        label: 'Total annuel', 
-        value: dashboardData.monthlyData.data?.reduce((sum, val) => sum + val, 0) || 0 
-      }
-    ],
-  }), [dashboardData.monthlyData]);
-  
+
+  const chartData = useMemo(
+    () => ({
+      series: [
+        {
+          name: 'Nombre de factures',
+          data: dashboardData.monthlyData.data || [],
+        },
+      ],
+      categories:
+        dashboardData.monthlyData.months?.map((month) => {
+          // Convertir le numéro du mois en nom de mois
+          const date = new Date(2023, parseInt(month, 10) - 1, 1);
+          return date.toLocaleString('fr-FR', { month: 'short' });
+        }) || [],
+      stats: [
+        {
+          label: 'Total annuel',
+          value: dashboardData.monthlyData.data?.reduce((sum, val) => sum + val, 0) || 0,
+        },
+      ],
+    }),
+    [dashboardData.monthlyData]
+  );
+
   const chartOptions = useMemo(
     () => ({
       chart: {
@@ -154,11 +150,11 @@ export function ComptableDashboard() {
       },
       yaxis: {
         title: {
-          text: 'Nombre de factures'
+          text: 'Nombre de factures',
         },
         labels: {
-          formatter: (value) => Math.round(value) === value ? value : '' // Affiche uniquement les entiers
-        }
+          formatter: (value) => (Math.round(value) === value ? value : ''), // Affiche uniquement les entiers
+        },
       },
       tooltip: {
         y: {
@@ -188,56 +184,57 @@ export function ComptableDashboard() {
     // Ici, vous pourriez ajouter une logique pour recharger les données en fonction de la période sélectionnée
     console.log('Période sélectionnée:', event.target.value);
   }; */
-  
+
   const handleStatusChange = (event) => {
     setStatusFilter(event.target.value);
     // Ici, vous pourriez filtrer les données en fonction du statut sélectionné
     console.log('Statuts sélectionnés:', event.target.value);
   };
-  
+
   const handleChartRangeChange = (event) => {
     setChartRange(event.target.value);
     // Ici, vous pourriez ajuster la plage de données affichée dans les graphiques
     console.log('Plage de graphique sélectionnée:', event.target.value);
   };
-  
+
   const handleExport = () => {
     // Logique d'exportation des données
     console.log('Exportation des données...');
     // Ici, vous pourriez implémenter la logique pour exporter les données au format CSV, Excel, etc.
   };
-  
+
   const handleCreateNew = () => {
     // Logique de création d'un nouvel élément (déclaration, facture, etc.)
-    console.log('Création d\'un nouvel élément...');
+    console.log("Création d'un nouvel élément...");
     // Ici, vous pourriez implémenter la navigation vers un formulaire de création
   };
-  
+
   const handleRowClick = (id) => console.log('Row clicked:', id);
   // Navigation vers la page de détail
   // router.push(`/dashboard/declarations/${id}`);
-  
+
   const handleNotificationClose = () => {
     // Gestion de la fermeture de la notification
     console.log('Notification fermée');
     // Ici, vous pourriez mettre à jour l'état pour masquer la notification
   };
-  
-  // Fonction utilitaire pour le choix de la money 
+
+  // Fonction utilitaire pour le choix de la money
   const formatAmount = (amount) => {
     const formatter = CURRENCIES[currency]?.formatter || 'fCurrency';
-    const formatFn = {
-      'fCurrency': fCurrency,
-      'fEuro': fEuro,
-      'fGNF': fGNF
-    }[formatter] || fCurrency;
-    
-    return formatFn(amount, { 
+    const formatFn =
+      {
+        fCurrency: fCurrency,
+        fEuro: fEuro,
+        fGNF: fGNF,
+      }[formatter] || fCurrency;
+
+    return formatFn(amount, {
       minimumFractionDigits: 0,
-      maximumFractionDigits: currency === 'GNF' ? 0 : 2
+      maximumFractionDigits: currency === 'GNF' ? 0 : 2,
     });
   };
-  
+
   // Fonction pour obtenir la couleur en fonction du statut
   const getStatusColor = (status) => {
     const statusColors = {
@@ -248,7 +245,7 @@ export function ComptableDashboard() {
     };
     return statusColors[status] || 'default';
   };
-  
+
   // Fonction pour obtenir l'icône en fonction du statut
   const getStatusIcon = (status) => {
     const statusIcons = {
@@ -263,9 +260,9 @@ export function ComptableDashboard() {
   // Récupérer les données de synthèse
   const fetchSummaryData = useCallback(async () => {
     try {
-      setLoading(prev => ({ ...prev, summary: true }));
+      setLoading((prev) => ({ ...prev, summary: true }));
       const data = await ComptableService.getAccountantFirstLine();
-      setDashboardData(prev => ({
+      setDashboardData((prev) => ({
         ...prev,
         totalInvoices: data.number_total_factures || 0,
         pendingPayments: data.number_factures_unpaid || 0,
@@ -273,64 +270,72 @@ export function ComptableDashboard() {
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des données de synthèse:', error);
-      setErrors(prev => ({ ...prev, summary: 'Erreur lors du chargement des données de synthèse' }));
+      setErrors((prev) => ({
+        ...prev,
+        summary: 'Erreur lors du chargement des données de synthèse',
+      }));
     } finally {
-      setLoading(prev => ({ ...prev, summary: false }));
+      setLoading((prev) => ({ ...prev, summary: false }));
     }
   }, []);
 
-
-  // Recuper les declarations dernierement validated 
+  // Recuper les declarations dernierement validated
   const fetchLastValidatedDeclarations = useCallback(async () => {
     try {
-      setLoading(prev => ({ ...prev, declarations: true }));
+      setLoading((prev) => ({ ...prev, declarations: true }));
       const data = await ComptableService.getLastValidatedDeclarations();
       setDeclarations(data);
     } catch (error) {
       console.error('Erreur lors du chargement des déclarations:', error);
-      setErrors(prev => ({ ...prev, declarations: 'Erreur lors du chargement des déclarations' }));
+      setErrors((prev) => ({
+        ...prev,
+        declarations: 'Erreur lors du chargement des déclarations',
+      }));
     } finally {
-      setLoading(prev => ({ ...prev, declarations: false }));
+      setLoading((prev) => ({ ...prev, declarations: false }));
     }
   }, []);
 
   // Récupérer les déclarations
   const fetchDeclarationsData = useCallback(async () => {
     try {
-      setLoading(prev => ({ ...prev, declarations: true }));
+      setLoading((prev) => ({ ...prev, declarations: true }));
       const data = await ComptableService.getDeclarationsToInvoice();
-      setDashboardData(prev => ({
+      setDashboardData((prev) => ({
         ...prev,
         declarationsToInvoice: data.number_declarations_to_invoice || 0,
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des déclarations:', error);
-      setErrors(prev => ({ ...prev, declarations: 'Erreur lors du chargement des déclarations' }));
+      setErrors((prev) => ({
+        ...prev,
+        declarations: 'Erreur lors du chargement des déclarations',
+      }));
     } finally {
-      setLoading(prev => ({ ...prev, declarations: false }));
+      setLoading((prev) => ({ ...prev, declarations: false }));
     }
   }, []);
 
   // Récupérer les données des factures
   const fetchInvoicesData = useCallback(async () => {
     try {
-      setLoading(prev => ({ ...prev, invoices: true }));
+      setLoading((prev) => ({ ...prev, invoices: true }));
       const data = await ComptableService.getMonthlyInvoices(selectedYear);
-      setDashboardData(prev => ({
+      setDashboardData((prev) => ({
         ...prev,
         monthlyData: {
           months: data.month || [],
-          data: data.data || []
-        }
+          data: data.data || [],
+        },
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des factures:', error);
-      setErrors(prev => ({ ...prev, invoices: 'Erreur lors du chargement des factures' }));
+      setErrors((prev) => ({ ...prev, invoices: 'Erreur lors du chargement des factures' }));
     } finally {
-      setLoading(prev => ({ ...prev, invoices: false }));
+      setLoading((prev) => ({ ...prev, invoices: false }));
     }
   }, [selectedYear]); // N'oubliez pas d'ajouter selectedYear aux dépendances
-  
+
   // 4. Ensuite le useEffect qui appelle ces fonctions
   useEffect(() => {
     fetchSummaryData();
@@ -342,8 +347,8 @@ export function ComptableDashboard() {
   return (
     <Container maxWidth="xl">
       {/* En-tête amélioré avec dégradé */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           mb: 5,
           p: 3,
           borderRadius: 2,
@@ -377,29 +382,33 @@ export function ComptableDashboard() {
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="body2" color="text.secondary">Devise :</Typography>
-            <CurrencySelector 
-              value={currency}
-              onChange={setCurrency}
-            />
+            <Typography variant="body2" color="text.secondary">
+              Devise :
+            </Typography>
+            <CurrencySelector value={currency} onChange={setCurrency} />
           </Stack>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
-            <Box sx={{ 
-              p: 1.5, 
-              bgcolor: 'rgba(255,255,255,0.15)', 
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <Box
+              sx={{
+                p: 1.5,
+                bgcolor: 'rgba(255,255,255,0.15)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Iconify icon="mdi:finance" width={32} height={32} />
             </Box>
             <Box>
               <Typography variant="subtitle1" sx={{ opacity: 0.9, fontSize: '1.1rem' }}>
                 {user ? `Bienvenue, ${user.name || 'Utilisateur'}` : 'Bienvenue, Utilisateur'}
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8, display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                <Iconify icon="mdi:shield-account" width={16} /> 
+              <Typography
+                variant="body2"
+                sx={{ opacity: 0.8, display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}
+              >
+                <Iconify icon="mdi:shield-account" width={16} />
                 {user?.type_name || 'Comptable'}
               </Typography>
             </Box>
@@ -409,8 +418,8 @@ export function ComptableDashboard() {
 
       {/* Notification d'alerte */}
       {false && (
-        <Alert 
-          severity="info" 
+        <Alert
+          severity="info"
           icon={<Iconify icon="mdi:bell-alert" />}
           action={
             <IconButton
@@ -441,7 +450,6 @@ export function ComptableDashboard() {
             icon="mdi:file-document-edit"
             color="info"
             loading={loading.summary}
-            
           />
         </Grid>
 
@@ -494,13 +502,13 @@ export function ComptableDashboard() {
                 <MenuItem value="custom">Personnalisée</MenuItem>
               </Select>
             </FormControl>
-            
+
             <FormControl fullWidth size="small">
               <InputLabel>Statut</InputLabel>
-              <Select 
-                multiple 
-                value={statusFilter} 
-                label="Statut" 
+              <Select
+                multiple
+                value={statusFilter}
+                label="Statut"
                 onChange={handleStatusChange}
                 renderValue={(selected) => selected.length === 0 ? 'Tous' : `${selected.length} sélectionnés`}
               >
@@ -509,9 +517,9 @@ export function ComptableDashboard() {
                 <MenuItem value="overdue">En retard</MenuItem>
               </Select>
             </FormControl>
-            
-            <Button 
-              variant="contained" 
+
+            <Button
+              variant="contained"
               startIcon={<Iconify icon="mdi:filter" />}
               onClick={() => console.log('Filtres appliqués')}
               sx={{ whiteSpace: 'nowrap' }}
@@ -524,20 +532,33 @@ export function ComptableDashboard() {
 
       <Grid container spacing={3}>
         {/* Section Évolution des factures */}
-      <Grid item xs={12}>
-        <Card sx={{ p: 3, height: '100%', boxShadow: 3, borderRadius: 2 }}>
-          {/* En-tête de section */}
-          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: 2 }}>
-            <Box>
-              <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-                Évolution des factures
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Analyse des facturations sur la période sélectionnée
-              </Typography>
-            </Box>
-            
-            {/* <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
+        <Grid item xs={12}>
+          <Card sx={{ p: 3, height: '100%', boxShadow: 3, borderRadius: 2 }}>
+            {/* En-tête de section */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'space-between',
+                alignItems: { xs: 'flex-start', sm: 'center' },
+                mb: 3,
+                gap: 2,
+              }}
+            >
+              <Box>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{ fontWeight: 'bold', color: 'text.primary' }}
+                >
+                  Évolution des factures
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Analyse des facturations sur la période sélectionnée
+                </Typography>
+              </Box>
+
+              {/* <FormControl size="small" variant="outlined" sx={{ minWidth: 200 }}>
               <InputLabel id="chart-range-label">Période</InputLabel>
               <Select
                 labelId="chart-range-label"
@@ -550,73 +571,81 @@ export function ComptableDashboard() {
                 <MenuItem value="year">12 derniers mois</MenuItem>
               </Select>
             </FormControl> */}
-          </Box>
-          
-          {/* Contenu du graphique */}
-          <Box sx={{ 
-            height: 350, 
-            mt: 2,
-            position: 'relative',
-            backgroundColor: 'background.paper',
-            borderRadius: 1,
-            p: 2,
-            border: '1px solid',
-            borderColor: 'divider'
-          }}>
-            {loading.charts ? (
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                height: '100%',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+            </Box>
+
+            {/* Contenu du graphique */}
+            <Box
+              sx={{
+                height: 350,
+                mt: 2,
+                position: 'relative',
                 backgroundColor: 'background.paper',
-                zIndex: 1
-              }}>
-                <CircularProgress />
+                borderRadius: 1,
+                p: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              {loading.charts ? (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'background.paper',
+                    zIndex: 1,
+                  }}
+                >
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <ComptableFacturationChart
+                  series={[
+                    {
+                      name: 'Factures',
+                      data: dashboardData.monthlyData.data || [],
+                    },
+                  ]}
+                  options={chartOptions}
+                  selectedYear={selectedYear}
+                  years={years}
+                  onYearChange={handleYearChange}
+                />
+              )}
+            </Box>
+
+            {/* Légende et statistiques */}
+            <Box
+              sx={{
+                mt: 3,
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 2,
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                pt: 2,
+                borderTop: '1px solid',
+                borderColor: 'divider',
+              }}
+            >
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'primary.main' }} />
+                <Typography variant="body2" color="text.secondary">
+                  Montant facturé
+                </Typography>
               </Box>
-            ) : (
-              <ComptableFacturationChart 
-                series={[{
-                  name: 'Factures',
-                  data: dashboardData.monthlyData.data || []
-                }]}
-                options={chartOptions}
-                selectedYear={selectedYear}
-                years={years}
-                onYearChange={handleYearChange}
-              />
-            )}
-          </Box>
-          
-          {/* Légende et statistiques */}
-          <Box sx={{ 
-            mt: 3, 
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            gap: 2,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            pt: 2,
-            borderTop: '1px solid',
-            borderColor: 'divider'
-          }}>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: 'primary.main' }} />
               <Typography variant="body2" color="text.secondary">
-                Montant facturé
+                Données mises à jour à {new Date().toLocaleTimeString()}
               </Typography>
             </Box>
-            <Typography variant="body2" color="text.secondary">
-              Données mises à jour à {new Date().toLocaleTimeString()}
-            </Typography>
-          </Box>
-        </Card>
-      </Grid>
+          </Card>
+        </Grid>
 
         {/* Tableau des déclarations récentes */}
         <Grid item xs={12}>
@@ -624,9 +653,9 @@ export function ComptableDashboard() {
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Typography variant="h6">Déclarations récentes</Typography>
-                <Button 
-                  size="small" 
-                  color="inherit" 
+                <Button
+                  size="small"
+                  color="inherit"
                   endIcon={<Iconify icon="mdi:chevron-right" />}
                   onClick={() => console.log('Voir toutes les déclarations')}
                 >
@@ -643,9 +672,9 @@ export function ComptableDashboard() {
                   ))}
                 </Stack>
               ) : (
-                <ComptableDeclarationTable 
-                  title="" 
-                  onRowClick={handleRowClick} 
+                <ComptableDeclarationTable
+                  title=""
+                  onRowClick={handleRowClick}
                   declarations={declarations}
                   loading={loading.declarations}
                 />
@@ -660,9 +689,9 @@ export function ComptableDashboard() {
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Typography variant="h6">Échéances à venir</Typography>
-                <Button 
-                  size="small" 
-                  color="inherit" 
+                <Button
+                  size="small"
+                  color="inherit"
                   endIcon={<Iconify icon="mdi:calendar-month" />}
                   onClick={() => console.log('Ouvrir le calendrier')}
                 >
@@ -698,9 +727,9 @@ export function ComptableDashboard() {
                           color: item.status === 'overdue' ? 'error.main' : 'primary.main',
                         }}
                       >
-                        <Iconify 
+                        <Iconify
                           icon={item.status === 'overdue' ? 'mdi:alert' : 'mdi:calendar-clock'}
-                          width={20} 
+                          width={20}
                         />
                       </Box>
                       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
@@ -715,8 +744,8 @@ export function ComptableDashboard() {
                         <Typography variant="subtitle2">
                           {formatAmount(item.amount)}
                         </Typography>
-                        <Typography 
-                          variant="caption" 
+                        <Typography
+                          variant="caption"
                           sx={{
                             color: item.status === 'overdue' ? 'error.main' : 'text.secondary',
                             display: 'flex',
@@ -741,9 +770,9 @@ export function ComptableDashboard() {
             </Scrollbar>
             <Divider />
             <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Button 
-                size="small" 
-                color="inherit" 
+              <Button
+                size="small"
+                color="inherit"
                 endIcon={<Iconify icon="mdi:plus" />}
                 onClick={() => console.log('Créer un rappel')}
               >

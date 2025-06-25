@@ -8,7 +8,6 @@ import MenuList from '@mui/material/MenuList';
 import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
@@ -28,7 +27,7 @@ export function UserTableRow({
   onSelectRow,
   onDeleteRow,
   onViewRow,
-  onUpdateRow
+  onUpdateRow,
 }) {
   const confirm = useBoolean();
 
@@ -38,12 +37,19 @@ export function UserTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1} onClick={onViewRow} sx={{
-        cursor: 'pointer',
-        '&:hover': {
-          bgcolor: 'action.hover',
-        },
-      }}>
+      <TableRow
+        hover
+        selected={selected}
+        aria-checked={selected}
+        tabIndex={-1}
+        onClick={onViewRow}
+        sx={{
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
+      >
         <TableCell padding="checkbox">
           {/* <BpCheckbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
         </TableCell>
@@ -53,7 +59,12 @@ export function UserTableRow({
             <Avatar alt={row?.first_name} src={row.picture} />
 
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
-              <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }} underline='hover' >
+              <Link
+                color="inherit"
+                onClick={onEditRow}
+                sx={{ cursor: 'pointer' }}
+                underline="hover"
+              >
                 {row.name}
               </Link>
               <Box component="span" sx={{ color: 'text.disabled' }}>
@@ -98,17 +109,25 @@ export function UserTableRow({
               </IconButton>
             </Tooltip> */}
 
-            <IconButton color={popover.open ? 'inherit' : 'default'} onClick={(e) => {
-              e.stopPropagation(); // Empêche la propagation vers le TableRow
-              popover.onOpen(e);   // Passe l'événement à la fonction onOpen
-            }}>
+            <IconButton
+              color={popover.open ? 'inherit' : 'default'}
+              onClick={(e) => {
+                e.stopPropagation(); // Empêche la propagation vers le TableRow
+                popover.onOpen(e); // Passe l'événement à la fonction onOpen
+              }}
+            >
               <Iconify icon="eva:more-vertical-fill" />
             </IconButton>
           </Stack>
         </TableCell>
       </TableRow>
 
-      <UserQuickEditForm currentUser={row} open={quickEdit.value} onClose={quickEdit.onFalse} onUpdateRow={onUpdateRow} />
+      <UserQuickEditForm
+        currentUser={row}
+        open={quickEdit.value}
+        onClose={quickEdit.onFalse}
+        onUpdateRow={onUpdateRow}
+      />
 
       <CustomPopover
         open={popover.open}
@@ -137,7 +156,6 @@ export function UserTableRow({
             Modifier
           </MenuItem>
 
-
           {/* <MenuItem
             onClick={() => {
               confirm.onTrue();
@@ -148,9 +166,6 @@ export function UserTableRow({
             <Iconify icon="solar:trash-bin-trash-bold" />
             Supprimer
           </MenuItem> */}
-
-
-
         </MenuList>
       </CustomPopover>
 

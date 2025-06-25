@@ -3,7 +3,6 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import Table from '@mui/material/Table';
@@ -13,8 +12,6 @@ import TableRow from '@mui/material/TableRow';
 
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
-
-import { fCurrency } from 'src/utils/format-number';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -72,8 +69,6 @@ function RowItem({ row }) {
     console.info('PRINT', row.id);
   };
 
- 
- 
   return (
     <>
       <TableRow>
@@ -81,8 +76,8 @@ function RowItem({ row }) {
 
         <TableCell>{row.category}</TableCell>
 
-        <TableCell>{(row.price)}</TableCell>
-         <TableCell>{fDate(row.date)}</TableCell>
+        <TableCell>{row.price}</TableCell>
+        <TableCell>{fDate(row.date)}</TableCell>
 
         <TableCell>
           <Label
@@ -120,8 +115,6 @@ function RowItem({ row }) {
             <Iconify icon="solar:printer-minimalistic-bold" />
             Imprimer
           </MenuItem>
-
-          
         </MenuList>
       </CustomPopover>
     </>

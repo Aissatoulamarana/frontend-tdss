@@ -1,4 +1,3 @@
-import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -9,7 +8,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
-import { useCallback , useState} from 'react';
+import { useCallback, useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -28,24 +27,22 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
     [filters, onResetPage]
   );
 
-   const handleTitleKeyUp = useCallback(
-      (event) => {
-        if (event.key === 'Enter') {
-          const value = event.target.value;
-          if (filters.state.name !== value) {
-            onResetPage();
-            filters.setState({ name: event.target.value });
-            // Mise à jour combinée du state : on réinitialise company et met à jour title
-           
-          }
+  const handleTitleKeyUp = useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        const { value } = event.target;
+        if (filters.state.name !== value) {
+          onResetPage();
+          filters.setState({ name: event.target.value });
+          // Mise à jour combinée du state : on réinitialise company et met à jour title
         }
-      },
-      [filters, onResetPage]
-    );
+      }
+    },
+    [filters, onResetPage]
+  );
 
   const handleFilterRole = useCallback(
     (event) => {
-     
       onResetPage();
       filters.setState({ type: event.target.value });
     },
@@ -98,7 +95,7 @@ export function UserTableToolbar({ filters, options, onResetPage }) {
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
-              }
+              },
             }}
           />
 

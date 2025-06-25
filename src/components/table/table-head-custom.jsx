@@ -5,7 +5,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import { varAlpha } from 'src/theme/styles';
-import { BpCheckbox } from '../custom-checkbox/custom-checkbox';
 
 // ----------------------------------------------------------------------
 
@@ -34,7 +33,9 @@ export function TableHeadCustom({
   onSelectAllRows,
 }) {
   return (
-    <TableHead sx={{ bgcolor: (theme) => varAlpha(theme.vars.palette.grey['500Channel'], 0.04), ...sx }}>
+    <TableHead
+      sx={{ bgcolor: (theme) => varAlpha(theme.vars.palette.grey['500Channel'], 0.04), ...sx }}
+    >
       <TableRow>
         {onSelectAllRows && (
           <TableCell padding="checkbox">

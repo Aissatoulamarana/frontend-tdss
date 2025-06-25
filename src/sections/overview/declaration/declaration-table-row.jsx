@@ -12,7 +12,6 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { fCurrency } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -33,8 +32,6 @@ export function DeclarationTableRow({
   onRejetRow,
   onSubmitRow,
   onUnSubmitRow,
-
-
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -45,10 +42,8 @@ export function DeclarationTableRow({
   // Pour la soumission
   const submitConfirm = useBoolean();
 
-
-  // Pour la non-soumission 
+  // Pour la non-soumission
   const unsubmitConfirm = useBoolean();
-
 
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
@@ -93,12 +88,17 @@ export function DeclarationTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected} onClick={onViewRow} sx={{
-        cursor: 'pointer',
-        '&:hover': {
-          bgcolor: 'action.hover',
-        },
-      }}>
+      <TableRow
+        hover
+        selected={selected}
+        onClick={onViewRow}
+        sx={{
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
+      >
         <TableCell padding="checkbox">
           {/* <Checkbox
             checked={selected}
@@ -131,8 +131,9 @@ export function DeclarationTableRow({
             secondary={fTime(row.created_on)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
-              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
-            }} />
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
         </TableCell>
         {/* <TableCell>{fCurrency(row.total_amount)}</TableCell> */}
         <TableCell>
@@ -145,7 +146,7 @@ export function DeclarationTableRow({
             color={popover.open ? 'inherit' : 'default'}
             onClick={(e) => {
               e.stopPropagation(); // Empêche la propagation vers le TableRow
-              popover.onOpen(e);   // Passe l'événement à la fonction onOpen
+              popover.onOpen(e); // Passe l'événement à la fonction onOpen
             }}
           >
             <Iconify icon="eva:more-vertical-fill" />
@@ -182,7 +183,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {( user?.type_name === 'Agent') && ['rejected'].includes(row.status) && (
+          {user?.type_name === 'Agent' && ['rejected'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 unsubmitConfirm.onTrue();
@@ -194,18 +195,19 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type_name === 'Agent' && !['validated', 'billed', 'rejected', 'sublitted'].includes(row.status) && (
-            <MenuItem
-              key="submit"
-              onClick={() => {
-                submitConfirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="mdi:check-bold" />
-              Soumettre
-            </MenuItem>
-          )}
+          {user?.type_name === 'Agent' &&
+            !['validated', 'billed', 'rejected', 'sublitted'].includes(row.status) && (
+              <MenuItem
+                key="submit"
+                onClick={() => {
+                  submitConfirm.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="mdi:check-bold" />
+                Soumettre
+              </MenuItem>
+            )}
 
           {user?.type_name === 'Aguipe' &&
             profil === 'aguipe' &&

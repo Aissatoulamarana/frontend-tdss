@@ -17,7 +17,7 @@ import { z as zod } from 'zod';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
-import { getRegions, getAgences, getProfils, getUserTypes } from 'src/utils/options';
+import { getRegions, getProfils, getUserTypes } from 'src/utils/options';
 
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
@@ -44,20 +44,18 @@ export const UserQuickEditSchema = zod.object({
 // ----------------------------------------------------------------------
 
 export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
-
   const [regions, setRegions] = useState([]);
   const [roles, setRoles] = useState([]);
   const [profils, setProfils] = useState([]);
   // const [agences, setAgences] = useState([]);
 
   const defaultValues = useMemo(() => {
-    const currentRegion = regions?.find(region => region.name === currentUser?.location);
-    const currentRole = roles?.find(role => role.name === currentUser?.type);
-    const currentProfil = profils?.find(profil => profil.name === currentUser?.profile);
+    const currentRegion = regions?.find((region) => region.name === currentUser?.location);
+    const currentRole = roles?.find((role) => role.name === currentUser?.type);
+    const currentProfil = profils?.find((profil) => profil.name === currentUser?.profile);
     // const currentAgence = agences?.find(agence => agence.name === currentUser?.agency);
 
     return {
-
       name: currentUser?.name || '',
       email: currentUser?.email || '',
       picture: currentUser?.picture || '',
@@ -66,8 +64,8 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
       profile: currentProfil ? currentProfil.slug : currentUser.profile || '',
       location: currentRegion ? currentRegion.slug : currentUser.location || '',
       // agency: currentAgence ? currentAgence.slug : currentUser.agency || '',
-    }
-  }, [regions, roles, profils,  currentUser])
+    };
+  }, [regions, roles, profils, currentUser]);
 
   const methods = useForm({
     mode: 'all',
@@ -80,7 +78,6 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
-
 
   const getModifiedFields = (originalData, newData) => {
     const modifiedFields = {};
@@ -99,13 +96,13 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
       const modifiedData = getModifiedFields(currentUser, data);
 
       if (Object.keys(modifiedData).length === 0) {
-        toast.info("Aucune modification détectée.");
+        toast.info('Aucune modification détectée.');
         return;
       }
 
       // Création d'un FormData et ajout des champs modifiés
       const formData = new FormData();
-      Object.keys(modifiedData).forEach(key => {
+      Object.keys(modifiedData).forEach((key) => {
         formData.append(key, modifiedData[key]);
       });
 
@@ -127,11 +124,11 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
   });
 
   useEffect(() => {
-    getRegions().then(data => setRegions(data));
+    getRegions().then((data) => setRegions(data));
     // getAgences().then(data => setAgences(data));
-    getUserTypes().then(data => setRoles(data));
-    getProfils().then(data => setProfils(data));
-  },[])
+    getUserTypes().then((data) => setRoles(data));
+    getProfils().then((data) => setProfils(data));
+  }, []);
 
   // Pour mettre à jour les valeurs du formulaire dès que currentUser change
   useEffect(() => {
@@ -141,7 +138,7 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
   return (
     <Dialog
       fullWidth
-      maxWidth='sm'
+      maxWidth="sm"
       open={open}
       onClose={onClose}
       slotProps={{ sx: { maxWidth: 720 } }}
@@ -150,8 +147,6 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
         <DialogTitle>Mise à jour rapide</DialogTitle>
 
         <DialogContent>
-
-
           <Box
             mt={4}
             rowGap={3}
@@ -159,26 +154,23 @@ export function UserQuickEditForm({ currentUser, open, onClose, onUpdateRow }) {
             display="grid"
             gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
           >
-
             <Field.Text name="name" label="Nom complet" />
             <Field.Text name="email" label="Adresse mail" />
             <Field.Phone name="phone" label="Numéro de Téléphone" />
 
-
-            <Field.Select name="profile" label="Profil" >
+            <Field.Select name="profile" label="Profil">
               {profils.map((profil) => (
                 <MenuItem key={profil?.slug} value={profil?.slug}>
                   {profil?.name}
                 </MenuItem>
               ))}
             </Field.Select>
-            <Field.Select name="location" label="Region" >
+            <Field.Select name="location" label="Region">
               {regions.map((region) => (
                 <MenuItem key={region?.slug} value={region?.slug}>
                   {region?.name}
                 </MenuItem>
-              ))
-              }
+              ))}
             </Field.Select>
             {/* <Field.Select name="agency" label="Agence" >
               {agences.map((agence) => (

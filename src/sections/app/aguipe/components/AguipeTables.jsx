@@ -1,24 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { 
-  Card, 
-  CardHeader, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
+import {
+  Card,
+  CardHeader,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
-  TablePagination, 
-  TableRow, 
-  Button,
+  TablePagination,
+  TableRow,
   IconButton,
   Tooltip,
   Stack,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { fDate } from 'src/utils/format-time';
-import { fCurrency } from 'src/utils/format-number';
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Iconify } from 'src/components/iconify';
@@ -130,11 +128,11 @@ export function AguipeTables() {
     // Priorité 1: En attente
     if (a.statut === 'en_attente' && b.statut !== 'en_attente') return -1;
     if (a.statut !== 'en_attente' && b.statut === 'en_attente') return 1;
-    
+
     // Priorité 2: Rejeté
     if (a.statut === 'rejeté' && b.statut !== 'rejeté') return -1;
     if (a.statut !== 'rejeté' && b.statut === 'rejeté') return 1;
-    
+
     // Priorité 3: Par date (plus récent en premier)
     return new Date(b.date) - new Date(a.date);
   });
@@ -145,18 +143,15 @@ export function AguipeTables() {
 
   return (
     <Card>
-      <CardHeader 
-        title="Déclarations récentes" 
+      <CardHeader
+        title="Déclarations récentes"
         action={
           <Stack direction="row" spacing={1} alignItems="center">
-            <ReportExport 
-              data={DECLARATIONS}
-              defaultTitle="Rapport_Declarations"
-            />
+            <ReportExport data={DECLARATIONS} defaultTitle="Rapport_Declarations" />
           </Stack>
         }
       />
-      
+
       <Scrollbar>
         <TableContainer sx={{ minWidth: 800 }}>
           <Table>
@@ -178,10 +173,7 @@ export function AguipeTables() {
                   <TableCell>{row.entreprise}</TableCell>
                   <TableCell align="right">{row.montant} GNF</TableCell>
                   <TableCell>
-                    <Label
-                      color={getStatusColor(row.statut)}
-                      sx={{ textTransform: 'capitalize' }}
-                    >
+                    <Label color={getStatusColor(row.statut)} sx={{ textTransform: 'capitalize' }}>
                       {formatStatus(row.statut)}
                     </Label>
                   </TableCell>
