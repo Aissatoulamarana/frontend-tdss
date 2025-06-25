@@ -2,25 +2,17 @@ import { CONFIG } from 'src/config-global';
 
 import { DeclarationEditView } from 'src/sections/overview/declaration/view';
 
-
-
 // ----------------------------------------------------------------------
 
-
-
 export const metadata = { title: `Modifier Declarations | Dashboard - ${CONFIG.appName}` };
-
 
 export default async function Page({ params }) {
   const { slug } = await params;
 
   return <DeclarationEditView slug={slug} />;
-
 }
 
-const dynamic = CONFIG.isStaticExport ? 'auto' : 'force-dynamic';
-
-export { dynamic };
+export const dynamic = 'force-dynamic';
 
 /**
  * [2] Static exports

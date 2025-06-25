@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   env: { browser: true, es2020: true },
   plugins: ['perfectionist', 'unused-imports', 'prettier'],
-  extends: ['airbnb', 'airbnb/hooks', 'prettier'],
+  extends: ['airbnb', 'airbnb/hooks', 'prettier', 'next', 'next/core-web-vitals'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -31,15 +31,15 @@ module.exports = {
     'no-alert': 0,
     'no-return-assign': 0,
     'import/order': 'off',
-   "unused-imports/no-unused-imports": "warn",
-    "unused-imports/no-unused-vars": [
-      "warn",
+    'unused-imports/no-unused-imports': 'warn',
+    'unused-imports/no-unused-vars': [
+      'warn',
       {
-        "vars": "all",
-        "varsIgnorePattern": "^_",
-        "args": "after-used",
-        "argsIgnorePattern": "^_"
-      }
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
     ],
     'lines-around-directive': 'off',
     'import/no-cycle': 'off',
@@ -48,12 +48,12 @@ module.exports = {
     'react/jsx-boolean-value': 'off',
     'no-undef': 'off',
     'no-shadow': 'off',
-    'no-restricted-globals' : 'off',
+    'no-restricted-globals': 'off',
     'react/no-unescaped-entities': 'off',
     'react/self-closing-comp': 'off',
     'no-else-return': 'off',
     'no-empty-pattern': 'off',
-    'import/no-duplicates':'off',
+    'import/no-duplicates': 'off',
     'object-shorthand': 'off',
     'no-plusplus': 'off',
     'consistent-return': 'off',
@@ -64,7 +64,7 @@ module.exports = {
     'no-param-reassign': 0,
     'no-underscore-dangle': 0,
     'no-restricted-exports': 0,
-  
+
     'no-promise-executor-return': 0,
     'import/prefer-default-export': 0,
     'prefer-destructuring': [1, { object: true, array: false }],
@@ -90,9 +90,9 @@ module.exports = {
     ],
     // perfectionist
     'perfectionist/sort-exports': 'off',
-  'perfectionist/sort-named-imports': 'off',
-  'perfectionist/sort-named-exports': 'off',
-  'perfectionist/sort-imports': 'off',
+    'perfectionist/sort-named-imports': 'off',
+    'perfectionist/sort-named-exports': 'off',
+    'perfectionist/sort-imports': 'off',
     // 'perfectionist/sort-imports': [
     //   'error',
     //   {

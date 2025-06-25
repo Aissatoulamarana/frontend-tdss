@@ -1,4 +1,3 @@
-
 import { CONFIG } from 'src/config-global';
 
 import { DeclarationDetailsView } from 'src/sections/overview/declaration/view';
@@ -7,15 +6,10 @@ import { DeclarationDetailsView } from 'src/sections/overview/declaration/view';
 
 export const metadata = { title: `Déclaration details | Dashboard - ${CONFIG.appName}` };
 
-
-
 export default async function Page({ params }) {
-    const { slug } = await params;
+  const { slug } = await params;
 
-
-
-    return <DeclarationDetailsView slug={slug} />;
-
+  return <DeclarationDetailsView slug={slug} />;
 }
 
 // ----------------------------------------------------------------------
@@ -24,9 +18,7 @@ export default async function Page({ params }) {
  * [1] Default
  * Remove [1] and [2] if not using [2]
  */
-const dynamic = CONFIG.isStaticExport ? 'auto' : 'force-dynamic';
-
-export { dynamic };
+export const dynamic = 'force-dynamic';
 
 /**
  * [2] Static exports
