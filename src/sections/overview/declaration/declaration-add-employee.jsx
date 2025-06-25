@@ -142,7 +142,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       reset();
       onClose();
       window.location.reload(); // Recharger la page pour voir les changements
-      router.push(paths.dashboard.declaration.details(declaration.slug));
+      router.push(paths.dashboard.declaration.details(declaration?.slug));
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend:", error);
       if (error.response) {
