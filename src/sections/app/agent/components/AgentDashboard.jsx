@@ -43,6 +43,8 @@ export  function AgentDashboard() {
   const [chartData, setChartData] = useState([]);
   const [recentDeclarations, setRecentDeclarations] = useState([]);
 
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+
   // États pour le chargement et les erreurs
   const [loading, setLoading] = useState({
     summary: true,
@@ -74,23 +76,27 @@ export  function AgentDashboard() {
 
   // Fonction pour charger les données de l'agent
   const fetchAgentData = useCallback(async () => {
+    
+    // Charger les données du dashboard
+    setLoading(prev =>({
+      ...prev,
+      summary: '',
+      charts: '',
+      declarations: ''
+    }));
+
     // Réinitialiser les erreurs
     setErrors({
       summary: '',
       charts: '',
       declarations: ''
     });
-
-    // Charger les données du dashboard
-    setLoading({
-      summary: true,
-      charts: true,
-      declarations: true
-    });
     
     try {
       // Appel à l'API pour récupérer les données du dashboard
-      const dashboardData = await AgentDashboardService.getDashboardData(periodFilter !== 'all' ? periodFilter : null);
+      const dashboardData = await AgentDashboardService.getDashboardData(
+        selectedYear // Ajouter l'année sélectionnée
+      );
       
       // Mettre à jour les données de résumé
       setSummaryData({
@@ -98,13 +104,19 @@ export  function AgentDashboard() {
         unsubmittedDeclarations: dashboardData.statistiques.unsumit_number_declaration || 0,
         rejectedDeclarations: dashboardData.statistiques.rejected_number_declaration || 0
       });
-      
+
+      // Mettre à jour les déclarations récentes
+      /* if (dashboardData.recent_declarations) {
+        setRecentDeclarations(dashboardData.recent_declarations);
+      }
+       */
       // Transformer les données du graphique
       const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
       const chartDataFormatted = Object.entries(dashboardData.number_declaration_of_year || {}).map(([month, value]) => ({
         month: monthNames[parseInt(month, 10) - 1],
         value
       }));
+      console.log("Donnees du graphique", chartDataFormatted);
       setChartData(chartDataFormatted);
       
       // Transformer les données des déclarations
@@ -139,8 +151,20 @@ export  function AgentDashboard() {
         charts: false,
         declarations: false
       });
+    } finally {
+      setLoading({
+        summary: false,
+        charts: false,
+        declarations: false
+      });
     }
-  }, [periodFilter]);
+  }, [periodFilter, selectedYear]);
+
+  // Fonction pour gérer le changement d'année
+const handleYearChange = (year) => {
+  setSelectedYear(year);
+  // Pas besoin d'appeler fetchAgentData ici car l'effet sera déclenché par le changement de selectedYear
+};
 
   // Charger les données au chargement du composant
   useEffect(() => {
@@ -186,6 +210,8 @@ export  function AgentDashboard() {
         loading={loading.charts}
         error={errors.charts}
         onRetry={() => fetchAgentData()}
+        onYearChange={handleYearChange}
+        selectedYear={selectedYear}
       />
 
       {/* Section déclarations récentes */}

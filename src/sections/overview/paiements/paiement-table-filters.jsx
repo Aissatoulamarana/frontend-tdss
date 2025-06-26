@@ -13,38 +13,69 @@ export function PaiementTableFiltersResult({ filters, totalResults, onResetPage,
     filters.setState({ name: '' });
   }, [filters, onResetPage]);
 
- 
+  const handleRemoveService = useCallback(
+    (inputValue) => {
+      const newValue = filters.state.payment_method.filter((item) => item !== inputValue);
 
-  
+      onResetPage();
+      filters.setState({ payment_method: newValue });
+    },
+    [filters, onResetPage]
+  );
+
+  const handleRemoveFactureNumber = useCallback(() => {
+    onResetPage();
+    filters.setState({ facture_number: '' });
+  }, [filters, onResetPage]);
+
+  const handleRemoveNumber = useCallback(() => {
+    onResetPage();
+    filters.setState({ number: '' });
+  }, [filters, onResetPage]);
+
+  const handleRemoveCompany = useCallback(() => {
+    onResetPage();
+    filters.setState({ company: '' });
+  }, [filters, onResetPage]);
+
   const handleRemoveDate = useCallback(() => {
     onResetPage();
-    filters.setState({ startDate: null, endDate: null });
+    filters.setState({ date_before: null, date_after: null });
   }, [filters, onResetPage]);
 
   return (
-    <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>      
-      <FiltersBlock label="Methode de paiement:" isShow={filters.state.payment_method }>
-        <Chip
-          {...chipProps}
-          label={filters.state.payment_method}
-          onDelete={handleRemoveKeyword}
-          sx={{ textTransform: 'capitalize' }}
-        />
+    <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
+      <FiltersBlock label="Méthode:" isShow={!!filters.state.payment_method.length}>
+        {filters.state.payment_method.map((item) => (
+          <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveService(item)} />
+        ))}
       </FiltersBlock>
 
       <FiltersBlock
         label="Date:"
-        isShow={Boolean(filters.state.startDate && filters.state.endDate)}
+        isShow={Boolean(filters.state.date_before && filters.state.date_after)}
       >
         <Chip
           {...chipProps}
-          label={fDateRangeShortLabel(filters.state.startDate, filters.state.endDate)}
+          label={fDateRangeShortLabel(filters.state.date_before, filters.state.date_after)}
           onDelete={handleRemoveDate}
         />
       </FiltersBlock>
 
-      <FiltersBlock label="Mot Clé :" isShow={!!filters.state.name}>
+      <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
         <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
+      </FiltersBlock>
+
+      <FiltersBlock label="N° Facture:" isShow={!!filters.state.facture_number}>
+        <Chip {...chipProps} label={filters.state.facture_number} onDelete={handleRemoveFactureNumber} />
+      </FiltersBlock>
+
+      <FiltersBlock label="N° Paiement:" isShow={!!filters.state.number}>
+        <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />
+      </FiltersBlock>
+
+      <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
+        <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
       </FiltersBlock>
     </FiltersResult>
   );

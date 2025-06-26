@@ -20,6 +20,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const popover = usePopover();
   const [numberInput, setNumberInput] = useState('');
   const [declarationInput, setDeclarationInput] = useState('');
+  const [companyInput, setCompanyInput] = useState('');
 
   const handleNumberKeyUp = useCallback(
     (event) => {
@@ -47,6 +48,19 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
     [filters, onResetPage]
   );
 
+  const handleCompanyKeyUp = useCallback(
+    (event) => {
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.company !== value) {
+          onResetPage();
+          filters.setState({ company: event.target.value });
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
   const handleFilterService = useCallback(
     (event) => {
       const newValue =
@@ -61,7 +75,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ date_before: newValue });
+      filters.setState({ date_after: newValue });
     },
     [filters, onResetPage]
   );
@@ -69,7 +83,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterEndDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ date_after: newValue });
+      filters.setState({ date_before: newValue });
     },
     [filters, onResetPage]
   );
@@ -106,7 +120,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.date_before}
+            value={filters.state.date_after}
             onChange={handleFilterStartDate}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -116,7 +130,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.date_after}
+            value={filters.state.date_before}
             onChange={handleFilterEndDate}
             slotProps={{
               textField: {
@@ -168,6 +182,22 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
                   </InputAdornment>
                 ),
               },
+            }}
+          />
+          <TextField
+            fullWidth
+            onChange={(e) => setCompanyInput(e.target.value)}
+            onKeyDown={handleCompanyKeyUp}
+            value={companyInput}
+            placeholder="rechercher par nom de l'entreprise.."
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="mingcute:building-2-line" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
             }}
           />
 

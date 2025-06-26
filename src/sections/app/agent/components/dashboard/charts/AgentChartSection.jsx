@@ -26,7 +26,7 @@ SectionTitle.propTypes = {
   children: PropTypes.node,
 };
 
-export default function AgentChartSection({ chartData, loading, error, onRetry }) {
+export default function AgentChartSection({ chartData, loading, error, onRetry, onYearChange, selectedYear }) {
   return (
     <Box sx={{ mt: 3 }}>
       <Box
@@ -61,7 +61,13 @@ export default function AgentChartSection({ chartData, loading, error, onRetry }
           />
         </Card>
       ) : (
-        <AgentDeclarationChart chartData={chartData} loading={loading} error={error} />
+        <AgentDeclarationChart 
+          chartData={chartData} 
+          loading={loading} 
+          error={error} 
+          onYearChange={onYearChange}
+          selectedYear={selectedYear}
+        />
       )}
     </Box>
   );
@@ -83,6 +89,8 @@ AgentChartSection.propTypes = {
   loading: PropTypes.bool,
   error: PropTypes.string,
   onRetry: PropTypes.func,
+  onYearChange: PropTypes.func,
+  selectedYear: PropTypes.string
 };
 
 AgentChartSection.defaultProps = {
@@ -90,4 +98,6 @@ AgentChartSection.defaultProps = {
   loading: false,
   error: '',
   onRetry: () => {},
+  onYearChange: () => {},
+  selectedYear: new Date().getFullYear().toString()
 };

@@ -140,6 +140,7 @@ export function PaiementListView() {
     payment_method: [],
     facture_number: '',
     number: '',
+    company: '',
   });
 
   const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
@@ -161,7 +162,8 @@ export function PaiementListView() {
     (!!filters.state.date_before && !!filters.state.date_after) ||
 
     !!filters.state.facture_number ||
-    !!filters.state.number;
+    !!filters.state.number ||
+    !!filters.state.company;
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -224,6 +226,7 @@ export function PaiementListView() {
           ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
           ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
           ...(filters.state.number && { number: filters.state.number }),
+          ...(filters.state.company && { company: filters.state.company }),
         };
         const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); 
@@ -241,7 +244,7 @@ export function PaiementListView() {
     };
 
     fetchPaiements();
-  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, filters.state.company, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading paiement...');
@@ -335,7 +338,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: PaymentMethods }}
+            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />

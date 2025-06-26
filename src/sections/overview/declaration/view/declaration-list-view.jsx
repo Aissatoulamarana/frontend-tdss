@@ -107,6 +107,7 @@ export function DeclarationListView() {
     fonction: [],
     title: '',
     company: '',
+    passport_number: '',
     status: 'all',
     starts_at: null,
     ends_at: null,
@@ -127,6 +128,7 @@ export function DeclarationListView() {
     !!filters.state.type ||
     !!filters.state.title ||
     !!filters.state.company ||
+    !!filters.state.passport_number ||
     filters.state.fonction.length > 0 ||
     filters.state.status !== 'all' ||
     (!!filters.state.starts_at && !!filters.state.ends_at);
@@ -516,19 +518,22 @@ export function DeclarationListView() {
   );
 
   useEffect(() => {
-    // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
-    const fetchDeclarations = async () => {
-      setLoading(true);
-      try {
-        const offset = table.page * table.rowsPerPage;
-        const params = {
-          limit: table.rowsPerPage,
-          offset: offset,
-          ...(filters.state.company
-            ? { company: filters.state.company }
-            : filters.state.title
-              ? { title: filters.state.title }
-              : {}),
+  // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
+  const fetchDeclarations = async () => {
+    setLoading(true);
+    try {
+      const offset = table.page * table.rowsPerPage;
+      const params = {
+        limit: table.rowsPerPage,
+        offset: offset,
+        ...(filters.state.company
+          ? { company: filters.state.company }
+          : filters.state.title
+            ? { title: filters.state.title }
+            : filters.state.passport_number
+              ? { passport_number: filters.state.passport_number }
+              : {}
+        ),
 
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
           ...(filters.state.starts_at && filters.state.ends_at && !dateError
@@ -559,15 +564,9 @@ export function DeclarationListView() {
     // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
 
     fetchDeclarations();
-  }, [
-    table.page,
-    table.rowsPerPage,
-    filters.state.company,
-    filters.state.title,
-    filters.state.status,
-    filters.state.starts_at,
-    filters.state.ends_at,
-  ]);
+
+  }, [table.page, table.rowsPerPage, filters.state.company, filters.state.title, filters.state.passport_number, filters.state.status, filters.state.starts_at, filters.state.ends_at]);
+
 
   if (loading) {
     console.info('Loading declarations...');
