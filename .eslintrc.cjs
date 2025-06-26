@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   env: { browser: true, es2020: true },
   plugins: ['perfectionist', 'unused-imports', 'prettier'],
-  extends: ['airbnb', 'airbnb/hooks', 'prettier', 'next/core-web-vitals'],
+  extends: ['airbnb', 'airbnb/hooks', 'prettier', 'next/core-web-vitals', 'plugin:react-hooks/recommended'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -32,6 +32,8 @@ module.exports = {
     'no-return-assign': 0,
     'import/order': 'off',
     'unused-imports/no-unused-imports': 'warn',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
     'unused-imports/no-unused-vars': [
       'warn',
       {
