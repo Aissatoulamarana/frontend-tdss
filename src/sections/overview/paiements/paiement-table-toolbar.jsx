@@ -118,10 +118,10 @@ export function PaiementTableToolbar({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.date_before}
+            value={filters.state.date_after}
             onChange={(newValue) => {
               onResetPage();
-              filters.setState({ date_before: newValue });
+              filters.setState({ date_after: newValue });
             }}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -131,10 +131,10 @@ export function PaiementTableToolbar({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.date_after}
+            value={filters.state.date_before}
             onChange={(newValue) => {
               onResetPage();
-              filters.setState({ date_after: newValue });
+              filters.setState({ date_before: newValue });
             }}
             slotProps={{
               textField: {

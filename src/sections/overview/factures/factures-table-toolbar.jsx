@@ -77,7 +77,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ date_before: newValue });
+      filters.setState({ date_after: newValue });
     },
     [filters, onResetPage]
   );
@@ -85,7 +85,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterEndDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ date_after: newValue });
+      filters.setState({ date_before: newValue });
     },
     [filters, onResetPage]
   );
@@ -122,7 +122,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.date_before}
+            value={filters.state.date_after}
             onChange={handleFilterStartDate}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -132,7 +132,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.date_after}
+            value={filters.state.date_before}
             onChange={handleFilterEndDate}
             slotProps={{
               textField: {

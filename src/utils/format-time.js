@@ -123,7 +123,7 @@ export function fIsBetween(inputDate, startDate, endDate) {
 /** output: boolean
  */
 export function fIsAfter(startDate, endDate) {
-  return dayjs(startDate).isAfter(endDate);
+  return dayjs(startDate).isBefore(endDate);
 }
 
 // ----------------------------------------------------------------------

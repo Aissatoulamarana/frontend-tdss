@@ -328,7 +328,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: ['TRANSFERT', 'CHEQUE', 'DEPOSIT'] }}
+            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />
