@@ -108,7 +108,7 @@ export function DeclarationNewEditDetails({ formData }) {
         last: data.last,
         first: data.first,
         phone: data.phone,
-        type: 'RENEWAL',
+        type: 'renewal',
         reference: data.reference,
         job: data.job.slug, // champ libre
         passportExists: true,
