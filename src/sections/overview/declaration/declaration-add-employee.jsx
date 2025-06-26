@@ -39,7 +39,7 @@ export const employeSchema = zod.object({
   passport_number: zod.string().min(1, { message: 'le numero de passeport est obligatoire' }),
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
   job: zod.string().min(1, { message: 'la fonction est requise!' }),
-  type: zod.string().default('NEW'),
+  type: zod.string().default('new'),
   reference: zod.string().optional(),
 });
 
@@ -128,7 +128,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       const { slug } = declaration;
       // On enveloppe les employés dans un objet, selon l'attente du backend
       const employeesFiltered = data.employees.map((emp) => {
-        if (emp.type === 'RENEWAL') {
+        if (emp.type === 'renewal') {
           return emp;
         }
         const { reference, ...rest } = emp;
@@ -198,7 +198,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         last: data.last,
         first: data.first,
         phone: data.phone,
-        type: 'RENEWAL',
+        type: 'renewal',
         reference: data.reference,
         job: data.job.slug, // champ libre
         passportExists: true,
@@ -267,7 +267,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         last: row.Nom || '',
         first: row.Prenom || '',
         job: jobSlug,
-        type: 'NEW',
+        type: 'new',
         reference: undefined,
         passportExists: false,
         locked: false,
