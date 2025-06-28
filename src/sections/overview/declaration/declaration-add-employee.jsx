@@ -415,7 +415,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                             size="small"
                             fullWidth
                             error={!!methods.formState.errors.employees?.[index]?.job}
-                            helperText={methods.formState.errors.employees?.[index]?.job?.message}
+                            helperText={methods.formState.errors?.employees?.[index]?.job?.message}
                             InputLabelProps={{ shrink: true }}
                             InputProps={{
                               ...params.InputProps,
