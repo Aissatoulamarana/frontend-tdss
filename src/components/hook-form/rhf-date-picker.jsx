@@ -2,12 +2,14 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { MobileDateTimePicker } from '@mui/x-date-pickers/MobileDateTimePicker';
-import dayjs from 'dayjs';
+import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
 import { Controller, useFormContext } from 'react-hook-form';
 
 import { formatStr } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
+
+dayjs.locale('fr'); // Set the default locale to French
 
 export function RHFDatePicker({ name, slotProps, ...other }) {
   const { control } = useFormContext();

@@ -10,6 +10,7 @@ dayjs.extend(duration);
 dayjs.extend(relativeTime);
 dayjs.locale('fr');
 
+export default dayjs;   
 
 // Capitalise le mois (ex: avril => Avril)
 
