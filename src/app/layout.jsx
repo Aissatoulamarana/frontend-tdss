@@ -18,6 +18,7 @@ import { SettingsDrawer, defaultSettings, SettingsProvider } from 'src/component
 import { Snackbar } from 'src/components/snackbar';
 
 import { AuthProvider } from 'src/auth/context/jwt';
+
 // ----------------------------------------------------------------------
 
 

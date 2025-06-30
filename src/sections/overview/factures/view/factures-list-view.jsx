@@ -55,8 +55,9 @@ import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
 
 import { useMockedUser } from 'src/auth/hooks';
-import dayjs from 'dayjs';
+import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
 
+dayjs.locale('fr'); // Set the default locale to French
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [

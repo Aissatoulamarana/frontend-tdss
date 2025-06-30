@@ -162,8 +162,8 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
   const typeLabels = {
-    NEW:      'Nouveau',
-    RENEWAL:  'Renouvellement',
+    new:      'Nouveau',
+    renewal:  'Renouvellement',
     // ajoute d’autres cas si nécessaire
   };
 
@@ -229,7 +229,7 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
               <Text style={styles.cell}>{emp?.job?.name}</Text>
               <Text style={styles.cell}>{emp?.job?.category}</Text>
               <Text style={[styles.cell, styles.noBorderRight]}>
-                {typeLabels[emp?.type] || emp?.type}
+                {typeLabels[emp?.type]}
               </Text>
             </View>
           ))}
