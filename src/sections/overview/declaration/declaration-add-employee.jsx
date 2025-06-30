@@ -396,7 +396,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                       placeholder="votre numero de téléphone"
                       sx={{ width: '100%' }}
                       inputlabelprops={{ shrink: true }}
-                      disabled={values.employees[index].locked}
+                      // disabled={values.employees[index].locked}
                     />
                     <Field.Text
                       size="small"
