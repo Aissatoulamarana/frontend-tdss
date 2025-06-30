@@ -48,8 +48,9 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 
 import { fCurrency, fGNF } from 'src/utils/format-number';
 
-import dayjs from 'dayjs';
+import dayjs from 'src/utils/format-time'
 
+dayjs.locale('fr'); // Set the default locale to French
 
 // ----------------------------------------------------------------------
 
