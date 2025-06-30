@@ -1,25 +1,18 @@
-"use client";
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
+'use client';
+
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
-import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback , useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
-
-import dayjs from 'dayjs';
 
 // ----------------------------------------------------------------------
 
@@ -27,11 +20,12 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const popover = usePopover();
   const [numberInput, setNumberInput] = useState('');
   const [declarationInput, setDeclarationInput] = useState('');
+  const [companyInput, setCompanyInput] = useState('');
 
   const handleNumberKeyUp = useCallback(
     (event) => {
-      if(event.key === 'Enter') {
-        const value = event.target.value;
+      if (event.key === 'Enter') {
+        const { value } = event.target;
         if (filters.state.number !== value) {
           onResetPage();
           filters.setState({ number: event.target.value });
@@ -43,11 +37,24 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
 
   const handleNumberDecKeyUp = useCallback(
     (event) => {
-      if(event.key === 'Enter') {
-        const value = event.target.value;
+      if (event.key === 'Enter') {
+        const { value } = event.target;
         if (filters.state.declaration_number !== value) {
           onResetPage();
           filters.setState({ declaration_number: event.target.value });
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
+
+  const handleCompanyKeyUp = useCallback(
+    (event) => {
+      if(event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.company !== value) {
+          onResetPage();
+          filters.setState({ company: event.target.value });
         }
       }
     },
@@ -68,7 +75,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterStartDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ date_before: newValue });
+      filters.setState({ date_after: newValue });
     },
     [filters, onResetPage]
   );
@@ -76,7 +83,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
   const handleFilterEndDate = useCallback(
     (newValue) => {
       onResetPage();
-      filters.setState({ date_after: newValue });
+      filters.setState({ date_before: newValue });
     },
     [filters, onResetPage]
   );
@@ -113,7 +120,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.date_before}
+            value={filters.state.date_after}
             onChange={handleFilterStartDate}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -123,13 +130,15 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.date_after}
+            value={filters.state.date_before}
             onChange={handleFilterEndDate}
             slotProps={{
               textField: {
                 fullWidth: true,
                 error: dateError,
-                helperText: dateError ? 'La date de fin doit être postérieure à la date de début.' : null,
+                helperText: dateError
+                  ? 'La date de fin doit être postérieure à la date de début.'
+                  : null,
               },
             }}
             sx={{
@@ -145,7 +154,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
-            onChange={(e) => setNumberInput(e.target.value)} 
+            onChange={(e) => setNumberInput(e.target.value)}
             onKeyDown={handleNumberKeyUp}
             value={numberInput}
             placeholder="rechercher par numero de facture.."
@@ -156,7 +165,7 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
-              }
+              },
             }}
           />
           <TextField
@@ -170,6 +179,22 @@ export function FactureTableToolbar({ filters, options, dateError, onResetPage }
                 startAdornment: (
                   <InputAdornment position="start">
                     <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+          <TextField
+            fullWidth
+            onChange={(e) => setCompanyInput(e.target.value)}
+            onKeyDown={handleCompanyKeyUp}
+            value={companyInput}
+            placeholder="rechercher par nom de l'entreprise.."
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="mingcute:building-2-line" sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
               }

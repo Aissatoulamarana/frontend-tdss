@@ -1,6 +1,10 @@
 
-//  const BASE_URL = 'http://127.0.0.1:8000'; // Adresse de votre backend
- const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
+
+
+//  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
+
+  const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
+
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js
@@ -11,6 +15,9 @@ const API = {
   resetPasswordConfirmation: () => `${BASE_URL}/users/reset_password_confirm/`,// reinitialisation du password
   changePassword : () => `${BASE_URL}/users/set_password/`, // changer le mot de passe
   changeEmail: () => `${BASE_URL}/users/set_email/`, // changer l'email de l'utilisateur
+
+
+  dashboardAdmin: () => `${BASE_URL}/declarations/dashboard-admin/`, // Dashboard admin
 
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
   listUsers: () => `${BASE_URL}/users/`, // Liste des utilisateurs
@@ -35,7 +42,14 @@ const API = {
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`,// deplacer des employés d'une déclaration à une autre
   unsubmitDeclaration : (slug) =>  `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre 
 
-
+  // Dashboard Agent
+  agentDashboard: (year = null) => {
+    let url = `${BASE_URL}/declarations/dashboard-agent/`;
+    if (year && year !== 'all') {
+      url += `?year=${year}`;
+    }
+    return url;
+  },
 
   Employe : (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
   UpdateEmploye: (declarationSlug, employeeSlug) => `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
@@ -48,10 +62,13 @@ const API = {
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
   paidFacture: (slug) => `${BASE_URL}/factures/${slug}/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`,// Details d'une facture 
+  facturesFirstLineDashboardCaissier: (month) => `${BASE_URL}/factures/dashboard-caissier/first-line/?month=${month}`, // Premiere ligne du tableau de bord des caissiers
+  facturesLastUnpaid: () => `${BASE_URL}/factures/last-unpaid/`, // dernieres Factures non payées
   // PaidFactures: (slug) => `${BASE_URL}/paid_factures/${slug}/`, // payer plusieurs factures a la fois 
   
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
+  paiementsMonthly: (year) => `${BASE_URL}/payments/payment-monthly/?year=${year}`, // Paiements 
   
   createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
   listFonctions: () => `${BASE_URL}/jobs/`, // Liste des fonctions
@@ -61,7 +78,7 @@ const API = {
   deleteFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // Supprimer une fonction
   editFonction: (slug) => `${BASE_URL}/jobs/${slug}/`, // modifier une fonction
   listCategories: () => `${BASE_URL}/jobs/agent/job-categories/`,
-  listFonctionAgent: () => `${BASE_URL}/jobs/agent/jobs`, // Liste des fonctions des agents
+  listFonctionAgent: () => `${BASE_URL}/jobs/agent/jobs-list/`, // Liste des fonctions des agents
   
 
   CreateBank: () => `${BASE_URL}/bank/create`,
@@ -89,6 +106,7 @@ const API = {
   listProfilesTypes: () => `${BASE_URL}/profiles/types/`,
   
   createProfile: () => `${BASE_URL}/profiles/`,
+  getProfile : (profile_code) => `${BASE_URL}/profiles/profile-types/${profile_code}/`, // recuperer les roles en fonction du profil 
   listProfiles: () => `${BASE_URL}/profiles/?limit=200&offset=200/`,
   detailsProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
   UpdateProfile: (slug) => `${BASE_URL}/profiles/${slug}/`,
@@ -98,6 +116,21 @@ const API = {
     const searchParams = new URLSearchParams({ type: 'entreprise', ...params }).toString();
     return `${BASE_URL}/profiles/active-profiles/?${searchParams}`;
   }, // Liste des entreprises avec des params
+  
+  // Endpoints pour le dashboard agent
+  getAgentCompanies: () => `${BASE_URL}/agent/companies/`, // Liste des entreprises gérées par l'agent
+  getAgentSummary: (companyId = 'all') => `${BASE_URL}/agent/summary/?company=${companyId}`, // Résumé des données de l'agent
+  getAgentChartData: (companyId = 'all') => `${BASE_URL}/agent/charts/?company=${companyId}`, // Données pour les graphiques
+  getAgentRecentDeclarations: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/agent/declarations/?${searchParams}`;
+  }, // Déclarations récentes de l'agent
+  getAgentRecentEmployees: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/agent/employees/?${searchParams}`;
+  }, // Employés récents de l'agent
+  getAgentNotifications: () => `${BASE_URL}/agent/notifications/`, // Notifications de l'agent
+  exportAgentData: (companyId = 'all', period = 'month') => `${BASE_URL}/agent/export/?company=${companyId}&period=${period}`, // Exporter les données de l'agent
 
   listDevises: () => `${BASE_URL}/devises/`,
   Devises : () => `${BASE_URL}/devises/list/`,
@@ -111,6 +144,21 @@ const API = {
   detailsJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
   editJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
   deleteJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
+
+  // Tableau de bord comptable
+  getDeclarationsToInvoice: (month = null) => {
+    const url = `${BASE_URL}/declarations/to-invoice/`;
+    return month ? `${url}?month=${month}` : url;
+  },
+  getAccountantFirstLine: (month = null) => {
+    const url = `${BASE_URL}/factures/accountant-dashboard/first-line/`;
+    return month ? `${url}?month=${month}` : url;
+  },
+  getMonthlyInvoices: (year = null) => {
+    const url = `${BASE_URL}/factures/facture-monthly/`;
+    return year ? `${url}?year=${year}` : url;
+  },
+  getLastValidatedDeclarations: () => `${BASE_URL}/declarations/last-validated/`,
 
 };
 

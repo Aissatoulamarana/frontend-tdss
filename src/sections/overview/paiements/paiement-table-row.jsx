@@ -1,5 +1,4 @@
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import ListItemText from '@mui/material/ListItemText';
@@ -21,12 +20,7 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function PaiementTableRow({
-  row,
-  selected,
-  onViewRow,
-  onDeleteRow,
-}) {
+export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
   const confirm = useBoolean();
 
   const popover = usePopover();
@@ -40,7 +34,12 @@ export function PaiementTableRow({
       return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
     }
   };
-  
+
+  const methodsLabels = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Dépôt',
+  };
 
   return (
     <>
@@ -54,11 +53,8 @@ export function PaiementTableRow({
         </TableCell>
         <TableCell>{row.number}</TableCell>
 
-
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
-
-
             <ListItemText
               disableTypography
               primary={
@@ -79,17 +75,13 @@ export function PaiementTableRow({
         </TableCell>
         {/* <TableCell>{row.declaration_number}</TableCell> */}
 
-
-
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
-
-
             <ListItemText
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.payment_method}
+                  {methodsLabels[row.payment_method]}
                 </Typography>
               }
               secondary={
@@ -98,10 +90,7 @@ export function PaiementTableRow({
                   variant="body2"
                   onClick={onViewRow}
                   sx={{ color: 'text.disabled', cursor: 'pointer' }}
-                >
-
-
-                </Link>
+                ></Link>
               }
             />
           </Stack>
@@ -110,18 +99,13 @@ export function PaiementTableRow({
 
         <TableCell>
           <ListItemText
-            primary={
-              <Typography variant='body2'>
-                {afficherMontant(row.amount)}
-              </Typography>
-            }
+            primary={<Typography variant="body2">{afficherMontant(row.amount)}</Typography>}
             // secondary={
             //   <Typography variant='body2'>
             //     {row.montantGnf}
             //   </Typography>
-            // } 
-            />
-
+            // }
+          />
         </TableCell>
 
         <TableCell>
@@ -130,8 +114,9 @@ export function PaiementTableRow({
             secondary={fTime(row.created_on)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
-              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
-            }} />
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>

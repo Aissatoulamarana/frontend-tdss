@@ -33,6 +33,11 @@ export function DeclarationTableFiltersResult({ filters, totalResults, onResetPa
     filters.setState({ startDate: null, endDate: null });
   }, [filters, onResetPage]);
 
+  const handleRemovePassport = useCallback(() => {
+    onResetPage();
+    filters.setState({ passport_number: '' });
+  }, [filters, onResetPage]);
+
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
       <FiltersBlock label="type:" isShow={!!filters.state.fonction.length}>
@@ -63,6 +68,10 @@ export function DeclarationTableFiltersResult({ filters, totalResults, onResetPa
 
       <FiltersBlock label="Keyword:" isShow={!!filters.state.name}>
         <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveKeyword} />
+      </FiltersBlock>
+
+      <FiltersBlock label="Passeport:" isShow={!!filters.state.passport_number}>
+        <Chip {...chipProps} label={filters.state.passport_number} onDelete={handleRemovePassport} />
       </FiltersBlock>
     </FiltersResult>
   );

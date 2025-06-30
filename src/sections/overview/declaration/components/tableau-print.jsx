@@ -23,7 +23,7 @@ export default function FilteredTablePrint({ employees }) {
   const rows =
     filter === 'All'
       ? employees
-      : employees.filter(emp => emp.job.category === filter);
+      : employees.filter(emp => emp?.job?.category === filter);
 
   return (
     <>
@@ -45,7 +45,7 @@ export default function FilteredTablePrint({ employees }) {
               <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
                 {cat.value === 'All'
                   ? employees.length
-                  : employees.filter(emp => emp.job.category === cat.value).length}
+                  : employees.filter(emp => emp?.job?.category === cat.value).length}
               </Typography>
             </Box>
           </Button>
@@ -76,7 +76,7 @@ export default function FilteredTablePrint({ employees }) {
           <TableBody>
             {rows.map((row, i) => (
               <TableRow
-                key={row.id}
+                key={row.slug}
                 sx={{
                   '& > *': {
                     py: 1.2  // padding vertical pour espacer les lignes
@@ -85,13 +85,13 @@ export default function FilteredTablePrint({ employees }) {
                 }}
               >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{row.passport_number}</TableCell>
+                <TableCell>{row?.passport_number}</TableCell>
                 <TableCell>
-                  {row.last} {row.first}
+                  {row?.last} {row?.first}
                 </TableCell>
-                <TableCell>{row.phone}</TableCell>
-                <TableCell>{row.job.name}</TableCell>
-                <TableCell>{row.job.permit}</TableCell>
+                <TableCell>{row?.phone}</TableCell>
+                <TableCell>{row.job?.name}</TableCell>
+                <TableCell>{row?.job?.permit}</TableCell>
               </TableRow>
             ))}
           </TableBody>

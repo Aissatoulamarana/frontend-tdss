@@ -1,7 +1,5 @@
 'use client';
 
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
@@ -14,16 +12,14 @@ import { useState } from 'react';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import { fCurrency , fGNF } from 'src/utils/format-number';
+import { fCurrency, fGNF } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
 import { PayeurForm } from './form-factures';
-
 
 // import { fetchOptions, banks } from 'src/utils/options';
 
@@ -41,7 +37,7 @@ export function FactureTableRow({
   Options,
   setOptions,
   setSelectedBanque,
-  selectedBanque
+  selectedBanque,
 }) {
   const confirm = useBoolean();
 
@@ -59,32 +55,37 @@ export function FactureTableRow({
   };
 
   const statusLabels = {
-    PAID: 'Payée',
-    unpaid: 'En attente'
-  }
+    paid: 'Payée',
+    unpaid: 'En attente',
+  };
   const getStatusColor = (status) => {
     switch (status) {
       case 'unpaid':
         return 'warning';
-      case 'PAID':
+      case 'paid':
         return 'success';
       default:
         return 'default';
     }
-  }
+  };
 
   const popover = usePopover();
   const payeurForm = useBoolean();
-
+  const profil = user?.companies[0]?.type_code?.toLowerCase().trim();
 
   return (
     <>
-      <TableRow hover selected={selected}onClick={onViewRow} sx={{
-        cursor: 'pointer',
-        '&:hover': {
-          bgcolor: 'action.hover',
-        },
-      }}>
+      <TableRow
+        hover
+        selected={selected}
+        onClick={onViewRow}
+        sx={{
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
+      >
         <TableCell padding="checkbox">
           {/* <Checkbox
             checked={selected}
@@ -114,8 +115,9 @@ export function FactureTableRow({
             secondary={fCurrency(row.amount / 9200)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
-              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
-            }} />
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
         </TableCell>
 
         <TableCell>
@@ -124,26 +126,24 @@ export function FactureTableRow({
             secondary={fTime(row.created_on)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
-              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
-            }} />
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
         </TableCell>
 
         <TableCell>
-          <Label
-            variant="soft"
-            color={getStatusColor(localStatus)}
-          >
+          <Label variant="soft" color={getStatusColor(localStatus)}>
             {statusLabels[localStatus] || 'Inconnu'}
           </Label>
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>
-          <IconButton 
-          color={popover.open ? 'inherit' : 'default'} 
-          onClick={(e) => {
-            popover.onOpen(e);
-            e.stopPropagation(); // Empêche la propagation de l'événement de clic
-          }}
+          <IconButton
+            color={popover.open ? 'inherit' : 'default'}
+            onClick={(e) => {
+              popover.onOpen(e);
+              e.stopPropagation(); // Empêche la propagation de l'événement de clic
+            }}
           >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
@@ -176,33 +176,31 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {(user?.type === 'Caissier' && user?.profile === 'AGUIPEE' || user?.profile === 'TDSS') &&  row.status === 'unpaid' && (
-          <MenuItem
-          color={payeurForm.value ? 'inherit' : 'default'}
-            onClick={() => {
-              // confirm.onTrue();
-              popover.onClose();
-              payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
-            }}
-          >
-            <Iconify icon="mdi:credit-card" />
-            Payer
-          </MenuItem>
-           )}   
+          {user?.type_name === 'Caissier' && row.status === 'unpaid' && (
+            <MenuItem
+              color={payeurForm.value ? 'inherit' : 'default'}
+              onClick={() => {
+                // confirm.onTrue();
+                popover.onClose();
+                payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
+              }}
+            >
+              <Iconify icon="mdi:credit-card" />
+              Payer
+            </MenuItem>
+          )}
         </MenuList>
-
-       
-
       </CustomPopover>
 
-      <PayeurForm 
-      slug={row.slug} 
-      open={payeurForm.value} 
-      onclose={payeurForm.onFalse} 
-      onSuccess ={() => {
-        setLocalStatus('PAID'); // Met à jour le statut local de la facture
-        payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
-      }} />
+      <PayeurForm
+        slug={row.slug}
+        open={payeurForm.value}
+        onclose={payeurForm.onFalse}
+        onSuccess={() => {
+          setLocalStatus('paid'); // Met à jour le statut local de la facture
+          payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
+        }}
+      />
       {/* <ConfirmDialog
         fullWidth
         open={openFirstDialog}
@@ -251,7 +249,7 @@ export function FactureTableRow({
             onClick={() => {
               setOpenFirstDialog(false); // Ferme la première boîte de dialogue
               setOpenSecondDialog(true); // Ouvre la deuxième boîte de dialogue
-              console.log('ID de la banque sélectionnée:', selectedBanque?.value);
+
             }}
           >
             Suivant

@@ -20,19 +20,23 @@ export function DeclarationDetailsView({ slug }) {
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [loading, setLoading] = useState(true); // État pour gérer le chargement
 
-  useEffect(() => {
-    const fetchDeclaration = async () => {
-      try {
-        const response = await axios.get(API.detailsDeclaration(slug)); // Remplacez par votre API
-        setDeclaration(response.data); // Mettez à jour l'état avec les données de la déclaration
-      } catch (error) {
-        setError(error.message || 'Erreur lors du chargement des données'); // Gérer les erreurs
-      } finally {
-        setLoading(false); // Fin du chargement
-      }
-    };
-    fetchDeclaration(); // Appel de la fonction pour récupérer la déclaration
-  }, [slug]);
+ useEffect(() => {
+  if (!slug) return; // On attend que slug soit défini
+
+  const fetchDeclaration = async () => {
+    try {
+      const response = await axios.get(API.detailsDeclaration(slug));
+      setDeclaration(response.data);
+    } catch (error) {
+      setError(error.message || 'Erreur lors du chargement des données');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDeclaration();
+}, [slug]);
+
 
 
   useEffect(() => {
@@ -42,13 +46,13 @@ export function DeclarationDetailsView({ slug }) {
       try {
         // 1. Premier appel : on récupère count + résultats paginés
         const { data: { count, results } } = await axios.get(
-          API.Employe(declaration.slug)
+          API.Employe(declaration?.slug)
         );
         let allEmployees = results;
         // 2. Si on n’a pas tout, on refait un appel en demandant limit = count
         if (count > results.length) {
           const { data: { results: fullResults } } = await axios.get(
-            API.Employe(declaration.slug),
+            API.Employe(declaration?.slug),
             { params: { limit: count, offset: 0 } }
           );
           allEmployees = fullResults;

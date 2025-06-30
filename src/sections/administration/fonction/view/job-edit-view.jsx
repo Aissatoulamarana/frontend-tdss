@@ -24,7 +24,6 @@ export function JobEditView({ slug }) {
             try {
                 const response = await axios.get(API.detailsFonction(slug));
                 setJob(response.data);
-                console.log('Données du job à modifier', response.data);
             } catch (error) {
                 setError(error.message || 'Erreurs lors du chargement des données');
             } finally {

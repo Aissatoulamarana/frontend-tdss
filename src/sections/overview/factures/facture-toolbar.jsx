@@ -2,37 +2,39 @@
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
+// import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import IconButton from '@mui/material/IconButton';
-import NoSsr from '@mui/material/NoSsr';
+// import NoSsr from '@mui/material/NoSsr';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import { BlobProvider } from '@react-pdf/renderer';
-import { saveAs } from 'file-saver';
-import { PDFViewer, PDFDownloadLink } from '@react-pdf/renderer';
-import axios from 'src/utils/axios';
-import { useRef, useState, useCallback } from 'react';
+// import { BlobProvider } from '@react-pdf/renderer';
+// import { saveAs } from 'file-saver';
+import { PDFViewer } from '@react-pdf/renderer';
+// import axios from 'src/utils/axios';
+import { useRef } from 'react';
 
 import { useReactToPrint } from 'react-to-print';
 
 import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
+// import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { Iconify } from 'src/components/iconify';
-
+import { PayeurForm } from './form-factures';
 
 import { generateFacturePDF } from './facture-pdf';
-import { FactureDetails } from './facture-details';
+// import { FactureDetails } from './facture-details';
 
 // ----------------------------------------------------------------------
 
 export function FactureToolbar({
   facture,
+  user,
   currentStatus,
+  onChangeStatus,
   devise
 
 }) {
@@ -41,9 +43,11 @@ export function FactureToolbar({
   
 
   const view = useBoolean();
+ const type = user?.type_name?.toLowerCase().trim();
+//  const profil = user?.companies?.[0]?.type_name?.toLowerCase().trim() ;
 
   
-
+  const payeurForm = useBoolean();
   const componentRef = useRef(null);
 
   const handlePrint = useReactToPrint({
@@ -97,11 +101,18 @@ export function FactureToolbar({
             {/* <FactureDetails ref={componentRef}  /> */}
           </Box>
 
-          <Tooltip title="Imprimer">
+          {/* <Tooltip title="Imprimer">
             <IconButton onClick={handlePrint}>
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
+          </Tooltip> */}
+      {(type === 'caissier' && currentStatus === 'unpaid') && (
+          <Tooltip title="Payer la facture">
+            <IconButton onClick={() => payeurForm.onTrue()}>
+              <Iconify icon="mdi:credit-card" />
+            </IconButton>
           </Tooltip>
+      )}
         </Stack>
 
 
@@ -127,6 +138,15 @@ export function FactureToolbar({
           </Box>
         </Box>
       </Dialog>
+
+            <PayeurForm 
+            slug={facture?.slug} 
+            open={payeurForm.value} 
+            onclose={payeurForm.onFalse} 
+            onSuccess ={() => {
+              onChangeStatus('paid'); // Met à jour le statut local de la facture
+              payeurForm.onFalse(); // Ferme la boîte de dialogue de paiement
+            }} />
     </>
   );
 }

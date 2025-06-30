@@ -119,7 +119,7 @@ export function ClientTableRow({
                 slotProps={{ arrow: { placement: 'right-top' } }}
             >
                 <MenuList>
-                    <MenuItem
+                    {/* <MenuItem
                         onClick={() => {
                             confirm.onTrue();
                             popover.onClose();
@@ -128,7 +128,7 @@ export function ClientTableRow({
                     >
                         <Iconify icon="solar:trash-bin-trash-bold" />
                         Supprimer
-                    </MenuItem>
+                    </MenuItem> */}
 
                     <MenuItem
                         onClick={() => {

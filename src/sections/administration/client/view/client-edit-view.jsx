@@ -22,7 +22,7 @@ export function ClientEditView({ slug }) {
             try {
                 const response = await axios.get(API.UpdateProfile(slug));
                 setProfil(response.data);
-                console.log(response.data);
+                
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -36,11 +36,11 @@ export function ClientEditView({ slug }) {
     return (
         <DashboardContent>
             <CustomBreadcrumbs
-                heading="Modifier Profil"
+                heading="Modification des informations de la structure"
                 links={[
                     { name: 'Dashboard', href: paths.dashboard.root },
-                    { name: 'Profils', href: paths.dashboard.client.root },
-                    { name: 'Modifier' },
+                    { name: 'Structures', href: paths.dashboard.client.root },
+                    { name: 'Modifier' ` ${profil?.name}` },	
                 ]}
                 sx={{ mb: { xs: 3, md: 5 } }}
             >

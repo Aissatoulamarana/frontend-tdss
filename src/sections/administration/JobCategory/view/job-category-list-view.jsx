@@ -128,7 +128,6 @@ export function JobCategoryListView() {
 
 
     const handleUpdateRow = useCallback((updatedJobCategory) => {
-        console.log("Mise à jour dans le parent :", updatedJobCategory);
         setTableData((prevData) =>
             prevData.map((row) =>
                 row.slug === updatedJobCategory.slug ? updatedJobCategory : row
@@ -147,7 +146,6 @@ export function JobCategoryListView() {
 
     const handleEditRow = useCallback(
         (slug) => {
-            console.log("Navigating to edit page for:", slug);
             router.push(paths.dashboard.jobCategory.edit(slug));
         }, [router]
     );
@@ -232,7 +230,7 @@ export function JobCategoryListView() {
                                         color={
                                             (tab.value === 'ON' && 'success') ||
                                             (tab.value === 'OFF' && 'error') ||
-                                            'default'
+                                            'main'
                                         }
                                     >
                                         {['ON', 'OFF'].includes(tab.value)

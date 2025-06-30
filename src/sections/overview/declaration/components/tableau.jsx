@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Table,
-  Paper,
   Stack,
   Button,
   Dialog,
@@ -23,7 +22,7 @@ import {
   TableContainer,
   TablePagination,
   FormControlLabel,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
@@ -34,7 +33,6 @@ import { Iconify } from 'src/components/iconify';
 import { useRouter } from 'src/routes/hooks';
 import { toast } from 'sonner';
 import { EmployeeQuickEditForm } from './employe-quick-edit-form';
-
 
 const fixedCategories = [
   { label: 'Tous', value: 'All' },
@@ -63,22 +61,19 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     count: 0,
     next: null,
     previous: null,
-
   });
 
   const router = useRouter();
 
   // Calcul des lignes selon le filtre
   const rows =
-    filter === 'All'
-      ? employee
-      : employee?.filter((row) => row.job.category === filter);
+    filter === 'All' ? employee : employee?.filter((row) => row?.job?.category === filter);
 
   const isSelected = (slug) => selected.includes(slug);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelected = rows?.map((row) => row.slug);
+      const newSelected = rows?.map((row) => row?.slug);
       setSelected(newSelected);
     } else {
       setSelected([]);
@@ -110,18 +105,18 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       try {
         const offset = page * rowsPerPage;
         const params = {
-          limit: 100,
+          limit: 1000,
           offset: offset,
-          status: 'UNSUBMITTED',
-
+          status: 'unsubmitted',
         };
         const response = await axios.get(API.listDeclarations(), { params });
         const declarations = response.data.results
-        .filter((d) => d.reference !== declaration?.reference)
-        .map((declaration) => ({
-          value: declaration?.reference,
-          label: declaration?.reference,
-        }));
+          .filter((d) => d.reference !== declaration?.reference)
+          .map((declaration) => ({
+            value: declaration?.reference,
+           label: `${declaration?.number ?? ''} - ${declaration?.company ?? ''} `,
+
+          }));
         setOptions(declarations);
       } catch (error) {
         console.error('Erreur lors de la récupération des déclarations :', error);
@@ -131,11 +126,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     };
 
     fetchDeclarations();
-  }, []);
+  }, [declaration, printMode]);
 
   useEffect(() => {
     const fetchEmployees = async () => {
-      if (!declaration || !declaration.slug) {
+      if (!declaration || !declaration?.slug) {
         toast("La déclaration n'est pas définie.");
         return;
       }
@@ -144,15 +139,14 @@ const FilteredTable = ({ declaration, printMode = false }) => {
         const params = {
           limit: rowsPerPage,
           offset: page * rowsPerPage,
-        }
-        const response = await axios.get(API.Employe(declaration.slug), {params});
+        };
+        const response = await axios.get(API.Employe(declaration?.slug), { params });
         const employees = response.data.results;
         setEmployee(employees);
         setPagination({
           count: response.data.count,
           next: response.data.next,
           previous: response.data.previous,
-
         });
       } catch (error) {
         console.error('Erreur lors de la récupération des employés :', error);
@@ -161,53 +155,47 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       }
     };
 
-    if (declaration && declaration.slug) {
+    if (declaration && declaration?.slug) {
       fetchEmployees();
     }
   }, [declaration, page, rowsPerPage]);
-  
 
-  const handleMove = useCallback(
-    async () => {
-      if (!declaration || !declaration.slug) {
-        toast("La déclaration n'est pas définie.");
-        return;
-      }
-      try {
-        const payload = {
-          selected_slugs: selected,
-          target_reference: selectedDeclaration?.value,
-        };
+  const handleMove = useCallback(async () => {
+    if (!declaration || !declaration?.slug) {
+      toast("La déclaration n'est pas définie.");
+      return;
+    }
+    try {
+      const payload = {
+        selected_slugs: selected,
+        target_reference: selectedDeclaration?.value,
+      };
 
-        const response = await axios.post(API.move(declaration.slug), payload);
-        if (response.status === 200) {
-          toast.success('Déplacement effectué avec succès !');
-          setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
-          setSelected([]);
-          setIsDialogOpen(false);
-          // router.push(paths.dashboard.declaration.list);
-        }
-      } catch (error) {
-        console.error('Erreur lors du déplacement :', error);
-        const errorMessage =
-          error.error || error.details || error.message;
-        toast.error(`Erreur : ${errorMessage}`);
+      const response = await axios.post(API.move(declaration?.slug), payload);
+      if (response.status === 200) {
+        toast.success('Déplacement effectué avec succès !');
+        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
+        setSelected([]);
+        setIsDialogOpen(false);
+        // router.push(paths.dashboard.declaration.list);
       }
-    },
-    [declaration, selected, selectedDeclaration, router]
-  );
+    } catch (error) {
+      console.error('Erreur lors du déplacement :', error);
+      const errorMessage = error.error || error.details || error.message;
+      toast.error(`Erreur : ${errorMessage}`);
+    }
+  }, [declaration, selected, selectedDeclaration, router]);
 
   const handleDeleteRows = async () => {
     try {
       const slugs = {
         slugs: selected,
-      }
+      };
       const response = await axios.post(API.DeleteEmploye(declaration?.slug), slugs);
       if (response.status === 200) {
-        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row.slug)));
+        setEmployee((prevData) => prevData.filter((row) => !selected.includes(row?.slug)));
         setSelected([]);
         setIsDialogSup(false);
-        console.log('Employé supprimé avec succès:', response.data.message);
         toast.success('Suppression reussie!');
         window.location.reload();
       } else {
@@ -217,11 +205,9 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     } catch (error) {
       console.error('Erreur réseau ou serveur:', error);
 
-      const errorMessage =
-        error.error || error.details || error.message;
+      const errorMessage = error.error || error.details || error.message;
       toast.error(`Erreur : ${errorMessage}`);
     }
-
   };
 
   // Gestion de l'ouverture du formulaire d'édition rapide
@@ -237,7 +223,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
 
   const handleUpdateRow = useCallback((updatedEmployee) => {
     setEmployee((prevData) =>
-      prevData.map((row) => (row.slug === updatedEmployee.slug ? updatedEmployee : row))
+      prevData.map((row) => (row?.slug === updatedEmployee?.slug ? updatedEmployee : row))
     );
   }, []);
 
@@ -255,7 +241,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       >
         {selected.length > 0 ? (
           <Typography variant="subtitle1" color="primary">
-            {selected.length} sélectionné(s)
+            {selected?.length} sélectionné(s)
           </Typography>
         ) : (
           <Typography variant="h6" />
@@ -280,11 +266,11 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <DialogTitle>Déplacer</DialogTitle>
           <DialogContent>
             <Typography sx={{ mb: 4 }}>
-              Êtes-vous sûr de vouloir déplacer <strong>{selected.length}</strong> personnes ?
+              Êtes-vous sûr de vouloir déplacer <strong>{selected?.length}</strong> personnes ?
             </Typography>
             <Autocomplete
               options={options}
-              getOptionLabel={(option) => (option.label ? option.label.toString() : '')}
+              getOptionLabel={(option) => (option?.label ? option?.label.toString() : '')}
               loading={loading}
               value={selectedDeclaration}
               onChange={(event, newValue) => setSelectedDeclaration(newValue)}
@@ -304,7 +290,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                           {params.InputProps.endAdornment}
                         </>
                       ),
-                    }
+                    },
                   }}
                 />
               )}
@@ -330,9 +316,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <DialogTitle>Supprimer</DialogTitle>
           <DialogContent>
             <Typography sx={{ mb: 2 }}>
-              Êtes-vous sûr de vouloir suprimer <strong>{selected.length}</strong> employés ?
+              Êtes-vous sûr de vouloir suprimer <strong>{selected?.length}</strong> employés ?
             </Typography>
-
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setIsDialogSup(false)}>Annuler</Button>
@@ -357,24 +342,28 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             justifyContent: 'space-around',
             backgroundColor: printMode ? 'transparent' : 'transparent',
             padding: 1,
-            marginBottom: 5
+            marginBottom: 5,
           }}
         >
-          {fixedCategories.map((cat) => {
+          {fixedCategories?.map((cat) => {
             const count =
               cat.value === 'All'
                 ? pagination?.count
-                : employee.filter((emp) => emp?.job.category === cat.value).length;
+                : employee.filter((emp) => emp?.job?.category === cat.value).length;
             return (
               <Button
                 key={cat.value}
-                variant={filter === cat.value ? 'contained' : 'text'}
+                variant={filter === cat?.value ? 'contained' : 'text'}
                 size="small"
-                onClick={() => setFilter(cat.value)}
+                onClick={() => setFilter(cat?.value)}
                 sx={{ flexDirection: 'column', alignItems: 'center', minWidth: 80 }}
               >
-                <Typography variant="body1">{cat.label}</Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+                <Typography variant="body1">{cat?.label}</Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontWeight: 'bold', fontSize: '1rem' }}
+                >
                   {count}
                 </Typography>
               </Button>
@@ -386,9 +375,9 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                {declaration?.status === 'UNSUBMITTED' && (
+                {declaration?.status === 'unsubmitted' && (
                   <Checkbox
-                    indeterminate={selected.length > 0 && selected.length < rows?.length}
+                    indeterminate={selected?.length > 0 && selected?.length < rows?.length}
                     checked={rows?.length > 0 && selected.length === rows?.length}
                     onChange={handleSelectAllClick}
                   />
@@ -405,23 +394,18 @@ const FilteredTable = ({ declaration, printMode = false }) => {
             {rows
               // ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
-                <React.Fragment key={`${row.id}-${row.slug}`}>
-                  <TableRow
-
-                    hover
-                    selected={isSelected(row.slug)}
-
-                  >
+                <React.Fragment key={`${row?.id}-${row?.slug}`}>
+                  <TableRow hover selected={isSelected(row?.slug)}>
                     <TableCell padding="checkbox">
-                      {declaration?.status === 'UNSUBMITTED' && (
+                      {declaration?.status === 'unsubmitted' && (
                         <Checkbox
                           color="primary"
                           checked={isSelected(row.slug)}
-                          onChange={(event) => handleSelectRow(event, row.slug)}
+                          onChange={(event) => handleSelectRow(event, row?.slug)}
                         />
                       )}
                     </TableCell>
-                    <TableCell>{row.passport_number}</TableCell>
+                    <TableCell>{row?.passport_number}</TableCell>
                     <TableCell>
                       <ListItemText
                         onClick={() => openQuickEdit(row)}
@@ -430,18 +414,18 @@ const FilteredTable = ({ declaration, printMode = false }) => {
                         secondary={row.first}
                         slotProps={{
                           primary: { typography: 'body2', noWrap: true },
-                          secondary: { mt: 0.5, component: 'span', typography: 'body2' }
+                          secondary: { mt: 0.5, component: 'span', typography: 'body2' },
                         }}
                       />
                     </TableCell>
-                    <TableCell>{row.phone}</TableCell>
-                    <TableCell>{row.job.name}</TableCell>
-                    <TableCell>{row.job.permit}</TableCell>
+                    <TableCell>{row?.phone}</TableCell>
+                    <TableCell>{row?.job?.name}</TableCell>
+                    <TableCell>{row?.job?.permit}</TableCell>
                   </TableRow>
-                  {declaration?.status === 'UNSUBMITTED' && (
+                  {declaration?.status === 'unsubmitted' && (
                     <EmployeeQuickEditForm
                       currentEmployee={row}
-                      open={quickEditOpen && currentEmployee?.slug === row.slug}
+                      open={quickEditOpen && currentEmployee?.slug === row?.slug}
                       onClose={closeQuickEdit}
                       onUpdateRow={handleUpdateRow}
                       dec_slug={declaration.slug}

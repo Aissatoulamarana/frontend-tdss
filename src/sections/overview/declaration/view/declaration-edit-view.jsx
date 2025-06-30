@@ -23,7 +23,6 @@ export function DeclarationEditView({ slug }) {
       try {
         const response = await axios.get(API.detailsDeclaration(slug)); // Remplacez par votre API
         setDeclaration(response.data); // Mettez à jour l'état avec les données de la déclaration
-        console.log('Données de la déclaration:', response.data); // Affichez les données dans la console
       } catch (error) {
         setError(error.message || 'Erreur lors du chargement des données'); // Gérer les erreurs
       } finally {

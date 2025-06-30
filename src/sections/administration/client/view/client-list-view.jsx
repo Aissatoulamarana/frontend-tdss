@@ -13,6 +13,9 @@ import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
@@ -147,7 +150,6 @@ export function ClientListView() {
 
 
     const handleUpdateRow = useCallback((updatedClient) => {
-        console.log("Mise à jour dans le parent :", updatedClient);
         setTableData((prevData) =>
             prevData.map((row) =>
                 row.slug === updatedClient.slug ? updatedClient : row
@@ -182,6 +184,7 @@ export function ClientListView() {
     useEffect(() => {
         // Fonction pour récupérer les données
         const fetchClient = async () => {
+            setLoading(true); // Indique que le chargement commence
             try {
                 const offset = table.page * table.rowsPerPage;
                 const params = {
@@ -269,12 +272,12 @@ useEffect(() => {
                                             (tab.value === 'ON' && 'success') ||
                                             (tab.value === 'pending' && 'warning') ||
                                             (tab.value === 'banned' && 'error') ||
-                                            'default'
+                                            'main'
                                         }
                                     >
                                         {['ON', 'inactif'].includes(tab.value)
                                             ? tableData.filter((client) => client.status === tab.value).length
-                                            : tableData.length}
+                                            : pagination.count}
                                     </Label>
                                 }
                             />
@@ -333,6 +336,19 @@ useEffect(() => {
                                         )
                                     }
                                 />
+                                {loading ? (
+                                     <TableBody>
+                                         <TableRow>
+                                <TableCell colSpan={100}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                                    <CircularProgress />
+                                    </Box>
+                                </TableCell>
+                                </TableRow>
+                            </TableBody>
+                                ):
+                                (
+                            
 
                                 <TableBody>
                                     {tableData
@@ -360,6 +376,8 @@ useEffect(() => {
 
                                     <TableNoData notFound={notFound} />
                                 </TableBody>
+                                )
+                                }
                             </Table>
                         </Scrollbar>
                     </Box>

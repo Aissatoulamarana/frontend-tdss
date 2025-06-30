@@ -31,9 +31,10 @@ const NewPayeurSchema = z.object({
   payer_address: z.string().min(1, { message: 'L’adresse est obligatoire' }),
   payment_document: z
     .any()
-    .refine(file => file instanceof File && file.type === 'application/pdf', {
-      message: 'Le fichier doit être un PDF'
-    }),
+    // .refine(file => file instanceof File && file.type === 'application/pdf', {
+    //   message: 'Le fichier doit être un PDF'
+    // })
+    ,
   payment_devise: z.string().min(1, { message: 'La devise est requise' }),
   payment_payment_method: z.string().min(1, { message: 'Le mode de paiement est requis' }),
   payment_comment: z.string().optional()
@@ -45,9 +46,9 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
   const [step, setStep] = useState(1);
 
   const paymentTypes = [
-    { id: 'TRANSFER', label: 'Virement' },
-    { id: 'DEPOSIT',  label: 'Dêpot' },
-    { id: 'CHEQUE',   label: 'Chèques' }
+    { id: 'transfer', label: 'Virement' },
+    { id: 'deposit',  label: 'Dêpot' },
+    { id: 'cheque',   label: 'Chèques' }
   ];
 
   const defaultValues = useMemo(() => ({
@@ -102,7 +103,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       reset();
-      toast.success('Mise à jour réussie !');
+      toast.success('Paiement effectué avec succès !');
       onSuccess();
       onclose();
     } catch (error) {
@@ -164,7 +165,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
               </Grid>
               <Box sx={{ display:'flex', justifyContent:'flex-end' , mt: 3 }}>
                     <Button variant="contained" onClick={handleNext}>
-                        { "Suivant" }
+                         Suivant
 
                     </Button>
                 </Box>

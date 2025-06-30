@@ -39,9 +39,9 @@ export function PaiementTableToolbar({
 
   // Gestion de la sélection du filtre actif
   const handleSelectFilter = (filterType) => {
-    console.log('Filter selected:', filterType); // Debug log
+  
     onResetPage();
-    filters.setState({ facture_number: '', number: '' }); // Réinitialise les autres filtres
+    filters.setState({ facture_number: '', number: '', company: '' }); // Réinitialise les autres filtres
     setSelectedFilter(filterType); // Définit le filtre actif
     setShowOptions(false); // Ferme les options
   };
@@ -53,6 +53,8 @@ export function PaiementTableToolbar({
         return 'Recherche par Numero de Facture';
       case 'number':
         return 'Recherche par Numero de Paiement';
+      case 'company':
+        return 'Recherche par Nom de l\'Entreprise';
       default:
         return 'Recherche par Numero de Facture';
     }
@@ -66,6 +68,7 @@ export function PaiementTableToolbar({
         filters.setState({
           facture_number: '',
           number: '',
+          company: '',
           [selectedFilter]: inputValue, // Applique la recherche au filtre actif
         });
       }
@@ -100,13 +103,13 @@ export function PaiementTableToolbar({
             sx={{ textTransform: 'capitalize' }}
           >
             {options?.payment_method?.map((option) => (
-              <MenuItem key={option} value={option}>
+              <MenuItem key={option.id} value={option.id}>
                 <Checkbox
                   disableRipple
                   size="small"
                   checked={filters.state.payment_method.includes(option)}
                 />
-                {option}
+                {option.label}
               </MenuItem>
             ))}
           </Select>
@@ -115,10 +118,10 @@ export function PaiementTableToolbar({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date debut"
-            value={filters.state.date_before}
+            value={filters.state.date_after}
             onChange={(newValue) => {
               onResetPage();
-              filters.setState({ date_before: newValue });
+              filters.setState({ date_after: newValue });
             }}
             slotProps={{ textField: { fullWidth: true } }}
             sx={{ maxWidth: { md: 180 } }}
@@ -128,10 +131,10 @@ export function PaiementTableToolbar({
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
             label="Date fin"
-            value={filters.state.date_after}
+            value={filters.state.date_before}
             onChange={(newValue) => {
               onResetPage();
-              filters.setState({ date_after: newValue });
+              filters.setState({ date_before: newValue });
             }}
             slotProps={{
               textField: {
@@ -196,6 +199,11 @@ export function PaiementTableToolbar({
                   label="Numero de Paiement"
                   color={selectedFilter === 'number' ? 'primary' : 'default'}
                   onClick={() => handleSelectFilter('number')}
+                />
+                <Chip
+                  label="Nom de l'Entreprise"
+                  color={selectedFilter === 'company' ? 'primary' : 'default'}
+                  onClick={() => handleSelectFilter('company')}
                 />
               </Paper>
             )}

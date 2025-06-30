@@ -3,12 +3,14 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import IconButton from '@mui/material/IconButton';
+
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
-import Tooltip from '@mui/material/Tooltip';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -31,20 +33,19 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
   useTable,
-  emptyRows,
   rowInPage,
   TableNoData,
   getComparator,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
+
   TablePaginationCustom,
 } from 'src/components/table';
 
 import { UserTableFiltersResult } from '../user-table-filters-result';
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
-import { fabClasses } from '@mui/material';
+import { CircularProgress } from '@mui/material'
 
 import { getUserTypes } from 'src/utils/options';
 // ----------------------------------------------------------------------
@@ -268,12 +269,12 @@ useEffect(() => {
                       (tab.value === true && 'success') ||
                       (tab.value === false && 'warning') ||
 
-                      'default'
+                      'main'
                     }
                   >
                     {['actif', 'inactif'].includes(tab.value)
                       ? tableData.filter((user) => user.status === tab.value).length
-                      : tableData.length}
+                      : pagination.count}
                   </Label>
                 }
               />
@@ -291,6 +292,7 @@ useEffect(() => {
               filters={filters}
               totalResults={pagination.count}
               onResetPage={table.onResetPage}
+              options={{ roles: roles }}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}
@@ -331,7 +333,18 @@ useEffect(() => {
                     )
                   }
                 />
-
+              { loading ? (
+                <TableBody>
+                 <TableRow>
+                <TableCell colSpan={100}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                    <CircularProgress />
+                  </Box>
+                </TableCell>
+              </TableRow>
+                </TableBody>
+              ) : (
+             
                 <TableBody>
                   {tableData
 
@@ -358,6 +371,7 @@ useEffect(() => {
 
                   <TableNoData notFound={notFound} />
                 </TableBody>
+                 )}
               </Table>
             </Scrollbar>
           </Box>

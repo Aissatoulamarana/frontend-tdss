@@ -7,6 +7,9 @@ import { useTheme } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
+import { CircularProgress } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import axios from 'src/utils/axios';
 import { useState, useEffect, useCallback } from 'react';
@@ -43,7 +46,10 @@ import { PaiementTableFiltersResult } from '../paiement-table-filters';
 import { PaiementTableRow } from '../paiement-table-row';
 import { PaiementTableToolbar } from '../paiement-table-toolbar';
 
+import { fCurrency, fGNF } from 'src/utils/format-number';
+
 import dayjs from 'dayjs';
+
 
 // ----------------------------------------------------------------------
 
@@ -79,6 +85,52 @@ export function PaiementListView() {
       next: null,
       previous: null,
     });
+
+  const [summary, setSummary] = useState({
+    totalCount: 0,
+    totalAmountGnf: 0,
+    totalAmountUsd: 0,
+  });
+
+   useEffect(() => {
+    const fetchSummary = async () => {
+      try {
+        // --- 1) Récupérer le count global ---
+        const countRes = await axios.get(API.listPaiments(), {
+          params: { limit: 1 },
+        });
+        const totalCount = countRes.data.count;
+
+        // --- 2) Récupérer tous les paiements en une seule requête ---
+        const allRes = await axios.get(API.listPaiments(), {
+          params: { limit: totalCount },
+        });
+        const allPaiements = allRes.data.results;
+
+        // --- 3) Somme des montants en GNF ---
+        const totalAmountGnf = sumBy(allPaiements, (p) => p.amount);
+        
+
+        // --- 4) Conversion GNF → USD (taux fixe ici) ---
+        const GNF_PER_USD = 9200;
+        const totalAmountUsd = totalAmountGnf / GNF_PER_USD;
+
+        // --- 5) On met à jour le state ---
+        setSummary({
+          totalCount,
+          totalAmountGnf,
+          totalAmountUsd,
+        });
+
+      } catch (err) {
+        console.error('Erreur summary paiements', err);
+        toast.error('Impossible de charger le total des paiements');
+      }
+    };
+
+    fetchSummary();
+  }, []);
+
   const [selectedFilter, setSelectedFilter] = useState('facture_number');
 
   const filters = useSetState({
@@ -88,6 +140,7 @@ export function PaiementListView() {
     payment_method: [],
     facture_number: '',
     number: '',
+    company: '',
   });
 
   const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
@@ -109,30 +162,41 @@ export function PaiementListView() {
     (!!filters.state.date_before && !!filters.state.date_after) ||
 
     !!filters.state.facture_number ||
-    !!filters.state.number;
+    !!filters.state.number ||
+    !!filters.state.company;
 
   const notFound = pagination.count === 0 && canReset;
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+   const fetchTotalCount = () => 
+    axios
+      .get(API.listPaiments(), {params: {limit:1}})
+      .then((res) => res.data.count);
 
-  const getTotalAmount = (status) =>
+  
+
+  const getTotalAmount = () =>
     sumBy(
-      tableData.filter((item) => item.status === status),
-      (invoice) => invoice.totalAmount
+    
+      (paiement) => paiement.amount
     );
 
-  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
+  const getPercentByStatus = () => (getTotalAmount() / tableData.length) * 100;
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
+      color: 'main',
       count: pagination.count,
     },
 
   ];
 
+  const PaymentMethods = [
+    { id: 'transfer', label: 'Virement' },
+    { id: 'deposit', label: 'Dêpot' },
+    { id: 'cheque', label: 'Chèques' },
+  ]
   
   const handleViewRow = useCallback(
     (slug) => {
@@ -146,6 +210,7 @@ export function PaiementListView() {
   useEffect(() => {
     // Fonction pour récupérer les données
     const fetchPaiements = async () => {
+      setLoading(true);
       try {
         const offset = table.page * table.rowsPerPage;
         const limit = table.rowsPerPage;
@@ -161,6 +226,7 @@ export function PaiementListView() {
           ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
           ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
           ...(filters.state.number && { number: filters.state.number }),
+          ...(filters.state.company && { company: filters.state.company }),
         };
         const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); 
@@ -178,7 +244,7 @@ export function PaiementListView() {
     };
 
     fetchPaiements();
-  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, filters.state.company, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading paiement...');
@@ -204,37 +270,37 @@ export function PaiementListView() {
           <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
-                title="Total"
-                total={tableData.length}
+                title="Nombres Total Paiements"
+                total={summary.totalCount}
                 percent={100}
-                chart={{
-                  colors: [theme.vars.palette.info.main],
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [20, 41, 63, 33, 28, 35, 50, 46],
-                }}
+                // chart={{
+                //   colors: [theme.vars.palette.info.main],
+                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                //   series: [20, 41, 63, 33, 28, 35, 50, 46],
+                // }}
               />
             </Grid>
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En Dollars"
-                percent={2.6}
-                total={18765}
-                chart={{
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [15, 18, 12, 51, 68, 11, 39, 37],
-                }}
+                percent={100}
+                total={fCurrency(summary.totalAmountUsd)}
+                // chart={{
+                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                //   series: [15, 18, 12, 51, 68, 11, 39, 37],
+                // }}
               />
             </Grid>
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En GNF"
-                percent={2.6}
-                total={18765}
-                chart={{
-                  colors: [theme.vars.palette.error.main],
-                  categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                  series: [18, 19, 31, 8, 16, 37, 12, 33],
-                }}
+                percent={100}
+                total={fGNF(summary.totalAmountGnf)}
+                // chart={{
+                //   colors: [theme.vars.palette.success.main],
+                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+                //   series: [18, 19, 31, 8, 16, 37, 12, 33],
+                // }}
               />
             </Grid>
           </Grid>
@@ -272,7 +338,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: ['TRANSFERT', 'CHEQUE', 'DEPOSIT'] }}
+            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />
@@ -305,7 +371,18 @@ export function PaiementListView() {
                     )
                   }
                 />
-
+          {loading ? (
+            <TableBody>
+              <TableRow>
+                 <TableCell colSpan={100}>
+                   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
+                      <CircularProgress />
+                    </Box>
+                  </TableCell>
+              </TableRow>
+            </TableBody>
+            ):
+               (
                 <TableBody>
                   {tableData
                     .map((row) => (
@@ -326,6 +403,7 @@ export function PaiementListView() {
                 )}
                   <TableNoData notFound={notFound} />
                 </TableBody>
+              )}
               </Table>
             </Scrollbar>
           </Box>

@@ -1,18 +1,25 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
+// import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
-import { useState, useEffect, useCallback } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
-import CircularProgress from '@mui/material/CircularProgress';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 
+import { useState, useEffect, useCallback } from 'react';
+import { get, useFieldArray, useFormContext } from 'react-hook-form';
+// import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Autocomplete,
+} from '@mui/material';
 
 import API from 'src/utils/api';
 
@@ -20,16 +27,17 @@ import { Field } from 'src/components/hook-form';
 import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
-import {toast} from 'src/components/snackbar';
-
+import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
-
 export function DeclarationNewEditDetails({ formData }) {
   const { control, setValue, watch, reset } = useFormContext();
+  const DEFAULT_LIMIT = 100;
+  const MAX_EMPLOYEES = 20;
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [nextUrl, setNextUrl] = useState(API.listFonctionAgent()); // première page
   const [previousUrl, setPreviousUrl] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -38,13 +46,12 @@ export function DeclarationNewEditDetails({ formData }) {
   const [data, setData] = useState();
   const renewalModal = useBoolean();
   const [loadingRenew, setLoadingRenew] = useState(false);
-  
-
-
   const [passportInput, setPassportInput] = useState('');
-
-  const MAX_EMPLOYEES = 20;
-
+  const [params, setParams] = useState({
+    offset: 0,
+    limit: DEFAULT_LIMIT,
+    name: '',
+  });
 
   // const typedec = type?.trim();
 
@@ -64,7 +71,7 @@ export function DeclarationNewEditDetails({ formData }) {
       first: '',
       phone: '',
       // type:'NEW',
-      locked:false,
+      locked: false,
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
       // recto: null,
@@ -84,18 +91,16 @@ export function DeclarationNewEditDetails({ formData }) {
   };
 
   const handleRenew = () => {
-   
     renewalModal.onTrue(); // Ouvre la modale
   };
-
 
   const handleConfirmRenew = async () => {
     try {
       const response = await axios.get(API.searchPassport(passportInput));
-      const data = response.data;
+      const { data } = response;
 
       if (!data) {
-        toast.error("Aucun utilisateur trouvé pour ce passeport");
+        toast.error('Aucun utilisateur trouvé pour ce passeport');
         return;
       }
 
@@ -104,7 +109,7 @@ export function DeclarationNewEditDetails({ formData }) {
         last: data.last,
         first: data.first,
         phone: data.phone,
-        type: 'RENEWAL', 
+        type: 'renewal',
         reference: data.reference,
         job: data.job.slug, // champ libre
         passportExists: true,
@@ -113,15 +118,13 @@ export function DeclarationNewEditDetails({ formData }) {
 
       renewalModal.onFalse(); // Ferme la modale
     } catch (err) {
-      toast.error("Erreur lors de la récupération des données");
+      toast.error('Erreur lors de la récupération des données');
     }
   };
-
 
   const handleRemove = (index) => {
     remove(index);
   };
-
 
   // Ouvre le modal pour les données biométriques
   const handleOpenModal = () => {
@@ -132,11 +135,8 @@ export function DeclarationNewEditDetails({ formData }) {
     setOpenModalDoc(true);
   };
 
-
   const handleCloseModalDoc = () => {
-
     renewalModal.onFalse();
-
   };
   // Ferme le modal et réinitialise le stepper
   const handleCloseModal = () => {
@@ -163,7 +163,6 @@ export function DeclarationNewEditDetails({ formData }) {
   const handleImageUpload = (fieldName) => (event) => {
     const { files } = event.target;
     if (files && files.length > 0) {
-      console.log(`Fichier sélectionné pour ${fieldName}:`, files[0]);
       setValue(fieldName, files[0]);
     } else {
       console.log(`Aucun fichier sélectionné pour ${fieldName}`);
@@ -177,146 +176,158 @@ export function DeclarationNewEditDetails({ formData }) {
     } else {
       console.log(`Aucun fichier sélectionné pour ${fieldName}`);
     }
-  }
+  };
 
   // Exemple de fonction "finish" : ici, on ferme simplement le modal.
   // Vous pouvez ajouter d'autres traitements si besoin.
   const handleFinish = () => {
-
-
     handleCloseModal();
   };
 
-
-  const fetchFonctions = async (url, append = false) => {
-    if (!url) return; // plus rien à charger
-
-    setLoading(true);
-    try {
-      const response = await axios.get(url);
-      const { data } = response;
-
-      const newOptions = data.results.map((fonction) => ({
-        value: fonction.slug,
-        label: fonction.name,
-        slug: fonction.slug,
-      }));
-
-      setOptions((prev) => append ? [...prev, ...newOptions] : newOptions);
-      setNextUrl(data.next);
-      setPreviousUrl(data.previous);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des fonctions :", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchFonctions(API.listFonctionAgent());
+    let isMounted = true;
+
+    async function fetchAllFonctions() {
+      setLoadingOptions(true);
+      try {
+        // 1) Premier appel pour count
+        const resp1 = await axios.get(API.listFonctionAgent(), {
+          params: { offset: 0, limit: 1 },
+        });
+        const total = resp1.data.count;
+
+        // 2) Rapatrier tout
+        const resp2 = await axios.get(API.listFonctionAgent(), {
+          params: { offset: 0, limit: total },
+        });
+        if (!isMounted) return;
+
+        // Filtre pour n'avoir qu'un slug unique
+        const uniqueBySlug = resp2.data.results
+          .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
+          .map((f) => ({ label: f.name, value: f.slug }));
+
+        setOptions(uniqueBySlug);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (isMounted) 
+        setLoading(false);
+        setLoadingOptions(false);
+      }
+    }
+
+    fetchAllFonctions();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
+  
+ 
+   const verifyPassports = async (employees, setValue) => {
+    await Promise.all(
+      employees.map(async (emp, idx) => {
+        if (!emp.passport_number) return;
+  
+        try {
+          const { data } = await axios.get(API.searchPassport(emp.passport_number));
+          // S'il existe, on le note et on peut éventuellement verrouiller la ligne :
+          const exists = !!data?.passport_number;
+          setValue(`employees[${idx}].passportExists`, exists);
+          if (exists) {
+            setValue(`employees[${idx}].locked`, false);   // optionnel
+          }
+        } catch (error) {
+          // 404 = n'existe pas → false, les autres erreurs sont loguées
+          if (error.response?.status === 404) {
+            setValue(`employees[${idx}].passportExists`, false);
+          } else {
+            console.error('Erreur de vérification passeport', error);
+          }
+        }
+      })
+    );
+  };
+  
+  
+  
+    const handleImportData = async (importedData) => {
+      const mappedEmployees = importedData.map((row) => {
+       const jobSlug = (() => {
+        const findByValue = options.find((opt) => opt.value === row.Fonction);
+        const findByLabel = options.find((opt) => opt.label === row.Fonction);
 
-
-
-
-  const handleSelectService = useCallback(
-    (index, option) => {
-      const selectedService = options.find((fonction) => fonction.value === option);
-      if (selectedService) {
-        setValue('serviceField', selectedService);
-      }
-    },
-    [setValue, options]
-  );
-
-  useEffect(() => {
-    if (formData?.length > 0 && options?.length > 0) {
-      const {
-        Fonction: firstFonction = '',
-        Numero: firstNumero = '',
-        Nom: firstNom = '',
-        Prenom: firstPrenom = '',
-        Telephone: firstTelephone = '',
-      } = formData[0];
-
-      const fonctionImportee = firstFonction.trim();
-      const matchingOption = options.find(
-        (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
-      );
-
-      if (!matchingOption) {
-        toast.warning(
-          `Pas de correspondance trouvée pour "${fonctionImportee}" dans la première ligne.`
-        );
-      }
-
-      reset({
-        employees: [
-          {
-            passport_number: firstNumero.toString().trim(),
-            last: firstNom || '',
-            job: matchingOption ? matchingOption.value : '',
-            first: firstPrenom || '',
-            phone: firstTelephone ? `+${String(firstTelephone)}` : '',
-            passportExists: false,
-          },
-        ],
-      });
-
-      formData.slice(1).forEach((data, index) => {
-        const {
-          Fonction = '',
-          Numero = '',
-          Nom = '',
-          Prenom = '',
-          Telephone = '',
-        } = data;
-
-        const fonctionImportee = Fonction.trim();
-        const matchingOption = options.find(
-          (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
-        );
-
-        if (!matchingOption) {
-          toast.warning(
-            `Pas de correspondance trouvée pour "${fonctionImportee}" à la ligne ${index + 2}.`
-          );
+        if (!findByValue && !findByLabel && row.Fonction) {
+          toast.warning(`Pas de correspondance trouvée pour la fonction "${row.Fonction}"`);
         }
 
-        append({
-          passport_number: Numero.toString().trim(),
-          last: Nom || '',
-          job: matchingOption ? matchingOption.value : '',
-          first: Prenom || '',
-          phone: Telephone ? `+${String(Telephone)}` : '',
+        return findByValue?.value || findByLabel?.value || '';
+      })();
+
+  
+        return {
+          passport_number: row.Numero || '',
+          phone: row.Telephone ? `+${String(row.Telephone)}` : '',
+          last: row.Nom || '',
+          first: row.Prenom || '',
+          job: jobSlug,
+          type: 'new',
+          reference: undefined,
           passportExists: false,
-        });
+          locked: false,
+        };
       });
-    }
-  }, [formData, options, reset, append]);
+  
+      reset({ employees: mappedEmployees });
+        await new Promise((r) => setTimeout(r, 0));
+        await verifyPassports(mappedEmployees, setValue);
+    };
+  
 
 
+
+
+useEffect(() => {
+  if (formData?.length > 0 && options?.length > 0) {
+    const importedData = formData.map((row) => ({
+      Fonction: row.Fonction?.trim() || '',
+      Numero: row.Numero || '',
+      Nom: row.Nom || '',
+      Prenom: row.Prenom || '',
+      Telephone: row.Telephone || '',
+    }));
+
+    handleImportData(importedData); // <-- appelle la fonction existante
+  }
+}, [formData, options]);
 
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
   const checkPassportExistence = async (numero, index) => {
     if (!numero) return;
-  
+
     try {
       const { data } = await axios.get(API.searchPassport(numero));
-      // s’il y a un passport_number dans la réponse, alors il existe
-      setValue(`employees[${index}].passportExists`, !!data.passport_number);
-    } catch (error) {
-      if (error.response?.status === 404) {
-        // pas trouvé → passportExists = false
-        setValue(`employees[${index}].passportExists`, false);
+
+      if (data?.passport_number) {
+        setValue(`employees[${index}].passportExists`, true);
+        toast.error(
+          '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
+        );
       } else {
-        console.error('Erreur lors de la recherche du passeport', error);
+        setValue(`employees[${index}].passportExists`, false);
+        toast.success('✅ Passeport non trouvé, vous pouvez continuer.');
+      }
+    } catch (error) {
+      if (error.detail) {
+        setValue(`employees[${index}].passportExists`, false);
+        toast.success('✅ Passeport non trouvé, vous pouvez continuer.');
+      } else {
+        console.error('Erreur lors de la recherche du passeport', error.detail);
       }
     }
   };
-  
 
   // Création de la version debounce de la fonction
   // On utilise ici 500ms de délai après la dernière saisie
@@ -331,15 +342,17 @@ export function DeclarationNewEditDetails({ formData }) {
   const handlePassportChange = (e, index) => {
     const numero = e.target.value;
     setValue(`employees[${index}].passport_number`, numero);
+    // Réinitialiser passportExists lorsque le numéro de passeport change
+    setValue(`employees[${index}].passportExists`, false);
   };
 
   const handlePassportBlur = (e, index) => {
-        const numero = e.target.value;
-        if (numero) {
-          // appel direct (ou debouncedPassportCheck si vous préférez laisser un très léger délai)
-          checkPassportExistence(numero, index);
-      }
-      };
+    const numero = e.target.value;
+    if (numero) {
+      // appel direct (ou debouncedPassportCheck si vous préférez laisser un très léger délai)
+      checkPassportExistence(numero, index);
+    }
+  };
 
   //  Créer la fonction qui vérifie l'identifier
   const checkIdentifier = async (identifier, index) => {
@@ -355,7 +368,7 @@ export function DeclarationNewEditDetails({ formData }) {
       setValue(`employees[${index}].job`, person.fonction);
       // debouncedPassportCheck(person.numero, index);
     } catch (error) {
-      console.error("Erreur lors de la récupération des données:", error);
+      console.error('Erreur lors de la récupération des données:', error);
     }
   };
 
@@ -375,15 +388,15 @@ export function DeclarationNewEditDetails({ formData }) {
   };
 
   const allDocuments = [
-    { label: "Déclaration d'attestation", key: "attestation" },
-    { label: "Certificat de régulation sociale", key: "certificat" },
-    { label: "Contrat de travail", key: "contrat" },
-    { label: "Dossier criminel", key: "dossierCriminel" },
-    { label: "Dossier médical (3 derniers mois)", key: "dossierMedical" },
-    { label: "Copies des diplômes", key: "diplomes" },
-    { label: "CV", key: "cv" },
-    { label: "Passeport", key: "passeport" },
-    { label: "Plan de panafricanisation", key: "planPanafricanisation" },
+    { label: "Déclaration d'attestation", key: 'attestation' },
+    { label: 'Certificat de régulation sociale', key: 'certificat' },
+    { label: 'Contrat de travail', key: 'contrat' },
+    { label: 'Dossier criminel', key: 'dossierCriminel' },
+    { label: 'Dossier médical (3 derniers mois)', key: 'dossierMedical' },
+    { label: 'Copies des diplômes', key: 'diplomes' },
+    { label: 'CV', key: 'cv' },
+    { label: 'Passeport', key: 'passeport' },
+    { label: 'Plan de panafricanisation', key: 'planPanafricanisation' },
   ];
 
   // Si le type est "Duplicata", on ne garde que "Certificat de perte" et "CV"
@@ -391,13 +404,14 @@ export function DeclarationNewEditDetails({ formData }) {
   //   ? [{ label: "Certificat de perte", key: "certificatPerte" }, { label: "CV", key: "cv" }]
   //   : allDocuments;
 
+  const getJobOption = (jobValue) => options.find((option) => option.value === jobValue) || null;
+
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
         Informations Personnelles
       </Typography>
-
 
       {/* Renewal Modal */}
       <Dialog open={renewalModal.value} onClose={renewalModal.off} fullWidth>
@@ -409,7 +423,7 @@ export function DeclarationNewEditDetails({ formData }) {
             label="Numéro de passeport"
             fullWidth
             value={passportInput}
-            onChange={e => setPassportInput(e.target.value)}
+            onChange={(e) => setPassportInput(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
@@ -419,7 +433,6 @@ export function DeclarationNewEditDetails({ formData }) {
           </LoadingButton>
         </DialogActions>
       </Dialog>
-
 
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
         {fields.map((item, index) => (
@@ -443,17 +456,17 @@ export function DeclarationNewEditDetails({ formData }) {
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 onBlur={(e) => handlePassportBlur(e, index)}
-                error={values.employees[index].passportExists}       // true = duplication
+                error={values.employees[index].passportExists} // true = duplication
                 helperText={
                   values.employees[index].passportExists
-                    ? "❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement."
-                    : ""
+                    ? '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
+                    : ''
                 }
                 FormHelperTextProps={{
                   sx: {
                     color: values.employees[index].passportExists
-                      ? 'error.main'     // bordure/texte en rouge si existe déjà
-                      : 'success.main',  // vert sinon
+                      ? 'error.main' // bordure/texte en rouge si existe déjà
+                      : 'success.main', // vert sinon
                   },
                 }}
               />
@@ -483,62 +496,55 @@ export function DeclarationNewEditDetails({ formData }) {
                 disabled={values.employees[index].locked}
               />
 
-
-              <Field.Select
-                name={`employees[${index}].job`}
-                size="small"
-                label="Fonction *"
-                inputlabelprops={{ shrink: true }}
-                sx={{ maxWidth: { md: 160 } }}
-                slotProps={{
-                  select: {
-                    MenuProps: {
-                      PaperProps: {
-                        onScroll: (event) => {
-                          const bottom =
-                            event.target.scrollHeight - event.target.scrollTop === event.target.clientHeight;
-
-                          if (bottom && nextUrl && !loading) {
-                            fetchFonctions(nextUrl, true); // charger les suivants
-                          }
-
-                          const top = event.target.scrollTop === 0;
-                          if (top && previousUrl && !loading) {
-                            fetchFonctions(previousUrl, true); // charger les précédents
-                          }
-                        },
-                        style: {
-                          maxHeight: 200, // pour activer le scroll
-                        },
-                      },
-                    },
-                  },
+              <Autocomplete
+                options={options}
+                getOptionLabel={(opt) => opt.label}
+                loading={loadingOptions}
+                fullWidth
+                value={getJobOption(values.employees[index].job) || null}
+                filterOptions={(opts, state) =>
+                  opts.filter((o) =>
+                    o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
+                  )
+                }
+                onChange={(e, option) => {
+                  if (option) {
+                    setValue(`employees[${index}].job`, option.value);
+                  }
+                   else {
+                       setValue(`employees[${index}].job`, '');
+                       }
                 }}
-              >
-                <MenuItem sx={{ fontStyle: 'italic', color: 'text.secondary' }} value="">
-                  None
-                </MenuItem>
-                <Divider sx={{ borderStyle: 'dashed' }} />
-                {options.map((fonction) => (
-                  <MenuItem
-                    key={fonction.slug}
-                    value={fonction.value}
-                    onClick={() => handleSelectService(index, fonction.value)}
+                // On surcharge renderOption pour forcer une key unique
+                renderOption={(props, option, { index }) => (
+                  <li
+                    {...props}
+                    key={`${option.value}-${index}`} // utilisez le slug + index
                   >
-                    {fonction.label}
-                  </MenuItem>
-                ))}
-                {loading && (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                  </MenuItem>
+                    {option.label}
+                  </li>
                 )}
-              </Field.Select>
-
-
-
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Fonction *"
+                    size="small"
+                    fullWidth
+                    // error={!!watch(`employees[${index}].job`)}
+                    // helperText={watch(`employees[${index}].job`) ? '' : 'Fonction requise'}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadingOptions && <CircularProgress size={20} />}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
             </Stack>
-
 
             <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
               {/* {typedec !== "Duplicata" && (
@@ -595,8 +601,8 @@ export function DeclarationNewEditDetails({ formData }) {
                         />
                       </IconButton> */}
 
-                      {/* Icône pour voir le fichier s'il est téléchargé */}
-                      {/* {watch(`items[${index}].${doc.key}`) && (
+            {/* Icône pour voir le fichier s'il est téléchargé */}
+            {/* {watch(`items[${index}].${doc.key}`) && (
                         <IconButton
                           color="primary"
                           component="a"
@@ -613,7 +619,6 @@ export function DeclarationNewEditDetails({ formData }) {
 
               </Box>
             </Modal> */}
-
 
             {/* Modal pour les données biométriques */}
             {/* <Modal open={openModal} onClose={handleCloseModal}>
@@ -632,8 +637,8 @@ export function DeclarationNewEditDetails({ formData }) {
                 }}
 
               > */}
-                {/* Condition : Si Renouvellement -> Upload seul, sinon Stepper */}
-                {/* {typedec === "Renouvellement" ? (
+            {/* Condition : Si Renouvellement -> Upload seul, sinon Stepper */}
+            {/* {typedec === "Renouvellement" ? (
                   <>
                     <Typography variant="h6" align="center" gutterBottom>
                       Upload de l'Ancien Permis
@@ -674,8 +679,8 @@ export function DeclarationNewEditDetails({ formData }) {
                           {['Recto', 'Verso', 'Signature', 'Empreinte'][activeStep]}
                         </Typography> */}
 
-                        {/* Utilisation du composant UploadWithPreview pour chaque étape */}
-                        {/* {activeStep === 0 && (
+            {/* Utilisation du composant UploadWithPreview pour chaque étape */}
+            {/* {activeStep === 0 && (
                           <Field.UploadAvatar
                             name={`items[${index}].recto`}
                             maxSize={3145728}
@@ -739,16 +744,14 @@ export function DeclarationNewEditDetails({ formData }) {
               Supprimer
             </Button>
           </Stack>
-
-
-
         ))}
       </Stack>
 
       <Divider sx={{ my: 3, borderStyle: 'dashed' }} />
 
       <Stack
-        spacing={2} sx={{ mb: 2 }}
+        spacing={2}
+        sx={{ mb: 2 }}
         direction={{ xs: 'column', md: 'row' }}
         alignItems={{ xs: 'flex-end', md: 'center' }}
       >
@@ -772,11 +775,10 @@ export function DeclarationNewEditDetails({ formData }) {
         >
           Renouvellement
         </Button> */}
-         <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
           {fields.length} / {MAX_EMPLOYEES} employés ajoutés
         </Typography>
       </Stack>
-
     </Box>
   );
 }

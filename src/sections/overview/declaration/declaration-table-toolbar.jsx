@@ -21,10 +21,10 @@ import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 export function DeclarationTableToolbar({ filters, options, dateError, onResetPage }) {
-
   const popover = usePopover();
   const [titleInput, setTitleInput] = useState('');
   const [companyInput, setCompanyInput] = useState('');
+  const [passportInput, setPassportInput] = useState('');
 
   const handleFilterName = useCallback(
     (event) => {
@@ -37,13 +37,12 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const handleTitleKeyUp = useCallback(
     (event) => {
       if (event.key === 'Enter') {
-        const value = event.target.value;
-        console.log('Entrée détectée sur le filtre Titre avec la valeur :', value);
+        const { value } = event.target;
         if (filters.state.title !== value) {
           onResetPage();
           filters.setState({ title: event.target.value });
-          // Mise à jour combinée du state : on réinitialise company et met à jour title
-          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+          // Mise à jour combinée du state : on réinitialise company et passport et met à jour title
+          filters.setState((prev) => ({ ...prev, title: value, company: '', passport_number: '' }));
         }
       }
     },
@@ -53,19 +52,32 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
   const handleCompanyKeyUp = useCallback(
     (event) => {
       if (event.key === 'Enter') {
-        const value = event.target.value;
-        console.log('Entrée détectée sur le filtre Company avec la valeur :', value);
+        const { value } = event.target;
         if (filters.state.company !== value) {
           onResetPage();
           filters.setState({ company: event.target.value });
-          // Mise à jour combinée du state : on réinitialise company et met à jour title
-          filters.setState((prev) => ({ ...prev, title: value, company: '' }));
+          // Mise à jour combinée du state : on réinitialise title et passport et met à jour company
+          filters.setState((prev) => ({ ...prev, company: value, title: '', passport_number: '' }));
         }
       }
     },
     [filters, onResetPage]
   );
 
+  const handlePassportKeyUp = useCallback(
+    (event) => {
+      if (event.key === 'Enter') {
+        const value = event.target.value;
+        if (filters.state.passport_number !== value) {
+          onResetPage();
+          filters.setState({ passport_number: event.target.value });
+          // Mise à jour combinée du state : on réinitialise title et company et met à jour passport
+          filters.setState((prev) => ({ ...prev, passport_number: value, title: '', company: '' }));
+        }
+      }
+    },
+    [filters, onResetPage]
+  );
 
   const handleFilterService = useCallback(
     (event) => {
@@ -160,7 +172,7 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
         </LocalizationProvider>
 
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
-          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} >
+          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }}>
             <TextField
               fullWidth
               value={titleInput}
@@ -174,14 +186,10 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
                       <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
                     </InputAdornment>
                   ),
-                }
+                },
               }}
             />
-
           </Box>
-
-
-
         </Stack>
 
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
@@ -200,12 +208,28 @@ export function DeclarationTableToolbar({ filters, options, dateError, onResetPa
               }
             }}
           />
+          
+          <TextField
+            fullWidth
+            value={passportInput}
+            onChange={(e) => setPassportInput(e.target.value)}
+            onKeyDown={handlePassportKeyUp}
+            placeholder="Rechercher par numéro de passeport"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="mdi:passport" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              }
+            }}
+          />
 
           {/* <IconButton onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton> */}
         </Stack>
-
       </Stack>
       <CustomPopover
         open={popover.open}

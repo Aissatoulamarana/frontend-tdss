@@ -12,7 +12,6 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { useBoolean } from 'src/hooks/use-boolean';
-import { fCurrency } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -33,8 +32,6 @@ export function DeclarationTableRow({
   onRejetRow,
   onSubmitRow,
   onUnSubmitRow,
-
-
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -45,16 +42,16 @@ export function DeclarationTableRow({
   // Pour la soumission
   const submitConfirm = useBoolean();
 
-
-  // Pour la non-soumission 
+  // Pour la non-soumission
   const unsubmitConfirm = useBoolean();
-
 
   // Pour le dialogue de rejet
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
   const [motifRejet, setMotifRejet] = useState('');
 
   const popover = usePopover();
+
+  const profil = user?.companies[0]?.type_name?.toLowerCase().trim();
 
   // Handler pour le rejet, après validation du motif
   const handleConfirmRejet = () => {
@@ -64,25 +61,25 @@ export function DeclarationTableRow({
   };
 
   const statusLabels = {
-    UNSUBMITTED: 'Non soumise',
-    SUBMITTED: 'Soumise',
-    REJECTED: 'Rejetée',
-    VALIDATED: 'Validée',
-    BILLED: 'Facturée',
+    unsubmitted: 'Non soumise',
+    submitted: 'Soumise',
+    rejected: 'Rejetée',
+    validated: 'Validée',
+    billed: 'Facturée',
   };
 
   // Ajoute la couleur correspondante au statut
   const getStatusColor = (status) => {
     switch (status) {
-      case 'VALIDATED':
+      case 'validated':
         return 'success';
-      case 'SUBMITTED':
+      case 'submitted':
         return 'info';
-      case 'UNSUBMITTED':
+      case 'unsubmitted':
         return 'warning';
-      case 'REJECTED':
+      case 'rejected':
         return 'error';
-      case 'BILLED':
+      case 'billed':
         return 'primary';
       default:
         return 'default';
@@ -91,12 +88,17 @@ export function DeclarationTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected} onClick={onViewRow} sx={{
-        cursor: 'pointer',
-        '&:hover': {
-          bgcolor: 'action.hover',
-        },
-      }}>
+      <TableRow
+        hover
+        selected={selected}
+        onClick={onViewRow}
+        sx={{
+          cursor: 'pointer',
+          '&:hover': {
+            bgcolor: 'action.hover',
+          },
+        }}
+      >
         <TableCell padding="checkbox">
           {/* <Checkbox
             checked={selected}
@@ -129,10 +131,11 @@ export function DeclarationTableRow({
             secondary={fTime(row.created_on)}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
-              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
-            }} />
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
         </TableCell>
-        <TableCell>{fCurrency(row.total_amount)}</TableCell>
+        {/* <TableCell>{fCurrency(row.total_amount)}</TableCell> */}
         <TableCell>
           <Label variant="soft" color={getStatusColor(row.status)}>
             {statusLabels[row.status] || 'Inconnu'}
@@ -143,7 +146,7 @@ export function DeclarationTableRow({
             color={popover.open ? 'inherit' : 'default'}
             onClick={(e) => {
               e.stopPropagation(); // Empêche la propagation vers le TableRow
-              popover.onOpen(e);   // Passe l'événement à la fonction onOpen
+              popover.onOpen(e); // Passe l'événement à la fonction onOpen
             }}
           >
             <Iconify icon="eva:more-vertical-fill" />
@@ -168,7 +171,8 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type === 'Admin' && ['UNSUBMITTED'].includes(row.status) && (
+          {/* {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && ( */}
+          {user?.type_name === 'Agent' && ['unsubmitted'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 onEditRow();
@@ -180,7 +184,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {(user?.type === 'Admin' || user?.type === 'Agent') && ['REJECTED'].includes(row.status) && (
+          {user?.type_name === 'Agent' && ['rejected'].includes(row.status) && (
             <MenuItem
               onClick={() => {
                 unsubmitConfirm.onTrue();
@@ -192,22 +196,23 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type === 'Agent' && !['VALIDATED', 'BILLED', 'REJECTED', 'SUBMITTED'].includes(row.status) && (
-            <MenuItem
-              key="submit"
-              onClick={() => {
-                submitConfirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="mdi:check-bold" />
-              Soumettre
-            </MenuItem>
-          )}
+          {user?.type_name === 'Agent' &&
+            !['validated', 'billed', 'rejected', 'sublitted'].includes(row.status) && (
+              <MenuItem
+                key="submit"
+                onClick={() => {
+                  submitConfirm.onTrue();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="mdi:check-bold" />
+                Soumettre
+              </MenuItem>
+            )}
 
-          {user?.type === 'Superviseur' &&
-            user?.profile === 'AGUIPEE' &&
-            !['VALIDATED', 'BILLED', 'REJECTED', 'UNSUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Aguipe' &&
+            profil === 'aguipe' &&
+            !['validated', 'billed', 'rejected', 'unsubmitted'].includes(row.status) && (
               <MenuItem
                 key="validate"
                 onClick={() => {
@@ -220,9 +225,9 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type === 'Superviseur' &&
-            user?.profile === 'AGUIPEE' &&
-            !['REJECTED', 'BILLED', 'VALIDATED', 'UNSUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Aguipe' &&
+            profil === 'aguipe' &&
+            !['rejected', 'billed', 'validated', 'unsubmitted'].includes(row.status) && (
               <MenuItem
                 key="reject"
                 onClick={() => {
@@ -249,8 +254,8 @@ export function DeclarationTableRow({
               </MenuItem>
             )} */}
 
-          {user?.type === 'Comptable' &&
-            !['BILLED', 'REJECTED', 'UNSUBMITTED', 'SUBMITTED'].includes(row.status) && (
+          {user?.type_name === 'Comptable' &&
+            !['billed', 'rejected', 'unsublitted', 'submitted'].includes(row.status) && (
               <MenuItem
                 key="facture"
                 onClick={() => {

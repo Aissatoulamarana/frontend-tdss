@@ -12,6 +12,8 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 import axios from 'src/utils/axios';
 import { CircularProgress } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
@@ -37,7 +39,6 @@ import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
   useTable,
-  emptyRows,
   rowInPage,
   TableNoData,
   getComparator,
@@ -46,8 +47,6 @@ import {
   TableSelectedAction,
   TablePaginationCustom,
 } from 'src/components/table';
-
-import { STORAGE_KEY } from 'src/auth/context/jwt/constant'
 
 import { FactureAnalytic } from '../factures-analytics';
 import { FactureTableFilters } from '../factures-table-filters';
@@ -73,14 +72,20 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
+/**
+ * @typedef {{ totalCount: number; countByStatus: Record<string, number> }} Summary
+ */
+
+// ----------------------------------------------------------------------
+
 export function FactureListView() {
   const theme = useTheme();
 
   const { user } = useMockedUser();
-  
+
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'createDate' });
+  const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
   const [options, setOptions] = useState([]);
@@ -97,9 +102,14 @@ export function FactureListView() {
     previous: null,
   });
 
+  /** @type {[Summary, Function]} */
+  const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
+  // …
+
   const filters = useSetState({
     number: '',
     declaration_number:'',
+    company: '',
     service: [],
     status: 'all',
     date_before: null,
@@ -120,14 +130,31 @@ export function FactureListView() {
   const canReset =
     !!filters.state.number ||
     !!filters.state.declaration_number ||
+    !!filters.state.company ||
     filters.state.service.length > 0 ||
     filters.state.status !== 'all' ||
     (!!filters.state.date_before && !!filters.state.date_after);
 
   const notFound = pagination.count === 0 && canReset;
 
+  const fetchTotalCount = () =>
+    axios.get(API.listFactures(), { params: { limit: 1 } }).then((res) => res.data.count);
 
-  const getInvoiceLength = (status) => tableData.filter((item) => item.status === status).length;
+  const fetchCount = (status) =>
+    axios.get(API.listFactures(), { params: { limit: 1, status } }).then((res) => res.data.count);
+
+  useEffect(() => {
+    Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
+      ([totalCount, paidCount, unpaidCount]) => {
+        setSummary({
+          totalCount,
+          countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
+        });
+      }
+    );
+  }, []);
+
+  const getInvoiceLength = (status) => summary.countByStatus[status];
 
   const getTotalAmount = (status) =>
     sumBy(
@@ -135,20 +162,21 @@ export function FactureListView() {
       (facture) => facture.amount
     );
 
-  const getPercentByStatus = (status) => (getInvoiceLength(status) / tableData.length) * 100;
+  const getPercentByStatus = (status) =>
+    summary.totalCount > 0 ? (getInvoiceLength(status) / summary.totalCount) * 100 : 0;
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
-      color: 'default',
-      count: pagination.count,
+      color: 'white',
+      count: summary.totalCount,
     },
     {
-      value: 'PAID',
+      value: 'paid',
       label: 'Payées',
       color: 'success',
-      count: getInvoiceLength('PAID'),
+      count: getInvoiceLength('paid'),
     },
     {
       value: 'unpaid',
@@ -184,7 +212,6 @@ export function FactureListView() {
     });
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
-
   const handleViewRow = useCallback(
     (slug) => {
       router.push(paths.dashboard.factures.details(slug));
@@ -200,9 +227,7 @@ export function FactureListView() {
     [filters, table]
   );
 
-  useEffect(() => {
-  }, [selectedBanque]);
-
+  useEffect(() => {}, [selectedBanque]);
 
   const handlePaidRow = useCallback(
     async (slug) => {
@@ -216,7 +241,6 @@ export function FactureListView() {
         const response = await axios.post(API.paidFacture(slug));
 
         if (response.data.success) {
-          console.log('Facture payée:', response.data.message);
           toast.success('Facture payée avec succès !');
           router.push(paths.dashboard.factures.list);
         } else {
@@ -228,7 +252,7 @@ export function FactureListView() {
         alert('Erreur lors de la communication avec le serveur.');
       }
     },
-    [router,] // S'assurer de la dépendance à selectedBanque
+    [router] // S'assurer de la dépendance à selectedBanque
   );
 
   // const handlePaid = useCallback(
@@ -238,19 +262,16 @@ export function FactureListView() {
   //       return;
   //     }
 
-
   //     const data = {
   //       banque_id: selectedBanque?.value,
   //       facture_ids: dataFiltered.map((row) => row.slug)
   //     }
-
 
   //     try {
   //       // Appel à l'API backend pour valider la déclaration
   //       const response = await axios.post(API.PaidFactures(), data);
 
   //       if (response.data.success) {
-  //         console.log('Factures payées:', response.data.message);
   //         toast.success('Factures payées avec succès !');
   //         router.push(paths.dashboard.factures.list);
   //       } else {
@@ -265,7 +286,6 @@ export function FactureListView() {
   //   [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
   // );
 
-
   const handleChangeBanque = (event, newValue) => {
     setSelectedBanque(newValue);
   };
@@ -273,46 +293,46 @@ export function FactureListView() {
   useEffect(() => {
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
+      setLoading(true);
       try {
-        setLoading(true); // Démarre le chargement
         const offset = table.page * table.rowsPerPage;
         const params = {
           limit: table.rowsPerPage,
           offset: offset,
+          ...(filters.state.number
+            ? { number: filters.state.number }
+            : filters.state.declaration_number
+              ? { declaration_number: filters.state.declaration_number }
+              : filters.state.company
+                ? { company: filters.state.company }
+                : {}
+          ),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-          ...(filters.state.number ? { number: filters.state.number } : {}),
-          ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
-                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
-                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD ')
-              }
+              date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD'),
+              date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD')
+            }
             : {}
-          )
+          ),
         };
-        const response = await axios.get(API.listFactures(), { params }); // Remplacez l'URL par celle de votre backend
-        setTableData(response.data.results); // Assurez-vous que votre API renvoie un tableau
+
+        const response = await axios.get(API.listFactures(), { params });
+        setTableData(response.data.results);
         setPagination({
           count: response.data.count,
           next: response.data.next,
-          previous: response.data.previous
-        })
+          previous: response.data.previous,
+        });
       } catch (err) {
-        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
-        toast(error);
+        setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
         setLoading(false);
       }
     };
 
     fetchFactures();
-  }, [table.page, 
-    table.rowsPerPage, 
-    filters.state.status , 
-    filters.state.date_before, 
-    filters.state.date_after , 
-    filters.state.number, 
-    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, table.rowsPerPage, filters.state.number, filters.state.declaration_number, filters.state.company, filters.state.status, filters.state.date_before, filters.state.date_after]);
 
   if (loading) {
     console.info('Loading factures...');
@@ -340,7 +360,7 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Total"
-              total={tableData.length}
+              total={summary.totalCount}
               percent={100}
               chart={{
                 colors: [theme.vars.palette.info.main],
@@ -352,8 +372,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Payées"
-              percent={2.6}
-              total={18765}
+              percent={getPercentByStatus('paid')}
+              total={getInvoiceLength('paid')}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
@@ -363,8 +383,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="En attente"
-              percent={2.6}
-              total={18765}
+              percent={getPercentByStatus('unpaid')}
+              total={getInvoiceLength('unpaid')}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -453,10 +473,13 @@ export function FactureListView() {
                   </Tooltip>
 
                   <Tooltip title="Payer">
-                    <IconButton color="primary" onClick={() => {
-                      confirm.onTrue();
-                      // Ouvre la première boîte de dialogue
-                    }}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => {
+                        confirm.onTrue();
+                        // Ouvre la première boîte de dialogue
+                      }}
+                    >
                       <Iconify icon="mdi:credit-card" />
                     </IconButton>
                   </Tooltip>
@@ -480,11 +503,26 @@ export function FactureListView() {
                     )
                   }
                 />
-
-                <TableBody>
-                  {tableData
-
-                    .map((row) => (
+                {loading ? (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell colSpan={100}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            py: 6,
+                          }}
+                        >
+                          <CircularProgress />
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                ) : (
+                  <TableBody>
+                    {tableData.map((row) => (
                       <FactureTableRow
                         key={row.slug}
                         user={user}
@@ -502,16 +540,16 @@ export function FactureListView() {
                       />
                     ))}
 
-                  {tableData.length > 0 &&
-                    tableData.length < table.rowsPerPage && (
+                    {tableData.length > 0 && tableData.length < table.rowsPerPage && (
                       <TableEmptyRows
                         height={table.dense ? 56 : 76}
                         emptyRows={table.rowsPerPage - tableData.length}
                       />
                     )}
 
-                  <TableNoData notFound={notFound} />
-                </TableBody>
+                    <TableNoData notFound={notFound} />
+                  </TableBody>
+                )}
               </Table>
             </Scrollbar>
           </Box>
@@ -541,7 +579,6 @@ export function FactureListView() {
             variant="contained"
             color="primary"
             onClick={() => {
-
               confirm.onTrue();
 
               setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
@@ -583,7 +620,7 @@ export function FactureListView() {
                           {params.InputProps.endAdornment}
                         </>
                       ),
-                    }
+                    },
                   }}
                 />
               )}

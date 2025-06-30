@@ -106,7 +106,7 @@ const useStyles = () =>
           borderColor: '#ddd',
         },
         tableHeader: {
-          backgroundColor: '#f7f7f7',
+          backgroundColor: '#e0e0e0',
         },
         headerCell: {
           flex: 1,
@@ -154,11 +154,11 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
 
   // Stats
   const total = employees?.length || 0;
-  const cadres = employees?.filter(e => e.job.category === 'Cadre').length;
-  const agents = employees?.filter(e => e.job.category === 'Agent de maitrise').length;
-  const ouvriers = employees?.filter(e => e.job.category === 'Ouvrier').length;
+  const cadres = employees?.filter(e => e?.job?.category === 'Cadre')?.length;
+  const agents = employees?.filter(e => e?.job?.category === 'Agent de maitrise')?.length;
+  const ouvriers = employees?.filter(e => e?.job?.category === 'Ouvrier')?.length;
 
-  const qrData = encodeURIComponent(`${reference} - ${number} - ${total} personnes`);
+  const qrData = encodeURIComponent(`Declaration- ${number} - ${total} personnes`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
   const typeLabels = {
@@ -174,11 +174,11 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
         <View style={styles.headerRow}>
           {logoUrl && <Image src={ logoUrl} style={styles.logo} />}
           <View style={styles.companyInfo}>
-            <Text style={styles.companyName}>{company.name}</Text>
-            <Text style={styles.companyDetails}>{company.adresse}</Text>
-            <Text style={styles.companyDetails}>{company.location}</Text>
-            <Text style={styles.companyDetails}>Tél : {company.contact}</Text>
-            <Text style={styles.companyDetails}>{company.email}</Text>
+            <Text style={styles.companyName}>{company?.name}</Text>
+            <Text style={styles.companyDetails}>{company?.adresse}</Text>
+            <Text style={styles.companyDetails}>{company?.location}</Text>
+            <Text style={styles.companyDetails}>Tél : {company?.contact}</Text>
+            <Text style={styles.companyDetails}>{company?.email}</Text>
           </View>
         </View>
 
@@ -199,8 +199,8 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
             { label: 'Ouvriers', value: ouvriers },
           ].map((stat, i) => (
             <View key={i} style={styles.statBox}>
-              <Text style={styles.statLabel}>{stat.label}</Text>
-              <Text style={styles.statValue}>{stat.value}</Text>
+              <Text style={styles.statLabel}>{stat?.label}</Text>
+              <Text style={styles.statValue}>{stat?.value}</Text>
             </View>
           ))}
         </View>
@@ -223,13 +223,13 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
           {employees?.map((emp, i) => (
             <View key={i} style={styles.tableRow} wrap={false}>
               <Text style={[styles.cell, styles.firtColumn]}>{i + 1}</Text>
-              <Text style={styles.cell}>{emp.passport_number}</Text>
-              <Text style={styles.cell}>{emp.first}</Text>
-              <Text style={styles.cell}>{emp.last}</Text>
-              <Text style={styles.cell}>{emp.job.name}</Text>
-              <Text style={styles.cell}>{emp.job.category}</Text>
+              <Text style={styles.cell}>{emp?.passport_number}</Text>
+              <Text style={styles.cell}>{emp?.first}</Text>
+              <Text style={styles.cell}>{emp?.last}</Text>
+              <Text style={styles.cell}>{emp?.job?.name}</Text>
+              <Text style={styles.cell}>{emp?.job?.category}</Text>
               <Text style={[styles.cell, styles.noBorderRight]}>
-                {typeLabels[emp.type] || emp.type}
+                {typeLabels[emp?.type] || emp?.type}
               </Text>
             </View>
           ))}

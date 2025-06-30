@@ -61,7 +61,7 @@ export function ClientDetailsView({ slug }) {
             try {
                 const response = await axios.get(API.UpdateProfile(slug));
                 setProfil(response.data);
-                // console.log(response.data);
+             
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -77,7 +77,6 @@ export function ClientDetailsView({ slug }) {
             try {
                 const response = await axios.get(API.detailsProfile(slug));
                 setUsers(response.data.users);
-                console.log('Details profiles :', response.data.users);
             } catch (err) {
                 setError(err.message || 'Erreur lors du chargement des données.');
             } finally {
@@ -104,10 +103,10 @@ export function ClientDetailsView({ slug }) {
         <DashboardContent>
             <Box sx={{ mb: { xs: 3, md: 5 } }}>
                 <CustomBreadcrumbs
-                    heading="Profil"
+                    heading="Détails de la structure"
                     links={[
                         { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Profil', href: paths.dashboard.client.root },
+                        { name: 'Structure', href: paths.dashboard.client.root },
                         { name: profil?.name },
                     ]}
                 />
