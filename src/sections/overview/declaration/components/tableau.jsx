@@ -114,7 +114,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           .filter((d) => d.reference !== declaration?.reference)
           .map((declaration) => ({
             value: declaration?.reference,
-            label: declaration?.reference,
+           label: `${declaration?.number ?? ''} - ${declaration?.company ?? ''} `,
+
           }));
         setOptions(declarations);
       } catch (error) {
