@@ -107,7 +107,7 @@ export function FactureTableRow({
         </TableCell>
 
         <TableCell>{row.declaration_number}</TableCell>
-
+        <TableCell>{row.client}</TableCell>
         <TableCell>
           <ListItemText
             primary={fGNF(row.amount)}

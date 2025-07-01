@@ -59,13 +59,14 @@ import { PayeurForm } from '../form-factures';
 
 import { useMockedUser } from 'src/auth/hooks';
 import dayjs from 'dayjs';
+import { label } from 'yet-another-react-lightbox';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'facture', label: 'Numero Facture' },
   { id: 'numero', label: 'Numero Déclaration' },
-
+  {id: 'company', label: 'Entreprise'},
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
   { id: 'statut', label: 'Statut' },
