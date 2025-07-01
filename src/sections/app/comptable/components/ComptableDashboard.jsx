@@ -24,6 +24,8 @@ import { CurrencySelector, CURRENCIES } from 'src/components/CurrencySelector';
 import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
 import { ComptableWidgetSummary } from './ComptableWidgetSummary';
+import { useRouter } from 'next/navigation';
+import { fCurrency } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -60,7 +62,7 @@ const UPCOMING_DUE_DATES = [
 const formatAmount = (amount) =>
   new Intl.NumberFormat('fr-FR', {
     style: 'currency',
-    currency: 'XOF',
+    currency: 'GNF',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
@@ -74,6 +76,7 @@ export function ComptableDashboard() {
   const [chartRange, setChartRange] = useState('month');
   const [declarations, setDeclarations] = useState([]);
   const [currency, setCurrency] = useState('XOF');
+  const router = useRouter();
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -657,7 +660,7 @@ export function ComptableDashboard() {
                   size="small"
                   color="inherit"
                   endIcon={<Iconify icon="mdi:chevron-right" />}
-                  onClick={() => console.log('Voir toutes les déclarations')}
+                  onClick={() => router.push('/dashboard/declaration/list')}
                 >
                   Voir tout
                 </Button>
