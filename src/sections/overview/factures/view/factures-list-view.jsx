@@ -55,7 +55,11 @@ import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
 
 import { useMockedUser } from 'src/auth/hooks';
+
 import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
+
+import { label } from 'yet-another-react-lightbox';
+
 
 dayjs.locale('fr'); // Set the default locale to French
 // ----------------------------------------------------------------------
@@ -63,7 +67,7 @@ dayjs.locale('fr'); // Set the default locale to French
 const TABLE_HEAD = [
   { id: 'facture', label: 'Numero Facture' },
   { id: 'numero', label: 'Numero Déclaration' },
-
+  {id: 'company', label: 'Entreprise'},
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
   { id: 'statut', label: 'Statut' },
