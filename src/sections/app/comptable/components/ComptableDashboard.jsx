@@ -25,7 +25,7 @@ import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
 import { ComptableWidgetSummary } from './ComptableWidgetSummary';
 import { useRouter } from 'next/navigation';
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency, fEuro , fGNF } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -58,14 +58,7 @@ const UPCOMING_DUE_DATES = [
 
 // ----------------------------------------------------------------------
 
-// Fonction utilitaire pour formater les montants
-const formatAmount = (amount) =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'GNF',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
+
 
 export function ComptableDashboard() {
   const theme = useTheme();
@@ -76,6 +69,7 @@ export function ComptableDashboard() {
   const [chartRange, setChartRange] = useState('month');
   const [declarations, setDeclarations] = useState([]);
   const [currency, setCurrency] = useState('XOF');
+   const [devise, setDevise] = useState('GNF');
   const router = useRouter();
 
   const currentYear = new Date().getFullYear();
@@ -87,6 +81,16 @@ export function ComptableDashboard() {
     // Recharger les données pour la nouvelle année sélectionnée
     fetchInvoicesData();
   };
+
+  const afficherMontant = (montant) => {
+  if (devise === 'GNF') {
+    return fGNF(montant);
+  } else if (devise === 'USD') {
+    return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
+  } else if (devise === 'EUR') {
+    return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+  }
+};
 
   // États pour les données du dashboard
   const [dashboardData, setDashboardData] = useState({
@@ -385,10 +389,30 @@ export function ComptableDashboard() {
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Stack direction="row" alignItems="center" spacing={1}>
-            <Typography variant="body2" color="text.secondary">
-              Devise :
-            </Typography>
-            <CurrencySelector value={currency} onChange={setCurrency} />
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                Devise
+              </Typography>
+              <Box
+                component="select"
+                value={devise}
+                onChange={(e) => setDevise(e.target.value)}
+                sx={{
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 1,
+                  border: '1px solid #ccc',
+                  backgroundColor: '#fff',
+                  fontSize: 14,
+                  minWidth: 80,
+                }}
+              >
+                <option value="GNF">GNF</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </Box>
+            </Box>
+           
           </Stack>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
             <Box
@@ -484,7 +508,7 @@ export function ComptableDashboard() {
             color="primary"
             isCurrency
             loading={loading.summary}
-            currency={currency}
+            currency={devise}
             isRevenue
           />
         </Grid>

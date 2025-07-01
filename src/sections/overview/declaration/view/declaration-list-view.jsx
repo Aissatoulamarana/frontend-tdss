@@ -180,7 +180,7 @@ export function DeclarationListView() {
     admin: ['all', 'submitted', 'validated', 'billed', 'unsubmitted', 'rejected'],
     agent: ['all', 'submitted', 'validated', 'unsubmitted', 'rejected'],
     aguipe: ['all', 'submitted', 'rejected'],
-    comptable: ['all', 'billed', 'validated'],
+    comptable: ['all', 'billed', 'validated','submitted', 'unsubmitted', 'rejected'],
     default: ['all'],
   };
 
@@ -188,7 +188,7 @@ export function DeclarationListView() {
     admin: ['all', 'submitted', 'validated', 'billed'],
     agent: ['all', 'submitted', 'validated', 'unsubmitted'],
     aguipe: ['all', 'submitted', 'rejected'],
-    comptable: ['all', 'billed', 'validated'],
+    comptable: ['all', 'billed', 'validated', 'rejected'],
     default: ['all'],
   };
 

@@ -209,7 +209,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type_name === 'Aguipe' &&
+          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
             profil === 'aguipe' &&
             !['validated', 'billed', 'rejected', 'unsubmitted'].includes(row.status) && (
               <MenuItem
@@ -224,7 +224,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type_name === 'Aguipe' &&
+          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
             profil === 'aguipe' &&
             !['rejected', 'billed', 'validated', 'unsubmitted'].includes(row.status) && (
               <MenuItem

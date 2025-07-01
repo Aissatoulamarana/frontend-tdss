@@ -5,7 +5,7 @@ import { Iconify } from 'src/components/iconify';
 export const CURRENCIES = {
   XOF: { code: 'GNF', symbol: 'Fg', formatter: 'fGNF' },
   EUR: { code: 'EUR', symbol: '€', formatter: 'fEuro' },
-  GNF: { code: 'XOF', symbol: 'FCFA', formatter: 'fCurrency' }
+  GNF: { code: 'US DOLLAR', symbol: '$', formatter: 'fCurrency' }
 };
 
 export function CurrencySelector({ value, onChange }) {

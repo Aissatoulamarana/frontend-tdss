@@ -299,8 +299,7 @@ export function DeclarationToolbar({
           </Tooltip>
           )}
 
-          {(type === 'aguipe' && 
-          profil === 'aguipe' && 
+          {((type === 'aguipe' || type === 'comptable' )&& 
           currentStatus ==='submitted') && (
           <>
            <Tooltip title="Valider">
