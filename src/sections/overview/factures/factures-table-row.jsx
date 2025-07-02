@@ -108,7 +108,7 @@ export function FactureTableRow({
         </TableCell>
 
         <TableCell>{row.declaration_number}</TableCell>
-
+        <TableCell>{row.client}</TableCell>
         <TableCell>
           <ListItemText
             primary={fGNF(row.amount)}
@@ -176,7 +176,7 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {user?.type_name === 'Caissier' && row.status === 'unpaid' && (
+          {(user?.type_name === 'Caissier'|| user?.type_name === 'Comptable') && row.status === 'unpaid' && (
             <MenuItem
               color={payeurForm.value ? 'inherit' : 'default'}
               onClick={() => {

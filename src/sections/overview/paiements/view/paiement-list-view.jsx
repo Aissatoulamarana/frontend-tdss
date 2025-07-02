@@ -80,6 +80,7 @@ export function PaiementListView() {
   const [currentTab, setCurrentTab] = useState('all');
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [loaded, setLoaded] = useState(false); // État pour indiquer si les données sont chargées
   const [error, setError] = useState(null); // État pour gérer les erreurs
     const [pagination, setPagination] = useState({
       count: 0,
@@ -95,6 +96,7 @@ export function PaiementListView() {
 
    useEffect(() => {
     const fetchSummary = async () => {
+      setLoaded(true);
       try {
         // --- 1) Récupérer le count global ---
         const countRes = await axios.get(API.listPaiments(), {
@@ -122,6 +124,7 @@ export function PaiementListView() {
           totalAmountGnf,
           totalAmountUsd,
         });
+        setLoaded(false);
 
       } catch (err) {
         console.error('Erreur summary paiements', err);
@@ -272,6 +275,7 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Nombres Total Paiements"
+                loading={loaded}
                 total={summary.totalCount}
                 percent={100}
                 // chart={{
@@ -284,6 +288,7 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En Dollars"
+                loading={loaded}
                 percent={100}
                 total={fCurrency(summary.totalAmountUsd)}
                 // chart={{
@@ -295,6 +300,7 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En GNF"
+                loading={loaded}
                 percent={100}
                 total={fGNF(summary.totalAmountGnf)}
                 // chart={{

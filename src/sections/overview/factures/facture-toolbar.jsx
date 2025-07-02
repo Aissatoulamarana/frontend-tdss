@@ -106,7 +106,7 @@ export function FactureToolbar({
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip> */}
-      {(type === 'caissier' && currentStatus === 'unpaid') && (
+      {((type === 'caissier'|| type === 'comptable') && currentStatus === 'unpaid') && (
           <Tooltip title="Payer la facture">
             <IconButton onClick={() => payeurForm.onTrue()}>
               <Iconify icon="mdi:credit-card" />
