@@ -30,7 +30,7 @@ import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
 import { ComptableWidgetSummary } from './ComptableWidgetSummary';
 import API from 'src/utils/api';
-import axios from 'axios';
+import axios from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
@@ -289,26 +289,58 @@ export function ComptableDashboard() {
     }
   }, []);
 
-    // Fonction pour charger les échéances
+  // Fonction pour charger les échéances
   const fetchEcheances = async () => {
     try {
       setLoadingEcheances(true);
+      setErrorEcheances(null);
+      
+      // Utiliser l'instance axios configurée qui gère déjà l'authentification
       const response = await axios.get(API.getEcheances());
-      // Prendre les 5 premières échéances
-      setEcheances(response.data.slice(0, 5));
+      
+      // Vérifier que la réponse contient des données valides
+      if (!response.data) {
+        throw new Error('Aucune donnée reçue du serveur');
+      }
+      
+      // S'assurer que les données sont un tableau avant d'utiliser slice
+      const echeancesData = Array.isArray(response.data) ? response.data : [];
+      setEcheances(echeancesData.slice(0, 5));
+      
     } catch (err) {
-      console.error('Erreur lors du chargement des échéances:', err);
-      setErrorEcheances('Impossible de charger les échéances');
+      console.error('Erreur lors du chargement des échéances:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: {
+          url: err.config?.url,
+          method: err.config?.method,
+          headers: err.config?.headers
+        }
+      });
+      
+      // Afficher un message d'erreur plus détaillé
+      const errorMessage = err.response?.data?.detail || 
+                         err.response?.data?.message || 
+                         'Impossible de charger les échéances. Veuillez réessayer.';
+      setErrorEcheances(errorMessage);
+      
+      // Si l'erreur est une erreur d'authentification (401), déconnecter l'utilisateur
+      if (err.response?.status === 401) {
+        console.error('Erreur d\'authentification - Déconnexion...');
+        // Vous pourriez vouloir rediriger vers la page de connexion ici
+        // ou déclencher une déconnexion
+      }
+      
     } finally {
       setLoadingEcheances(false);
     }
   };
 
-    // Appel au chargement du composant
+  // Appel au chargement du composant
   useEffect(() => {
     fetchEcheances();
   }, []);
-
 
   // Recuper les declarations dernierement validated
   const fetchLastValidatedDeclarations = useCallback(async () => {

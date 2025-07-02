@@ -1,6 +1,3 @@
-
-
-
 //  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
 
   const BASE_URL = 'https://test.tdss.com.gn/api'; // Adresse de votre backend
@@ -161,7 +158,6 @@ const API = {
   getLastValidatedDeclarations: () => `${BASE_URL}/declarations/last-validated/`,
 
   getEcheances: () => `${BASE_URL}/factures/echeances/`,
-
 };
 
 export default API;
