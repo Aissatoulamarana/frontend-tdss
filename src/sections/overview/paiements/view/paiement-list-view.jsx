@@ -139,6 +139,7 @@ export function PaiementListView() {
 
   const filters = useSetState({
     name: '',
+    company: '',
     date_before: null,
     date_after: null,
     payment_method: [],
@@ -159,6 +160,7 @@ export function PaiementListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
+    !!filters.state.name ||
     !!filters.state.name ||
 
     filters?.state?.payment_method?.length > 0 ||
@@ -229,6 +231,7 @@ export function PaiementListView() {
                     ),
           ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
           ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
+          ...(filters.state.company && { company: filters.state.company}),
           ...(filters.state.number && { number: filters.state.number }),
           ...(filters.state.company && { company: filters.state.company }),
         };
@@ -248,7 +251,15 @@ export function PaiementListView() {
     };
 
     fetchPaiements();
-  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, filters.state.company, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+  }, [table.page, 
+    table.rowsPerPage, 
+    filters.state.date_before, 
+    filters.state.date_after, 
+    filters.state.facture_number, 
+    filters.state.company,
+    filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
 
   if (loading) {
     console.info('Loading paiement...');
