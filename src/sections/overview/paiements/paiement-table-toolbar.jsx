@@ -41,7 +41,7 @@ export function PaiementTableToolbar({
   const handleSelectFilter = (filterType) => {
     console.log('Filter selected:', filterType); // Debug log
     onResetPage();
-    filters.setState({ facture_number: '', number: '' }); // Réinitialise les autres filtres
+    filters.setState({ facture_number: '', number: '' , company:''}); // Réinitialise les autres filtres
     setSelectedFilter(filterType); // Définit le filtre actif
     setShowOptions(false); // Ferme les options
   };
@@ -53,6 +53,8 @@ export function PaiementTableToolbar({
         return 'Recherche par Numero de Facture';
       case 'number':
         return 'Recherche par Numero de Paiement';
+      case 'company':
+        return 'Recherche par Nom de la Société';
       default:
         return 'Recherche par Numero de Facture';
     }
@@ -66,6 +68,7 @@ export function PaiementTableToolbar({
         filters.setState({
           facture_number: '',
           number: '',
+          company: '',
           [selectedFilter]: inputValue, // Applique la recherche au filtre actif
         });
       }
@@ -196,6 +199,11 @@ export function PaiementTableToolbar({
                   label="Numero de Paiement"
                   color={selectedFilter === 'number' ? 'primary' : 'default'}
                   onClick={() => handleSelectFilter('number')}
+                />
+                 <Chip
+                  label="Nom de l'entreprise"
+                  color={selectedFilter === 'company' ? 'primary' : 'default'}
+                  onClick={() => handleSelectFilter('company')}
                 />
               </Paper>
             )}
