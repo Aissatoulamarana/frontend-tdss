@@ -156,12 +156,12 @@ function SingleDeclaration({ declaration }) {
                 width={28}
                 sx={{ mr: 1, color: 'primary.main' }}
               />
-              <Box>
+              {/* <Box>
                 <Typography sx={{ fontWeight: 600 }}>Entreprise</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {company}
                 </Typography>
-              </Box>
+              </Box> */}
             </Box>
 
             {/* Date de création */}
@@ -274,9 +274,9 @@ function MultipleDeclarationItem({ declaration }) {
       <Typography variant="body1" sx={{ mb: 1 }}>
         <strong>Référence :</strong> {reference}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      {/* <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
         <strong>Entreprise :</strong> {company}
-      </Typography>
+      </Typography> */}
       <Typography variant="body2" color="text.secondary">
         <strong>Créée le :</strong> {formatDate(created_on)}
       </Typography>
