@@ -680,7 +680,7 @@ export function ComptableDashboard() {
 
         
         {/* Tableau des déclarations récentes */}
-        <Grid item xs={8} md={6}>
+        <Grid item xs={12} md={6}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">

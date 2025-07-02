@@ -155,7 +155,7 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
           },
         }}
-        action={
+        /* action={
           <Button
             size="medium"
             startIcon={<Iconify icon="mdi:file-document-plus" />}
@@ -164,7 +164,7 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
           >
             Facturer tout
           </Button>
-        }
+        } */
       />
       <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>
