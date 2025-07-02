@@ -72,16 +72,16 @@ export function SettingsDrawer({
   );
 
   const renderMode = (
-    <BaseOption
-      label="Apparence"
-      icon="moon"
-      selected={settings.colorScheme === 'dark'}
-      onClick={() => {
-        settings.onUpdateField('colorScheme', mode === 'light' ? 'dark' : 'light');
-        setMode(mode === 'light' ? 'dark' : 'light');
-      }}
-    />
-  );
+   <BaseOption
+  label="Apparence"
+  icon="moon"
+  selected={settings.colorScheme === 'dark'}
+  onClick={() => {
+    // const newMode = settings.colorScheme === 'light' ? 'dark' : 'light';
+    settings.onUpdateField('colorScheme', settings.colorScheme === 'light' ? 'dark' : 'light');
+  }}
+/>
+);
 
   const renderContrast = (
     <BaseOption

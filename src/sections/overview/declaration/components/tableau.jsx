@@ -105,7 +105,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
       try {
         const offset = page * rowsPerPage;
         const params = {
-          limit: 100,
+          limit: 1000,
           offset: offset,
           status: 'unsubmitted',
         };
@@ -114,7 +114,8 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           .filter((d) => d.reference !== declaration?.reference)
           .map((declaration) => ({
             value: declaration?.reference,
-            label: declaration?.reference,
+           label: `${declaration?.number ?? ''} - ${declaration?.company ?? ''} `,
+
           }));
         setOptions(declarations);
       } catch (error) {
@@ -125,7 +126,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     };
 
     fetchDeclarations();
-  }, []);
+  }, [declaration, printMode]);
 
   useEffect(() => {
     const fetchEmployees = async () => {

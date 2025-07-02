@@ -171,20 +171,23 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && (
-            <MenuItem
-              onClick={() => {
-                onEditRow();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="solar:pen-bold" />
-              Modifier
-            </MenuItem>
-          )}
+          {/* {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && ( */}
+          {(user?.type_name === 'Agent' || user?.type_name === 'Admin') &&
+            ['unsubmitted'].includes(row.status) && (
+              <MenuItem
+                onClick={() => {
+                  onEditRow();
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="solar:pen-bold" />
+                Modifier
+              </MenuItem>
+            )}
 
-          {user?.type_name === 'Agent' && ['rejected'].includes(row.status) && (
+          {user?.type_name === 'Agent' && ['rejected', 'submitted'].includes(row.status) && (
             <MenuItem
+              key="unsubmit"
               onClick={() => {
                 unsubmitConfirm.onTrue();
                 popover.onClose();
@@ -196,7 +199,7 @@ export function DeclarationTableRow({
           )}
 
           {user?.type_name === 'Agent' &&
-            !['validated', 'billed', 'rejected', 'sublitted'].includes(row.status) && (
+            !['validated', 'billed', 'rejected', 'submitted'].includes(row.status) && (
               <MenuItem
                 key="submit"
                 onClick={() => {
@@ -209,7 +212,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type_name === 'Aguipe' &&
+          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
             profil === 'aguipe' &&
             !['validated', 'billed', 'rejected', 'unsubmitted'].includes(row.status) && (
               <MenuItem
@@ -224,7 +227,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type_name === 'Aguipe' &&
+          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
             profil === 'aguipe' &&
             !['rejected', 'billed', 'validated', 'unsubmitted'].includes(row.status) && (
               <MenuItem

@@ -109,7 +109,7 @@ export function PaiementListView() {
 
         // --- 3) Somme des montants en GNF ---
         const totalAmountGnf = sumBy(allPaiements, (p) => p.amount);
-        
+        console.log('montant total', totalAmountGnf);
 
         // --- 4) Conversion GNF → USD (taux fixe ici) ---
         const GNF_PER_USD = 9200;
@@ -121,7 +121,8 @@ export function PaiementListView() {
           totalAmountGnf,
           totalAmountUsd,
         });
-
+        console.log('montant en gnf', summary.totalAmountGnf);
+        console.log('montant en USD', summary.totalAmountUsd)
       } catch (err) {
         console.error('Erreur summary paiements', err);
         toast.error('Impossible de charger le total des paiements');
@@ -135,12 +136,12 @@ export function PaiementListView() {
 
   const filters = useSetState({
     name: '',
+    company: '',
     date_before: null,
     date_after: null,
     payment_method: [],
     facture_number: '',
     number: '',
-    company: '',
   });
 
   const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
@@ -156,14 +157,14 @@ export function PaiementListView() {
 
   const canReset =
     !!filters.state.name ||
+    !!filters.state.name ||
 
     filters?.state?.payment_method?.length > 0 ||
  
     (!!filters.state.date_before && !!filters.state.date_after) ||
 
     !!filters.state.facture_number ||
-    !!filters.state.number ||
-    !!filters.state.company;
+    !!filters.state.number;
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -225,8 +226,8 @@ export function PaiementListView() {
                     ),
           ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
           ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
+          ...(filters.state.company && { company: filters.state.company}),
           ...(filters.state.number && { number: filters.state.number }),
-          ...(filters.state.company && { company: filters.state.company }),
         };
         const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); 
@@ -244,7 +245,13 @@ export function PaiementListView() {
     };
 
     fetchPaiements();
-  }, [table.page, table.rowsPerPage, filters.state.date_before, filters.state.date_after, filters.state.facture_number, filters.state.number, filters.state.company, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  }, [table.page, 
+    table.rowsPerPage, 
+    filters.state.date_before, 
+    filters.state.date_after, 
+    filters.state.facture_number, 
+    filters.state.company,
+    filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading paiement...');
@@ -338,7 +345,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
+            options={{ payment_method: PaymentMethods }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />

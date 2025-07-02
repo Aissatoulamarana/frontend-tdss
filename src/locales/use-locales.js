@@ -1,6 +1,6 @@
 'use client';
 
-import dayjs from 'dayjs';
+import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,6 +12,8 @@ import { allLangs } from './all-langs';
 import { fallbackLng, changeLangMessages as messages } from './config-locales';
 
 // ----------------------------------------------------------------------
+
+dayjs.locale('fr'); // Set the default locale to French
 
 export function useTranslate(ns) {
   const router = useRouter();

@@ -55,14 +55,19 @@ import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
 
 import { useMockedUser } from 'src/auth/hooks';
-import dayjs from 'dayjs';
 
+import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
+
+import { label } from 'yet-another-react-lightbox';
+
+
+dayjs.locale('fr'); // Set the default locale to French
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'facture', label: 'Numero Facture' },
   { id: 'numero', label: 'Numero Déclaration' },
-
+  {id: 'company', label: 'Entreprise'},
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
   { id: 'statut', label: 'Statut' },
@@ -96,6 +101,7 @@ export function FactureListView() {
   const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
   const [openSecondDialog, setOpenSecondDialog] = useState(false);
+  const [selectedFilter , setSelectedFilter] = useState('number')
   const [pagination, setPagination] = useState({
     count: 0,
     next: null,
@@ -129,6 +135,7 @@ export function FactureListView() {
 
   const canReset =
     !!filters.state.number ||
+    !!filters.state.company ||
     !!filters.state.declaration_number ||
     !!filters.state.company ||
     filters.state.service.length > 0 ||
@@ -308,6 +315,11 @@ export function FactureListView() {
                 : {}
           ),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+
+          ...(filters.state.number ? { number: filters.state.number } : {}),
+          ...(filters.state.company ? {company : filters.state.company} : {}),
+          ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
+
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
               date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD'),
@@ -332,7 +344,16 @@ export function FactureListView() {
     };
 
     fetchFactures();
-  }, [table.page, table.rowsPerPage, filters.state.number, filters.state.declaration_number, filters.state.company, filters.state.status, filters.state.date_before, filters.state.date_after]);
+
+  }, [table.page, 
+    table.rowsPerPage, 
+    filters.state.status , 
+    filters.state.company,
+    filters.state.date_before, 
+    filters.state.date_after , 
+    filters.state.number, 
+    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
 
   if (loading) {
     console.info('Loading factures...');
@@ -429,6 +450,8 @@ export function FactureListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
+            selectedFilter= {selectedFilter}
+            setSelectedFilter = {setSelectedFilter}
             options={{ services: tableData.map((option) => option.name) }}
           />
 

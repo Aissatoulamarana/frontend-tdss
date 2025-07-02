@@ -9,7 +9,7 @@ import axios from 'src/utils/axios';
 import debounce from 'lodash.debounce';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { get, useFieldArray, useFormContext } from 'react-hook-form';
 // import { Step, Modal, Stepper, StepLabel, IconButton } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import {
@@ -37,6 +37,7 @@ export function DeclarationNewEditDetails({ formData }) {
   const MAX_EMPLOYEES = 20;
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [nextUrl, setNextUrl] = useState(API.listFonctionAgent()); // première page
   const [previousUrl, setPreviousUrl] = useState(null);
   const [openModal, setOpenModal] = useState(false);
@@ -187,6 +188,7 @@ export function DeclarationNewEditDetails({ formData }) {
     let isMounted = true;
 
     async function fetchAllFonctions() {
+      setLoadingOptions(true);
       try {
         // 1) Premier appel pour count
         const resp1 = await axios.get(API.listFonctionAgent(), {
@@ -209,7 +211,9 @@ export function DeclarationNewEditDetails({ formData }) {
       } catch (err) {
         console.error(err);
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted) 
+        setLoading(false);
+        setLoadingOptions(false);
       }
     }
 
@@ -219,75 +223,85 @@ export function DeclarationNewEditDetails({ formData }) {
     };
   }, []);
 
-  const handleSelectService = useCallback(
-    (index, option) => {
-      const selectedService = options.find((fonction) => fonction.value === option);
-      if (selectedService) {
-        setValue('serviceField', selectedService);
-      }
-    },
-    [setValue, options]
-  );
+  
+ 
+   const verifyPassports = async (employees, setValue) => {
+    await Promise.all(
+      employees.map(async (emp, idx) => {
+        if (!emp.passport_number) return;
+  
+        try {
+          const { data } = await axios.get(API.searchPassport(emp.passport_number));
+          // S'il existe, on le note et on peut éventuellement verrouiller la ligne :
+          const exists = !!data?.passport_number;
+          setValue(`employees[${idx}].passportExists`, exists);
+          if (exists) {
+            setValue(`employees[${idx}].locked`, false);   // optionnel
+          }
+        } catch (error) {
+          // 404 = n'existe pas → false, les autres erreurs sont loguées
+          if (error.response?.status === 404) {
+            setValue(`employees[${idx}].passportExists`, false);
+          } else {
+            console.error('Erreur de vérification passeport', error);
+          }
+        }
+      })
+    );
+  };
+  
+  
+  
+    const handleImportData = async (importedData) => {
+      const mappedEmployees = importedData.map((row) => {
+       const jobSlug = (() => {
+        const findByValue = options.find((opt) => opt.value === row.Fonction);
+        const findByLabel = options.find((opt) => opt.label === row.Fonction);
 
-  useEffect(() => {
-    if (formData?.length > 0 && options?.length > 0) {
-      const {
-        Fonction: firstFonction = '',
-        Numero: firstNumero = '',
-        Nom: firstNom = '',
-        Prenom: firstPrenom = '',
-        Telephone: firstTelephone = '',
-      } = formData[0];
-
-      const fonctionImportee = firstFonction.trim();
-      const matchingOption = options.find(
-        (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
-      );
-
-      if (!matchingOption) {
-        toast.warning(
-          `Pas de correspondance trouvée pour "${fonctionImportee}" dans la première ligne.`
-        );
-      }
-
-      reset({
-        employees: [
-          {
-            passport_number: firstNumero.toString().trim(),
-            last: firstNom || '',
-            job: matchingOption ? matchingOption.value : '',
-            first: firstPrenom || '',
-            phone: firstTelephone ? `+${String(firstTelephone)}` : '',
-            passportExists: false,
-          },
-        ],
-      });
-
-      formData.slice(1).forEach((data, index) => {
-        const { Fonction = '', Numero = '', Nom = '', Prenom = '', Telephone = '' } = data;
-
-        const fonctionImportee = Fonction.trim();
-        const matchingOption = options.find(
-          (opt) => opt.label.toLowerCase() === fonctionImportee.toLowerCase()
-        );
-
-        if (!matchingOption) {
-          toast.warning(
-            `Pas de correspondance trouvée pour "${fonctionImportee}" à la ligne ${index + 2}.`
-          );
+        if (!findByValue && !findByLabel && row.Fonction) {
+          toast.warning(`Pas de correspondance trouvée pour la fonction "${row.Fonction}"`);
         }
 
-        append({
-          passport_number: Numero.toString().trim(),
-          last: Nom || '',
-          job: matchingOption ? matchingOption.value : '',
-          first: Prenom || '',
-          phone: Telephone ? `+${String(Telephone)}` : '',
+        return findByValue?.value || findByLabel?.value || '';
+      })();
+
+  
+        return {
+          passport_number: row.Numero || '',
+          phone: row.Telephone ? `+${String(row.Telephone)}` : '',
+          last: row.Nom || '',
+          first: row.Prenom || '',
+          job: jobSlug,
+          type: 'new',
+          reference: undefined,
           passportExists: false,
-        });
+          locked: false,
+        };
       });
-    }
-  }, [formData, options, reset, append]);
+  
+      reset({ employees: mappedEmployees });
+        await new Promise((r) => setTimeout(r, 0));
+        await verifyPassports(mappedEmployees, setValue);
+    };
+  
+
+
+
+
+useEffect(() => {
+  if (formData?.length > 0 && options?.length > 0) {
+    const importedData = formData.map((row) => ({
+      Fonction: row.Fonction?.trim() || '',
+      Numero: row.Numero || '',
+      Nom: row.Nom || '',
+      Prenom: row.Prenom || '',
+      Telephone: row.Telephone || '',
+    }));
+
+    handleImportData(importedData); // <-- appelle la fonction existante
+  }
+}, [formData, options]);
+
 
   // Fonction debounced pour vérifier le numéro du passeport en temps réel
   const checkPassportExistence = async (numero, index) => {
@@ -390,6 +404,9 @@ export function DeclarationNewEditDetails({ formData }) {
   //   ? [{ label: "Certificat de perte", key: "certificatPerte" }, { label: "CV", key: "cv" }]
   //   : allDocuments;
 
+  const getJobOption = (jobValue) => options.find((option) => option.value === jobValue) || null;
+
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h6" sx={{ color: 'text.disabled', mb: 3 }}>
@@ -482,8 +499,9 @@ export function DeclarationNewEditDetails({ formData }) {
               <Autocomplete
                 options={options}
                 getOptionLabel={(opt) => opt.label}
-                loading={loading}
+                loading={loadingOptions}
                 fullWidth
+                value={getJobOption(values.employees[index].job) || null}
                 filterOptions={(opts, state) =>
                   opts.filter((o) =>
                     o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
@@ -493,6 +511,9 @@ export function DeclarationNewEditDetails({ formData }) {
                   if (option) {
                     setValue(`employees[${index}].job`, option.value);
                   }
+                   else {
+                       setValue(`employees[${index}].job`, '');
+                       }
                 }}
                 // On surcharge renderOption pour forcer une key unique
                 renderOption={(props, option, { index }) => (
@@ -509,11 +530,13 @@ export function DeclarationNewEditDetails({ formData }) {
                     label="Fonction *"
                     size="small"
                     fullWidth
+                    // error={!!watch(`employees[${index}].job`)}
+                    // helperText={watch(`employees[${index}].job`) ? '' : 'Fonction requise'}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
                         <>
-                          {loading && <CircularProgress size={20} />}
+                          {loadingOptions && <CircularProgress size={20} />}
                           {params.InputProps.endAdornment}
                         </>
                       ),

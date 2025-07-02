@@ -10,13 +10,17 @@ dayjs.extend(duration);
 dayjs.extend(relativeTime);
 dayjs.locale('fr');
 
+export default dayjs;   
 
 // Capitalise le mois (ex: avril => Avril)
-const capitalizeMonth = (formattedDate) => 
-     formattedDate.replace(
-    /(?<=\s)([a-zàâçéèêëîïôûùüÿñæœ]+)/i,
-    (month) => month.charAt(0).toUpperCase() + month.slice(1)
+
+const capitalizeMonth = (formattedDate) => {
+  const monthsRegex = /(?<=\s)([a-zàâçéèêëîïôûùüÿñæœ]+)/i;
+
+  return formattedDate.replace(monthsRegex, (month) =>
+    month.charAt(0).toUpperCase() + month.slice(1)
   );
+};
 
 
 
@@ -53,7 +57,7 @@ export function fDateTime(date, format) {
 
   const isValid = dayjs(date).isValid();
 
- return isValid
+  return isValid
     ? capitalizeMonth(dayjs(date).format(format ?? formatStr.dateTime))
     : 'Invalid time value';
 }
@@ -70,7 +74,7 @@ export function fDate(date, format) {
   const isValid = dayjs(date).isValid();
 
   return isValid ? 
-  capitalizeMonth (dayjs(date).format(format ?? formatStr.date))
+  capitalizeMonth(dayjs(date).format(format ?? formatStr.date))
   : 'Invalid time value';
 }
 
