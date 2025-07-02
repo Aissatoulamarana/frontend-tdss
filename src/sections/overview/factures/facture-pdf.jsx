@@ -158,6 +158,5 @@ export async function generateFacturePDF(facture, devise) {
 
   // Sauvegarde et téléchargement
   const pdfBytes = await pdfDoc.save();
-  // saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture.number}.pdf`);
-  return pdfBytes;
+  saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture.number}.pdf`);
 }
