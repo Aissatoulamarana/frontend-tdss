@@ -44,7 +44,12 @@ export function EmployeeTableFiltersResult({ filters, onResetPage, totalResults,
 
             <FiltersBlock label="fonction:" isShow={!!filters?.state?.job?.length}>
                 {filters?.state?.job?.map((item) => (
-                    <Chip {...chipProps} key={item} label={item} onDelete={() => handleRemoveRole(item)} />
+                    <Chip 
+                    {...chipProps} 
+                    key={item.slug || item} 
+                    label={typeof item === 'object' ? item.name : item} 
+                    onDelete={() => handleRemoveRole(item)} 
+                  />
                 ))}
             </FiltersBlock>
 
