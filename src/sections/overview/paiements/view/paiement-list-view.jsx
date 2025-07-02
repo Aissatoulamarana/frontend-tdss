@@ -48,9 +48,8 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 
 import { fCurrency, fGNF } from 'src/utils/format-number';
 
-import dayjs from 'src/utils/format-time'
+import dayjs from 'dayjs';
 
-dayjs.locale('fr'); // Set the default locale to French
 
 // ----------------------------------------------------------------------
 
@@ -80,7 +79,6 @@ export function PaiementListView() {
   const [currentTab, setCurrentTab] = useState('all');
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-  const [loaded, setLoaded] = useState(false); // État pour indiquer si les données sont chargées
   const [error, setError] = useState(null); // État pour gérer les erreurs
     const [pagination, setPagination] = useState({
       count: 0,
@@ -96,7 +94,6 @@ export function PaiementListView() {
 
    useEffect(() => {
     const fetchSummary = async () => {
-      setLoaded(true);
       try {
         // --- 1) Récupérer le count global ---
         const countRes = await axios.get(API.listPaiments(), {
@@ -112,7 +109,7 @@ export function PaiementListView() {
 
         // --- 3) Somme des montants en GNF ---
         const totalAmountGnf = sumBy(allPaiements, (p) => p.amount);
-        
+        console.log('montant total', totalAmountGnf);
 
         // --- 4) Conversion GNF → USD (taux fixe ici) ---
         const GNF_PER_USD = 9200;
@@ -124,8 +121,8 @@ export function PaiementListView() {
           totalAmountGnf,
           totalAmountUsd,
         });
-        setLoaded(false);
-
+        console.log('montant en gnf', summary.totalAmountGnf);
+        console.log('montant en USD', summary.totalAmountUsd)
       } catch (err) {
         console.error('Erreur summary paiements', err);
         toast.error('Impossible de charger le total des paiements');
@@ -145,7 +142,6 @@ export function PaiementListView() {
     payment_method: [],
     facture_number: '',
     number: '',
-    company: '',
   });
 
   const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
@@ -168,8 +164,7 @@ export function PaiementListView() {
     (!!filters.state.date_before && !!filters.state.date_after) ||
 
     !!filters.state.facture_number ||
-    !!filters.state.number ||
-    !!filters.state.company;
+    !!filters.state.number;
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -233,7 +228,6 @@ export function PaiementListView() {
           ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
           ...(filters.state.company && { company: filters.state.company}),
           ...(filters.state.number && { number: filters.state.number }),
-          ...(filters.state.company && { company: filters.state.company }),
         };
         const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
         setTableData(response.data.results); 
@@ -251,7 +245,6 @@ export function PaiementListView() {
     };
 
     fetchPaiements();
-
   }, [table.page, 
     table.rowsPerPage, 
     filters.state.date_before, 
@@ -259,7 +252,6 @@ export function PaiementListView() {
     filters.state.facture_number, 
     filters.state.company,
     filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
-
 
   if (loading) {
     console.info('Loading paiement...');
@@ -286,7 +278,6 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Nombres Total Paiements"
-                loading={loaded}
                 total={summary.totalCount}
                 percent={100}
                 // chart={{
@@ -299,7 +290,6 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En Dollars"
-                loading={loaded}
                 percent={100}
                 total={fCurrency(summary.totalAmountUsd)}
                 // chart={{
@@ -311,7 +301,6 @@ export function PaiementListView() {
             <Grid size={{ xs: 6, md: 4 }}>
               <PaiementAnalytic
                 title="Total En GNF"
-                loading={loaded}
                 percent={100}
                 total={fGNF(summary.totalAmountGnf)}
                 // chart={{
@@ -356,7 +345,7 @@ export function PaiementListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            options={{ payment_method: ['TRANSFER', 'CHEQUE', 'DEPOSIT'] }}
+            options={{ payment_method: PaymentMethods }}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
           />
