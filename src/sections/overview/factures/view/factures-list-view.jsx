@@ -100,6 +100,7 @@ export function FactureListView() {
   const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
   const [openSecondDialog, setOpenSecondDialog] = useState(false);
+  const [selectedFilter , setSelectedFilter] = useState('number')
   const [pagination, setPagination] = useState({
     count: 0,
     next: null,
@@ -113,6 +114,7 @@ export function FactureListView() {
   const filters = useSetState({
     number: '',
     declaration_number:'',
+    company: '',
     service: [],
     status: 'all',
     date_before: null,
@@ -132,6 +134,7 @@ export function FactureListView() {
 
   const canReset =
     !!filters.state.number ||
+    !!filters.state.company ||
     !!filters.state.declaration_number ||
     filters.state.service.length > 0 ||
     filters.state.status !== 'all' ||
@@ -318,6 +321,7 @@ export function FactureListView() {
           offset: offset,
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
           ...(filters.state.number ? { number: filters.state.number } : {}),
+          ...(filters.state.company ? {company : filters.state.company} : {}),
           ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
@@ -346,6 +350,7 @@ export function FactureListView() {
   }, [table.page, 
     table.rowsPerPage, 
     filters.state.status , 
+    filters.state.company,
     filters.state.date_before, 
     filters.state.date_after , 
     filters.state.number, 
@@ -446,6 +451,8 @@ export function FactureListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
+            selectedFilter= {selectedFilter}
+            setSelectedFilter = {setSelectedFilter}
             options={{ services: tableData.map((option) => option.name) }}
           />
 
