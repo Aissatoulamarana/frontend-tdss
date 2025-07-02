@@ -228,6 +228,21 @@ function DeclarationRow({ row, isDarkMode }) {
     popover.onClose();
   };
 
+   const statusLabels = {
+    validated: 'Validée',
+   
+  };
+
+   const getStatusColor = (status) => {
+    switch (status) {
+      case 'validated':
+        return 'success';
+      
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <TableRow
       hover
@@ -254,11 +269,9 @@ function DeclarationRow({ row, isDarkMode }) {
         {row.nb_employees}
       </TableCell>
       <TableCell>
-        <Chip
-          label={row.status}
-          color={row.status === 'validated' ? 'success' : 'default'}
-          size="small"
-        />
+        <Label variant="soft" color={getStatusColor(row.status)}>
+          {statusLabels[row.status] || 'Inconnu'} 
+        </Label>
       </TableCell>
       <TableCell align="right">
         <IconButton
