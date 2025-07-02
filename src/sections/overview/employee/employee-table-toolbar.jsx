@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
 import Autocomplete from '@mui/material/Autocomplete';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useCallback, useRef, useState, useEffect } from 'react';
 
 import { Iconify } from 'src/components/iconify';
@@ -63,8 +64,8 @@ export function EmployeeTableToolbar({
     }
   };
 
-   // Charger les suggestions de fonctions
-   const fetchJobSuggestions = useCallback(async (searchTerm = '') => {
+  // Charger les suggestions de fonctions
+  const fetchJobSuggestions = useCallback(async (searchTerm = '') => {
     try {
       setLoading(true);
       const response = await axios.get(API.listFonctions(), {
@@ -99,15 +100,18 @@ export function EmployeeTableToolbar({
 
   // Gérer la sélection d'une fonction
   const handleJobSelect = (event, newValue) => {
+    console.log('Fonction sélectionnée:', newValue);
     onResetPage();
     filters.setState({
       ...filters.state,
       job: newValue ? [newValue] : []
     });
+    console.log('Nouvel état des filtres:', { ...filters.state, job: newValue ? [newValue] : [] });
   };
 
   // Gérer la recherche lors de la saisie
   const handleJobInputChange = (event, newInputValue) => {
+    console.log('Recherche de fonction:', newInputValue);
     fetchJobSuggestions(newInputValue);
   };
 
@@ -144,34 +148,39 @@ export function EmployeeTableToolbar({
       sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
     >
       <Autocomplete
-          options={jobSuggestions}
-          getOptionLabel={(option) => option.name || ''}
-          loading={loading}
-          onChange={handleJobSelect}
-          fullWidth
-          onInputChange={handleJobInputChange}
-          value={filters.state.job?.[0] || null}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Rechercher une fonction"
-              variant="outlined"
-              fullWidth
-
-              placeholder="Tapez pour rechercher..."
-              InputProps={{
-                ...params.InputProps,
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Iconify icon="mdi:briefcase" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          )}
-          noOptionsText="Aucune fonction trouvée"
-          loadingText="Chargement..."
-        />
+        options={jobSuggestions}
+        getOptionLabel={(option) => option.name || ''}
+        loading={loading}
+        onChange={handleJobSelect}
+        fullWidth
+        onInputChange={handleJobInputChange}
+        value={filters.state.job?.[0] || null}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Filtrer par fonction"
+            variant="outlined"
+            fullWidth
+            placeholder="Tapez pour rechercher une fonction..."
+            InputProps={{
+              ...params.InputProps,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Iconify icon="mdi:briefcase" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <>
+                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </>
+              ),
+            }}
+          />
+        )}
+        noOptionsText="Aucune fonction trouvée"
+        loadingText="Chargement..."
+      />
 
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
         <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} ref={inputRef}>

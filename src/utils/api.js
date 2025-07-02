@@ -160,6 +160,8 @@ const API = {
   },
   getLastValidatedDeclarations: () => `${BASE_URL}/declarations/last-validated/`,
 
+  getEcheances: () => `${BASE_URL}/factures/echeances/`,
+
 };
 
 export default API;

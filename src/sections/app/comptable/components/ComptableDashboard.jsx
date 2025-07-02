@@ -14,16 +14,23 @@ import {
   AlertTitle,
   IconButton,
 } from '@mui/material';
+import { Scrollbar } from 'src/components/scrollbar';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useAuthContext } from 'src/auth/hooks/use-auth-context';
 import { Iconify } from 'src/components/iconify';
 import { useResponsive } from 'src/hooks/use-responsive';
 import ComptableService from 'src/services/comptableService';
 import { CurrencySelector, CURRENCIES } from 'src/components/CurrencySelector';
+import { fDate } from 'src/utils/format-time';
+import { fCurrency } from 'src/utils/format-number';
+import { fEuro } from 'src/utils/format-number';
+import { fGNF } from 'src/utils/format-number';
 
 import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
 import { ComptableWidgetSummary } from './ComptableWidgetSummary';
+import API from 'src/utils/api';
+import axios from 'axios';
 
 // ----------------------------------------------------------------------
 
@@ -74,6 +81,9 @@ export function ComptableDashboard() {
   const [chartRange, setChartRange] = useState('month');
   const [declarations, setDeclarations] = useState([]);
   const [currency, setCurrency] = useState('XOF');
+  const [echeances, setEcheances] = useState([]);
+  const [loadingEcheances, setLoadingEcheances] = useState(true);
+  const [errorEcheances, setErrorEcheances] = useState(null);
 
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
@@ -278,6 +288,27 @@ export function ComptableDashboard() {
       setLoading((prev) => ({ ...prev, summary: false }));
     }
   }, []);
+
+    // Fonction pour charger les échéances
+  const fetchEcheances = async () => {
+    try {
+      setLoadingEcheances(true);
+      const response = await axios.get(API.getEcheances());
+      // Prendre les 5 premières échéances
+      setEcheances(response.data.slice(0, 5));
+    } catch (err) {
+      console.error('Erreur lors du chargement des échéances:', err);
+      setErrorEcheances('Impossible de charger les échéances');
+    } finally {
+      setLoadingEcheances(false);
+    }
+  };
+
+    // Appel au chargement du composant
+  useEffect(() => {
+    fetchEcheances();
+  }, []);
+
 
   // Recuper les declarations dernierement validated
   const fetchLastValidatedDeclarations = useCallback(async () => {
@@ -647,8 +678,9 @@ export function ComptableDashboard() {
           </Card>
         </Grid>
 
+        
         {/* Tableau des déclarations récentes */}
-        <Grid item xs={12}>
+        <Grid item xs={8} md={6}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -684,7 +716,7 @@ export function ComptableDashboard() {
         </Grid>
 
         {/* Échéances à venir */}
-        {/* <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={6}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -693,83 +725,66 @@ export function ComptableDashboard() {
                   size="small"
                   color="inherit"
                   endIcon={<Iconify icon="mdi:calendar-month" />}
-                  onClick={() => console.log('Ouvrir le calendrier')}
+                  onClick={fetchEcheances}
+                  disabled={loadingEcheances}
                 >
-                  Calendrier
+                  {loadingEcheances ? 'Chargement...' : 'Actualiser'}
                 </Button>
               </Stack>
             </Box>
             <Divider />
-            <Scrollbar sx={{ maxHeight: 400 }}>
+            <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
               <Stack spacing={0}>
-                {UPCOMING_DUE_DATES.map((item) => (
-                  <Box
-                    key={item.id}
-                    onClick={() => handleRowClick(item.id)}
-                    sx={{
-                      p: 2,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        bgcolor: 'action.hover',
-                      },
-                    }}
-                  >
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          bgcolor: item.status === 'overdue' ? 'error.lighter' : 'primary.lighter',
-                          color: item.status === 'overdue' ? 'error.main' : 'primary.main',
-                        }}
-                      >
-                        <Iconify
-                          icon={item.status === 'overdue' ? 'mdi:alert' : 'mdi:calendar-clock'}
-                          width={20}
-                        />
-                      </Box>
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography variant="subtitle2" noWrap>
-                          {item.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          Échéance: {fDate(item.dueDate, 'dd MMM yyyy')}
-                        </Typography>
-                      </Box>
-                      <Box sx={{ textAlign: 'right' }}>
-                        <Typography variant="subtitle2">
-                          {formatAmount(item.amount)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: item.status === 'overdue' ? 'error.main' : 'text.secondary',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                          }}
-                        >
-                          {item.status === 'overdue' ? (
-                            <>
-                              <Iconify icon="mdi:alert" width={12} sx={{ mr: 0.5 }} />
-                              En retard ({Math.abs(item.daysLeft)}j)
-                            </>
-                          ) : (
-                            `Dans ${item.daysLeft}j`
-                          )}
-                        </Typography>
-                      </Box>
-                    </Stack>
+                {loadingEcheances ? (
+                  <Box sx={{ p: 3, textAlign: 'center' }}>
+                    <CircularProgress size={24} />
                   </Box>
-                ))}
+                ) : errorEcheances ? (
+                  <Alert severity="error" sx={{ m: 2 }}>
+                    {errorEcheances}
+                  </Alert>
+                ) : echeances.length === 0 ? (
+                  <Typography variant="body2" sx={{ p: 3, color: 'text.secondary', textAlign: 'center' }}>
+                    Aucune échéance à venir
+                  </Typography>
+                ) : (
+                  echeances.map((echeance) => (
+                    <Box
+                      key={echeance.slug}
+                      sx={{
+                        p: 2,
+                        '&:not(:last-child)': {
+                          borderBottom: (theme) => `dashed 1px ${theme.palette.divider}`,
+                        },
+                        '&:hover': {
+                          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                        },
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" justifyContent="space-between">
+                        <Box>
+                          <Typography variant="subtitle2" noWrap>
+                            Facture #{echeance.number}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}
+                          >
+                            Échéance: {new Date(echeance.due_date).toLocaleDateString()}
+                            {echeance.days_between && ` (${echeance.days_between} jours)`}
+                          </Typography>
+                        </Box>
+                        <Typography variant="subtitle2">
+                          {fCurrency(parseFloat(echeance.amount))}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  ))
+                )}
               </Stack>
-            </Scrollbar>
+            </Box>
             <Divider />
-            <Box sx={{ p: 2, textAlign: 'center' }}>
+            {/* <Box sx={{ p: 2, textAlign: 'center' }}>
               <Button
                 size="small"
                 color="inherit"
@@ -778,9 +793,9 @@ export function ComptableDashboard() {
               >
                 Ajouter un rappel
               </Button>
-            </Box>
+            </Box> */}
           </Card>
-        </Grid> */}
+        </Grid>
       </Grid>
     </Container>
   );
