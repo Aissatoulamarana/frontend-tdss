@@ -98,17 +98,17 @@ export function PaiementTableToolbar({
               filters.setState({ payment_method: newValue });
             }}
             input={<OutlinedInput label="Methode Paiement" />}
-            renderValue={(selected) => selected.map((value) => value).join(', ')}
+            // renderValue={(selected) => selected.map((value) => value).join(', ')}
             inputProps={{ id: 'invoice-filter-service-select-label' }}
             sx={{ textTransform: 'capitalize' }}
           >
             {options?.payment_method?.map((option) => (
               <MenuItem key={option.id} value={option.id}>
-                <Checkbox
+                {/* <Checkbox
                   disableRipple
                   size="small"
-                  checked={filters.state.payment_method.includes(option)}
-                />
+                  checked={filters.state.payment_method.includes(option.label)}
+                /> */}
                 {option.label}
               </MenuItem>
             ))}
