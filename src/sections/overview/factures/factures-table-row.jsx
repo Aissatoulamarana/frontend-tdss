@@ -198,19 +198,20 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {user?.type_name === 'Caissier' && row.status === 'unpaid' && (
-            <MenuItem
-              color={payeurForm.value ? 'inherit' : 'default'}
-              onClick={() => {
-                // confirm.onTrue();
-                popover.onClose();
-                payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
-              }}
-            >
-              <Iconify icon="mdi:credit-card" />
-              Payer
-            </MenuItem>
-          )}
+          {(user?.type_name === 'Caissier' || user?.type_name === 'Comptable') &&
+            row.status === 'unpaid' && (
+              <MenuItem
+                color={payeurForm.value ? 'inherit' : 'default'}
+                onClick={() => {
+                  // confirm.onTrue();
+                  popover.onClose();
+                  payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
+                }}
+              >
+                <Iconify icon="mdi:credit-card" />
+                Payer
+              </MenuItem>
+            )}
         </MenuList>
       </CustomPopover>
 

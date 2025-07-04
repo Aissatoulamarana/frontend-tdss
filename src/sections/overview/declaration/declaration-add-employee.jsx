@@ -58,6 +58,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const loadingSend = useBoolean();
   const renewalModal = useBoolean();
 
+  
   // Utilisation du schéma global pour la validation
   const methods = useForm({
     mode: 'all',
