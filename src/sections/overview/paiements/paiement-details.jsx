@@ -78,6 +78,12 @@ export function PaiementDetails({ payment, user }) {
     return `${Number(amount).toLocaleString()} GNF`;
   };
 
+   const methodsLabels = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Espèces',
+  };
+
   const formatDate = (ds) => {
     const d = new Date(ds);
     const j = String(d.getDate()).padStart(2, '0');
@@ -186,9 +192,9 @@ export function PaiementDetails({ payment, user }) {
                       component="span"
                       sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
                     >
-                      Méthode :
+                      Méthode de paiement :
                     </Typography>{' '}
-                    {payment?.payment_method}
+                      {methodsLabels[payment?.payment_method]}
                   </Typography>
                 </>
               )}

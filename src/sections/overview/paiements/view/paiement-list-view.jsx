@@ -195,7 +195,7 @@ export function PaiementListView() {
 
   const PaymentMethods = [
     { id: 'transfer', label: 'Virement' },
-    { id: 'deposit', label: 'Dêpot' },
+    { id: 'deposit', label: 'Espèces' },
     { id: 'cheque', label: 'Chèques' },
   ]
   
@@ -355,6 +355,7 @@ export function PaiementListView() {
               filters={filters}
               onResetPage={table.onResetPage}
               totalResults={pagination.count}
+              options={{ payment_method: PaymentMethods }}
               sx={{ p: 2.5, pt: 0 }}
             />
           )}

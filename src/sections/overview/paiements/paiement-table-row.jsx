@@ -38,7 +38,7 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
   const methodsLabels = {
     transfer: 'Virement',
     cheque: 'Chèque',
-    deposit: 'Dépôt',
+    deposit: 'Espèces',
   };
 
   return (
