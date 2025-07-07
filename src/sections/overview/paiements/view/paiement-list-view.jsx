@@ -79,6 +79,7 @@ export function PaiementListView() {
   const [currentTab, setCurrentTab] = useState('all');
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [loader , setLoader] = useState(false); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
     const [pagination, setPagination] = useState({
       count: 0,
@@ -95,6 +96,7 @@ export function PaiementListView() {
    useEffect(() => {
     const fetchSummary = async () => {
       try {
+        setLoader(true);
         // --- 1) Récupérer le count global ---
         const countRes = await axios.get(API.listPaiments(), {
           params: { limit: 1 },
@@ -121,8 +123,9 @@ export function PaiementListView() {
           totalAmountGnf,
           totalAmountUsd,
         });
-        console.log('montant en gnf', summary.totalAmountGnf);
-        console.log('montant en USD', summary.totalAmountUsd)
+        setLoader(false);
+        // console.log('montant en gnf', summary.totalAmountGnf);
+        // console.log('montant en USD', summary.totalAmountUsd)
       } catch (err) {
         console.error('Erreur summary paiements', err);
         toast.error('Impossible de charger le total des paiements');
@@ -280,6 +283,7 @@ export function PaiementListView() {
                 title="Nombres Total Paiements"
                 total={summary.totalCount}
                 percent={100}
+                loading={loader}
                 // chart={{
                 //   colors: [theme.vars.palette.info.main],
                 //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -292,6 +296,7 @@ export function PaiementListView() {
                 title="Total En Dollars"
                 percent={100}
                 total={fCurrency(summary.totalAmountUsd)}
+                loading={loader}
                 // chart={{
                 //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 //   series: [15, 18, 12, 51, 68, 11, 39, 37],
@@ -303,6 +308,7 @@ export function PaiementListView() {
                 title="Total En GNF"
                 percent={100}
                 total={fGNF(summary.totalAmountGnf)}
+                loading={loader}
                 // chart={{
                 //   colors: [theme.vars.palette.success.main],
                 //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
