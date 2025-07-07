@@ -22,9 +22,6 @@ import { useResponsive } from 'src/hooks/use-responsive';
 import ComptableService from 'src/services/comptableService';
 import { CurrencySelector, CURRENCIES } from 'src/components/CurrencySelector';
 import { fDate } from 'src/utils/format-time';
-import { fCurrency } from 'src/utils/format-number';
-import { fEuro } from 'src/utils/format-number';
-import { fGNF } from 'src/utils/format-number';
 
 import { ComptableDeclarationTable } from './ComptableTables';
 import { ComptableFacturationChart } from './ComptableCharts';
