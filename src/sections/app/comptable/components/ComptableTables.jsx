@@ -136,7 +136,7 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
             direction="row"
             alignItems="center"
             spacing={1}
-            sx={{ color: isDarkMode ? theme.palette.background.paper : theme.palette.common.white }}
+            sx={{ color: isDarkMode ? theme.palette.background.paper : theme.palette.common.dark }}
           >
             <Iconify icon="mdi:clipboard-text-clock" width={24} />
             <Typography variant="h6">{title || 'Déclarations à facturer'}</Typography>
@@ -156,6 +156,18 @@ export function ComptableDeclarationTable({ title, declarations, loading }) {
             color: isDarkMode ? theme.palette.common.white : theme.palette.text.primary,
           },
         }}
+
+        /* action={
+          <Button
+            size="medium"
+            startIcon={<Iconify icon="mdi:file-document-plus" />}
+            variant="contained"
+            color="primary"
+          >
+            Facturer tout
+          </Button>
+        } */
+
       />
       <TableContainer sx={{ overflow: 'unset' }}>
         <Scrollbar>

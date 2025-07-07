@@ -29,7 +29,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import API from 'src/utils/api';
-import { fIsAfter, fIsBetween } from 'src/utils/format-time';
+import { fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
@@ -119,7 +119,7 @@ export function DeclarationListView() {
     ends_at: null,
   });
 
-  const dateError = fIsAfter(filters.state.starts_at, filters.state.ends_at);
+  const dateError = fIsBetween(filters.state.starts_at, filters.state.ends_at);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -525,35 +525,41 @@ export function DeclarationListView() {
   );
 
   useEffect(() => {
-  // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
-  const fetchDeclarations = async () => {
-    setLoading(true);
-    try {
-      const offset = table.page * table.rowsPerPage;
-      const params = {
-        limit: table.rowsPerPage,
-        offset: offset,
-        ...(filters.state.company
-          ? { company: filters.state.company }
-          : filters.state.title
-            ? { title: filters.state.title }
-            : filters.state.passport_number
-              ? { passport_number: filters.state.passport_number }
-              :filters.state.number
-                ? { number: filters.state.number }
-              : {}
-        ),
-
+    // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
+    const fetchDeclarations = async () => {
+      setLoading(true);
+      try {
+        const offset = table.page * table.rowsPerPage;
+        const params = {
+          limit: table.rowsPerPage,
+          offset: offset,
+          ...(filters.state.company
+            ? { company: filters.state.company }
+            : filters.state.title
+              ? { title: filters.state.title }
+              : filters.state.passport_number
+                ? { passport_number: filters.state.passport_number }
+                : {}
+          ),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-          ...(filters.state.starts_at && filters.state.ends_at && !dateError
-            ? {
-                starts_at: dayjs(filters.state.starts_at).format('YYYY-MM-DD '),
-                ends_at: dayjs(filters.state.ends_at).format('YYYY-MM-DD '),
-              }
-            : {}),
         };
 
+        // Gestion des dates selon la spécification de l'API
+        if (filters.state.starts_at) {
+          // Format: YYYY-MM-DD
+          params.starts_at = dayjs(filters.state.starts_at).format('YYYY-MM-DD');
+        }
+        
+        if (filters.state.ends_at) {
+          // Format: YYYY-MM-DD
+          // On ajoute 1 jour et on soustrait 1 milliseconde pour inclure toute la journée
+          const endOfDay = dayjs(filters.state.ends_at).add(1, 'day').subtract(1, 'millisecond');
+          params.ends_at = endOfDay.format('YYYY-MM-DD');
+        }
+
+        console.log('Fetching declarations with params:', params);
         const response = await axios.get(API.listDeclarations(), { params });
+        
         setTableData(response.data.results);
         setCount(response.data.count);
         setPagination({
@@ -562,8 +568,9 @@ export function DeclarationListView() {
           previous: response.data.previous,
         });
       } catch (err) {
+        console.error('Error fetching declarations:', err);
         setError(err.message || 'Erreur lors du chargement des données.');
-        const errormessage = err?.message || err?.details || err?.error;
+        const errormessage = err?.response?.data?.detail || err?.message || 'Une erreur est survenue';
         toast.error(errormessage);
       } finally {
         setLoading(false);
@@ -578,12 +585,14 @@ export function DeclarationListView() {
     table.page, 
     table.rowsPerPage, 
     filters.state.number,
+
     filters.state.company, 
     filters.state.title, 
     filters.state.passport_number, 
     filters.state.status, 
     filters.state.starts_at, 
-    filters.state.ends_at]);
+    filters.state.ends_at
+  ]);
 
 
   if (loading) {
@@ -883,7 +892,7 @@ export function DeclarationListView() {
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, status, fonction, startDate, endDate } = filters;
+  const { name, status, fonction, starts_at, ends_at } = filters;
 
   // Tri des données
   const stabilizedThis = inputData?.map((el, index) => [el, index]);
@@ -895,7 +904,6 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   inputData = stabilizedThis?.map((el) => el[0]);
 
   // Filtrage par numéro de déclaration ou type de déclaration
-  // Filtrage par numéro de déclaration ou par type via le mot-clé
   if (name) {
     inputData = inputData?.filter(
       (declaration) =>
@@ -909,7 +917,7 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
     inputData = inputData?.filter((declaration) => declaration?.status === status);
   }
 
-  // Filtrage par fonction (en s'assurant que declaration.items existe)
+  // Filtrage par fonction (en s'assurant que declaration.employees existe)
   if (fonction?.length) {
     inputData = inputData?.filter((declaration) =>
       (declaration?.employees || []).some((filterItem) => fonction?.includes(filterItem?.fonction))
@@ -918,9 +926,9 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   // Filtrage par date
   if (!dateError) {
-    if (startDate && endDate) {
+    if (starts_at && ends_at) {
       inputData = inputData?.filter((declaration) =>
-        fIsBetween(declaration?.createDate, startDate, endDate)
+        fIsBetween(declaration?.createDate, starts_at, ends_at)
       );
     }
   }
