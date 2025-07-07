@@ -712,7 +712,7 @@ export function ComptableDashboard() {
 
         
         {/* Tableau des déclarations récentes */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={9}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -748,7 +748,7 @@ export function ComptableDashboard() {
         </Grid>
 
         {/* Échéances à venir */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={3}>
           <Card>
             <Box sx={{ p: 3, pb: 2 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -798,6 +798,9 @@ export function ComptableDashboard() {
                           <Typography variant="subtitle2" noWrap>
                             Facture #{echeance.number}
                           </Typography>
+                          <Typography variant="caption">
+                            Montant : {fCurrency(parseFloat(echeance.amount))}
+                          </Typography>
                           <Typography
                             variant="caption"
                             sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}
@@ -806,9 +809,7 @@ export function ComptableDashboard() {
                             {echeance.days_between && ` (${echeance.days_between} jours)`}
                           </Typography>
                         </Box>
-                        <Typography variant="subtitle2">
-                          {fCurrency(parseFloat(echeance.amount))}
-                        </Typography>
+                        
                       </Stack>
                     </Box>
                   ))
