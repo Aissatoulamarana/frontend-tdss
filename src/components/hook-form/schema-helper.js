@@ -1,7 +1,8 @@
-import dayjs from 'dayjs';
+import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
 import { z as zod } from 'zod';
 
 // ----------------------------------------------------------------------
+dayjs.locale('fr'); // Set the default locale to French
 
 export const schemaHelper = {
   /**

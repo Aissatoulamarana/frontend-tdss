@@ -143,9 +143,9 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
       });
 
       // Ne pas définir manuellement le Content-Type pour laisser le navigateur gérer les délimitations
-      const response = await axios.patch(
+      const response = await axios.put(
         API.UpdateEmploye(dec_slug, currentEmployee?.slug),
-        formData
+        data
       );
 
       if (response) {

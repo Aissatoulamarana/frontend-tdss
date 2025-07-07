@@ -55,7 +55,13 @@ import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationTableToolbar } from '../declaration-table-toolbar';
 
 import { useMockedUser } from 'src/auth/hooks';
-import dayjs from 'dayjs';
+
+import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
+dayjs.locale('fr'); // Set the default locale to French
+
+
+import { number } from 'prop-types';
+
 
 // ----------------------------------------------------------------------
 
@@ -91,7 +97,7 @@ export function DeclarationListView() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
-  const [selectedFilter, setSelectedFilter] = useState('title'); // options de recherche
+  const [selectedFilter, setSelectedFilter] = useState('number'); // options de recherche
   const [count, setCount] = useState();
 
   const [pagination, setPagination] = useState({
@@ -103,7 +109,7 @@ export function DeclarationListView() {
   const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
 
   const filters = useSetState({
-    name: '', // mot-clé pour filtrer par numéro ou type de déclaration
+    number: '', // mot-clé pour filtrer par numéro ou type de déclaration
     fonction: [],
     title: '',
     company: '',
@@ -125,7 +131,8 @@ export function DeclarationListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.type ||
+    !!filters.state.number ||
+    // !!filters.state.type ||
     !!filters.state.title ||
     !!filters.state.company ||
     !!filters.state.passport_number ||
@@ -573,9 +580,12 @@ export function DeclarationListView() {
     // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
 
     fetchDeclarations();
+
   }, [
     table.page, 
     table.rowsPerPage, 
+    filters.state.number,
+
     filters.state.company, 
     filters.state.title, 
     filters.state.passport_number, 
@@ -583,6 +593,7 @@ export function DeclarationListView() {
     filters.state.starts_at, 
     filters.state.ends_at
   ]);
+
 
   if (loading) {
     console.info('Loading declarations...');
