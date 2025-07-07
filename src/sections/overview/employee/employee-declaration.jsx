@@ -150,19 +150,19 @@ function SingleDeclaration({ declaration }) {
             </Box>
 
             {/* Entreprise */}
-            <Box display="flex" alignItems="center" mx={2}>
+            {/* <Box display="flex" alignItems="center" mx={2}>
               <Iconify
                 icon="mdi:office-building"
                 width={28}
                 sx={{ mr: 1, color: 'primary.main' }}
               />
-              {/* <Box>
+              <Box>
                 <Typography sx={{ fontWeight: 600 }}>Entreprise</Typography>
                 <Typography variant="body2" color="text.secondary">
                   {company}
                 </Typography>
-              </Box> */}
-            </Box>
+              </Box>
+            </Box> */}
 
             {/* Date de création */}
             <Box display="flex" alignItems="center" mx={2}>
