@@ -66,10 +66,9 @@ export function DeclarationSummary({ title, percent, total, loading, chart = {},
          {loading ? (
           <CircularProgress size={32} sx={{ my: 2 }} />
         ) : (
-        <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{fNumber(total)}</Box>
+         <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{fNumber(total)}</Box>
          )}
-        {/* <Box sx={{ typography: 'subtitle2' }}>{title}</Box>
-        <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{fNumber(total)}</Box> */}
+
         {renderTrending}
       </Box>
 

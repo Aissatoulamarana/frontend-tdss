@@ -152,8 +152,9 @@ export function DeclarationListView() {
       .then((res) => res.data.count);
 
   useEffect(() => {
+    setLoader(true),
     Promise.all([
-      setLoader(true),
+      
       fetchTotalCount(),
       fetchCountByStatus('unsubmitted'),
       fetchCountByStatus('submitted'),
