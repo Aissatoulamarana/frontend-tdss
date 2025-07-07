@@ -97,6 +97,7 @@ export function FactureListView() {
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [loader , setLaoder] = useState(false) // Etat pour indiquer le chargement des données sur les cards
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
@@ -151,12 +152,14 @@ export function FactureListView() {
     axios.get(API.listFactures(), { params: { limit: 1, status } }).then((res) => res.data.count);
 
   useEffect(() => {
+    setLaoder(true)
     Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
       ([totalCount, paidCount, unpaidCount]) => {
         setSummary({
           totalCount,
           countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
         });
+        setLaoder(false)
       }
     );
   }, []);
@@ -383,6 +386,7 @@ export function FactureListView() {
               title="Total"
               total={summary.totalCount}
               percent={100}
+              loading={loader}
               chart={{
                 colors: [theme.vars.palette.info.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -395,6 +399,7 @@ export function FactureListView() {
               title="Payées"
               percent={getPercentByStatus('paid')}
               total={getInvoiceLength('paid')}
+              loading={loader}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
@@ -406,6 +411,7 @@ export function FactureListView() {
               title="En attente"
               percent={getPercentByStatus('unpaid')}
               total={getInvoiceLength('unpaid')}
+              loading={loader}
               chart={{
                 colors: [theme.vars.palette.error.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
