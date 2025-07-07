@@ -131,26 +131,26 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
                <>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12 , md:6}}>
-                <Field.Text label="Nom" name="payer_last" />
+                <Field.Text label="Nom *" name="payer_last" />
               </Grid>
               <Grid item size={{ xs: 12 , md:6}}>
-                <Field.Text label="Prénom" name="payer_first" />
+                <Field.Text label="Prénom *" name="payer_first" />
               </Grid>
               <Grid item size={{ xs: 12 , md:6}}>
-                <Field.Text label="Email" name="payer_email" />
+                <Field.Text label="Email *" name="payer_email" />
               </Grid>
               <Grid item size={{ xs: 12 , sm:6}}>
-                <Field.Phone label="Téléphone" name="payer_phone" />
+                <Field.Phone label="Téléphone *" name="payer_phone" />
               </Grid>
               <Grid item size={{ xs: 12 , md:6}}>
-                <Field.Text label="Adresse" name="payer_address" />
+                <Field.Text label="Adresse *" name="payer_address" />
               </Grid>
               <Grid item size={{ xs: 12 , md:6}}>
                 <Field.Select
                   fullWidth
                   // size="small"
                   name="payer_country_origin"
-                  label="Nationalité"
+                  label="Nationalité "
                   placeholder="Sélectionnez un pays"
                   inputlabelprops={{ shrink: true }}
                 >
@@ -213,7 +213,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
       >
         <Grid container spacing={2}>
           <Grid item size={{ xs: 12 , md:12}}>
-            <Field.Select name="payment_devise" label="Devise">
+            <Field.Select name="payment_devise" label="Devise *">
               {devises.map((d) => (
                 <MenuItem key={d.slug} value={d.slug}>
                   {d.name}
@@ -222,7 +222,7 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
             </Field.Select>
           </Grid>
           <Grid item size={{ xs: 12 , md:12}}>
-            <Field.Select name="payment_payment_method" label="Mode de Paiement">
+            <Field.Select name="payment_payment_method" label="Mode de Paiement *">
               {paymentTypes.map((t) => (
                 <MenuItem key={t.id} value={t.id}>
                   {t.label}
