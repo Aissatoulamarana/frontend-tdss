@@ -96,6 +96,7 @@ export function DeclarationListView() {
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [loader , setLoader] = useState(false) // Etat pour indiquer les chargements sur les cards
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedFilter, setSelectedFilter] = useState('number'); // options de recherche
   const [count, setCount] = useState();
@@ -151,7 +152,9 @@ export function DeclarationListView() {
       .then((res) => res.data.count);
 
   useEffect(() => {
+    setLoader(true),
     Promise.all([
+      
       fetchTotalCount(),
       fetchCountByStatus('unsubmitted'),
       fetchCountByStatus('submitted'),
@@ -169,6 +172,7 @@ export function DeclarationListView() {
           rejected: rejectCount,
         },
       });
+      setLoader(false);
     });
   }, [user]);
 
@@ -207,6 +211,7 @@ export function DeclarationListView() {
           title="Total"
           total={summary.totalCount}
           percent={100}
+          loading={loader}
           chart={{
             colors: [theme.vars.palette.info.main],
             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -221,6 +226,7 @@ export function DeclarationListView() {
           title="Validées"
           total={getDeclarationLength('validated')}
           percent={getPercentByStatus('validated')}
+          loading={loader}
           chart={{
             colors: [theme.vars.palette.success.main],
             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -235,6 +241,7 @@ export function DeclarationListView() {
           title="Brouillon"
           total={getDeclarationLength('unsubmitted')}
           percent={getPercentByStatus('unsubmitted')}
+          loading={loader}
           chart={{
             colors: [theme.vars.palette.warning.main],
             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -249,6 +256,7 @@ export function DeclarationListView() {
           title="Rejetées"
           total={getDeclarationLength('rejected')}
           percent={getPercentByStatus('rejected')}
+          loading={loader}
           chart={{
             colors: [theme.vars.palette.error.main],
             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -263,6 +271,7 @@ export function DeclarationListView() {
           title="Facturées"
           total={getDeclarationLength('billed')}
           percent={getPercentByStatus('billed')}
+          loading={loader}
           chart={{
             colors: [theme.vars.palette.primary.main],
             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -277,6 +286,7 @@ export function DeclarationListView() {
           title="Soumises"
           total={getDeclarationLength('submitted')}
           percent={getPercentByStatus('submitted')}
+          loading={loader}
           chart={{
             colors: [theme.vars.palette.secondary.main],
             categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
