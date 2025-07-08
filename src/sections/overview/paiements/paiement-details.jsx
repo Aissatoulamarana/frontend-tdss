@@ -183,7 +183,7 @@ export function PaiementDetails({ payment, user }) {
                 </Typography>{' '}
                 {payment?.facture_number}
               </Typography>
-              <Typography>Facture slug : {payment?.facture_slug}</Typography>
+              {/* <Typography>Facture slug : {payment?.facture_slug}</Typography> */}
               {user?.type_name === 'Admin' && (
                 <>
                   <Typography
