@@ -1,3 +1,5 @@
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
@@ -46,6 +48,7 @@ const Logo = styled('img')({
 
 export function PaiementDetails({ payment, user }) {
   const componentRef = useRef();
+  const router = useRouter();
   const [qrUrl, setQrUrl] = useState('');
 
   const afficherMontant = (montant) => {
@@ -90,6 +93,16 @@ export function PaiementDetails({ payment, user }) {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const a = d.getFullYear();
     return `${j}/${m}/${a}`;
+  };
+
+  const handleViewFactureDetails = () => {
+    const factureSlug = payment?.facture_slug;
+    console.log(factureSlug); 
+    if (!factureSlug) {
+      toast.error("Aucun slug de facture trouvé pour ce paiement");
+      return;
+    }
+    router.push(paths.dashboard.factures.details(factureSlug));
   };
 
   return (
@@ -163,12 +176,14 @@ export function PaiementDetails({ payment, user }) {
               >
                 <Typography
                   component="span"
-                  sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                  sx={{ fontWeight: 700, cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' }, fontSize: '0.85rem' }}
+                  onClick={handleViewFactureDetails}
                 >
                   Facture N° :
                 </Typography>{' '}
                 {payment?.facture_number}
               </Typography>
+              <Typography>Facture slug : {payment?.facture_slug}</Typography>
               {user?.type_name === 'Admin' && (
                 <>
                   <Typography
