@@ -72,7 +72,7 @@ const useStyles = () =>
         statsRow: {
           flexDirection: 'row',
           justifyContent: 'space-between',
-          marginVertical: 12,
+          marginVertical: 10,
         },
         statBox: {
           flex: 1,
@@ -98,7 +98,7 @@ const useStyles = () =>
           borderColor: '#ddd',
           borderRadius: 4,
           overflow: 'hidden',
-          marginBottom: 20,  
+          marginBottom: 12,  
         },
         tableRow: {
           flexDirection: 'row',
@@ -207,7 +207,7 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
 
         {/* Tableau */}
         <View style={styles.table}>
-          <View style={[styles.tableRow, styles.tableHeader]}>
+          <View style={[styles.tableRow, styles.tableHeader]} >
             {['N°', 'Passeport', 'Nom', 'Prénom',  'Fonction', 'Catégorie', 'Type'].map((h, i) => (
               <Text
                 key={i}
@@ -221,7 +221,7 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
             ))}
           </View>
           {employees?.map((emp, i) => (
-            <View key={i} style={styles.tableRow} wrap={false}>
+            <View key={i} style={styles.tableRow} wrap={false} >
               <Text style={[styles.cell, styles.firtColumn]}>{i + 1}</Text>
               <Text style={styles.cell}>{emp?.passport_number}</Text>
               <Text style={styles.cell}>{emp?.first}</Text>
