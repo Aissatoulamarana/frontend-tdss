@@ -111,7 +111,7 @@ export function PaiementListView() {
 
         // --- 3) Somme des montants en GNF ---
         const totalAmountGnf = sumBy(allPaiements, (p) => p.amount);
-        console.log('montant total', totalAmountGnf);
+        // console.log('montant total', totalAmountGnf);
 
         // --- 4) Conversion GNF → USD (taux fixe ici) ---
         const GNF_PER_USD = 9200;
