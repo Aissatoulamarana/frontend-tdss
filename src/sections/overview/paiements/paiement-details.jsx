@@ -97,7 +97,7 @@ export function PaiementDetails({ payment, user }) {
 
   const handleViewFactureDetails = () => {
     const factureSlug = payment?.facture_slug;
-    console.log(factureSlug); 
+    // console.log(factureSlug); 
     if (!factureSlug) {
       toast.error("Aucun slug de facture trouvé pour ce paiement");
       return;
