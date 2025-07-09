@@ -567,7 +567,7 @@ export function DeclarationListView() {
           params.ends_at = endOfDay.format('YYYY-MM-DD');
         }
 
-        console.log('Fetching declarations with params:', params);
+        // console.log('Fetching declarations with params:', params);
         const response = await axios.get(API.listDeclarations(), { params });
         
         setTableData(response.data.results);
