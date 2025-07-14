@@ -47,10 +47,8 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
   };
 
   const handleDetailsFactures = () => {
-    // console.log(row?.facture_slug);
     const factureSlug = row?.facture_slug;
     if (!factureSlug) {
-      console.error('Aucun slug de facture trouvé pour cette ligne');
       toast.error('Aucun slug de facture trouvé pour cette ligne');
       return;
     }
