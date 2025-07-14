@@ -179,13 +179,12 @@ useEffect(() => {
   }, [facture?.status]);
 
   const handleDetailsDeclaration = () => {
-    const factureSlug = facture?.declaration_slug;
-    if (!factureSlug) {
-      console.error('Le slug de la déclaration est manquant.');
+    const declarationSlug = facture?.declaration_slug;
+    if (!declarationSlug) {
       toast.error('Le slug de la déclaration est manquant.');
       return;
     }
-    router.push(paths.dashboard.declaration.details(factureSlug));
+    router.push(paths.dashboard.declaration.details(declarationSlug));
   }
 
   return (
