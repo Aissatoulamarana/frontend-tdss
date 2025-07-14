@@ -17,7 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import { Label } from 'src/components/label';
@@ -61,6 +61,7 @@ dayjs.locale('fr'); // Set the default locale to French
 
 
 import { number } from 'prop-types';
+import { set } from 'nprogress';
 
 
 // ----------------------------------------------------------------------
@@ -93,6 +94,7 @@ export function DeclarationListView() {
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
+  const billConfirm = useBoolean(); 
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
@@ -360,6 +362,17 @@ export function DeclarationListView() {
       toast.error(errorMessage);
     }
   };
+
+const handleBilledRows = useCallback(() => {
+    const updatedData = tableData.map((item) =>
+    table.selected.includes(item.slug)
+      ? { ...item, status: 'billed' }
+      : item
+  );
+  setTableData(updatedData);
+  toast.success('Facturation réussie !');
+  table.onSelectAllRows(false , [])
+}, [table, tableData]);
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -768,8 +781,8 @@ export function DeclarationListView() {
               action={
                 <Stack direction="row">
                   <Tooltip title="Facturer">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
+                    <IconButton color="primary" onClick={billConfirm.onTrue}>
+                      <Iconify icon="mdi:credit-card" />
                     </IconButton>
                   </Tooltip>
 
@@ -894,6 +907,30 @@ export function DeclarationListView() {
             }}
           >
             Supprimer
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={billConfirm.value}
+        onClose={billConfirm.onFalse}
+        title="Facturer"
+        content={
+          <>
+            Etes vous sûr de vouloir facturer <strong> {table.selected.length} </strong>{' '}
+            declarations?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              handleBilledRows();
+              billConfirm.onFalse();
+            }}
+          >
+            Facturer
           </Button>
         }
       />
