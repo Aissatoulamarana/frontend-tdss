@@ -17,7 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import { Label } from 'src/components/label';
@@ -94,8 +94,11 @@ export function DeclarationListView() {
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
+
   const confirmDownload = useBoolean();
   const downloadZip = useBoolean();
+
+  const billConfirm = useBoolean();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
@@ -107,6 +110,13 @@ export function DeclarationListView() {
   const [isLoadZip, setIsLoadZip] = useState(false);
 
   const [count, setCount] = useState();
+  const [totalCount, setTotalCount] = useState();
+  const [submitCount, setSubmitCount] = useState();
+  const [UnSubmitCount, setUnSubmitCount] = useState();
+  const [validCount, setValidCount] = useState();
+  const [rejectCount, setRejectCount] = useState();
+  const [billCount, setBillCount] = useState();
+
   const downloadMultiplePDF = useBoolean();
 
   const [pagination, setPagination] = useState({
@@ -114,8 +124,6 @@ export function DeclarationListView() {
     next: null,
     previous: null,
   });
-
-  const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
 
   const filters = useSetState({
     number: '', // mot-clé pour filtrer par numéro ou type de déclaration
@@ -151,39 +159,27 @@ export function DeclarationListView() {
 
   const notFound = pagination.count === 0 && canReset;
 
-  const fetchTotalCount = () =>
-    axios.get(API.listDeclarations(), { params: { limit: 1 } }).then((res) => res.data.count);
+  useEffect(() => {
+    const fetchStats = async () => {
+      setLoader(true);
+      try {
+        const { data } = await axios.get(API.statsDeclaration());
 
-  const fetchCountByStatus = (status) =>
-    axios
-      .get(API.listDeclarations(), { params: { limit: 1, status } })
-      .then((res) => res.data.count);
+        setTotalCount(data?.total_declarations);
+        setSubmitCount(data?.submitted);
+        setUnSubmitCount(data?.unsubmitted);
+        setValidCount(data?.validated);
+        setRejectCount(data?.rejected);
+        setBillCount(data?.billed);
+      } catch (err) {
+        toast.error('Erreur lors du chargement des stats', err);
+      } finally {
+        setLoader(false);
+      }
+    };
 
-  // useEffect(() => {
-  //   (setLoader(true),
-  //     Promise.all([
-  //       fetchTotalCount(),
-  // fetchCountByStatus('unsubmitted'),
-  // fetchCountByStatus('submitted'),
-  // fetchCountByStatus('validated'),
-  // fetchCountByStatus('billed'),
-  // fetchCountByStatus('rejected'),
-  // ]).then(
-  //   ([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
-  //     setSummary({
-  //       totalCount,
-  // countByStatus: {
-  //   unsubmitted: unsubmitCount,
-  //   submitted: submitCount,
-  //   validated: validatCount,
-  //   billed: billedCount,
-  //   rejected: rejectCount,
-  // },
-  //         });
-  //         setLoader(false);
-  //       }
-  //     ));
-  // }, [user]);
+    fetchStats();
+  }, []);
 
   const fetchEmployeesBySlug = async (slug) => {
     if (!slug) return [];
@@ -226,16 +222,10 @@ export function DeclarationListView() {
     );
   };
 
-  const getDeclarationLength = (status) => summary.countByStatus[status];
-
-  const getTotalAmount = (status) =>
-    sumBy(
-      tableData.filter((item) => item.status === status),
-      (declaration) => declaration.montant_facture
-    );
-
-  // const getPercentByStatus = (status) => (useDeclarationCount(status) / pagination.count) * 100;
-  const getPercentByStatus = (status) => (getDeclarationLength(status) / summary.totalCount) * 100;
+  const getPercentByCount = (number) => {
+    if (!totalCount || totalCount === 0) return 0;
+    return (number / totalCount) * 100;
+  };
 
   const allowedStatusByRole = {
     admin: ['all', 'submitted', 'validated', 'billed', 'unsubmitted', 'rejected'],
@@ -259,7 +249,7 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="all">
         <DeclarationSummary
           title="Total"
-          total={summary.totalCount}
+          total={totalCount}
           percent={100}
           loading={loader}
           chart={{
@@ -274,8 +264,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="validated">
         <DeclarationSummary
           title="Validées"
-          // total={getDeclarationLength('validated')}
-          // percent={getPercentByStatus('validated')}
+          total={validCount}
+          percent={getPercentByCount(validCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.success.main],
@@ -289,8 +279,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="unsubmitted">
         <DeclarationSummary
           title="Brouillon"
-          // total={getDeclarationLength('unsubmitted')}
-          // percent={getPercentByStatus('unsubmitted')}
+          total={UnSubmitCount}
+          percent={getPercentByCount(UnSubmitCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.warning.main],
@@ -304,8 +294,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="rejected">
         <DeclarationSummary
           title="Rejetées"
-          // total={getDeclarationLength('rejected')}
-          // percent={getPercentByStatus('rejected')}
+          total={rejectCount}
+          percent={getPercentByCount(rejectCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.error.main],
@@ -319,8 +309,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="billed">
         <DeclarationSummary
           title="Facturées"
-          // total={getDeclarationLength('billed')}
-          // percent={getPercentByStatus('billed')}
+          total={billCount}
+          percent={getPercentByCount(billCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.primary.main],
@@ -334,8 +324,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="submitted">
         <DeclarationSummary
           title="Soumises"
-          // total={getDeclarationLength('submitted')}
-          // percent={getPercentByStatus('submitted')}
+          total={submitCount}
+          percent={getPercentByCount(submitCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.secondary.main],
@@ -352,38 +342,38 @@ export function DeclarationListView() {
       value: 'all',
       label: 'Toutes',
       color: 'main',
-      count: summary.totalCount,
+      count: totalCount,
     },
     {
       value: 'submitted',
       label: 'Soumises',
       color: 'warnning',
-      // count: getDeclarationLength('submitted'),
+      count: submitCount,
     },
     {
       value: 'validated',
       label: 'Validées',
       color: 'success',
-      // count: getDeclarationLength('validated'),
+      count: validCount,
     },
     {
       value: 'billed',
       label: 'Facturées',
       color: 'primary',
-      // count: getDeclarationLength('billed'),
+      count: billCount,
     },
     {
       value: 'unsubmitted',
       label: 'Brouillon',
       color: 'warning',
-      // count: getDeclarationLength('unsubmitted'),
+      count: UnSubmitCount,
     },
 
     {
       value: 'rejected',
       label: 'Rejetées',
       color: 'error',
-      // count: getDeclarationLength('rejected'),
+      count: rejectCount,
     },
   ];
 
@@ -521,6 +511,53 @@ export function DeclarationListView() {
     }
   };
 
+  const handleBilledRows = useCallback(async () => {
+    const selectedSlugs = table.selected;
+
+    if (selectedSlugs.length === 0) {
+      toast.error('Aucune déclaration sélectionnée.');
+      return;
+    }
+
+    const requestBody = {
+      declarations: selectedSlugs,
+      comment: "Déclaration facturée via l'interface.", // ou récupéré dynamiquement
+    };
+
+    try {
+      await axios.post(API.FacturerDeclaration(), requestBody);
+
+      // Mettre à jour localement le status
+      const updatedData = tableData.map((item) =>
+        selectedSlugs.includes(item.slug) ? { ...item, status: 'billed' } : item
+      );
+
+      setTableData(updatedData);
+      toast.success('Facturation réussie !');
+      table.onSelectAllRows(false, []);
+      router.push(paths.dashboard.factures.list);
+    } catch (error) {
+      console.error('Erreur lors de la facturation :', error);
+
+      const data = error.response?.data || error;
+      const messages = [];
+
+      if (data.declarations) {
+        messages.push(
+          ...(Array.isArray(data.declarations) ? data.declarations : [data.declarations])
+        );
+      }
+      if (data.details) messages.push(data.details);
+      if (data.error) messages.push(data.error);
+      if (data.message) messages.push(data.message);
+
+      const errorMessage = messages.join('');
+
+      toast.error(errorMessage);
+      table.onSelectAllRows(false, []);
+    }
+  }, [table, tableData, router]);
+
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
 
@@ -628,22 +665,30 @@ export function DeclarationListView() {
   const handleFacturer = useCallback(
     async (slug) => {
       try {
-        // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.facturerDeclaration(slug));
-        if (response) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+        // Construction du corps de la requête
+        const requestBody = {
+          declarations: [slug], // tableau contenant un seul slug
+          comment: "Facturation individuelle depuis l'interface", // facultatif ou dynamique
+        };
+
+        // Appel de la route (attention à bien exécuter la fonction)
+        const response = await axios.post(API.FacturerDeclaration(), requestBody);
+
+        // En cas de succès
+        if (response.status === 200 || response.status === 201) {
           toast.success('Déclaration facturée avec succès !');
-          // Mise à jour locale du statut dans tableData
+          // Mise à jour locale du statut
           setTableData((prevData) =>
             prevData.map((item) => (item.slug === slug ? { ...item, status: 'billed' } : item))
           );
           router.push(paths.dashboard.factures.list);
         } else {
-          console.error('Erreur lors de la facturation:', response.data.error);
+          console.error('Erreur inattendue lors de la facturation:', response.data);
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
-        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        const errorMessage =
+          error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
         setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
@@ -814,9 +859,9 @@ export function DeclarationListView() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        {/* <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }}>
-          {allowedStatuses.map((status) => statusCards[status]).filter(Boolean)} */}
-        {/* <Grid size={{ xs: 6, md: 3 }}>
+        <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }}>
+          {allowedStatuses.map((status) => statusCards[status]).filter(Boolean)}
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Total"
               total={summary.totalCount}
@@ -828,20 +873,20 @@ export function DeclarationListView() {
               }}
             />
           </Grid> */}
-        {/* <Grid size={{ xs: 6, md: 3 }}>
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Validées"
               total={getDeclarationLength('validated')}
               percent={getPercentByStatus('validated')}
               chart={{
-                // colors: [theme.vars.palette.success.main],
+        larations        // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
               }}
             />
           </Grid> */}
 
-        {/* <Grid size={{ xs: 6, md: 3 }}>
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Brouillon"
               total={getDeclarationLength('unsubmitted')}
@@ -853,7 +898,7 @@ export function DeclarationListView() {
               }}
             />
           </Grid> */}
-        {/* <Grid size={{ xs: 6, md: 3 }}>
+          {/* <Grid size={{ xs: 6, md: 3 }}>
             <DeclarationSummary
               title="Rejetées"
               total={getDeclarationLength('rejected')}
@@ -865,7 +910,7 @@ export function DeclarationListView() {
               }}
             />
           </Grid> */}
-        {/* </Grid> */}
+        </Grid>
 
         <Card>
           <Tabs
@@ -882,17 +927,17 @@ export function DeclarationListView() {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-                // icon={
-                //   <Label
-                //     variant={
-                //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                //       'soft'
-                //     }
-                //     color={tab.color}
-                //   >
-                //     {tab.count}
-                //   </Label>
-                // }
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                      'soft'
+                    }
+                    color={tab.color}
+                  >
+                    {tab.count}
+                  </Label>
+                }
               />
             ))}
           </Tabs>
@@ -930,12 +975,43 @@ export function DeclarationListView() {
               }}
               action={
                 <Stack direction="row">
-                  <Tooltip title="Facturer">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
+                  {/* telecharger toutes les declarations en un seul fichier */}
+                  {type_user === 'comptable' && (
+                    <Tooltip title="Facturer">
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          // On récupère les lignes sélectionnées
+                          const selectedRows = tableData.filter((row) =>
+                            table.selected.includes(row.slug)
+                          );
+
+                          // Vérifie si toutes ont le statut validé
+                          const hasInvalid = selectedRows.some(
+                            (row) => row.status?.toLowerCase() !== 'validated'
+                          );
+
+                          if (hasInvalid) {
+                            toast.error(
+                              'Certaines déclarations sélectionnées ne sont pas validées. Vous ne pouvez pas les facturer.'
+                            );
+                            table.onSelectAllRows(false, []);
+                            return;
+                          }
+
+                          // Si tout est bon → on lance la facturation
+                          billConfirm.onTrue();
+                        }}
+                      >
+                        <Iconify icon="mdi:credit-card" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  <Tooltip title="Telecharger">
+                    <IconButton color="primary" onClick={confirmDownload.onTrue}>
+                      <Iconify icon="eva:download-outline" />
                     </IconButton>
                   </Tooltip>
-                  {/* telecharger toutes les declarations en un seul fichier */}
                   <Tooltip title="Télécharger toutes les déclarations (PDF unique)">
                     <span>
                       <IconButton
@@ -951,27 +1027,22 @@ export function DeclarationListView() {
                       </IconButton>
                     </span>
                   </Tooltip>
-                  <Tooltip title="Telecharger">
-                    <IconButton color="primary" onClick={confirmDownload.onTrue}>
-                      <Iconify icon="eva:download-outline" />
-                    </IconButton>
-                  </Tooltip>
                   <Tooltip title="Télécharger en ZIP">
                     <IconButton color="primary" onClick={downloadZip.onTrue} disabled={isLoadZip}>
                       {isLoadZip ? <CircularProgress size={24} /> : <Iconify icon="mdi:zip-box" />}
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Imprimer">
+                  {/* <Tooltip title="Imprimer">
                     <IconButton color="primary">
                       <Iconify icon="solar:printer-minimalistic-bold" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
 
-                  <Tooltip title="Supprimer">
+                  {/* <Tooltip title="Supprimer">
                     <IconButton color="primary" onClick={confirm.onTrue}>
                       <Iconify icon="solar:trash-bin-trash-bold" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </Stack>
               }
             />
@@ -1055,6 +1126,7 @@ export function DeclarationListView() {
           />
         </Card>
       </DashboardContent>
+
       <ConfirmDialog
         open={downloadMultiplePDF.value}
         onClose={downloadMultiplePDF.onFalse}
@@ -1146,6 +1218,30 @@ export function DeclarationListView() {
             }}
           >
             Telecharger en ZIP
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={billConfirm.value}
+        onClose={billConfirm.onFalse}
+        title="Facturer"
+        content={
+          <>
+            Etes vous sûr de vouloir facturer <strong> {table.selected.length} </strong>{' '}
+            declarations?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              handleBilledRows();
+              billConfirm.onFalse();
+            }}
+          >
+            Facturer
           </Button>
         }
       />
