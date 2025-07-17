@@ -123,42 +123,72 @@ export function AguipeTables({ declarations = [], loading = false }) {
                       {row.status}
                     </Label>
                   </TableCell>
-                  <TableCell align="right">
+                  <TableCell>
                     <Stack
                       direction="row"
                       alignItems="center"
                       justifyContent="flex-end"
-                      spacing={1}
+                      flexWrap="wrap"
+                      gap={1}
+                      sx={{ minWidth: 200 }}
                     >
                       {row.employees?.slice(0, 3).map((employee, index) => (
-                        <Avatar
-                          key={index}
-                          alt={employee.first}
-                          src={employee.avatar}
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            border: `2px solid ${theme.palette.background.paper}`,
-                            marginLeft: -1,
-                          }}
+                        <Tooltip 
+                          key={index} 
+                          title={`${employee.first || ''} ${employee.last || ''}`.trim() || 'Employé'}
+                          arrow
                         >
-                          {employee.first ? employee.first.charAt(0) : 'E'}
-                        </Avatar>
+                          <Avatar
+                            alt={`${employee.first || ''} ${employee.last || ''}`.trim()}
+                            src={employee.avatar}
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              bgcolor: 'primary.main',
+                              color: 'common.white',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              '&:hover': {
+                                transform: 'scale(1.1)',
+                                boxShadow: theme.shadows[4],
+                              },
+                              transition: theme.transitions.create(['transform', 'box-shadow']),
+                            }}
+                          >
+                            {employee.first ? `${employee.first.charAt(0)}${employee.last ? employee.last.charAt(0) : ''}` : 'E'}
+                          </Avatar>
+                        </Tooltip>
                       ))}
+                      
                       {row.employees?.length > 3 && (
-                        <Avatar
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            bgcolor: 'grey.500',
-                            color: 'common.white',
-                            fontSize: 12,
-                            border: `2px solid ${theme.palette.background.paper}`,
-                            marginLeft: -1,
-                          }}
+                        <Tooltip 
+                          title={
+                            <Stack spacing={0.5}>
+                              {row.employees.slice(3).map((emp, idx) => (
+                                <div key={idx}>{`${emp.first || ''} ${emp.last || ''}`.trim() || 'Employé'}</div>
+                              ))}
+                            </Stack>
+                          }
+                          arrow
                         >
-                          +{row.employees.length - 3}
-                        </Avatar>
+                          <Avatar
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              bgcolor: 'grey.500',
+                              color: 'common.white',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              '&:hover': {
+                                bgcolor: 'grey.600',
+                              },
+                              transition: theme.transitions.create('background-color'),
+                            }}
+                          >
+                            +{row.employees.length - 3}
+                          </Avatar>
+                        </Tooltip>
                       )}
                     </Stack>
                   </TableCell>
