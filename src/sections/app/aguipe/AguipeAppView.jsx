@@ -183,16 +183,32 @@ export default function AguipeAppView() {
   
   // Gérer le changement de date personnalisée
   const handleStartDateChange = (date) => {
-    setStartDate(date);
-    if (period !== 'custom') {
-      setPeriod('custom');
+    if (date) {
+      // S'assurer que la date est un objet dayjs valide
+      const newDate = dayjs.isDayjs(date) ? date : dayjs(date);
+      setStartDate(newDate);
+      // Si endDate est avant la nouvelle startDate, on met à jour endDate
+      if (endDate && newDate.isAfter(endDate)) {
+        setEndDate(newDate);
+      }
+      if (period !== 'custom') {
+        setPeriod('custom');
+      }
     }
   };
   
   const handleEndDateChange = (date) => {
-    setEndDate(date);
-    if (period !== 'custom') {
-      setPeriod('custom');
+    if (date) {
+      // S'assurer que la date est un objet dayjs valide
+      const newDate = dayjs.isDayjs(date) ? date : dayjs(date);
+      setEndDate(newDate);
+      // Si startDate est après la nouvelle endDate, on met à jour startDate
+      if (startDate && newDate.isBefore(startDate)) {
+        setStartDate(newDate);
+      }
+      if (period !== 'custom') {
+        setPeriod('custom');
+      }
     }
   };
   
@@ -269,30 +285,55 @@ export default function AguipeAppView() {
               label="Début"
               value={startDate}
               onChange={handleStartDateChange}
-              format="dd/MM/yyyy"
+              format="DD/MM/YYYY"
               slotProps={{ 
                 textField: { 
-                  size: 'small', 
-                  sx: { width: { xs: '100%', sm: 150 } },
-                  fullWidth: typeof window !== 'undefined' && window.innerWidth < 600
+                  size: 'small',
+                  placeholder: 'JJ/MM/AAAA',
+                  sx: { 
+                    width: { xs: '100%', sm: 150 },
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center',
+                      padding: '8.5px 14px',
+                      height: '1.4375em'
+                    }
+                  },
+                  fullWidth: typeof window !== 'undefined' && window.innerWidth < 600,
+                  error: false
                 } 
               }}
               disabled={period !== 'custom'}
+              disableFuture
+              closeOnSelect
+              autoOk
             />
             
             <DatePicker
               label="Fin"
               value={endDate}
               onChange={handleEndDateChange}
-              format="dd/MM/yyyy"
+              format="DD/MM/YYYY"
               slotProps={{ 
                 textField: { 
-                  size: 'small', 
-                  sx: { width: { xs: '100%', sm: 150 } },
-                  fullWidth: typeof window !== 'undefined' && window.innerWidth < 600
+                  size: 'small',
+                  placeholder: 'JJ/MM/AAAA',
+                  sx: { 
+                    width: { xs: '100%', sm: 150 },
+                    '& .MuiInputBase-input': {
+                      textAlign: 'center',
+                      padding: '8.5px 14px',
+                      height: '1.4375em'
+                    }
+                  },
+                  fullWidth: typeof window !== 'undefined' && window.innerWidth < 600,
+                  error: false
                 } 
               }}
               disabled={period !== 'custom'}
+              disableFuture
+              closeOnSelect
+              minDate={startDate}
+              autoOk
             />
             
             <Button 
