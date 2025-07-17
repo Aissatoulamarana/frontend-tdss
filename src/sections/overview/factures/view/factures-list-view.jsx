@@ -32,7 +32,7 @@ import TextField from '@mui/material/TextField';
 import API from 'src/utils/api';
 import { fIsAfter, fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
-
+import { PDFDocument } from 'pdf-lib';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Iconify } from 'src/components/iconify';
@@ -99,9 +99,12 @@ export function FactureListView() {
   const confirm = useBoolean();
   const confirmDownload = useBoolean();
   const downloadZip = useBoolean();
+  const downloadMultiplePDF = useBoolean();
 
   const [options, setOptions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); // État pour gérer le chargement des options de banque
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoadPDF , setIsLoadPDF] = useState(false);
+  const [isLoadZip , setIsLoadZip] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [loader , setLaoder] = useState(false) // Etat pour indiquer le chargement des données sur les cards
@@ -378,7 +381,7 @@ const handleDownload = async () => {
     return;
   }
 
-  setIsLoading(true); // Début du chargement
+  setIsLoadPDF(true); // Début du chargement
 
   try {
     const slugs = table.selected;
@@ -394,7 +397,7 @@ const handleDownload = async () => {
     console.error(err);
     toast.error("Erreur lors du téléchargement !");
   } finally {
-    setIsLoading(false);
+    setIsLoadPDF(false);
   }
 };
 
@@ -404,7 +407,7 @@ const handleDownloadZip = async () => {
     return;
   }
 
-  setIsLoading(true);
+  setIsLoadZip(true);
 
   try {
     const slugs = table.selected;
@@ -430,6 +433,47 @@ const handleDownloadZip = async () => {
   } catch (error) {
     console.error(error);
     toast.error("Erreur lors du téléchargement ZIP.");
+  } finally {
+    setIsLoadZip(false);
+  }
+};
+
+const handleDownloadMultiplePDF = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    toast.warn("Aucune facture sélectionnée.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const slugs = table.selected;
+    const factures = await fetchFactures(slugs);
+
+    // 1. Nouveau document final
+    const mergedPdf = await PDFDocument.create();
+
+    for (const facture of factures) {
+      // 2. Génération du PDF de cette facture (sous forme de bytes)
+      const singlePdfBytes = await generateFacturePDF(facture, facture.devise, { download: false });
+
+      // 3. Charger le PDF source
+      const singlePdfDoc = await PDFDocument.load(singlePdfBytes);
+
+      // 4. Copier toutes les pages dans le document final
+      const copiedPages = await mergedPdf.copyPages(singlePdfDoc, singlePdfDoc.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+    }
+
+    // 5. Sauvegarde et téléchargement
+    const mergedPdfBytes = await mergedPdf.save();
+    saveAs(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'factures_ensemble.pdf');
+    toast.success('Téléchargement PDF groupé terminé !');
+    table.onSelectAllRows(false, []);
+
+  } catch (error) {
+    console.error('Erreur fusion PDF :', error);
+    toast.error("Erreur lors de la génération du PDF.");
   } finally {
     setIsLoading(false);
   }
@@ -565,17 +609,24 @@ if (isLoading) {
               }}
               action={
                 <Stack direction="row">
-                 
+                 <Tooltip title="Télécharger toutes les factures (PDF unique)">
+                <span>
+                  <IconButton color='primary' onClick={downloadMultiplePDF.onTrue} disabled={isLoading}>
+                    {isLoading ? <CircularProgress size={24} /> : <Iconify icon="mdi:file-download-outline" />}
+                  </IconButton>
+                </span>
+              </Tooltip>
+
 
                   <Tooltip title="Telecharger en pdf">
-                    <IconButton color="primary" onClick={confirmDownload.onTrue}>
-                      <Iconify icon="eva:download-outline" />
+                    <IconButton color="primary" onClick={confirmDownload.onTrue} disabled={isLoadPDF}>
+                      {isLoadPDF ? <CircularProgress size={24} /> :  <Iconify icon="eva:download-outline" /> }
                     </IconButton>
                   </Tooltip>
 
                   <Tooltip title="Télécharger en ZIP">
-                    <IconButton color="primary" onClick={downloadZip.onTrue}>
-                   <Iconify icon="mdi:zip-box" />
+                    <IconButton color="primary" onClick={downloadZip.onTrue} disabled={isLoadZip}>
+                   {isLoadZip ? <CircularProgress size={24} /> :  <Iconify icon="mdi:zip-box" /> }
                     </IconButton>
                   </Tooltip>
 
@@ -692,6 +743,28 @@ if (isLoading) {
             onClick={() => { 
               handleDownload(); // Action pour "Télécharger"
               confirmDownload.onFalse();
+            }}
+          >
+            Telecharger
+          </Button>
+        }
+      />
+       <ConfirmDialog
+        open={downloadMultiplePDF.value}
+        onClose={downloadMultiplePDF.onFalse}
+        title="Télécharger"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger  <strong> {table.selected.length} </strong> factures dans un seul fichier?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownloadMultiplePDF(); // Action pour "Télécharger"
+              downloadMultiplePDF.onFalse();
             }}
           >
             Telecharger
