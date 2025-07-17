@@ -316,6 +316,7 @@ export default function AguipeAppView() {
         <AguipeCharts 
           statistique_shart={dashboardData.statistique_shart || {}}
           loading={loading}
+          period={period} // Passer la période sélectionnée
         />
 
         {/* Section des tableaux */}
