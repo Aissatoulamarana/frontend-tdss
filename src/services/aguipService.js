@@ -11,7 +11,18 @@ class AguipService {
    */
   static async getDashboardData({ startDate, endDate } = {}) {
     try {
-      const url = API.getAguipDashboard(startDate, endDate);
+      // Valider et formater les dates si elles sont fournies
+      const params = {};
+      
+      if (startDate) {
+        params.start_date = startDate;
+      }
+      
+      if (endDate) {
+        params.end_date = endDate;
+      }
+      
+      const url = API.getAguipDashboard(params.start_date, params.end_date);
       console.log('AguipService - Appel API vers:', url);
       
       const response = await axios.get(url);

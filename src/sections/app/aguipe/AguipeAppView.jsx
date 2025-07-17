@@ -56,58 +56,71 @@ export default function AguipeAppView() {
   const [endDate, setEndDate] = useState(dayjs(endOfMonth(new Date())));
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
+  // Formater les dates au format attendu par l'API (YYYY-MM-DD)
+  const formatDate = (date) => {
+    if (dayjs.isDayjs(date)) {
+      return date.format('YYYY-MM-DD');
+    }
+    return format(date, 'yyyy-MM-dd');
+  };
+
   // Charger les données du tableau de bord
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Formater les dates au format attendu par l'API (YYYY-MM-DD)
-      const formatDate = (date) => {
-        if (dayjs.isDayjs(date)) {
-          return date.format('YYYY-MM-DD');
-        }
-        return format(date, 'yyyy-MM-dd');
-      };
-      
       // Déterminer les dates en fonction de la période sélectionnée
-      let start = startDate;
-      let end = endDate;
-      
-      const today = new Date();
+      let start, end;
+      const today = dayjs();
       
       switch (period) {
         case 'this_month':
-          start = dayjs().startOf('month');
-          end = dayjs().endOf('month');
+          start = today.startOf('month');
+          end = today.endOf('month');
           break;
         case 'last_month':
-          start = dayjs().subtract(1, 'month').startOf('month');
-          end = dayjs().subtract(1, 'month').endOf('month');
+          start = today.subtract(1, 'month').startOf('month');
+          end = today.subtract(1, 'month').endOf('month');
           break;
         case 'last_3_months':
-          start = dayjs().subtract(3, 'month');
-          end = dayjs();
+          start = today.subtract(2, 'month').startOf('month'); // 3 mois complets
+          end = today.endOf('month');
           break;
         case 'this_year':
-          start = dayjs().startOf('year');
-          end = dayjs();
+          start = today.startOf('year');
+          end = today.endOf('month');
           break;
-        // Pour 'custom', on utilise les dates sélectionnées
+        case 'custom':
+          start = dayjs(startDate);
+          end = dayjs(endDate);
+          break;
+        default:
+          start = today.startOf('month');
+          end = today.endOf('month');
       }
       
       console.log('Période sélectionnée:', period);
       console.log('Dates de la requête:', { start: formatDate(start), end: formatDate(end) });
+      
+      // Formater les dates pour l'API
+      const formattedStartDate = formatDate(start);
+      const formattedEndDate = formatDate(end);
       
       // Mettre à jour les états des dates
       setStartDate(start);
       setEndDate(end);
       
       // Récupérer les données de l'API
-      console.log('Appel à AguipService.getDashboardData...');
+      console.log('Appel à AguipService.getDashboardData avec les paramètres:', {
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        period
+      });
+      
       const data = await AguipService.getDashboardData({
-        startDate: formatDate(start),
-        endDate: formatDate(end)
+        startDate: formattedStartDate,
+        endDate: formattedEndDate
       });
       
       console.log('Données reçues de l\'API:', data);
@@ -139,7 +152,7 @@ export default function AguipeAppView() {
       setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]); // On ne met que period en dépendance pour éviter les boucles infinies
+  }, [period, startDate, endDate]); // Ajout de startDate et endDate aux dépendances
 
   // Charger les données au montage du composant  // Chargement initial des données
   useEffect(() => {
@@ -186,7 +199,14 @@ export default function AguipeAppView() {
   // Formater la période pour l'affichage
   const formatPeriodDisplay = () => {
     if (period === 'custom') {
-      return `Du ${startDate.format('DD MMM YYYY')} au ${endDate.format('DD MMM YYYY')}`;
+      try {
+        const start = startDate ? dayjs(startDate).format('DD MMM YYYY') : 'date inconnue';
+        const end = endDate ? dayjs(endDate).format('DD MMM YYYY') : 'date inconnue';
+        return `Du ${start} au ${end}`;
+      } catch (error) {
+        console.error('Erreur lors du formatage des dates:', error);
+        return 'Période personnalisée';
+      }
     }
     return PERIODS.find(p => p.value === period)?.label || '';
   };
