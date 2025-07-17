@@ -18,7 +18,7 @@ const STATS_CONFIG = [
   {
     key: 'total_facture',
     title: 'Factures',
-    icon: <Iconify icon="solar:receipt-bold" width={32} />,
+    icon: <Iconify icon="mdi:file-document-outline" width={32} />,
     color: 'success',
     format: (value) => fShortenNumber(value || 0),
   },
