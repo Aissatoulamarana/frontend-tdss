@@ -24,7 +24,9 @@ import { Label } from 'src/components/label';
 import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
-
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
+import { saveAs } from 'file-saver';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
@@ -53,6 +55,7 @@ import { DeclarationSummary } from '../declaration-analytic';
 import { DeclarationTableFiltersResult } from '../declaration-table-filters';
 import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationTableToolbar } from '../declaration-table-toolbar';
+import { DeclarationPDF } from '../declaration-pdf';
 
 import { useMockedUser } from 'src/auth/hooks';
 
@@ -61,6 +64,7 @@ dayjs.locale('fr'); // Set the default locale to French
 
 
 import { number } from 'prop-types';
+import { set } from 'nprogress';
 
 
 // ----------------------------------------------------------------------
@@ -93,12 +97,16 @@ export function DeclarationListView() {
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
+  const confirmDownload = useBoolean();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [loader , setLoader] = useState(false) // Etat pour indiquer les chargements sur les cards
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedFilter, setSelectedFilter] = useState('number'); // options de recherche
+  // const [selectedDeclarations, setSelectedDeclarations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
   const [count, setCount] = useState();
 
   const [pagination, setPagination] = useState({
@@ -175,6 +183,51 @@ export function DeclarationListView() {
       setLoader(false);
     });
   }, [user]);
+
+ const fetchEmployeesBySlug = async (slug) => {
+  if (!slug) return [];
+
+  try {
+    // 1. Premier appel pour avoir count et premiers résultats paginés
+    const {
+      data: { count, results }
+    } = await axios.get(API.Employe(slug));
+
+    let allEmployees = results;
+
+    // 2. Si les résultats sont paginés, on récupère tout d’un coup
+    if (count > results.length) {
+      const {
+        data: { results: fullResults }
+      } = await axios.get(API.Employe(slug), {
+        params: { limit: count, offset: 0 }
+      });
+      allEmployees = fullResults;
+    }
+
+    return allEmployees;
+  } catch (error) {
+    console.error('Erreur lors du chargement des employés :', error);
+    return [];
+  }
+};
+
+
+
+  const fetchDeclarations = async (slugs) => {
+    const responses = await Promise.all(
+      slugs.map((slug) => axios.get(API.detailsDeclaration(slug)))  
+    );
+   return Promise.all(
+    responses.map(async (res) => {
+      const declaration = res.data;
+      const employees = await fetchEmployeesBySlug(declaration.slug);
+      return { ...declaration, employees };
+    })
+  );
+};
+
+
 
   const getDeclarationLength = (status) => summary.countByStatus[status];
 
@@ -360,6 +413,43 @@ export function DeclarationListView() {
       toast.error(errorMessage);
     }
   };
+
+const handleDownload = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    console.warn("Aucune déclaration sélectionnée.");
+    return;
+  }
+
+  setIsLoading(true); // Début du chargement
+
+  try {
+    const slugs = table.selected;
+    const declarations = await fetchDeclarations(slugs);
+
+    for (const declaration of declarations) {
+      const logoUrl = declaration?.company?.picture;
+      const proxyBase = 'https://api.allorigins.win/raw?url=';
+      const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
+
+      const blob = await pdf(
+        <DeclarationPDF
+          declaration={declaration}
+          employees={declaration.employees}
+          logoUrl={proxiedLogoUrl}
+        />
+      ).toBlob();
+
+      saveAs(blob, `declaration-${declaration.number}.pdf`);
+    }
+  } catch (err) {
+    toast.error("Erreur lors du téléchargement :", err);
+  } finally {
+    setIsLoading(false); // Fin du chargement
+  }
+};
+
+
+
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -626,6 +716,10 @@ export function DeclarationListView() {
 
   const allowedStatuses = allowedStatus[type_user] || allowedStatus.default;
 
+  {isLoading && (
+    toast.info('Téléchargement en cours, veuillez patienter...')
+  )}
+
   return (
     <>
       <DashboardContent maxWidth="xl">
@@ -774,7 +868,7 @@ export function DeclarationListView() {
                   </Tooltip>
 
                   <Tooltip title="Telecharger">
-                    <IconButton color="primary">
+                    <IconButton color="primary" onClick={confirmDownload.onTrue}>
                       <Iconify icon="eva:download-outline" />
                     </IconButton>
                   </Tooltip>
@@ -894,6 +988,30 @@ export function DeclarationListView() {
             }}
           >
             Supprimer
+          </Button>
+        }
+      />
+
+       <ConfirmDialog
+        open={confirmDownload.value}
+        onClose={confirmDownload.onFalse}
+        title="Télécharger"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger <strong> {table.selected.length} </strong>{' '}
+            declarations?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              handleDownload();
+              confirmDownload.onFalse();
+            }}
+          >
+            Telecharger
           </Button>
         }
       />
