@@ -117,6 +117,14 @@ export default function AguipeAppView() {
         throw new Error('Aucune donnée reçue du service');
       }
       
+      // Log des données de statistiques pour débogage
+      console.log('Statistiques reçues:', {
+        total_declarations: data.stats?.total_declarations,
+        total_facture: data.stats?.total_facture,
+        total_payment: data.stats?.total_payment,
+        taux_payment: data.stats?.taux_payment
+      });
+      
       setDashboardData(data);
       
     } catch (err) {
@@ -288,13 +296,21 @@ export default function AguipeAppView() {
         )}
 
         {/* Section des statistiques */}
-        <AguipeStats 
-          totalDeclarations={dashboardData.stats.total_declarations || 0}
-          totalFactures={dashboardData.stats.total_facture || 0}
-          totalPaiements={dashboardData.stats.total_payment || 0}
-          tauxPaiement={dashboardData.stats.taux_payment || 0}
-          loading={loading}
-        />
+        <div>
+          {console.log('Données transmises à AguipeStats:', {
+            stats: dashboardData.stats,
+            loading
+          })}
+          <AguipeStats 
+            stats={{
+              total_declarations: dashboardData.stats?.total_declarations || 0,
+              total_facture: dashboardData.stats?.total_facture || 0,
+              total_payment: dashboardData.stats?.total_payment || 0,
+              taux_payment: dashboardData.stats?.taux_payment || 0
+            }}
+            loading={loading}
+          />
+        </div>
 
         {/* Section des graphiques */}
         <AguipeCharts 
