@@ -9,10 +9,36 @@ import { Chart, useChart } from 'src/components/chart';
 
 const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-export function AguipeCharts({ statistique_shart, loading = false }) {
+// Fonction pour formater les données du graphique
+const formatChartData = (data) => {
+  if (!data || typeof data !== 'object') {
+    console.log('Aucune donnée valide fournie à formatChartData');
+    return Array(12).fill(0);
+  }
+  
+  // Créer un tableau de 12 mois avec les valeurs correspondantes
+  const monthlyData = Array(12).fill(0);
+  
+  // Parcourir les clés de l'objet de données
+  Object.entries(data).forEach(([key, value]) => {
+    const monthIndex = parseInt(key, 10) - 1; // Convertir en index 0-11
+    if (monthIndex >= 0 && monthIndex < 12) {
+      monthlyData[monthIndex] = Number(value) || 0;
+    }
+  });
+  
+  console.log('Données formatées:', monthlyData);
+  return monthlyData;
+};
+
+export function AguipeCharts({ statistique_shart, loading = false, period = 'this_month' }) {
   const theme = useTheme();
   
-  console.log('AguipeCharts - Données reçues:', { statistique_shart, loading });
+  console.log('AguipeCharts - Données reçues:', { 
+    statistique_shart, 
+    loading, 
+    period 
+  });
   
   // Vérifier si nous avons des données
   const hasData = statistique_shart && 
@@ -22,47 +48,29 @@ export function AguipeCharts({ statistique_shart, loading = false }) {
   
   console.log('AguipeCharts - hasData:', hasData);
   
+  // Vérifier que nous avons des données
+  console.log('Données brutes reçues dans AguipeCharts:', statistique_shart);
+  
   // Préparer les données pour le graphique
   const chartData = [
     {
       name: 'Déclarations',
       type: 'line',
-      data: statistique_shart?.declaration 
-        ? Object.entries(statistique_shart.declaration)
-            .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
-            .map(([key, value]) => {
-              console.log('Déclaration - Mois:', key, 'Valeur:', value);
-              return value || 0;
-            })
-        : Array(12).fill(0)
+      data: formatChartData(statistique_shart?.declaration)
     },
     {
       name: 'Factures',
       type: 'line',
-      data: statistique_shart?.facture 
-        ? Object.entries(statistique_shart.facture)
-            .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
-            .map(([key, value]) => {
-              console.log('Facture - Mois:', key, 'Valeur:', value);
-              return value || 0;
-            })
-        : Array(12).fill(0)
+      data: formatChartData(statistique_shart?.facture)
     },
     {
       name: 'Paiements',
       type: 'line',
-      data: statistique_shart?.payment 
-        ? Object.entries(statistique_shart.payment)
-            .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
-            .map(([key, value]) => {
-              console.log('Paiement - Mois:', key, 'Valeur:', value);
-              return value || 0;
-            })
-        : Array(12).fill(0)
+      data: formatChartData(statistique_shart?.payment)
     }
   ];
   
-  console.log('AguipeCharts - Données du graphique préparées:', chartData);
+  console.log('Données du graphique préparées:', chartData);
 
   const chartOptions = useChart({
     chart: {
@@ -108,6 +116,10 @@ export function AguipeCharts({ statistique_shart, loading = false }) {
         style: {
           colors: theme.palette.text.secondary,
         },
+        formatter: (value, index) => {
+          // Afficher tous les mois, même ceux sans données
+          return value;
+        }
       },
       axisBorder: {
         show: true,
@@ -115,6 +127,9 @@ export function AguipeCharts({ statistique_shart, loading = false }) {
       axisTicks: {
         show: true,
       },
+      tooltip: {
+        enabled: true
+      }
     },
     yaxis: {
       labels: {
