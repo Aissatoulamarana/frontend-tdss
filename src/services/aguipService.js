@@ -5,26 +5,59 @@ class AguipService {
   /**
    * Récupère les données du tableau de bord AGUIP
    * @param {Object} params - Paramètres de requête
-   * @param {string} [params.startDate] - Date de début au format DD/MM/YYYY
-   * @param {string} [params.endDate] - Date de fin au format DD/MM/YYYY
+   * @param {string} [params.startDate] - Date de début au format YYYY-MM-DD
+   * @param {string} [params.endDate] - Date de fin au format YYYY-MM-DD
    * @returns {Promise<Object>} Les données du tableau de bord formatées
    */
   static async getDashboardData({ startDate, endDate } = {}) {
     try {
       const url = API.getAguipDashboard(startDate, endDate);
+      console.log('AguipService - Appel API vers:', url);
+      
       const response = await axios.get(url);
+      console.log('AguipService - Réponse API reçue:', response.data);
       
-      // Formatage des données pour les graphiques
-      const formattedData = this.formatChartData(response.data);
-      
-      return {
-        stats: response.data.statistiques_cards,
-        chartData: formattedData,
+      // Vérifier si la réponse contient des données
+      if (!response.data) {
+        console.error('AguipService - Aucune donnée dans la réponse');
+        throw new Error('Aucune donnée reçue de l\'API');
+      }
+
+      // Formater les données pour correspondre à la structure attendue
+      const formattedData = {
+        stats: {
+          total_declarations: response.data.statistiques_cards?.total_declarations || 0,
+          total_facture: response.data.statistiques_cards?.total_facture || 0,
+          total_payment: response.data.statistiques_cards?.total_payment || 0,
+          taux_payment: response.data.statistiques_cards?.taux_payment || 0,
+        },
+        statistique_shart: {
+          declaration: response.data.statistique_shart?.declaration || {},
+          facture: response.data.statistique_shart?.facture || {},
+          payment: response.data.statistique_shart?.payment || {},
+        },
         recentDeclarations: response.data.laste_declaration_liste || []
       };
+      
+      console.log('AguipService - Données formatées:', formattedData);
+      return formattedData;
     } catch (error) {
       console.error('Erreur lors de la récupération des données du tableau de bord AGUIP:', error);
-      throw error;
+      // Retourner des données vides en cas d'erreur
+      return {
+        stats: {
+          total_declarations: 0,
+          total_facture: 0,
+          total_payment: 0,
+          taux_payment: 0
+        },
+        statistique_shart: {
+          declaration: {},
+          facture: {},
+          payment: {}
+        },
+        recentDeclarations: []
+      };
     }
   }
 
@@ -34,11 +67,14 @@ class AguipService {
    * @returns {Object} Données formatées pour les graphiques
    */
   static formatChartData(data) {
-    if (!data.statistique_shart) {
-      return { series: [], categories: Array(12).fill().map((_, i) => (i + 1).toString()) };
+    if (!data || !data.statistique_shart) {
+      return { 
+        series: [], 
+        categories: Array(12).fill().map((_, i) => (i + 1).toString()) 
+      };
     }
 
-    const { declaration, facture, payment } = data.statistique_shart;
+    const { declaration = {}, facture = {}, payment = {} } = data.statistique_shart;
     
     // Créer les catégories (mois de l'année)
     const categories = Array(12).fill().map((_, i) => {
@@ -46,22 +82,29 @@ class AguipService {
       return date.toLocaleString('fr-FR', { month: 'short' });
     });
 
+    // Fonction pour convertir les objets en tableaux triés par clé numérique
+    const convertToArray = (obj) => {
+      return Object.entries(obj)
+        .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
+        .map(([_, value]) => value || 0);
+    };
+
     // Créer les séries pour chaque type de données
     const series = [
       {
         name: 'Déclarations',
         type: 'line',
-        data: Object.values(declaration || {})
+        data: convertToArray(declaration)
       },
       {
         name: 'Factures',
-        type: 'column',
-        data: Object.values(facture || {})
+        type: 'line',
+        data: convertToArray(facture)
       },
       {
         name: 'Paiements',
-        type: 'column',
-        data: Object.values(payment || {})
+        type: 'line',
+        data: convertToArray(payment)
       }
     ];
 

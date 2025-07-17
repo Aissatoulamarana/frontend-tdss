@@ -96,15 +96,26 @@ export default function AguipeAppView() {
         // Pour 'custom', on utilise les dates sélectionnées
       }
       
+      console.log('Période sélectionnée:', period);
+      console.log('Dates de la requête:', { start: formatDate(start), end: formatDate(end) });
+      
       // Mettre à jour les états des dates
       setStartDate(start);
       setEndDate(end);
       
       // Récupérer les données de l'API
+      console.log('Appel à AguipService.getDashboardData...');
       const data = await AguipService.getDashboardData({
         startDate: formatDate(start),
         endDate: formatDate(end)
       });
+      
+      console.log('Données reçues de l\'API:', data);
+      
+      // Vérifier si les données sont valides
+      if (!data) {
+        throw new Error('Aucune donnée reçue du service');
+      }
       
       setDashboardData(data);
       
@@ -122,11 +133,27 @@ export default function AguipeAppView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]); // On ne met que period en dépendance pour éviter les boucles infinies
 
-  // Charger les données au montage du composant et quand la période change
+  // Charger les données au montage du composant  // Chargement initial des données
   useEffect(() => {
-    loadDashboardData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]); // On ne met que period en dépendance pour éviter les boucles infinies
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        await loadDashboardData();
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+        setError('Erreur lors du chargement des données. Veuillez réessayer.');
+        setSnackbar({
+          open: true,
+          message: 'Erreur lors du chargement des données',
+          severity: 'error',
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // eslint-disable-next-line react-hooks/exhaustive-deps
   
   // Gérer le changement de période
   const handlePeriodChange = (event) => {
@@ -271,8 +298,7 @@ export default function AguipeAppView() {
 
         {/* Section des graphiques */}
         <AguipeCharts 
-          series={dashboardData.chartData.series} 
-          categories={dashboardData.chartData.categories}
+          statistique_shart={dashboardData.statistique_shart || {}}
           loading={loading}
         />
 
