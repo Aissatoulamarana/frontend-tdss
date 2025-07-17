@@ -17,7 +17,9 @@ import TableRow from '@mui/material/TableRow';
 import axios from 'src/utils/axios';
 import { CircularProgress } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
-
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { pdf } from '@react-pdf/renderer';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -30,7 +32,7 @@ import TextField from '@mui/material/TextField';
 import API from 'src/utils/api';
 import { fIsAfter, fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
-
+import { PDFDocument } from 'pdf-lib';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Iconify } from 'src/components/iconify';
@@ -53,6 +55,7 @@ import { FactureTableFilters } from '../factures-table-filters';
 import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
+import { generateFacturePDF } from '../facture-pdf';
 
 import { useMockedUser } from 'src/auth/hooks';
 
@@ -87,14 +90,21 @@ export function FactureListView() {
   const theme = useTheme();
 
   const { user } = useMockedUser();
+  const type_user = user?.type_code.toLowerCase().trim();
 
   const router = useRouter();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
-  const [options, setOptions] = useState([]);
+  const confirmDownload = useBoolean();
+  const downloadZip = useBoolean();
+  const downloadMultiplePDF = useBoolean();
 
+  const [options, setOptions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoadPDF , setIsLoadPDF] = useState(false);
+  const [isLoadZip , setIsLoadZip] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [loader , setLaoder] = useState(false) // Etat pour indiquer le chargement des données sur les cards
@@ -358,6 +368,122 @@ export function FactureListView() {
     filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
 
+  const fetchFactures = async (slugs) => {
+  const responses = await Promise.all(
+    slugs.map((slug) => axios.get(API.detailsFacture(slug)))
+  );
+  return responses.map((res) => res.data);
+};
+
+const handleDownload = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    toast.warn("Aucune facture sélectionnée.");
+    return;
+  }
+
+  setIsLoadPDF(true); // Début du chargement
+
+  try {
+    const slugs = table.selected;
+    const factures = await fetchFactures(slugs);
+
+    for (const facture of factures) {
+      await generateFacturePDF(facture, facture.devise, { download: true });
+    }
+
+    table.onSelectAllRows(false, []);
+    toast.success("Téléchargement réussi !");
+  } catch (err) {
+    console.error(err);
+    toast.error("Erreur lors du téléchargement !");
+  } finally {
+    setIsLoadPDF(false);
+  }
+};
+
+const handleDownloadZip = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    toast.warn("Aucune facture sélectionnée.");
+    return;
+  }
+
+  setIsLoadZip(true);
+
+  try {
+    const slugs = table.selected;
+    const factures = await fetchFactures(slugs);
+
+    const zip = new JSZip();
+
+    for (const facture of factures) {
+      
+    const blob = await generateFacturePDF(facture, facture.devise, {
+        download: false, // Ne pas télécharger individuellement
+      });
+
+      const filename = `facture-${facture.number}.pdf`;
+      zip.file(filename, blob);
+    }
+
+    // Générer le fichier ZIP
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, 'factures.zip');
+    toast.success('Téléchargement ZIP terminé !');
+    table.onSelectAllRows(false, []);
+  } catch (error) {
+    console.error(error);
+    toast.error("Erreur lors du téléchargement ZIP.");
+  } finally {
+    setIsLoadZip(false);
+  }
+};
+
+const handleDownloadMultiplePDF = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    toast.warn("Aucune facture sélectionnée.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const slugs = table.selected;
+    const factures = await fetchFactures(slugs);
+
+    // 1. Nouveau document final
+    const mergedPdf = await PDFDocument.create();
+
+    for (const facture of factures) {
+      // 2. Génération du PDF de cette facture (sous forme de bytes)
+      const singlePdfBytes = await generateFacturePDF(facture, facture.devise, { download: false });
+
+      // 3. Charger le PDF source
+      const singlePdfDoc = await PDFDocument.load(singlePdfBytes);
+
+      // 4. Copier toutes les pages dans le document final
+      const copiedPages = await mergedPdf.copyPages(singlePdfDoc, singlePdfDoc.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+    }
+
+    // 5. Sauvegarde et téléchargement
+    const mergedPdfBytes = await mergedPdf.save();
+    saveAs(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'factures_ensemble.pdf');
+    toast.success('Téléchargement PDF groupé terminé !');
+    table.onSelectAllRows(false, []);
+
+  } catch (error) {
+    console.error('Erreur fusion PDF :', error);
+    toast.error("Erreur lors de la génération du PDF.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+if (isLoading) {
+  toast.info("Téléchargement en cours, veuillez patienter...");
+}
+
+
   if (loading) {
     console.info('Loading factures...');
   }
@@ -483,24 +609,28 @@ export function FactureListView() {
               }}
               action={
                 <Stack direction="row">
-                  <Tooltip title="Envoyer">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
+                 <Tooltip title="Télécharger toutes les factures (PDF unique)">
+                <span>
+                  <IconButton color='primary' onClick={downloadMultiplePDF.onTrue} disabled={isLoading}>
+                    {isLoading ? <CircularProgress size={24} /> : <Iconify icon="mdi:file-download-outline" />}
+                  </IconButton>
+                </span>
+              </Tooltip>
+
+
+                  <Tooltip title="Telecharger en pdf">
+                    <IconButton color="primary" onClick={confirmDownload.onTrue} disabled={isLoadPDF}>
+                      {isLoadPDF ? <CircularProgress size={24} /> :  <Iconify icon="eva:download-outline" /> }
                     </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Telecharger">
-                    <IconButton color="primary">
-                      <Iconify icon="eva:download-outline" />
+                  <Tooltip title="Télécharger en ZIP">
+                    <IconButton color="primary" onClick={downloadZip.onTrue} disabled={isLoadZip}>
+                   {isLoadZip ? <CircularProgress size={24} /> :  <Iconify icon="mdi:zip-box" /> }
                     </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Imprimer">
-                    <IconButton color="primary">
-                      <Iconify icon="solar:printer-minimalistic-bold" />
-                    </IconButton>
-                  </Tooltip>
-
+                  { (type_user === 'caissier' || type_user === 'comptable') && (
                   <Tooltip title="Payer">
                     <IconButton
                       color="primary"
@@ -509,9 +639,11 @@ export function FactureListView() {
                         // Ouvre la première boîte de dialogue
                       }}
                     >
+                     
                       <Iconify icon="mdi:credit-card" />
                     </IconButton>
                   </Tooltip>
+                   )}
                 </Stack>
               }
             />
@@ -594,6 +726,75 @@ export function FactureListView() {
           />
         </Card>
       </DashboardContent>
+
+      <ConfirmDialog
+        open={confirmDownload.value}
+        onClose={confirmDownload.onFalse}
+        title="Télécharger"
+        content={
+          <>
+            Etes vous sûr de vouloir Télécharger <strong> {table.selected.length} </strong> factures?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownload(); // Action pour "Télécharger"
+              confirmDownload.onFalse();
+            }}
+          >
+            Telecharger
+          </Button>
+        }
+      />
+       <ConfirmDialog
+        open={downloadMultiplePDF.value}
+        onClose={downloadMultiplePDF.onFalse}
+        title="Télécharger"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger  <strong> {table.selected.length} </strong> factures dans un seul fichier?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownloadMultiplePDF(); // Action pour "Télécharger"
+              downloadMultiplePDF.onFalse();
+            }}
+          >
+            Telecharger
+          </Button>
+        }
+      />
+
+ <ConfirmDialog
+        open={downloadZip.value}
+        onClose={downloadZip.onFalse}
+        title="Télécharger en ZIP"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong> factures?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownloadZip(); // Action pour "Télécharger"
+              downloadZip.onFalse();
+            }}
+          >
+            Telecharger en ZIP
+          </Button>
+        }
+      />
+
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
@@ -609,7 +810,6 @@ export function FactureListView() {
             color="primary"
             onClick={() => {
               confirm.onTrue();
-
               setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
             }}
           >
