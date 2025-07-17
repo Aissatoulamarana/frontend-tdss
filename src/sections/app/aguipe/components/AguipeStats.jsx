@@ -1,61 +1,70 @@
 'use client';
 
 import { useTheme, alpha } from '@mui/material/styles';
-import { fShortenNumber } from 'src/utils/format-number';
+import { fShortenNumber, fPercent } from 'src/utils/format-number';
 import { Iconify } from 'src/components/iconify';
-import { Card, Grid, Stack, Typography, Box } from '@mui/material';
+import { Card, Grid, Stack, Typography, Box, Skeleton } from '@mui/material';
 
 // ----------------------------------------------------------------------
-const STATS = [
+
+const STATS_CONFIG = [
   {
+    key: 'total_declarations',
     title: 'Déclarations',
-    total: 1285,
     icon: <Iconify icon="solar:document-text-bold" width={32} />,
     color: 'info',
-    trend: 'up',
-    percent: 12.5,
+    format: (value) => fShortenNumber(value || 0),
   },
   {
+    key: 'total_facture',
     title: 'Factures',
-    total: 1024,
     icon: <Iconify icon="solar:receipt-bold" width={32} />,
     color: 'success',
-    trend: 'up',
-    percent: 8.2,
+    format: (value) => fShortenNumber(value || 0),
   },
   {
+    key: 'total_payment',
     title: 'Paiements',
-    total: 956,
     icon: <Iconify icon="solar:wallet-money-bold" width={32} />,
     color: 'warning',
-    trend: 'down',
-    percent: 3.1,
+    format: (value) => fShortenNumber(value || 0),
   },
   {
+    key: 'taux_payment',
     title: 'Taux de paiement',
-    total: 93.2,
-    suffix: '%',
     icon: <Iconify icon="solar:chart-bold" width={32} />,
     color: 'error',
-    trend: 'up',
-    percent: 1.8,
+    format: (value) => fPercent((value || 0) * 100),
   },
 ];
 
 // ----------------------------------------------------------------------
 
-export function AguipeStats() {
+export function AguipeStats({ stats = {}, loading = false }) {
   const theme = useTheme();
+
+  if (loading) {
+    return (
+      <Grid container spacing={2}>
+        {STATS_CONFIG.map((stat) => (
+          <Grid item key={stat.key} xs={12} sm={6} md={3}>
+            <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 2 }} />
+          </Grid>
+        ))}
+      </Grid>
+    );
+  }
 
   return (
     <Grid container spacing={2}>
-      {STATS.map((stat) => (
-        <Grid item key={stat.title} xs={12} sm={6} md={3}>
+      {STATS_CONFIG.map((stat) => (
+        <Grid item key={stat.key} xs={12} sm={6} md={3}>
           <Card
             sx={{
               p: 2,
               boxShadow: 0,
               color: `${stat.color}.darker`,
+              height: '100%',
             }}
           >
             <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
@@ -64,8 +73,7 @@ export function AguipeStats() {
                   {stat.title}
                 </Typography>
                 <Typography variant="h4">
-                  {fShortenNumber(stat.total)}
-                  {stat.suffix}
+                  {stat.format(stats[stat.key])}
                 </Typography>
               </div>
               <Box
@@ -82,21 +90,6 @@ export function AguipeStats() {
               >
                 {stat.icon}
               </Box>
-            </Stack>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Iconify
-                icon={
-                  stat.trend === 'up' ? 'eva:trending-up-fill' : 'eva:trending-down-fill'
-                }
-                color={stat.trend === 'up' ? 'success.main' : 'error.main'}
-                width={20}
-              />
-              <Typography variant="body2" color={stat.trend === 'up' ? 'success.main' : 'error.main'}>
-                {stat.percent}%
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                vs mois dernier
-              </Typography>
             </Stack>
           </Card>
         </Grid>
