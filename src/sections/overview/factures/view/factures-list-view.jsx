@@ -17,7 +17,9 @@ import TableRow from '@mui/material/TableRow';
 import axios from 'src/utils/axios';
 import { CircularProgress } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
-
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import { pdf } from '@react-pdf/renderer';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -96,6 +98,7 @@ export function FactureListView() {
 
   const confirm = useBoolean();
   const confirmDownload = useBoolean();
+  const downloadZip = useBoolean();
 
   const [options, setOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // État pour gérer le chargement des options de banque
@@ -395,6 +398,43 @@ const handleDownload = async () => {
   }
 };
 
+const handleDownloadZip = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    toast.warn("Aucune facture sélectionnée.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const slugs = table.selected;
+    const factures = await fetchFactures(slugs);
+
+    const zip = new JSZip();
+
+    for (const facture of factures) {
+      
+    const blob = await generateFacturePDF(facture, facture.devise, {
+        download: false, // Ne pas télécharger individuellement
+      });
+
+      const filename = `facture-${facture.number}.pdf`;
+      zip.file(filename, blob);
+    }
+
+    // Générer le fichier ZIP
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, 'factures.zip');
+    toast.success('Téléchargement ZIP terminé !');
+    table.onSelectAllRows(false, []);
+  } catch (error) {
+    console.error(error);
+    toast.error("Erreur lors du téléchargement ZIP.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 if (isLoading) {
   toast.info("Téléchargement en cours, veuillez patienter...");
 }
@@ -527,17 +567,17 @@ if (isLoading) {
                 <Stack direction="row">
                  
 
-                  <Tooltip title="Telecharger">
+                  <Tooltip title="Telecharger en pdf">
                     <IconButton color="primary" onClick={confirmDownload.onTrue}>
                       <Iconify icon="eva:download-outline" />
                     </IconButton>
                   </Tooltip>
 
-                  {/* <Tooltip title="Imprimer">
-                    <IconButton color="primary">
-                      <Iconify icon="solar:printer-minimalistic-bold" />
+                  <Tooltip title="Télécharger en ZIP">
+                    <IconButton color="primary" onClick={downloadZip.onTrue}>
+                   <Iconify icon="mdi:zip-box" />
                     </IconButton>
-                  </Tooltip> */}
+                  </Tooltip>
 
                   { (type_user === 'caissier' || type_user === 'comptable') && (
                   <Tooltip title="Payer">
@@ -658,6 +698,30 @@ if (isLoading) {
           </Button>
         }
       />
+
+ <ConfirmDialog
+        open={downloadZip.value}
+        onClose={downloadZip.onFalse}
+        title="Télécharger en ZIP"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong> factures?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownloadZip(); // Action pour "Télécharger"
+              downloadZip.onFalse();
+            }}
+          >
+            Telecharger en ZIP
+          </Button>
+        }
+      />
+
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
