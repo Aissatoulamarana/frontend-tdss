@@ -171,6 +171,18 @@ const API = {
   getLastValidatedDeclarations: () => `${BASE_URL}/declarations/last-validated/`,
 
   getEcheances: () => `${BASE_URL}/factures/echeances/`,
+  
+  // Tableau de bord AGUIP
+  getAguipDashboard: (startDate = null, endDate = null) => {
+    let url = `${BASE_URL}/declarations/dashboard-aguip/`;
+    const params = new URLSearchParams();
+    
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    
+    const queryString = params.toString();
+    return queryString ? `${url}?${queryString}` : url;
+  },
 };
 
 export default API;

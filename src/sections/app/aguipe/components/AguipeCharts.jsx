@@ -1,85 +1,60 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardHeader, Box, Stack, Button, CardContent } from '@mui/material';
+import { useState, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
-// Les fonctions de formatage ne sont pas utilisées dans ce composant
-import { DatePicker } from '@mui/x-date-pickers';
-import dynamic from 'next/dynamic';
-
-// Chargement dynamique du composant Chart pour éviter les problèmes de SSR
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import { Card, CardHeader, Box, CardContent, Skeleton, Typography } from '@mui/material';
+import { fNumber } from 'src/utils/format-number';
+import { Chart, useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-const CHART_DATA = [
-  {
-    name: 'Déclarations',
-    type: 'area',
-    data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 21],
-  },
-  {
-    name: 'Paiements',
-    type: 'area',
-    data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43, 27],
-  },
-  {
-    name: 'Factures',
-    type: 'line',
-    data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 25],
-  },
-];
+const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-const CHART_CATEGORIES = [
-  'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-  'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
-];
+// Fonction pour formater les données du graphique
+const formatChartData = (statistiques = {}) => {
+  // Vérifier si les données sont vides
+  const hasData = statistiques?.declaration || statistiques?.facture || statistiques?.payment;
+  
+  if (!hasData) {
+    return [];
+  }
 
-// ----------------------------------------------------------------------
+  return [
+    {
+      name: 'Déclarations',
+      data: Array.isArray(statistiques.declaration) 
+        ? statistiques.declaration 
+        : Object.values(statistiques.declaration || {}),
+    },
+    {
+      name: 'Factures',
+      data: Array.isArray(statistiques.facture) 
+        ? statistiques.facture 
+        : Object.values(statistiques.facture || {}),
+    },
+    {
+      name: 'Paiements',
+      data: Array.isArray(statistiques.payment) 
+        ? statistiques.payment 
+        : Object.values(statistiques.payment || {}),
+    },
+  ];
+};
 
-export function AguipeCharts() {
+export function AguipeCharts({ statistique_shart = {}, loading = false }) {
   const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const chartData = formatChartData(statistique_shart);
+  const hasData = chartData.length > 0 && chartData.some(serie => serie.data.length > 0);
 
-  const chartOptions = {
+  const chartOptions = useChart({
     chart: {
-      height: 350,
-      type: 'line',
-      stacked: false,
-      zoom: {
-        enabled: true,
-      },
-      toolbar: {
-        show: true,
-      },
-    },
-    stroke: {
-      width: [0, 2, 2],
-      curve: 'smooth'
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: '50%',
-      },
-    },
-    fill: {
-      opacity: [0.85, 0.25, 1],
-      gradient: {
-        inverseColors: false,
-        shade: 'light',
-        type: 'vertical',
-        opacityFrom: 0.85,
-        opacityTo: 0.55,
-        stops: [0, 100, 100, 100],
-      },
-    },
-    markers: {
-      size: 0,
+      type: 'bar',
+      stacked: true,
+      toolbar: { show: false },
+      zoom: { enabled: true },
     },
     xaxis: {
-      categories: CHART_CATEGORIES,
+      categories: MONTHS,
       labels: {
         style: {
           colors: theme.palette.text.secondary,
@@ -87,66 +62,86 @@ export function AguipeCharts() {
       },
     },
     yaxis: {
-      min: 0,
       labels: {
+        formatter: (value) => fNumber(value),
         style: {
           colors: theme.palette.text.secondary,
         },
       },
     },
     tooltip: {
-      shared: true,
-      intersect: false,
       y: {
-        formatter: function formatYAxis(y) {
-          if (typeof y !== 'undefined') {
-            return `${y.toFixed(0)} opérations`;
-          }
-          return y;
-        },
+        formatter: (value) => fNumber(value),
       },
-      theme: isDarkMode ? 'light' : 'dark',
+    },
+    plotOptions: {
+      bar: {
+        columnWidth: '30%',
+        borderRadius: 4,
+      },
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'right',
     },
     colors: [
       theme.palette.primary.main,
       theme.palette.success.main,
       theme.palette.warning.main,
     ],
-  };
+    noData: {
+      text: 'Aucune donnée disponible',
+      align: 'center',
+      verticalAlign: 'middle',
+      offsetX: 0,
+      offsetY: 0,
+      style: {
+        color: theme.palette.text.secondary,
+        fontSize: '14px',
+        fontFamily: theme.typography.fontFamily,
+      }
+    }
+  });
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader title="Chargement des statistiques..." />
+        <Box sx={{ p: 3, pb: 1 }}>
+          <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
+        </Box>
+      </Card>
+    );
+  }
 
   return (
     <Card>
-      <CardHeader 
-        title="Activité mensuelle" 
-        action={
-          <Stack direction="row" spacing={2} alignItems="center">
-            <DatePicker
-              label="Début"
-              value={startDate}
-              onChange={(newValue) => setStartDate(newValue)}
-              slotProps={{ textField: { size: 'small' } }}
-            />
-            <DatePicker
-              label="Fin"
-              value={endDate}
-              onChange={(newValue) => setEndDate(newValue)}
-              slotProps={{ textField: { size: 'small' } }}
-            />
-            <Button variant="contained" size="small">
-              Appliquer
-            </Button>
-          </Stack>
-        }
+      <CardHeader
+        title="Statistiques mensuelles"
+        subheader="Évolution des déclarations, factures et paiements"
       />
       <CardContent>
-        <Box sx={{ height: 400, position: 'relative' }}>
-          <Chart
-            type="line"
-            series={CHART_DATA}
-            options={chartOptions}
-            height="100%"
-            loading={false}
-          />
+        <Box sx={{ height: 400, minWidth: '100%' }}>
+          {hasData ? (
+            <Chart
+              type="bar"
+              series={chartData}
+              options={chartOptions}
+              height="100%"
+            />
+          ) : (
+            <Box
+              sx={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'text.secondary',
+              }}
+            >
+              <Typography variant="body1">Aucune donnée disponible pour la période sélectionnée</Typography>
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>
