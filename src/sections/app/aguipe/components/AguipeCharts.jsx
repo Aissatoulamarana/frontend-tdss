@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Card, CardHeader, Box, CardContent, Skeleton, Typography } from '@mui/material';
 import { fNumber } from 'src/utils/format-number';
@@ -10,48 +9,98 @@ import { Chart, useChart } from 'src/components/chart';
 
 const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-// Fonction pour formater les données du graphique
-const formatChartData = (statistiques = {}) => {
-  // Vérifier si les données sont vides
-  const hasData = statistiques?.declaration || statistiques?.facture || statistiques?.payment;
+export function AguipeCharts({ statistique_shart, loading = false }) {
+  const theme = useTheme();
   
-  if (!hasData) {
-    return [];
-  }
-
-  return [
+  console.log('AguipeCharts - Données reçues:', { statistique_shart, loading });
+  
+  // Vérifier si nous avons des données
+  const hasData = statistique_shart && 
+    (Object.keys(statistique_shart.declaration || {}).length > 0 ||
+     Object.keys(statistique_shart.facture || {}).length > 0 ||
+     Object.keys(statistique_shart.payment || {}).length > 0);
+  
+  console.log('AguipeCharts - hasData:', hasData);
+  
+  // Préparer les données pour le graphique
+  const chartData = [
     {
       name: 'Déclarations',
-      data: Array.isArray(statistiques.declaration) 
-        ? statistiques.declaration 
-        : Object.values(statistiques.declaration || {}),
+      type: 'line',
+      data: statistique_shart?.declaration 
+        ? Object.entries(statistique_shart.declaration)
+            .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
+            .map(([key, value]) => {
+              console.log('Déclaration - Mois:', key, 'Valeur:', value);
+              return value || 0;
+            })
+        : Array(12).fill(0)
     },
     {
       name: 'Factures',
-      data: Array.isArray(statistiques.facture) 
-        ? statistiques.facture 
-        : Object.values(statistiques.facture || {}),
+      type: 'line',
+      data: statistique_shart?.facture 
+        ? Object.entries(statistique_shart.facture)
+            .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
+            .map(([key, value]) => {
+              console.log('Facture - Mois:', key, 'Valeur:', value);
+              return value || 0;
+            })
+        : Array(12).fill(0)
     },
     {
       name: 'Paiements',
-      data: Array.isArray(statistiques.payment) 
-        ? statistiques.payment 
-        : Object.values(statistiques.payment || {}),
-    },
+      type: 'line',
+      data: statistique_shart?.payment 
+        ? Object.entries(statistique_shart.payment)
+            .sort(([a], [b]) => parseInt(a, 10) - parseInt(b, 10))
+            .map(([key, value]) => {
+              console.log('Paiement - Mois:', key, 'Valeur:', value);
+              return value || 0;
+            })
+        : Array(12).fill(0)
+    }
   ];
-};
-
-export function AguipeCharts({ statistique_shart = {}, loading = false }) {
-  const theme = useTheme();
-  const chartData = formatChartData(statistique_shart);
-  const hasData = chartData.length > 0 && chartData.some(serie => serie.data.length > 0);
+  
+  console.log('AguipeCharts - Données du graphique préparées:', chartData);
 
   const chartOptions = useChart({
     chart: {
-      type: 'bar',
-      stacked: true,
-      toolbar: { show: false },
+      type: 'line',
+      stacked: false,
+      toolbar: { show: true },
       zoom: { enabled: true },
+      animations: {
+        enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
+      },
+      dropShadow: {
+        enabled: true,
+        top: 3,
+        left: 2,
+        blur: 4,
+        opacity: 0.1,
+      },
+    },
+    stroke: {
+      width: [3, 3, 3],
+      curve: 'smooth',
+    },
+    markers: {
+      size: 5,
+      strokeWidth: 0,
+      hover: {
+        size: 7,
+      }
     },
     xaxis: {
       categories: MONTHS,
@@ -59,6 +108,12 @@ export function AguipeCharts({ statistique_shart = {}, loading = false }) {
         style: {
           colors: theme.palette.text.secondary,
         },
+      },
+      axisBorder: {
+        show: true,
+      },
+      axisTicks: {
+        show: true,
       },
     },
     yaxis: {
@@ -73,22 +128,29 @@ export function AguipeCharts({ statistique_shart = {}, loading = false }) {
       y: {
         formatter: (value) => fNumber(value),
       },
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: '30%',
-        borderRadius: 4,
+      marker: {
+        show: true,
       },
     },
     legend: {
       position: 'top',
       horizontalAlign: 'right',
+      markers: {
+        radius: 12,
+      },
+      itemMargin: {
+        vertical: 8,
+      },
     },
     colors: [
       theme.palette.primary.main,
       theme.palette.success.main,
       theme.palette.warning.main,
     ],
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 3,
+    },
     noData: {
       text: 'Aucune donnée disponible',
       align: 'center',
@@ -124,7 +186,7 @@ export function AguipeCharts({ statistique_shart = {}, loading = false }) {
         <Box sx={{ height: 400, minWidth: '100%' }}>
           {hasData ? (
             <Chart
-              type="bar"
+              type="line"
               series={chartData}
               options={chartOptions}
               height="100%"
