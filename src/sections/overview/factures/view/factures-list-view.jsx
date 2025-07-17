@@ -53,6 +53,7 @@ import { FactureTableFilters } from '../factures-table-filters';
 import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
+import { generateFacturePDF } from '../facture-pdf';
 
 import { useMockedUser } from 'src/auth/hooks';
 
@@ -87,14 +88,17 @@ export function FactureListView() {
   const theme = useTheme();
 
   const { user } = useMockedUser();
+  const type_user = user?.type_code.toLowerCase().trim();
 
   const router = useRouter();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
-  const [options, setOptions] = useState([]);
+  const confirmDownload = useBoolean();
 
+  const [options, setOptions] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // État pour gérer le chargement des options de banque
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [loader , setLaoder] = useState(false) // Etat pour indiquer le chargement des données sur les cards
@@ -358,6 +362,44 @@ export function FactureListView() {
     filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
 
+  const fetchFactures = async (slugs) => {
+  const responses = await Promise.all(
+    slugs.map((slug) => axios.get(API.detailsFacture(slug)))
+  );
+  return responses.map((res) => res.data);
+};
+
+const handleDownload = async () => {
+  if (!table.selected || table.selected.length === 0) {
+    toast.warn("Aucune facture sélectionnée.");
+    return;
+  }
+
+  setIsLoading(true); // Début du chargement
+
+  try {
+    const slugs = table.selected;
+    const factures = await fetchFactures(slugs);
+
+    for (const facture of factures) {
+      await generateFacturePDF(facture, facture.devise, { download: true });
+    }
+
+    table.onSelectAllRows(false, []);
+    toast.success("Téléchargement réussi !");
+  } catch (err) {
+    console.error(err);
+    toast.error("Erreur lors du téléchargement !");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+if (isLoading) {
+  toast.info("Téléchargement en cours, veuillez patienter...");
+}
+
+
   if (loading) {
     console.info('Loading factures...');
   }
@@ -483,24 +525,21 @@ export function FactureListView() {
               }}
               action={
                 <Stack direction="row">
-                  <Tooltip title="Envoyer">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
-                    </IconButton>
-                  </Tooltip>
+                 
 
                   <Tooltip title="Telecharger">
-                    <IconButton color="primary">
+                    <IconButton color="primary" onClick={confirmDownload.onTrue}>
                       <Iconify icon="eva:download-outline" />
                     </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Imprimer">
+                  {/* <Tooltip title="Imprimer">
                     <IconButton color="primary">
                       <Iconify icon="solar:printer-minimalistic-bold" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
 
+                  { (type_user === 'caissier' || type_user === 'comptable') && (
                   <Tooltip title="Payer">
                     <IconButton
                       color="primary"
@@ -509,9 +548,11 @@ export function FactureListView() {
                         // Ouvre la première boîte de dialogue
                       }}
                     >
+                     
                       <Iconify icon="mdi:credit-card" />
                     </IconButton>
                   </Tooltip>
+                   )}
                 </Stack>
               }
             />
@@ -594,6 +635,29 @@ export function FactureListView() {
           />
         </Card>
       </DashboardContent>
+
+      <ConfirmDialog
+        open={confirmDownload.value}
+        onClose={confirmDownload.onFalse}
+        title="Télécharger"
+        content={
+          <>
+            Etes vous sûr de vouloir Télécharger <strong> {table.selected.length} </strong> factures?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownload(); // Action pour "Télécharger"
+              confirmDownload.onFalse();
+            }}
+          >
+            Telecharger
+          </Button>
+        }
+      />
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
@@ -609,7 +673,6 @@ export function FactureListView() {
             color="primary"
             onClick={() => {
               confirm.onTrue();
-
               setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
             }}
           >

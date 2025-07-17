@@ -11,6 +11,7 @@ import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import Checkbox from '@mui/material/Checkbox';
 import { useState } from 'react';
 
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -101,11 +102,15 @@ export function FactureTableRow({
         }}
       >
         <TableCell padding="checkbox">
-          {/* <Checkbox
+          <Checkbox
             checked={selected}
-            onClick={onSelectRow}
-            slotProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
-          /> */}
+            // onClick={onSelectRow}
+             onClick={(e) => {
+              e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
+              onSelectRow(e);
+            }}
+            slotProps={{ slug: `row-checkbox-${row.slug}`, 'aria-label': `Row checkbox` }}
+          />
         </TableCell>
 
         <TableCell>
