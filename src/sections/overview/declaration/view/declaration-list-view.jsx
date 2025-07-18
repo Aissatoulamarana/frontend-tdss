@@ -549,7 +549,8 @@ export function DeclarationListView() {
               ? { title: filters.state.title }
               : filters.state.passport_number
                 ? { passport_number: filters.state.passport_number }
-                : {}
+                : filters.state.number ? { number: filters.state.number } 
+                : {} 
           ),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
         };
@@ -595,7 +596,6 @@ export function DeclarationListView() {
     table.page, 
     table.rowsPerPage, 
     filters.state.number,
-
     filters.state.company, 
     filters.state.title, 
     filters.state.passport_number, 
