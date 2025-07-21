@@ -12,7 +12,6 @@ const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Se
 // Fonction pour formater les données du graphique
 const formatChartData = (data) => {
   if (!data || typeof data !== 'object') {
-    console.log('Aucune donnée valide fournie à formatChartData');
     return Array(12).fill(0);
   }
   
@@ -27,29 +26,17 @@ const formatChartData = (data) => {
     }
   });
   
-  console.log('Données formatées:', monthlyData);
   return monthlyData;
 };
 
 export function AguipeCharts({ statistique_shart, loading = false, period = 'this_month' }) {
   const theme = useTheme();
   
-  console.log('AguipeCharts - Données reçues:', { 
-    statistique_shart, 
-    loading, 
-    period 
-  });
-  
-  // Vérifier si nous avons des données
+  // Vérifier si on a des données
   const hasData = statistique_shart && 
-    (Object.keys(statistique_shart.declaration || {}).length > 0 ||
-     Object.keys(statistique_shart.facture || {}).length > 0 ||
-     Object.keys(statistique_shart.payment || {}).length > 0);
-  
-  console.log('AguipeCharts - hasData:', hasData);
-  
-  // Vérifier que nous avons des données
-  console.log('Données brutes reçues dans AguipeCharts:', statistique_shart);
+                 (Object.keys(statistique_shart.declaration || {}).length > 0 ||
+                  Object.keys(statistique_shart.facture || {}).length > 0 ||
+                  Object.keys(statistique_shart.payment || {}).length > 0);
   
   // Préparer les données pour le graphique
   const chartData = [
@@ -70,7 +57,7 @@ export function AguipeCharts({ statistique_shart, loading = false, period = 'thi
     }
   ];
   
-  console.log('Données du graphique préparées:', chartData);
+
 
   const chartOptions = useChart({
     chart: {

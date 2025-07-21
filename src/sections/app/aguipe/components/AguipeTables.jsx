@@ -17,6 +17,7 @@ import {
   IconButton,
   Tooltip,
   Skeleton,
+  Box,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { fDate } from 'src/utils/format-time';
@@ -25,14 +26,25 @@ import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-const STATUS_COLOR = {
-  paid: 'success',
-  pending: 'warning',
-  unpaid: 'error',
-  draft: 'default',
-  submitted: 'info',
-  billed: 'primary',
-  unsubmitted: 'default',
+const STATUS_TRANSLATIONS = {
+  paid: { label: 'Payé', color: 'success' },
+  pending: { label: 'En attente', color: 'warning' },
+  unpaid: { label: 'Impayé', color: 'error' },
+  draft: { label: 'Brouillon', color: 'default' },
+  submitted: { label: 'Soumis', color: 'info' },
+  billed: { label: 'Facturé', color: 'primary' },
+  unsubmitted: { label: 'Non soumis', color: 'default' },
+  // Valeur par défaut pour les statuts inconnus
+  _default: { label: 'Inconnu', color: 'default' }
+};
+
+// Fonction utilitaire pour obtenir la traduction d'un statut
+const getStatusInfo = (status) => {
+  if (!status) return STATUS_TRANSLATIONS._default;
+  return STATUS_TRANSLATIONS[status.toLowerCase()] || { 
+    label: status, 
+    color: 'default' 
+  };
 };
 
 // ----------------------------------------------------------------------
@@ -58,7 +70,7 @@ export function AguipeTables({ declarations = [], loading = false }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Référence</TableCell>
+                <TableCell>Numéro</TableCell>
                 <TableCell>Entreprise</TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>Statut</TableCell>
@@ -90,7 +102,7 @@ export function AguipeTables({ declarations = [], loading = false }) {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Référence</TableCell>
+              <TableCell>Numéro</TableCell>
               <TableCell>Entreprise</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Statut</TableCell>
@@ -119,78 +131,33 @@ export function AguipeTables({ declarations = [], loading = false }) {
                   </TableCell>
                   <TableCell>{fDate(row.created_on)}</TableCell>
                   <TableCell>
-                    <Label color={STATUS_COLOR[row.status] || 'default'}>
-                      {row.status}
+                    <Label color={getStatusInfo(row.status).color}>
+                      {getStatusInfo(row.status).label}
                     </Label>
                   </TableCell>
-                  <TableCell>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="flex-end"
-                      flexWrap="wrap"
-                      gap={1}
-                      sx={{ minWidth: 200 }}
+                  <TableCell align="right">
+                    <Tooltip 
+                      title={`${row.employees?.length || 0} employé(s)`}
+                      arrow
                     >
-                      {row.employees?.slice(0, 3).map((employee, index) => (
-                        <Tooltip 
-                          key={index} 
-                          title={`${employee.first || ''} ${employee.last || ''}`.trim() || 'Employé'}
-                          arrow
-                        >
-                          <Avatar
-                            alt={`${employee.first || ''} ${employee.last || ''}`.trim()}
-                            src={employee.avatar}
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              bgcolor: 'primary.main',
-                              color: 'common.white',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              '&:hover': {
-                                transform: 'scale(1.1)',
-                                boxShadow: theme.shadows[4],
-                              },
-                              transition: theme.transitions.create(['transform', 'box-shadow']),
-                            }}
-                          >
-                            {employee.first ? `${employee.first.charAt(0)}${employee.last ? employee.last.charAt(0) : ''}` : 'E'}
-                          </Avatar>
-                        </Tooltip>
-                      ))}
-                      
-                      {row.employees?.length > 3 && (
-                        <Tooltip 
-                          title={
-                            <Stack spacing={0.5}>
-                              {row.employees.slice(3).map((emp, idx) => (
-                                <div key={idx}>{`${emp.first || ''} ${emp.last || ''}`.trim() || 'Employé'}</div>
-                              ))}
-                            </Stack>
-                          }
-                          arrow
-                        >
-                          <Avatar
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              bgcolor: 'grey.500',
-                              color: 'common.white',
-                              fontSize: 12,
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                bgcolor: 'grey.600',
-                              },
-                              transition: theme.transitions.create('background-color'),
-                            }}
-                          >
-                            +{row.employees.length - 3}
-                          </Avatar>
-                        </Tooltip>
-                      )}
-                    </Stack>
+                      <Box 
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          bgcolor: 'primary.lighter',
+                          color: 'primary.dark',
+                          borderRadius: 1,
+                          px: 1.5,
+                          py: 0.5,
+                          minWidth: 40,
+                          fontWeight: 'fontWeightMedium',
+                        }}
+                      >
+                        <Iconify icon="mdi:account-group" width={16} sx={{ mr: 0.5 }} />
+                        {row.employees?.length || 0}
+                      </Box>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}

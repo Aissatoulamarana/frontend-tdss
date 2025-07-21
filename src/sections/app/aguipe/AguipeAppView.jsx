@@ -32,11 +32,11 @@ import AguipService from 'src/services/aguipService';
 
 // Périodes prédéfinies
 const PERIODS = [
+  { value: 'custom', label: 'Personnalisée' },
   { value: 'this_month', label: 'Ce mois-ci' },
   { value: 'last_month', label: 'Le mois dernier' },
   { value: 'last_3_months', label: '3 derniers mois' },
   { value: 'this_year', label: 'Cette année' },
-  { value: 'custom', label: 'Personnalisée' },
 ];
 
 export default function AguipeAppView() {
@@ -51,7 +51,7 @@ export default function AguipeAppView() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [period, setPeriod] = useState('this_month');
+  const [period, setPeriod] = useState('custom');
   const [startDate, setStartDate] = useState(dayjs(startOfMonth(new Date())));
   const [endDate, setEndDate] = useState(dayjs(endOfMonth(new Date())));
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -100,9 +100,6 @@ export default function AguipeAppView() {
           end = today.endOf('month');
       }
       
-      console.log('Période sélectionnée:', period);
-      console.log('Dates de la requête:', { start: formatDate(start), end: formatDate(end) });
-      
       // Formater les dates pour l'API
       const formattedStartDate = formatDate(start);
       const formattedEndDate = formatDate(end);
@@ -112,31 +109,15 @@ export default function AguipeAppView() {
       setEndDate(end);
       
       // Récupérer les données de l'API
-      console.log('Appel à AguipService.getDashboardData avec les paramètres:', {
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        period
-      });
-      
       const data = await AguipService.getDashboardData({
         startDate: formattedStartDate,
         endDate: formattedEndDate
       });
       
-      console.log('Données reçues de l\'API:', data);
-      
       // Vérifier si les données sont valides
       if (!data) {
         throw new Error('Aucune donnée reçue du service');
       }
-      
-      // Log des données de statistiques pour débogage
-      console.log('Statistiques reçues:', {
-        total_declarations: data.stats?.total_declarations,
-        total_facture: data.stats?.total_facture,
-        total_payment: data.stats?.total_payment,
-        taux_payment: data.stats?.taux_payment
-      });
       
       setDashboardData(data);
       
@@ -344,7 +325,7 @@ export default function AguipeAppView() {
               fullWidth={typeof window !== 'undefined' && window.innerWidth < 600}
               sx={{ height: '40px' }}
             >
-              {loading ? 'Chargement...' : 'Actualiser'}
+              {loading ? 'Chargement...' : 'Appliquer'}
             </Button>
           </Stack>
         </Stack>
@@ -358,10 +339,7 @@ export default function AguipeAppView() {
 
         {/* Section des statistiques */}
         <div>
-          {console.log('Données transmises à AguipeStats:', {
-            stats: dashboardData.stats,
-            loading
-          })}
+
           <AguipeStats 
             stats={{
               total_declarations: dashboardData.stats?.total_declarations || 0,
