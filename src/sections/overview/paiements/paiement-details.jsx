@@ -249,7 +249,7 @@ export function PaiementDetails({ payment, user }) {
               )}
             </Grid>
 
-            <Grid item size={{ xs: 12 }} sx={{ mt: 2 }}>
+            <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
               <Typography
                 variant="subtitle2"
                 sx={{ fontWeight: 500, fontSize: '0.9rem', letterSpacing: 0.25, mb: 1 }}
@@ -304,6 +304,36 @@ export function PaiementDetails({ payment, user }) {
                 </Typography> */}
               </Box>
             </Grid>
+
+             <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
+              <Box
+                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
+              >
+                 <Box
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    p: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {qrUrl ? (
+                    <img
+                      src={qrUrl}
+                      alt="QR Code"
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <Typography variant="caption" align="center">
+                      QR Code en cours de chargement...
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              
+            </Grid>
           </Grid>
         </Box>
 
@@ -355,38 +385,35 @@ export function PaiementDetails({ payment, user }) {
               </StyledTableRow>
             </TableBody>
           </Table>
+           <Typography
+                  variant="body2"
+                  sx={{ fontSize: '0.85rem', color: 'text.primary', mt: 1.5 }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                  >
+                    Commentaire :
+                  </Typography>{' '}
+                  {payment?.comment}
+                </Typography>
         </Box>
 
         <Box sx={{ mt: 5, mb: 8 }}>
           <Grid container spacing={2}>
-            {/* Colonne Client avec QR Code */}
+            
             <Grid item size={{ xs: 6 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <Box
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    p: 1,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  {qrUrl ? (
-                    <img
-                      src={qrUrl}
-                      alt="QR Code"
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <Typography variant="caption" align="center">
-                      QR Code en cours de chargement...
-                    </Typography>
-                  )}
-                </Box>
+              <Box 
+              sx={{
+                 display: 'flex', 
+                 flexDirection: 'column', 
+                 alignItems: 'flex-start',
+                 justifyContent: 'flex-start',
+                 }}>
+               
                 <Typography
                   variant="body2"
-                  sx={{ fontWeight: 'bold', mt: 2, textDecoration: 'underline' }}
+                  sx={{ fontWeight: 'bold',  textDecoration: 'underline' }}
                 >
                   Le Client
                 </Typography>
