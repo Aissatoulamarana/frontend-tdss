@@ -26,6 +26,7 @@ import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { pdf } from '@react-pdf/renderer';
+import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -63,9 +64,6 @@ import dayjs from 'src/utils/format-time'; // Ensure this imports the correct da
 dayjs.locale('fr'); // Set the default locale to French
 
 
-import { number } from 'prop-types';
-import { set } from 'nprogress';
-
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -98,6 +96,7 @@ export function DeclarationListView() {
 
   const confirm = useBoolean();
   const confirmDownload = useBoolean();
+  const downloadZip = useBoolean();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
@@ -106,6 +105,7 @@ export function DeclarationListView() {
   const [selectedFilter, setSelectedFilter] = useState('number'); // options de recherche
   // const [selectedDeclarations, setSelectedDeclarations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadZip , setIsLoadZip] = useState(false);
 
   const [count, setCount] = useState();
   const downloadMultiplePDF = useBoolean();
@@ -489,7 +489,43 @@ const handleDownload = async () => {
       setIsLoading(false);
     }
   };
+  // Fonction pour télécharger plusieurs declarations en un fichier ZIP
+  const handleDownloadZip = async () => {
+    if (!table.selected || table.selected.length === 0) {
+      toast.warn("Aucune déclaration sélectionnée.");
+      return;
+    }
 
+    setIsLoadZip(true);
+
+    try {
+      const slugs = table.selected;
+      const declarations = await fetchDeclarations(slugs);
+
+      const zip = new JSZip();
+
+      for (const declaration of declarations) {
+
+      const blob = await generateDeclarationPDF(declaration, {
+          download: false, // Ne pas télécharger individuellement
+        });
+
+        const filename = `declaration-${declaration.number}.pdf`;
+        zip.file(filename, blob);
+      }
+
+      // Générer le fichier ZIP
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, 'factures.zip');
+      toast.success('Téléchargement ZIP terminé !');
+      table.onSelectAllRows(false, []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Erreur lors du téléchargement ZIP.");
+    } finally {
+      setIsLoadZip(false);
+    }
+  };
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -919,7 +955,11 @@ const handleDownload = async () => {
                       <Iconify icon="eva:download-outline" />
                     </IconButton>
                   </Tooltip>
-
+                  <Tooltip title="Télécharger en ZIP">
+                    <IconButton color="primary" onClick={downloadZip.onTrue} disabled={isLoadZip}>
+                    {isLoadZip ? <CircularProgress size={24} /> :  <Iconify icon="mdi:zip-box" /> }
+                    </IconButton>
+                  </Tooltip>
                   <Tooltip title="Imprimer">
                     <IconButton color="primary">
                       <Iconify icon="solar:printer-minimalistic-bold" />
@@ -1080,6 +1120,29 @@ const handleDownload = async () => {
             }}
           >
             Telecharger
+          </Button>
+        }
+      />
+      {/* modal confirmation telechargement zip de plusieurs declarations */}
+       <ConfirmDialog
+        open={downloadZip.value}
+        onClose={downloadZip.onFalse}
+        title="Télécharger en ZIP"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong> déclarations?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownloadZip(); // Action pour "Télécharger"
+              downloadZip.onFalse();
+            }}
+          >
+            Telecharger en ZIP
           </Button>
         }
       />
