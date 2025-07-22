@@ -33,7 +33,7 @@ import { useSetState } from 'src/hooks/use-set-state';
 import API from 'src/utils/api';
 import { fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
-
+import { PDFDocument } from 'pdf-lib';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Iconify } from 'src/components/iconify';
@@ -66,7 +66,31 @@ dayjs.locale('fr'); // Set the default locale to French
 import { number } from 'prop-types';
 import { set } from 'nprogress';
 
+// Fonction pour générer un PDF sous forme de bytes
+const generateDeclarationPDF = async (declaration, options = { download: false }) => {
+  const { download } = options;
+  const logoUrl = declaration?.company?.picture;
+  const proxyBase = 'https://api.allorigins.win/raw?url=';
+  const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
 
+  const pdfDoc = (
+    <DeclarationPDF
+      declaration={declaration}
+      employees={declaration.employees}
+      logoUrl={proxiedLogoUrl}
+    />
+  );
+
+  const blob = await pdf(pdfDoc).toBlob();
+  
+  if (download) {
+    saveAs(blob, `declaration-${declaration.number}.pdf`);
+    return null;
+  }
+
+  const arrayBuffer = await blob.arrayBuffer();
+  return arrayBuffer;
+};
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -109,6 +133,7 @@ export function DeclarationListView() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [count, setCount] = useState();
+  const downloadMultiplePDF = useBoolean();
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -448,8 +473,47 @@ const handleDownload = async () => {
     setIsLoading(false); // Fin du chargement
   }
 };
+  // Fonction pour télécharger plusieurs declarations PDF en un seul fichier
+  const handleDownloadMultiplePDF = async () => {
+    if (!table.selected || table.selected.length === 0) {
+      toast.warn("Aucune déclaration sélectionnée.");
+      return;
+    }
 
+    setIsLoading(true);
 
+    try {
+      const slugs = table.selected;
+      const declarations = await fetchDeclarations(slugs);
+
+      // 1. Nouveau document final
+      const mergedPdf = await PDFDocument.create();
+
+      for (const declaration of declarations) {
+        // 2. Génération du PDF de cette déclaration (sous forme de bytes)
+        const singlePdfBytes = await generateDeclarationPDF(declaration, { download: false });
+
+        // 3. Charger le PDF source
+        const singlePdfDoc = await PDFDocument.load(singlePdfBytes);
+
+        // 4. Copier toutes les pages dans le document final
+        const copiedPages = await mergedPdf.copyPages(singlePdfDoc, singlePdfDoc.getPageIndices());
+        copiedPages.forEach((page) => mergedPdf.addPage(page));
+      }
+
+      // 5. Sauvegarde et téléchargement
+      const mergedPdfBytes = await mergedPdf.save();
+      saveAs(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'declarations_ensemble.pdf');
+      toast.success('Téléchargement PDF déclarations groupées terminé !');
+      table.onSelectAllRows(false, []);
+
+    } catch (error) {
+      console.error('Erreur fusion PDF :', error);
+      toast.error("Erreur lors de la génération du PDF.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 
   const handleDeleteRows = useCallback(() => {
@@ -867,7 +931,14 @@ const handleDownload = async () => {
                       <Iconify icon="iconamoon:send-fill" />
                     </IconButton>
                   </Tooltip>
-
+                  {/* telecharger toutes les declarations en un seul fichier */}
+                  <Tooltip title="Télécharger toutes les déclarations (PDF unique)">
+                    <span>
+                      <IconButton color='primary' onClick={downloadMultiplePDF.onTrue} disabled={isLoading}>
+                        {isLoading ? <CircularProgress size={24} /> : <Iconify icon="mdi:file-download-outline" />}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                   <Tooltip title="Telecharger">
                     <IconButton color="primary" onClick={confirmDownload.onTrue}>
                       <Iconify icon="eva:download-outline" />
@@ -968,7 +1039,28 @@ const handleDownload = async () => {
           />
         </Card>
       </DashboardContent>
-
+      <ConfirmDialog
+        open={downloadMultiplePDF.value}
+        onClose={downloadMultiplePDF.onFalse}
+        title="Télécharger"
+        content={
+          <>
+            Etes vous sûr de vouloir télécharger  <strong> {table.selected.length} </strong> déclarations dans un seul fichier?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => { 
+              handleDownloadMultiplePDF(); // Action pour "Télécharger"
+              downloadMultiplePDF.onFalse();
+            }}
+          >
+            Telecharger
+          </Button>
+        }
+      />
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
