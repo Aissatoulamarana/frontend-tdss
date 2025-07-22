@@ -86,6 +86,7 @@ export function DeclarationListView() {
   const { user } = useMockedUser();
 
   const type_user = user?.type_name?.toLowerCase().trim();
+  
   // console.log('type_user:', type_user);
 
   const router = useRouter();
