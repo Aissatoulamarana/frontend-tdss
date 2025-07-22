@@ -55,7 +55,7 @@ import { DeclarationSummary } from '../declaration-analytic';
 import { DeclarationTableFiltersResult } from '../declaration-table-filters';
 import { DeclarationTableRow } from '../declaration-table-row';
 import { DeclarationTableToolbar } from '../declaration-table-toolbar';
-import { DeclarationPDF } from '../declaration-pdf';
+import { DeclarationPDF, generateDeclarationPDF } from '../declaration-pdf';
 
 import { useMockedUser } from 'src/auth/hooks';
 
@@ -66,31 +66,6 @@ dayjs.locale('fr'); // Set the default locale to French
 import { number } from 'prop-types';
 import { set } from 'nprogress';
 
-// Fonction pour générer un PDF sous forme de bytes
-const generateDeclarationPDF = async (declaration, options = { download: false }) => {
-  const { download } = options;
-  const logoUrl = declaration?.company?.picture;
-  const proxyBase = 'https://api.allorigins.win/raw?url=';
-  const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
-
-  const pdfDoc = (
-    <DeclarationPDF
-      declaration={declaration}
-      employees={declaration.employees}
-      logoUrl={proxiedLogoUrl}
-    />
-  );
-
-  const blob = await pdf(pdfDoc).toBlob();
-  
-  if (download) {
-    saveAs(blob, `declaration-${declaration.number}.pdf`);
-    return null;
-  }
-
-  const arrayBuffer = await blob.arrayBuffer();
-  return arrayBuffer;
-};
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
