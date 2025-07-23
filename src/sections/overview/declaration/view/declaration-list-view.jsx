@@ -516,7 +516,7 @@ const handleDownload = async () => {
 
       // Générer le fichier ZIP
       const zipBlob = await zip.generateAsync({ type: 'blob' });
-      saveAs(zipBlob, 'factures.zip');
+      saveAs(zipBlob, 'declarations.zip');
       toast.success('Téléchargement ZIP terminé !');
       table.onSelectAllRows(false, []);
     } catch (error) {
