@@ -169,7 +169,10 @@ export function UserDetailsView({ slug }) {
                             <Tab label="Détails" />
                             <Tab label="Profil" />
                             <Tab label="Agences" />
-                            {(user.type?.name === 'Enteprise') && <Tab label="Entreprises" />}
+                            {/* {(user.type?.name === 'Enteprise') && <Tab label="Entreprises" />} */}
+                            {(['Agent', 'Admin'].includes(user.type?.name) && user.profile?.type === 'Entreprise') && (
+                                <Tab label="Entreprises" />
+                            )}
                         </Tabs>
                     </Card>
 
