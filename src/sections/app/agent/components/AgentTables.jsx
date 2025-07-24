@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@mui/material/styles';
 import { usePathname } from 'next/navigation';
@@ -39,6 +39,45 @@ const TABLE_HEAD = [
   { id: 'status', label: 'Statut', width: 100 },
 ];
 
+// Définition des statuts possibles avec leurs libellés et couleurs
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'Toutes' },
+  { value: 'submitted', label: 'Soumises' },
+  { value: 'unsubmitted', label: 'Non Soumises' },
+  { value: 'pending', label: 'En attente' },
+  { value: 'billed', label: 'Facturées' },
+  { value: 'paid', label: 'Payées' },
+  { value: 'unpaid', label: 'Impayées' },
+  { value: 'rejected', label: 'Rejetées' },
+  { value: 'validated', label: 'Validées' },
+];
+
+// Fonction utilitaire pour obtenir la couleur d'un statut
+export const getStatusColor = (status) => {
+  switch (status) {
+    case 'submitted':
+    case 'billed':
+    case 'paid':
+    case 'validated':
+      return 'success';
+    case 'rejected':
+    case 'unpaid':
+      return 'error';
+    case 'pending':
+      return 'warning';
+    case 'unsubmitted':
+      return 'default';
+    default:
+      return 'info';
+  }
+};
+
+// Fonction utilitaire pour obtenir le libellé d'un statut
+export const getStatusLabel = (status) => {
+  const statusOption = STATUS_OPTIONS.find(option => option.value === status);
+  return statusOption ? statusOption.label : status.charAt(0).toUpperCase() + status.slice(1);
+};
+
 // ----------------------------------------------------------------------
 
 export function AgentRecentDeclarations({ declarations = [] }) {
@@ -48,10 +87,17 @@ export function AgentRecentDeclarations({ declarations = [] }) {
   const [filter, setFilter] = useState('all');
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
+  // Extraire les statuts uniques des déclarations pour les options de filtre
+  const availableStatuses = React.useMemo(() => {
+    const statusSet = new Set(declarations.map(dec => dec.status));
+    return STATUS_OPTIONS.filter(option => 
+      option.value === 'all' || statusSet.has(option.value)
+    );
+  }, [declarations]);
+
   // Filtrer les déclarations par statut
   const filteredDeclarations = declarations.filter((dec) => {
-    const matchesFilter = filter === 'all' || dec.status === filter;
-    return matchesFilter;
+    return filter === 'all' || dec.status === filter;
   });
 
   // Prioriser les déclarations non soumises (pending) et rejetées (rejected)
@@ -146,11 +192,11 @@ export function AgentRecentDeclarations({ declarations = [] }) {
                   <Iconify icon="mdi:filter-variant" width={20} sx={{ mr: 0.5, ml: -0.5 }} />
                 }
               >
-                <MenuItem value="all">Toutes</MenuItem>
-                <MenuItem value="submitted">Soumises</MenuItem>
-                <MenuItem value="unsubmitted">Non Soumises</MenuItem>
-                <MenuItem value="billed">Facturées</MenuItem>
-                <MenuItem value="rejected">Rejetées</MenuItem>
+                {availableStatuses.map((status) => (
+                  <MenuItem key={status.value} value={status.value}>
+                    {status.label}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Stack>
@@ -265,26 +311,9 @@ function AgentDeclarationRow({ row, isDarkMode }) {
         <TableCell>
           <Label
             variant="soft"
-            color={
-              row.status === 'submitted' || row.status === 'billed' || row.status === 'paid'
-                ? 'success'
-                : row.status === 'rejected' || row.status === 'unpaid'
-                  ? 'error'
-                  : row.status === 'pending'
-                    ? 'warning'
-                    : 'default'
-            }
+            color={getStatusColor(row.status)}
           >
-            {
-              row.status === 'submitted' ? 'Soumise' :
-              row.status === 'billed' ? 'Facturée' :
-              row.status === 'paid' ? 'Payée' :
-              row.status === 'rejected' ? 'Rejetée' :
-              row.status === 'unpaid' ? 'Impayée' :
-              row.status === 'pending' ? 'En attente' :
-              row.status === 'unsubmitted' ? 'Non soumise' :
-              row.status.charAt(0).toUpperCase() + row.status.slice(1) // Mise en majuscule de la première lettre
-            }
+            {getStatusLabel(row.status)}
           </Label>
         </TableCell>
       </TableRow>
@@ -332,5 +361,3 @@ AgentRecentDeclarations.propTypes = {
     })
   ),
 };
-
-// ----------------------------------------------------------------------
