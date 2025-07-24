@@ -107,7 +107,7 @@ export function AgentRecentDeclarations({ declarations = [] }) {
                   color: isDarkMode ? theme.palette.primary.light : theme.palette.primary.main,
                 }}
               />
-              <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.white }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.common.black }}>
                 Déclarations récentes
               </Typography>
               <Label color="info" sx={{ ml: 1 }}>
@@ -148,7 +148,8 @@ export function AgentRecentDeclarations({ declarations = [] }) {
               >
                 <MenuItem value="all">Toutes</MenuItem>
                 <MenuItem value="submitted">Soumises</MenuItem>
-                <MenuItem value="pending">Non Soumises</MenuItem>
+                <MenuItem value="unsubmitted">Non Soumises</MenuItem>
+                <MenuItem value="billed">Facturées</MenuItem>
                 <MenuItem value="rejected">Rejetées</MenuItem>
               </Select>
             </FormControl>
@@ -265,18 +266,25 @@ function AgentDeclarationRow({ row, isDarkMode }) {
           <Label
             variant="soft"
             color={
-              row.status === 'submitted'
+              row.status === 'submitted' || row.status === 'billed' || row.status === 'paid'
                 ? 'success'
-                : row.status === 'rejected'
+                : row.status === 'rejected' || row.status === 'unpaid'
                   ? 'error'
-                  : 'warning'
+                  : row.status === 'pending'
+                    ? 'warning'
+                    : 'default'
             }
           >
-            {row.status === 'submitted'
-              ? 'Soumise'
-              : row.status === 'rejected'
-                ? 'Rejetée'
-                : 'Non Soumise'}
+            {
+              row.status === 'submitted' ? 'Soumise' :
+              row.status === 'billed' ? 'Facturée' :
+              row.status === 'paid' ? 'Payée' :
+              row.status === 'rejected' ? 'Rejetée' :
+              row.status === 'unpaid' ? 'Impayée' :
+              row.status === 'pending' ? 'En attente' :
+              row.status === 'unsubmitted' ? 'Non soumise' :
+              row.status.charAt(0).toUpperCase() + row.status.slice(1) // Mise en majuscule de la première lettre
+            }
           </Label>
         </TableCell>
       </TableRow>
