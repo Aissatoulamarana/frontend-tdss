@@ -13,8 +13,12 @@ import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import { Autocomplete } from '@mui/material';
+import {CircularProgress} from '@mui/material';
 import { useState, useEffect } from 'react';
-
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { fCurrency , fGNF , fEuro } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
 
@@ -23,6 +27,12 @@ import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 
 import { FactureToolbar } from './facture-toolbar';
+import { Iconify } from 'src/components/iconify';
+import { useBoolean } from 'src/hooks/use-boolean';
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+
+
 
 // ----------------------------------------------------------------------
 
@@ -41,11 +51,48 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export function FactureDetails({ facture, user }) {
   const [currentStatus, setCurrentStatus] = useState('');
   const [devise, setDevise] = useState('GNF');
+  const [declarations , setDeclarations] = useState([]);
+  const [loadDec , setLoadDec] = useState(false);
+
+  useEffect(() => {
+    if (!facture?.client_name) return;
+    const fetchDeclarations = async () => {
+      setLoadDec(true);
+      try {
+        const resp1 = await axios.get(API.listDeclarations(), {
+          params: {offset : 0 , limit : 1 , company : facture?.client_name}
+        });
+        const total = resp1?.data?.count;
+
+        console.log('Params envoyés:', {
+        offset: 0,
+        limit: total,
+        company: facture?.client_name
+      });
+
+        const resp2 = await axios.get(API.listDeclarations(), {
+        params: { offset: 0, limit: total , company : facture?.client_name }
+      });
+     
+
+        setDeclarations(resp2?.data?.results || []);
+
+      } catch (error) {
+        toast.error('Erreur du chargement des déclarations')
+      } finally {
+        setLoadDec(false);
+      }
+    
+    };
+    fetchDeclarations();
+  },[ facture && facture?.client_name]) 
 
   const router = useRouter();
   // const currentStatus = facture?.status;
 
   const popover = usePopover();
+
+  const confirm = useBoolean();
 
   const afficherMontant = (montant) => {
     if (devise === 'GNF') {
@@ -57,6 +104,16 @@ export function FactureDetails({ facture, user }) {
   }
 };
 
+
+const handleAdd = () => {
+  console.log('Ajouter une nouvelle déclaration');
+}
+
+const handleChange = (event, newValue) => {
+  if (newValue) {
+    console.log('Déclaration sélectionnée:', newValue);
+  }
+}
 
 
 
@@ -141,6 +198,55 @@ export function FactureDetails({ facture, user }) {
         </TableRow>
       ))}
 
+     <ConfirmDialog
+        open={confirm.value}
+        onClose={confirm.onFalse} // Ferme la deuxième boîte de dialogue
+        title="Veuillez selectionner la declaration que vous voulez ajouter"
+         content={
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 , mb: 2 }}>
+            <Autocomplete
+              options={declarations}
+              getOptionLabel={(declaration) => declaration.number}
+              loading={loadDec}
+              // value={selectedBanque || null}
+              onChange={handleChange}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Rechercher ou sélectionner une déclaration"
+                  placeholder="Taper pour rechercher"
+                  variant="outlined"
+                  fullWidth
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadDec ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }
+                  }}
+                />
+              )}
+              sx={{ width: '100%' }}
+            />
+          </Box>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              handleAdd(); // Action pour "Ajouter une nouvelle déclaration"
+            }}
+          >
+            Ajouter
+          </Button>
+        }
+      /> 
+
       {/* Total général */}
       <StyledTableRow>
         <CenteredTableCell colSpan={3} />
@@ -200,6 +306,22 @@ useEffect(() => {
       }
         devise={devise}
       />
+
+      <Box sx= {{display: 'flex', justifyContent: 'flex-end', mb: { xs: 1, md: 2 } }}>
+      <Button
+      variant="contained"
+      onClick={() => confirm.onTrue()}
+      startIcon= {<Iconify icon="mingcute:add-line"/>} 
+      sx= {{
+        mb:{ xs: 1, md: 1 },
+        fontSize: '0.875rem',
+        px : 2,
+      }}
+      >
+        Ajouter une nouvelle declaration
+        
+      </Button>
+      </Box>
       <Card sx={{ pt: 5, px: 5 }}>
         <Box
           rowGap={5}
