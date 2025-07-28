@@ -15,12 +15,15 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
 import { Autocomplete } from '@mui/material';
 import {CircularProgress} from '@mui/material';
 import { useState, useEffect } from 'react';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { fCurrency , fGNF , fEuro } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 
 import { usePopover } from 'src/components/custom-popover';
 import { Label } from 'src/components/label';
@@ -31,6 +34,7 @@ import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
+
 
 
 
@@ -52,6 +56,7 @@ export function FactureDetails({ facture, user }) {
   const [currentStatus, setCurrentStatus] = useState('');
   const [devise, setDevise] = useState('GNF');
   const [declarations , setDeclarations] = useState([]);
+  const [selectedDeclarations, setSelectedDeclarations] = useState([]);
   const [loadDec , setLoadDec] = useState(false);
 
   useEffect(() => {
@@ -88,11 +93,12 @@ export function FactureDetails({ facture, user }) {
   },[ facture && facture?.client_name]) 
 
   const router = useRouter();
-  // const currentStatus = facture?.status;
+ 
 
   const popover = usePopover();
 
   const confirm = useBoolean();
+  const confirmRemove = useBoolean();
 
   const afficherMontant = (montant) => {
     if (devise === 'GNF') {
@@ -109,12 +115,18 @@ const handleAdd = () => {
   console.log('Ajouter une nouvelle déclaration');
 }
 
+const handleRemove = () => {
+  console.log('retirer une déclaration');
+}
+
 const handleChange = (event, newValue) => {
   if (newValue) {
     console.log('Déclaration sélectionnée:', newValue);
   }
 }
 
+const qrData = encodeURIComponent(`Facture N° ${facture?.number} - ${facture?.amount} ${devise}`);
+const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
 
   const renderFooter = (
@@ -163,37 +175,65 @@ const handleChange = (event, newValue) => {
   
  // Filtrer les permis avec count > 0
  const filteredPermits = facture?.permits.filter((item) => item.count > 0) || [];
+const mockDeclarations = [
+    {
+      number : 3352, price : 128546000 , date: '2023-10-01',
+    },
+    {
+      number : 5841 , price : 15000000 , date: '2023-10-02',
+    }
+    
+];
 
+const totalPrice = mockDeclarations.reduce((acc, row) => acc + row.price, 0);
   const renderList = (
     <Scrollbar sx={{ mt: 5 }}>
   <Table sx={{ minWidth: 960 }}>
     <TableHead>
       <TableRow>
+        <CenteredTableCell width={40}> </CenteredTableCell>
         <CenteredTableCell width={40}>#</CenteredTableCell>
-        <CenteredTableCell width={150}>Categorie de permis</CenteredTableCell>
-        <CenteredTableCell width={150}>Quantité</CenteredTableCell>
-        <CenteredTableCell width={150}>Prix Unitaire</CenteredTableCell>
-        <CenteredTableCell width={150}>Total</CenteredTableCell>
+        <CenteredTableCell width={250}>Déclarations</CenteredTableCell>
+        <CenteredTableCell width={250}>Date Déclaration</CenteredTableCell>
+        <CenteredTableCell width={250}>Montant</CenteredTableCell>
       </TableRow>
     </TableHead>
     <TableBody>
-      {filteredPermits.map((row, index) => (
-        <TableRow key={index}>
+      {mockDeclarations.map((row, index) => (
+        <TableRow key={index}
+         sx={{
+    backgroundColor: selectedDeclarations.includes(row.number)
+      ? 'rgba(0, 171, 85, 0.08)' // légère surbrillance
+      : 'transparent'
+  }}>
+        <Checkbox
+          checked={selectedDeclarations.includes(row.number)}
+          onChange={(e) => {
+            const selected = [...selectedDeclarations];
+            if (e.target.checked) {
+              selected.push(row.number);
+            } else {
+              const index = selected.indexOf(row.number);
+              if (index > -1) selected.splice(index, 1);
+            }
+            setSelectedDeclarations(selected);
+          }}
+          inputProps={{ 'aria-label': `select declaration ${index + 1}` }}
+        />
+
           <CenteredTableCell>{index + 1}</CenteredTableCell>
 
           <CenteredTableCell>
-            <Typography variant="subtitle2">{row.category}</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-              Permis {row.type}
-            </Typography>
+            <Typography variant="subtitle2">{row.number}</Typography>
+           
           </CenteredTableCell>
 
-          <CenteredTableCell>{row.count}</CenteredTableCell>
+       
 
-          <CenteredTableCell>{afficherMontant(row.price)}</CenteredTableCell>
+          <CenteredTableCell>{row.date}</CenteredTableCell>
 
           <CenteredTableCell>
-            {afficherMontant(row.total_price)}
+            {afficherMontant(row.price)}
           </CenteredTableCell>
         </TableRow>
       ))}
@@ -246,6 +286,30 @@ const handleChange = (event, newValue) => {
           </Button>
         }
       /> 
+
+       <ConfirmDialog
+              open={confirmRemove.value}
+              onClose={confirmRemove.onFalse}
+              title="Retirer des déclarations"
+              content={
+                <>
+                  Etes vous sûr de vouloir retirer <strong> {selectedDeclarations.length} </strong>{' '}
+                  declarations?
+                </>
+              }
+              action={
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => {
+                    handleRemove();
+                    confirmRemove.onFalse();
+                  }}
+                >
+                  Retirer
+                </Button>
+              }
+            />
 
       {/* Total général */}
       <StyledTableRow>
@@ -369,6 +433,10 @@ useEffect(() => {
  
             </Label>
             <Typography variant="h6"> {`FACTURE N° ${facture?.number}`}</Typography>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Date facture :
+              {fDate(facture?.created_on)}
+            </Typography>
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
@@ -387,23 +455,39 @@ useEffect(() => {
             Région : {facture?.client_location}
           </Stack>
 
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date facture :
-              {fDate(facture?.created_on)}
-            </Typography>
-            <Typography variant="subtitle2" sx={{ mb: 1 , cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' }}} onClick={handleDetailsDeclaration}>
-              Declaration N :
-              {facture?.declaration_number}
-            </Typography>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date declaration :
-              {fDate(facture?.date_declaration)}
-            </Typography>
+          <Stack sx={{
+          typography: 'body2',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'flex-end',
+        }}>
+
+           <Box
+           sx={{ width:90, height:90}}
+            component="img"
+            alt="logo"
+            src={qrUrl}
+           
+          />
 
           </Stack>
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
+        {selectedDeclarations.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+          <Button
+             variant="outlined"
+              color="error"
+              startIcon={<Iconify icon="mdi:trash-can-outline" />}
+            onClick={() => {
+              confirmRemove.onTrue()
+            }}
+          >
+          Retirer
+          </Button>
+      </Box>
+      )}
+
 
         {renderList}
 
