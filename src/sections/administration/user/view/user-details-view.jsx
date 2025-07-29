@@ -114,9 +114,10 @@ export function UserDetailsView({ slug }) {
                 user: slug,
             };
 
-            console.log('Données envoyées:', formData);
+            // console.log('Utilisateur avant soumission :', user);
+            // console.log('Données envoyées:', formData);
             const response = await axios.post(API.addProfileToUser(), formData);
-            console.log('Réponse de l\'API:', response.data); // Déplacé ici pour toujours voir la réponse
+            // console.log('Réponse de l\'API:', response.data); // Déplacé ici pour toujours voir la réponse
 
             // Vérifier si la requête a réussi (statut 2xx)
             if (response.status >= 200 && response.status < 300) {
