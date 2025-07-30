@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { Form } from 'src/components/hook-form';
@@ -14,6 +14,7 @@ import {
     Avatar,
     Card,
     Stack,
+    CircularProgress,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import TextField from '@mui/material/TextField';
@@ -29,10 +30,11 @@ import { toast } from 'sonner';
 import { Iconify } from 'src/components/iconify';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-import { getEntreprises } from 'src/utils/options';
+import { getEntreprises, getEntreprisesSearch } from 'src/utils/options';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 import { paths } from 'src/routes/paths';
+import debounce from 'lodash.debounce';
 
 export function UserDetailsView({ slug }) {
     const [user, setUser] = useState(null);
@@ -41,10 +43,11 @@ export function UserDetailsView({ slug }) {
     const [tabIndex, setTabIndex] = useState(0);
     const [showSelect, setShowSelect] = useState(false);
     const [companies, setCompanies] = useState([]);
-    const [selectedCompany, setSelectedCompany] = useState(null); // Changé en null pour éviter undefined
-    const [page, setPage] = useState(1);
-    const [search, setSearch] = useState('');
-    const [pageSize] = useState(10);
+    const [initialCompanies, setInitialCompanies] = useState([]); // Liste initiale
+    const [selectedCompany, setSelectedCompany] = useState(null);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
+    const [isSearching, setIsSearching] = useState(false); // Pour distinguer recherche vs liste initiale
 
     const router = useRouter();
 
@@ -61,17 +64,63 @@ export function UserDetailsView({ slug }) {
         })();
     }, [slug]);
 
+    // Charger la liste initiale des entreprises
     useEffect(() => {
-        const fetchCompanies = async () => {
-            const data = await getEntreprises({ page, page_size: pageSize, search });
-            // Filtrer les doublons basés sur le slug
-            const uniqueCompanies = data.filter((company, index, self) =>
-                index === self.findIndex((c) => c.slug === company.slug)
-            );
-            setCompanies(uniqueCompanies);
+        const loadInitialCompanies = async () => {
+            try {
+                const initialData = await getEntreprises();
+                setInitialCompanies(initialData);
+                setCompanies(initialData);
+            } catch (error) {
+                console.error('Erreur lors du chargement initial des entreprises:', error);
+            }
         };
-        fetchCompanies();
-    }, [page, pageSize, search]);
+        loadInitialCompanies();
+    }, []);
+
+    // Fonction de recherche avec debounce
+    const debouncedSearch = useCallback(
+        debounce(async (searchTerm) => {
+            if (!searchTerm || searchTerm.length < 2) {
+                // Si pas de terme de recherche, revenir à la liste initiale
+                setCompanies(initialCompanies);
+                setIsSearching(false);
+                return;
+            }
+
+            setIsSearching(true);
+            setSearchLoading(true);
+            try {
+                const searchResults = await getEntreprisesSearch({
+                    search: searchTerm,
+                    limit: 50,
+                });
+                setCompanies(searchResults);
+            } catch (error) {
+                console.error('Erreur lors de la recherche:', error);
+                // En cas d'erreur, garder la liste initiale
+                setCompanies(initialCompanies);
+            } finally {
+                setSearchLoading(false);
+            }
+        }, 1000), // Délai augmenté à 1 seconde pour réduire les appels
+        [initialCompanies]
+    );
+
+    // Gestionnaire de changement de valeur de recherche
+    const handleSearchChange = (event, newValue) => {
+        setSearchValue(newValue);
+        // Ne pas déclencher la recherche automatiquement
+        // Elle sera déclenchée par handleSearchSubmit ou le debounce
+    };
+
+    // Gestionnaire pour la soumission de recherche (Entrée)
+    const handleSearchSubmit = (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            debouncedSearch(searchValue);
+        }
+    };
 
     const methods = useForm({
         mode: 'all',
@@ -114,15 +163,15 @@ export function UserDetailsView({ slug }) {
                 user: slug,
             };
 
-            // console.log('Utilisateur avant soumission :', user);
-            // console.log('Données envoyées:', formData);
             const response = await axios.post(API.addProfileToUser(), formData);
-            // console.log('Réponse de l\'API:', response.data); // Déplacé ici pour toujours voir la réponse
 
-            // Vérifier si la requête a réussi (statut 2xx)
             if (response.status >= 200 && response.status < 300) {
                 toast.success('Entreprise liée avec succès !');
                 setShowSelect(false);
+                setSelectedCompany(null);
+                setSearchValue('');
+                setCompanies(initialCompanies); // Revenir à la liste initiale
+                setIsSearching(false);
                 const { data } = await axios.get(API.userDetails(slug));
                 setUser(data);
             } else {
@@ -307,25 +356,69 @@ export function UserDetailsView({ slug }) {
 
                                 {showSelect && (
                                     <Form methods={methods} fullWidth onSubmit={onSubmit}>
-                                        <Autocomplete
-                                            sx={{ display: 'flex', justifyContent: 'flex-end' }}
-                                            size="small"
-                                            options={companies}
-                                            getOptionLabel={(option) => (option && option.name) || ''}
-                                            getOptionKey={(option) => option.slug} // Ajout pour une clé unique
-                                            value={selectedCompany}
-                                            onChange={(event, newValue) => {
-                                                setSelectedCompany(newValue);
-                                            }}
-                                            inputValue={search}
-                                            onInputChange={(event, newInputValue) => {
-                                                setSearch(newInputValue);
-                                                setPage(1);
-                                            }}
-                                            renderInput={(params) => (
-                                                <TextField {...params} label="Rechercher une entreprise" />
-                                            )}
-                                        />
+                                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                                            <Autocomplete
+                                                sx={{ flex: 1 }}
+                                                size="small"
+                                                options={companies}
+                                                getOptionLabel={(option) => (option && option.name) || ''}
+                                                getOptionKey={(option) => option.slug}
+                                                value={selectedCompany}
+                                                onChange={(event, newValue) => {
+                                                    setSelectedCompany(newValue);
+                                                }}
+                                                inputValue={searchValue}
+                                                onInputChange={handleSearchChange}
+                                                onKeyPress={handleSearchSubmit}
+                                                loading={searchLoading}
+                                                loadingText={isSearching ? "Recherche en cours..." : "Chargement..."}
+                                                noOptionsText={isSearching ? "Aucune entreprise trouvée" : "Aucune entreprise disponible"}
+                                                renderInput={(params) => (
+                                                    <TextField 
+                                                        {...params} 
+                                                        label="Rechercher une entreprise" 
+                                                        placeholder="Tapez et appuyez sur Entrée pour rechercher"
+                                                        InputProps={{
+                                                            ...params.InputProps,
+                                                            endAdornment: (
+                                                                <>
+                                                                    {searchLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                                                                    {params.InputProps.endAdornment}
+                                                                </>
+                                                            ),
+                                                        }}
+                                                    />
+                                                )}
+                                                renderOption={(props, option) => (
+                                                    <Box component="li" {...props}>
+                                                        <Stack direction="row" alignItems="center" spacing={1}>
+                                                            <Avatar
+                                                                alt={option.name}
+                                                                src={option.picture}
+                                                                sx={{ width: 32, height: 32 }}
+                                                            />
+                                                            <Box>
+                                                                <Typography variant="body2" fontWeight="medium">
+                                                                    {option.name}
+                                                                </Typography>
+                                                                <Typography variant="caption" color="text.secondary">
+                                                                    {option.contact || 'Pas de contact'}
+                                                                </Typography>
+                                                            </Box>
+                                                        </Stack>
+                                                    </Box>
+                                                )}
+                                            />
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                onClick={() => debouncedSearch(searchValue)}
+                                                disabled={!searchValue || searchValue.length < 2}
+                                                sx={{ minWidth: 'auto', px: 2 }}
+                                            >
+                                                <Iconify icon="eva:search-fill" width={16} height={16} />
+                                            </Button>
+                                        </Box>
                                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
                                             <LoadingButton type="submit" variant="contained" size="small" loading={isSubmitting} disabled={!selectedCompany}>
                                                 <Iconify icon="eva:checkmark-circle-2-outline" width={20} height={20} sx={{ mr: 1 }} />
