@@ -2,6 +2,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { saveAs } from 'file-saver';
 import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 import { amountToWords } from 'src/utils/number-to-words';
+import { number } from 'prop-types';
 
 
 const TEMPLATE_URL = '/pdf/facture-pdf.pdf';
@@ -58,6 +59,12 @@ export async function generateFacturePDF(facture, devise, {download = true} = {}
     : String(value)
   );
 
+  const mockDeclarations = [
+    {number: '12345', date: '2023-10-01', employees: 5, price: 10000 },
+    {number: '67890', date: '2023-10-05', employees: 3, price: 15000 },
+    {number: '54321', date: '2023-10-10', employees: 2, price: 20000 }
+  ]
+
   // 1. Titre facture
   let cursorY = page.getHeight() - invoiceTopGap;
   const invoiceText = `FACTURE N° ${facture.number}`;
@@ -95,8 +102,8 @@ export async function generateFacturePDF(facture, devise, {download = true} = {}
   };
   [
     ['Date facture : ', facture.created_on],
-    ['Declaration N : ', facture.declaration_number],
-    ['Date declaration : ', facture.date_declaration]
+    // ['Declaration N : ', facture.declaration_number],
+    // ['Date declaration : ', facture.date_declaration]
   ].forEach(([label, val]) => {
     const displayVal = label.includes('Date') ? formatDate(val) : val;
     page.drawText(label, { x: rightX, y: cursorY, size: baseSize, font: helvetica, color: red });
@@ -110,18 +117,18 @@ export async function generateFacturePDF(facture, devise, {download = true} = {}
 
   // 5. Headers tableau
   const headerY = lineY - separatorToHeaderGap;
-  ['Catégorie de permis','Quantité','Prix unitaire','Total'].forEach((h, i) => {
+  ['Declarations','Date','Employés','Montant'].forEach((h, i) => {
     page.drawText(h, { x: 55 + i*140, y: headerY, size: baseSize, font: helvetica, color: red });
   });
   page.drawLine({ start: { x: 49, y: headerY - 6 }, end: { x: 550, y: headerY - 6 }, thickness: 1.5, color: black });
 
   // 6. Lignes de données
   let rowY = headerY - headerLineGap;
-  facture.permits.filter(r => r.count > 0).forEach(r => {
-    page.drawText(`Permis ${r.type}`, { x: 70, y: rowY, size: baseSize, font: helvetica, color: black });
-    page.drawText(`${r.count}`, { x: 210, y: rowY, size: baseSize, font: helvetica, color: black });
-    page.drawText(formatMontant(r.price), { x: 340, y: rowY, size: baseSize, font: helvetica, color: black });
-    page.drawText(formatMontant(r.total_price), { x: 480, y: rowY, size: baseSize, font: helvetica, color: black });
+  mockDeclarations.filter(r => r).forEach(r => {
+    page.drawText(`${r.number}`, { x: 70, y: rowY, size: baseSize, font: helvetica, color: black });
+    page.drawText(`${r.date}`, { x: 210, y: rowY, size: baseSize, font: helvetica, color: black });
+    page.drawText(`${r.employees}`, { x: 340, y: rowY, size: baseSize, font: helvetica, color: black });
+    page.drawText(formatMontant(r.price), { x: 480, y: rowY, size: baseSize, font: helvetica, color: black });
     rowY -= dataLineGap;
   });
 
