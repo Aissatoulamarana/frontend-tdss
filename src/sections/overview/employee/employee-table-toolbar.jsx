@@ -69,7 +69,7 @@ export function EmployeeTableToolbar({
     try {
       setLoading(true);
       const response = await axios.get(API.listFonctions(), {
-        params: { search: searchTerm }
+        params: { search: searchTerm },
       });
       setJobSuggestions(response.data.results || []);
     } catch (error) {
@@ -100,18 +100,18 @@ export function EmployeeTableToolbar({
 
   // Gérer la sélection d'une fonction
   const handleJobSelect = (event, newValue) => {
-    console.log('Fonction sélectionnée:', newValue);
+    // console.log('Fonction sélectionnée:', newValue);
     onResetPage();
     filters.setState({
       ...filters.state,
-      job: newValue ? [newValue] : []
+      job: newValue ? [newValue] : [],
     });
-    console.log('Nouvel état des filtres:', { ...filters.state, job: newValue ? [newValue] : [] });
+    // console.log('Nouvel état des filtres:', { ...filters.state, job: newValue ? [newValue] : [] });
   };
 
   // Gérer la recherche lors de la saisie
   const handleJobInputChange = (event, newInputValue) => {
-    console.log('Recherche de fonction:', newInputValue);
+    // console.log('Recherche de fonction:', newInputValue);
     fetchJobSuggestions(newInputValue);
   };
 
@@ -184,7 +184,7 @@ export function EmployeeTableToolbar({
 
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
         <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} ref={inputRef}>
-        <TextField
+          <TextField
             fullWidth
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
