@@ -71,9 +71,12 @@ export function ProfileUsers({ info, companySlug }) {
       
       try {
         // console.log('Chargement des utilisateurs avec slug:', entrepriseSlug);
-        const response = await axios.get(API.listUsers({ 
+        const params = { 
           type_profile: entrepriseSlug,
-        }));
+          limit: 50 
+        };
+        // console.log('Paramètres envoyés à listUsers:', params);
+        const response = await axios.get(API.listUsers(params));
         // console.log('Réponse API utilisateurs:', response.data);
         const usersData = response.data.results || response.data || [];
         // console.log('Utilisateurs filtrés:', usersData.length, usersData);
@@ -98,14 +101,17 @@ export function ProfileUsers({ info, companySlug }) {
       setIsSearching(true);
       setSearchLoading(true);
       try {
-        console.log('Recherche avec terme:', searchTerm, 'et slug:', entrepriseSlug);
-        const response = await axios.get(API.listUsers({ 
+        // console.log('Recherche avec terme:', searchTerm, 'et slug:', entrepriseSlug);
+        const params = {
           type_profile: entrepriseSlug,
           name: searchTerm,
-        }));
-        console.log('Résultats de recherche:', response.data);
+          limit: 50,
+        };
+        // console.log('Paramètres de recherche envoyés:', params);
+        const response = await axios.get(API.listUsers(params));
+        // console.log('Résultats de recherche:', response.data);
         const searchResults = response.data.results || response.data || [];
-        console.log('Utilisateurs trouvés:', searchResults.length);
+        // console.log('Utilisateurs trouvés:', searchResults.length);
         setUsers(searchResults);
       } catch (error) {
         console.error('Erreur lors de la recherche:', error);
@@ -138,21 +144,31 @@ export function ProfileUsers({ info, companySlug }) {
   // Fonction pour ajouter un utilisateur à l'entreprise
   const onSubmit = handleSubmit(async () => {
     try {
+      // console.log('=== DÉBUT SOUMISSION ===');
+      // console.log('selectedUser:', selectedUser);
+      // console.log('Type de selectedUser:', typeof selectedUser);
+      
       if (!selectedUser) {
         toast.error('Veuillez sélectionner un utilisateur.');
         return;
       }
       
-      console.log('Utilisateur sélectionné:', selectedUser);
-      console.log('Slug utilisateur:', selectedUser.slug);
-      console.log('Slug entreprise:', companySlug);
+      if (!selectedUser.slug) {
+        console.error('selectedUser.slug est undefined:', selectedUser);
+        toast.error('Erreur: Slug utilisateur manquant');
+        return;
+      }
+      
+      // console.log('Utilisateur sélectionné:', selectedUser);
+      // console.log('Slug utilisateur:', selectedUser.slug);
+      // console.log('Slug entreprise:', companySlug);
       
       const formData = {
         user: selectedUser.slug,
         profile: companySlug,
       };
 
-      console.log('Données envoyées:', formData);
+      // console.log('Données envoyées:', formData);
       const response = await axios.post(API.addProfileToUser(), formData);
 
       if (response.status >= 200 && response.status < 300) {
@@ -212,10 +228,11 @@ export function ProfileUsers({ info, companySlug }) {
                 }}
                 getOptionKey={(option) => {
                   // console.log('Option pour key:', option);
-                  return option.slug;
+                  // console.log('Slug pour key:', option?.slug);
+                  return option?.slug || '';
                 }}
                 value={selectedUser}
-                onChange={(newValue) => {
+                onChange={(event, newValue) => {
                   // console.log('Utilisateur sélectionné dans onChange:', newValue);
                   setSelectedUser(newValue);
                 }}
@@ -243,6 +260,9 @@ export function ProfileUsers({ info, companySlug }) {
                 )}
                 renderOption={(props, option) => {
                   const { key, ...otherProps } = props;
+                  // console.log('Option dans renderOption:', option);
+                  // console.log('Slug de l\'option:', option?.slug);
+                  
                   return (
                     <Box component="li" key={key} {...otherProps}>
                       <Stack direction="row" alignItems="center" spacing={1}>
