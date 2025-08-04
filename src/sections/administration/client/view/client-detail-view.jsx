@@ -148,7 +148,7 @@ export function ClientDetailsView({ slug }) {
             </Card>
 
             {tabs.value === 'profile' && <ProfileHome info={profil} />}
-            {tabs.value === 'utilisateurs' && <ProfileUsers info={user} />}
+            {tabs.value === 'utilisateurs' && <ProfileUsers info={user} companySlug={slug} />}
         </DashboardContent>
     );
 }
