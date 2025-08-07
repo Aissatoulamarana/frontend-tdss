@@ -4,7 +4,6 @@ import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 import { amountToWords } from 'src/utils/number-to-words';
 import { number } from 'prop-types';
 
-
 const TEMPLATE_URL = '/pdf/facture-pdf.pdf';
 
 function sanitize(text) {
@@ -16,8 +15,31 @@ function sanitize(text) {
     .replace(/\u2007/g, ' ');
 }
 
-export async function generateFacturePDF(facture, devise, {download = true} = {}) {
-  const arrayBuffer = await fetch(TEMPLATE_URL).then(res => {
+// === AJOUT : fonction pour découper automatiquement un texte trop long ===
+function wrapText(text, maxWidth, font, fontSize) {
+  // 🔹 Supprimer les retours à la ligne (\r et \n)
+  text = text.replace(/[\r\n]+/g, ' ').trim();
+
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  for (let word of words) {
+    const testLine = currentLine ? currentLine + ' ' + word : word;
+    const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+    if (testWidth > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines;
+}
+
+export async function generateFacturePDF(facture, devise, { download = true } = {}) {
+  const arrayBuffer = await fetch(TEMPLATE_URL).then((res) => {
     if (!res.ok) throw new Error(`Impossible de charger le template (${res.status})`);
     return res.arrayBuffer();
   });
@@ -28,20 +50,20 @@ export async function generateFacturePDF(facture, devise, {download = true} = {}
   const page = pdfDoc.getPage(0);
 
   // Espacements spécifiques par section
-  const invoiceTopGap = 110;         // espace du haut au titre facture
-  const invoiceToClientGap = 30;     // gap entre facture et bloc client
-  const clientInfoLineGap = 16;      // interligne infos client
-  const invoiceToDateGap = 35;       // gap entre facture et bloc dates
-  const dateInfoLineGap = 16;        // interligne infos dates
-  const dateToSeparatorGap = 35;     // gap avant ligne séparatrice
-  const separatorToHeaderGap = 20;   // gap ligne->header tableau
-  const headerLineGap = 25;          // interligne header->lignes data
-  const dataLineGap = 24;            // interligne des lignes de données
-  const dataToTotalGap = 10;         // gap avant TOTAL GENERAL
-  const totalBoxPadding = 8;         // padding haut/bas de la box total
-  const totalFontSize = 16;          // taille police total
-  const totalToWordsGap = 70;        // gap avant montant en lettres
-  const wordsToQrGap = 120;           // gap avant QR/signature
+  const invoiceTopGap = 110; // espace du haut au titre facture
+  const invoiceToClientGap = 30; // gap entre facture et bloc client
+  const clientInfoLineGap = 16; // interligne infos client
+  const invoiceToDateGap = 35; // gap entre facture et bloc dates
+  const dateInfoLineGap = 16; // interligne infos dates
+  const dateToSeparatorGap = 70; // gap avant ligne séparatrice
+  const separatorToHeaderGap = 20; // gap ligne->header tableau
+  const headerLineGap = 25; // interligne header->lignes data
+  const dataLineGap = 24; // interligne des lignes de données
+  const dataToTotalGap = 10; // gap avant TOTAL GENERAL
+  const totalBoxPadding = 8; // padding haut/bas de la box total
+  const totalFontSize = 16; // taille police total
+  const totalToWordsGap = 50; // gap avant montant en lettres
+  const wordsToQrGap = 120; // gap avant QR/signature
 
   // Couleurs & tailles
   const baseSize = 12;
@@ -52,91 +74,189 @@ export async function generateFacturePDF(facture, devise, {download = true} = {}
   const pinkBg = rgb(0.95, 0.9, 0.9);
 
   // Formatage montants
-  const formatMontant = value => sanitize(
-    devise === 'GNF' ? fGNF(value)
-    : devise === 'USD' ? fCurrency(value / 9200)
-    : devise === 'EUR' ? fEuro(value / 10000)
-    : String(value)
-  );
+  const formatMontant = (value) =>
+    sanitize(
+      devise === 'GNF'
+        ? fGNF(value)
+        : devise === 'USD'
+          ? fCurrency(value / 9200)
+          : devise === 'EUR'
+            ? fEuro(value / 10000)
+            : String(value)
+    );
 
   const mockDeclarations = [
-    {number: '12345', date: '2023-10-01', employees: 5, price: 10000 },
-    {number: '67890', date: '2023-10-05', employees: 3, price: 15000 },
-    {number: '54321', date: '2023-10-10', employees: 2, price: 20000 }
-  ]
+    { number: '12345/2025', date: '2023-10-01', employees: 5, price: 10000 },
+    { number: '67890/2025', date: '2023-10-05', employees: 3, price: 15000 },
+    { number: '54321/2025', date: '2023-10-10', employees: 2, price: 20000 },
+  ];
 
   // 1. Titre facture
   let cursorY = page.getHeight() - invoiceTopGap;
   const invoiceText = `FACTURE N° ${facture.number}`;
-  page.drawText(invoiceText, { x: 200, y: cursorY, size: headerSize, font: helveticaBold, color: black });
+  page.drawText(invoiceText, {
+    x: 200,
+    y: cursorY,
+    size: headerSize,
+    font: helveticaBold,
+    color: black,
+  });
   const invW = helveticaBold.widthOfTextAtSize(invoiceText, headerSize);
-  page.drawLine({ start: { x: 200, y: cursorY - 2 }, end: { x: 200 + invW, y: cursorY - 2 }, thickness: 1, color: black });
+  page.drawLine({
+    start: { x: 200, y: cursorY - 2 },
+    end: { x: 200 + invW, y: cursorY - 2 },
+    thickness: 1,
+    color: black,
+  });
 
   // 2. Bloc CLIENT
   cursorY -= invoiceToClientGap;
   const leftX = 50;
   page.drawText('CLIENT', { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: blue });
   const cW = helvetica.widthOfTextAtSize('CLIENT', baseSize);
-  page.drawLine({ start: { x: leftX, y: cursorY - 2 }, end: { x: leftX + cW, y: cursorY - 2 }, thickness: 0.5, color: blue });
+  page.drawLine({
+    start: { x: leftX, y: cursorY - 2 },
+    end: { x: leftX + cW, y: cursorY - 2 },
+    thickness: 0.5,
+    color: blue,
+  });
 
   cursorY -= clientInfoLineGap;
-  [
-    facture.client_name,
-    `Tél : ${facture.client_contact}`,
-    `Adresse : ${facture.client_adresse}`,
-    `Région : ${facture.client_location}`
-  ].forEach(line => {
-    page.drawText(line, { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
+  // [
+  //   facture.client_name,
+  //   `Tél : ${facture.client_contact}`,
+  //   ...wrapText(`Adresse : ${facture.client_adresse}`, 250, helvetica, baseSize),
+  //   `Région : ${facture.client_location}`,
+  // ].forEach((line) => {
+  //   page.drawText(line, { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
+  //   cursorY -= clientInfoLineGap;
+  // });
+
+  // === MODIFICATION : gestion de l'adresse longue + nom client en gras ===
+  const clientLines = [
+    { text: facture.client_name, bold: true }, // 🔹 Nom en gras
+    { text: `Tél : ${facture.client_contact}`, bold: false },
+    ...wrapText(`Adresse : ${facture.client_adresse}`, 250, helvetica, baseSize).map((line) => ({
+      text: line,
+      bold: false,
+    })),
+    { text: `Région : ${facture.client_location}`, bold: false },
+  ];
+
+  clientLines.forEach((lineObj) => {
+    page.drawText(lineObj.text, {
+      x: leftX,
+      y: cursorY,
+      size: baseSize,
+      font: lineObj.bold ? helveticaBold : helvetica, // 🔹 Si bold = true => HelveticaBold
+      color: black,
+    });
     cursorY -= clientInfoLineGap;
   });
 
   // 3. Bloc Dates
   cursorY = page.getHeight() - invoiceTopGap - invoiceToDateGap;
   const rightX = 400;
-  const formatDate = ds => {
+  const formatDate = (ds) => {
     const d = new Date(ds);
     const j = String(d.getDate()).padStart(2, '0');
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const a = d.getFullYear();
     return `${j}/${m}/${a}`;
   };
-  [
-    ['Date facture : ', facture.created_on],
-    // ['Declaration N : ', facture.declaration_number],
-    // ['Date declaration : ', facture.date_declaration]
-  ].forEach(([label, val]) => {
+  [['Date facture : ', facture.created_on]].forEach(([label, val]) => {
     const displayVal = label.includes('Date') ? formatDate(val) : val;
     page.drawText(label, { x: rightX, y: cursorY, size: baseSize, font: helvetica, color: red });
-    page.drawText(displayVal, { x: rightX + helvetica.widthOfTextAtSize(label, baseSize), y: cursorY, size: baseSize, font: helvetica, color: black });
+    page.drawText(displayVal, {
+      x: rightX + helvetica.widthOfTextAtSize(label, baseSize),
+      y: cursorY,
+      size: baseSize,
+      font: helvetica,
+      color: black,
+    });
     cursorY -= dateInfoLineGap;
   });
 
   // 4. Ligne séparatrice
   const lineY = cursorY - dateToSeparatorGap;
-  page.drawLine({ start: { x: 49, y: lineY }, end: { x: 550, y: lineY }, thickness: 0.5, color: black });
+  page.drawLine({
+    start: { x: 49, y: lineY },
+    end: { x: 550, y: lineY },
+    thickness: 0.5,
+    color: black,
+  });
 
   // 5. Headers tableau
   const headerY = lineY - separatorToHeaderGap;
-  ['Declarations','Date','Employés','Montant'].forEach((h, i) => {
-    page.drawText(h, { x: 55 + i*140, y: headerY, size: baseSize, font: helvetica, color: red });
+  ['Declarations', 'Date Déclaration', 'Employés', 'Montant'].forEach((h, i) => {
+    page.drawText(h, { x: 65 + i * 140, y: headerY, size: baseSize, font: helvetica, color: red });
   });
-  page.drawLine({ start: { x: 49, y: headerY - 6 }, end: { x: 550, y: headerY - 6 }, thickness: 1.5, color: black });
+  page.drawLine({
+    start: { x: 49, y: headerY - 6 },
+    end: { x: 550, y: headerY - 6 },
+    thickness: 1.5,
+    color: black,
+  });
 
   // 6. Lignes de données
   let rowY = headerY - headerLineGap;
-  mockDeclarations.filter(r => r).forEach(r => {
-    page.drawText(`${r.number}`, { x: 70, y: rowY, size: baseSize, font: helvetica, color: black });
-    page.drawText(`${r.date}`, { x: 210, y: rowY, size: baseSize, font: helvetica, color: black });
-    page.drawText(`${r.employees}`, { x: 340, y: rowY, size: baseSize, font: helvetica, color: black });
-    page.drawText(formatMontant(r.price), { x: 480, y: rowY, size: baseSize, font: helvetica, color: black });
-    rowY -= dataLineGap;
-  });
+  mockDeclarations
+    .filter((r) => r)
+    .forEach((r) => {
+      page.drawText(`${r.number}`, {
+        x: 70,
+        y: rowY,
+        size: baseSize,
+        font: helvetica,
+        color: black,
+      });
+      page.drawText(`${r.date}`, {
+        x: 210,
+        y: rowY,
+        size: baseSize,
+        font: helvetica,
+        color: black,
+      });
+      page.drawText(`${r.employees}`, {
+        x: 360,
+        y: rowY,
+        size: baseSize,
+        font: helvetica,
+        color: black,
+      });
+      page.drawText(formatMontant(r.price), {
+        x: 480,
+        y: rowY,
+        size: baseSize,
+        font: helvetica,
+        color: black,
+      });
+      rowY -= dataLineGap;
+    });
 
   // 7. TOTAL GENERAL
   rowY -= dataToTotalGap;
-  page.drawRectangle({ x: 49, y: rowY - totalBoxPadding, width: 510, height: totalFontSize + totalBoxPadding*2, color: pinkBg });
-  page.drawText('TOTAL GENERAL', { x: 50, y: rowY, size: totalFontSize, font: helveticaBold, color: black });
-  page.drawText(formatMontant(facture.amount), { x: 450, y: rowY, size: totalFontSize, font: helveticaBold, color: black });
+  page.drawRectangle({
+    x: 49,
+    y: rowY - totalBoxPadding,
+    width: 510,
+    height: totalFontSize + totalBoxPadding * 2,
+    color: pinkBg,
+  });
+  page.drawText('TOTAL GENERAL', {
+    x: 50,
+    y: rowY,
+    size: totalFontSize,
+    font: helveticaBold,
+    color: black,
+  });
+  page.drawText(formatMontant(facture.amount), {
+    x: 450,
+    y: rowY,
+    size: totalFontSize,
+    font: helveticaBold,
+    color: black,
+  });
 
   // 8. Montant en lettres
   rowY -= totalToWordsGap;
@@ -146,22 +266,41 @@ export async function generateFacturePDF(facture, devise, {download = true} = {}
   const words = sanitize(amountToWords(numericAmount, devise));
   page.drawText(phr, { x: 40, y: rowY, size: baseSize, font: helvetica, color: black });
   const phrW = helvetica.widthOfTextAtSize(phr, baseSize);
-  page.drawText(words, { x: 40 + phrW, y: rowY, size: baseSize, font: helveticaBold, color: black });
+  page.drawText(words, {
+    x: 40 + phrW,
+    y: rowY,
+    size: baseSize,
+    font: helveticaBold,
+    color: black,
+  });
   const fullW = phrW + helveticaBold.widthOfTextAtSize(words, baseSize);
-  page.drawLine({ start: { x: 40, y: rowY - 2 }, end: { x: 40 + fullW, y: rowY - 2 }, thickness: 0.5, color: black });
+  page.drawLine({
+    start: { x: 40, y: rowY - 2 },
+    end: { x: 40 + fullW, y: rowY - 2 },
+    thickness: 0.5,
+    color: black,
+  });
 
   // 9. QR & Signature
   rowY -= wordsToQrGap;
   const qrData = facture.number;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=100x100`;
-  const qrBytes = await fetch(qrUrl).then(r => { if (!r.ok) throw new Error(`Erreur chargement QR (${r.status})`); return r.arrayBuffer(); });
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=80x80`;
+  const qrBytes = await fetch(qrUrl).then((r) => {
+    if (!r.ok) throw new Error(`Erreur chargement QR (${r.status})`);
+    return r.arrayBuffer();
+  });
   const qrImg = await pdfDoc.embedPng(qrBytes);
-  page.drawImage(qrImg, { x: 50, y: rowY, width: 100, height: 100 });
+  page.drawImage(qrImg, { x: 50, y: rowY, width: 80, height: 80 });
 
-  const sign = 'LE DIRECTEUR';
+  const sign = 'LA DIRECTION';
   page.drawText(sign, { x: 450, y: rowY + 80, size: baseSize, font: helvetica, color: black });
   const sW = helvetica.widthOfTextAtSize(sign, baseSize);
-  page.drawLine({ start: { x: 450, y: rowY + 78 }, end: { x: 450 + sW, y: rowY + 78 }, thickness: 0.5, color: black });
+  page.drawLine({
+    start: { x: 450, y: rowY + 78 },
+    end: { x: 450 + sW, y: rowY + 78 },
+    thickness: 0.5,
+    color: black,
+  });
 
   // Sauvegarde et téléchargement
   const pdfBytes = await pdfDoc.save();
