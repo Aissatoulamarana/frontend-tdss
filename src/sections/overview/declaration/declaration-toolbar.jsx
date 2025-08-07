@@ -148,7 +148,11 @@ export function DeclarationToolbar({
   const handleFacturer = useCallback(async () => {
     try {
       // Appel à l'API backend pour rejeter la déclaration
-      const response = await axios.post(API.facturerDeclaration(declaration?.slug));
+      const requestBody = {
+        declarations: [declaration?.slug],
+        comment: "Facturation individuelle depuis l'interface",
+      };
+      const response = await axios.post(API.FacturerDeclaration(), requestBody);
       if (response) {
         // Si succès, rediriger ou mettre à jour l'interface utilisateur
         toast.success('Déclaration facturée avec succès !');
@@ -275,16 +279,13 @@ export function DeclarationToolbar({
             </Tooltip>
           )}
 
-          {((type === 'aguipe' || type === 'comptable' )&& 
-          currentStatus ==='submitted') && (
-          <>
-           <Tooltip title="Valider">
-            <IconButton onClick={() => validateConfirm.onTrue()}>
-              <Iconify icon="mdi:check-bold" />
-            </IconButton>
-          </Tooltip>
-         
-
+          {(type === 'aguipe' || type === 'comptable') && currentStatus === 'submitted' && (
+            <>
+              <Tooltip title="Valider">
+                <IconButton onClick={() => validateConfirm.onTrue()}>
+                  <Iconify icon="mdi:check-bold" />
+                </IconButton>
+              </Tooltip>
 
               <Tooltip title="Rejeter">
                 <IconButton onClick={() => setOpenRejetDialog(true)}>

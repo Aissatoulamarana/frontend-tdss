@@ -59,10 +59,8 @@ import { useMockedUser } from 'src/auth/hooks';
 import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
 dayjs.locale('fr'); // Set the default locale to French
 
-
 import { number } from 'prop-types';
 import { set } from 'nprogress';
-
 
 // ----------------------------------------------------------------------
 
@@ -94,11 +92,11 @@ export function DeclarationListView() {
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
-  const billConfirm = useBoolean(); 
+  const billConfirm = useBoolean();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-  const [loader , setLoader] = useState(false) // Etat pour indiquer les chargements sur les cards
+  const [loader, setLoader] = useState(false); // Etat pour indiquer les chargements sur les cards
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedFilter, setSelectedFilter] = useState('number'); // options de recherche
   const [count, setCount] = useState();
@@ -154,28 +152,29 @@ export function DeclarationListView() {
       .then((res) => res.data.count);
 
   useEffect(() => {
-    setLoader(true),
-    Promise.all([
-      
-      fetchTotalCount(),
-      fetchCountByStatus('unsubmitted'),
-      fetchCountByStatus('submitted'),
-      fetchCountByStatus('validated'),
-      fetchCountByStatus('billed'),
-      fetchCountByStatus('rejected'),
-    ]).then(([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
-      setSummary({
-        totalCount,
-        countByStatus: {
-          unsubmitted: unsubmitCount,
-          submitted: submitCount,
-          validated: validatCount,
-          billed: billedCount,
-          rejected: rejectCount,
-        },
-      });
-      setLoader(false);
-    });
+    (setLoader(true),
+      Promise.all([
+        fetchTotalCount(),
+        fetchCountByStatus('unsubmitted'),
+        fetchCountByStatus('submitted'),
+        fetchCountByStatus('validated'),
+        fetchCountByStatus('billed'),
+        fetchCountByStatus('rejected'),
+      ]).then(
+        ([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
+          setSummary({
+            totalCount,
+            countByStatus: {
+              unsubmitted: unsubmitCount,
+              submitted: submitCount,
+              validated: validatCount,
+              billed: billedCount,
+              rejected: rejectCount,
+            },
+          });
+          setLoader(false);
+        }
+      ));
   }, [user]);
 
   const getDeclarationLength = (status) => summary.countByStatus[status];
@@ -363,16 +362,36 @@ export function DeclarationListView() {
     }
   };
 
-const handleBilledRows = useCallback(() => {
-    const updatedData = tableData.map((item) =>
-    table.selected.includes(item.slug)
-      ? { ...item, status: 'billed' }
-      : item
-  );
-  setTableData(updatedData);
-  toast.success('Facturation réussie !');
-  table.onSelectAllRows(false , [])
-}, [table, tableData]);
+  const handleBilledRows = useCallback(async () => {
+    const selectedSlugs = table.selected;
+
+    if (selectedSlugs.length === 0) {
+      toast.error('Aucune déclaration sélectionnée.');
+      return;
+    }
+
+    const requestBody = {
+      declarations: selectedSlugs,
+      comment: "Déclaration facturée via l'interface.", // ou récupéré dynamiquement
+    };
+
+    try {
+      await axios.post(API.FacturerDeclaration(), requestBody);
+
+      // Mettre à jour localement le status
+      const updatedData = tableData.map((item) =>
+        selectedSlugs.includes(item.slug) ? { ...item, status: 'billed' } : item
+      );
+
+      setTableData(updatedData);
+      toast.success('Facturation réussie !');
+      table.onSelectAllRows(false, []);
+      router.push(paths.dashboard.factures.list);
+    } catch (error) {
+      console.error('Erreur lors de la facturation :', error);
+      toast.error('Échec de la facturation.');
+    }
+  }, [table, tableData, router]);
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -481,22 +500,30 @@ const handleBilledRows = useCallback(() => {
   const handleFacturer = useCallback(
     async (slug) => {
       try {
-        // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.facturerDeclaration(slug));
-        if (response) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+        // Construction du corps de la requête
+        const requestBody = {
+          declarations: [slug], // tableau contenant un seul slug
+          comment: "Facturation individuelle depuis l'interface", // facultatif ou dynamique
+        };
+
+        // Appel de la route (attention à bien exécuter la fonction)
+        const response = await axios.post(API.FacturerDeclaration(), requestBody);
+
+        // En cas de succès
+        if (response.status === 200 || response.status === 201) {
           toast.success('Déclaration facturée avec succès !');
-          // Mise à jour locale du statut dans tableData
+          // Mise à jour locale du statut
           setTableData((prevData) =>
             prevData.map((item) => (item.slug === slug ? { ...item, status: 'billed' } : item))
           );
           router.push(paths.dashboard.factures.list);
         } else {
-          console.error('Erreur lors de la facturation:', response.data.error);
+          console.error('Erreur inattendue lors de la facturation:', response.data);
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
-        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        const errorMessage =
+          error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
         setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
@@ -562,8 +589,7 @@ const handleBilledRows = useCallback(() => {
               ? { title: filters.state.title }
               : filters.state.passport_number
                 ? { passport_number: filters.state.passport_number }
-                : {}
-          ),
+                : {}),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
         };
 
@@ -572,7 +598,7 @@ const handleBilledRows = useCallback(() => {
           // Format: YYYY-MM-DD
           params.starts_at = dayjs(filters.state.starts_at).format('YYYY-MM-DD');
         }
-        
+
         if (filters.state.ends_at) {
           // Format: YYYY-MM-DD
           // On ajoute 1 jour et on soustrait 1 milliseconde pour inclure toute la journée
@@ -582,7 +608,7 @@ const handleBilledRows = useCallback(() => {
 
         // console.log('Fetching declarations with params:', params);
         const response = await axios.get(API.listDeclarations(), { params });
-        
+
         setTableData(response.data.results);
         setCount(response.data.count);
         setPagination({
@@ -593,7 +619,8 @@ const handleBilledRows = useCallback(() => {
       } catch (err) {
         console.error('Error fetching declarations:', err);
         setError(err.message || 'Erreur lors du chargement des données.');
-        const errormessage = err?.response?.data?.detail || err?.message || 'Une erreur est survenue';
+        const errormessage =
+          err?.response?.data?.detail || err?.message || 'Une erreur est survenue';
         toast.error(errormessage);
       } finally {
         setLoading(false);
@@ -603,20 +630,18 @@ const handleBilledRows = useCallback(() => {
     // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
 
     fetchDeclarations();
-
   }, [
-    table.page, 
-    table.rowsPerPage, 
+    table.page,
+    table.rowsPerPage,
     filters.state.number,
 
-    filters.state.company, 
-    filters.state.title, 
-    filters.state.passport_number, 
-    filters.state.status, 
-    filters.state.starts_at, 
-    filters.state.ends_at
+    filters.state.company,
+    filters.state.title,
+    filters.state.passport_number,
+    filters.state.status,
+    filters.state.starts_at,
+    filters.state.ends_at,
   ]);
-
 
   if (loading) {
     console.info('Loading declarations...');
