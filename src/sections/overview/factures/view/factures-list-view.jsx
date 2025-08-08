@@ -68,7 +68,11 @@ dayjs.locale('fr'); // Set the default locale to French
 
 const TABLE_HEAD = [
   { id: 'facture', label: 'Numero Facture' },
+<<<<<<< HEAD
   { id: 'numero', label: 'Numero Déclaration' },
+=======
+  { id: 'numero', label: 'Déclaration' },
+>>>>>>> 771d1154 (new invoice's design)
   { id: 'company', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
@@ -160,6 +164,7 @@ export function FactureListView() {
   const fetchCount = (status) =>
     axios.get(API.listFactures(), { params: { limit: 1, status } }).then((res) => res.data.count);
 
+<<<<<<< HEAD
   // useEffect(() => {
   //   setLaoder(true)
   //   Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
@@ -172,6 +177,20 @@ export function FactureListView() {
   //     }
   //   );
   // }, []);
+=======
+  useEffect(() => {
+    setLaoder(true);
+    Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
+      ([totalCount, paidCount, unpaidCount]) => {
+        setSummary({
+          totalCount,
+          countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
+        });
+        setLaoder(false);
+      }
+    );
+  }, []);
+>>>>>>> 771d1154 (new invoice's design)
 
   const getInvoiceLength = (status) => summary.countByStatus[status];
 

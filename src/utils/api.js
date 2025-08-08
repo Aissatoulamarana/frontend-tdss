@@ -34,9 +34,14 @@ const API = {
   submitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/submit/`, // Soumettre une déclaration
   // unsubmitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/unsubmit/`, // mettre le statut rejet en statut non-soumise d'une déclaration
   facturerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/facturer/`, // facturer une déclaration
+
   FacturerDeclaration: () => `${BASE_URL}/declarations/facturer/`,
   rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/reject/`, // Rejetter une déclaration
   supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
+
+  rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/reject/`, // Rejetter une déclaration
+  retirerDeclaration: (slug) => `${BASE_URL}/factures/${slug}/remove-declaration/`, // Supprimer une déclaration dans une facture
+
   updateDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Modifier une déclaration
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`, // deplacer des employés d'une déclaration à une autre
   unsubmitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre
