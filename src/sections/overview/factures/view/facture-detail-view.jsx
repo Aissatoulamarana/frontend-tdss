@@ -27,15 +27,14 @@ export function FactureDetailsView({ slug }) {
         const response = await axios.get(API.detailsFacture(slug));
         setFacture(response.data);
       } catch (error) {
-        setError(error.message || error.details || error.error)
+        setError(error.message || error.details || error.error);
         toast.error(error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     };
     fetchFacture();
   }, [slug]);
-
 
   return (
     <DashboardContent>
@@ -48,8 +47,7 @@ export function FactureDetailsView({ slug }) {
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
-      <FactureDetails facture={facture} user={user} />
-
+      {facture && <FactureDetails facture={facture} user={user} />}
     </DashboardContent>
   );
 }
