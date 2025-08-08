@@ -389,7 +389,22 @@ export function DeclarationListView() {
       router.push(paths.dashboard.factures.list);
     } catch (error) {
       console.error('Erreur lors de la facturation :', error);
-      toast.error('Échec de la facturation.');
+
+      const data = error.response?.data || error;
+      const messages = [];
+
+      if (data.declarations) {
+        messages.push(
+          ...(Array.isArray(data.declarations) ? data.declarations : [data.declarations])
+        );
+      }
+      if (data.details) messages.push(data.details);
+      if (data.error) messages.push(data.error);
+      if (data.message) messages.push(data.message);
+
+      const errorMessage = messages.join('');
+
+      toast.error(errorMessage);
     }
   }, [table, tableData, router]);
 
