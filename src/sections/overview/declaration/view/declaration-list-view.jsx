@@ -405,6 +405,7 @@ export function DeclarationListView() {
       const errorMessage = messages.join('');
 
       toast.error(errorMessage);
+      table.onSelectAllRows(false, []);
     }
   }, [table, tableData, router]);
 
