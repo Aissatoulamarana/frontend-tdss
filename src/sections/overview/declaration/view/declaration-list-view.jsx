@@ -805,11 +805,37 @@ export function DeclarationListView() {
               }}
               action={
                 <Stack direction="row">
-                  <Tooltip title="Facturer">
-                    <IconButton color="primary" onClick={billConfirm.onTrue}>
-                      <Iconify icon="mdi:credit-card" />
-                    </IconButton>
-                  </Tooltip>
+                  {type_user === 'comptable' && (
+                    <Tooltip title="Facturer">
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          // On récupère les lignes sélectionnées
+                          const selectedRows = tableData.filter((row) =>
+                            table.selected.includes(row.slug)
+                          );
+
+                          // Vérifie si toutes ont le statut validé
+                          const hasInvalid = selectedRows.some(
+                            (row) => row.status?.toLowerCase() !== 'validated'
+                          );
+
+                          if (hasInvalid) {
+                            toast.error(
+                              'Certaines déclarations sélectionnées ne sont pas validées. Vous ne pouvez pas les facturer.'
+                            );
+                            table.onSelectAllRows(false, []);
+                            return;
+                          }
+
+                          // Si tout est bon → on lance la facturation
+                          billConfirm.onTrue();
+                        }}
+                      >
+                        <Iconify icon="mdi:credit-card" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
 
                   <Tooltip title="Telecharger">
                     <IconButton color="primary">
