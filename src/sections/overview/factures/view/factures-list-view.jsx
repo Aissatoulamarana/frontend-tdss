@@ -68,11 +68,7 @@ dayjs.locale('fr'); // Set the default locale to French
 
 const TABLE_HEAD = [
   { id: 'facture', label: 'Numero Facture' },
-<<<<<<< HEAD
-  { id: 'numero', label: 'Numero Déclaration' },
-=======
   { id: 'numero', label: 'Déclaration' },
->>>>>>> 771d1154 (new invoice's design)
   { id: 'company', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
@@ -103,7 +99,11 @@ export function FactureListView() {
   const confirmDownload = useBoolean();
   const downloadZip = useBoolean();
   const downloadMultiplePDF = useBoolean();
+  const payeurForm = useBoolean();
 
+  const [totalCount, setTotalCount] = useState();
+  const [paidCount, setPaidCount] = useState();
+  const [unpaidCount, setUnpaidCount] = useState();
   const [options, setOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadPDF, setIsLoadPDF] = useState(false);
@@ -158,69 +158,46 @@ export function FactureListView() {
 
   const notFound = pagination.count === 0 && canReset;
 
-  const fetchTotalCount = () =>
-    axios.get(API.listFactures(), { params: { limit: 1 } }).then((res) => res.data.count);
-
-  const fetchCount = (status) =>
-    axios.get(API.listFactures(), { params: { limit: 1, status } }).then((res) => res.data.count);
-
-<<<<<<< HEAD
-  // useEffect(() => {
-  //   setLaoder(true)
-  //   Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
-  //     ([totalCount, paidCount, unpaidCount]) => {
-  //       setSummary({
-  //         totalCount,
-  //         countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
-  //       });
-  //       setLaoder(false)
-  //     }
-  //   );
-  // }, []);
-=======
   useEffect(() => {
-    setLaoder(true);
-    Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
-      ([totalCount, paidCount, unpaidCount]) => {
-        setSummary({
-          totalCount,
-          countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
-        });
+    const fetchStats = async () => {
+      setLaoder(true);
+      try {
+        const { data } = await axios.get(API.statsFactures());
+        setTotalCount(data?.total_factures);
+        setPaidCount(data?.paid);
+        setUnpaidCount(data?.unpaid);
+      } catch (err) {
+        toast.error('Erreur lors des chargements des stats', err);
+      } finally {
         setLaoder(false);
       }
-    );
+    };
+    fetchStats();
   }, []);
->>>>>>> 771d1154 (new invoice's design)
 
-  const getInvoiceLength = (status) => summary.countByStatus[status];
-
-  const getTotalAmount = (status) =>
-    sumBy(
-      tableData.filter((item) => item.status === status),
-      (facture) => facture.amount
-    );
-
-  const getPercentByStatus = (status) =>
-    summary.totalCount > 0 ? (getInvoiceLength(status) / summary.totalCount) * 100 : 0;
+  const getPercentByStatus = (number) => {
+    if (!totalCount || totalCount === 0) return 0;
+    return (number / totalCount) * 100;
+  };
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
       color: 'white',
-      // count: summary.totalCount,
+      count: totalCount,
     },
     {
       value: 'paid',
       label: 'Payées',
       color: 'success',
-      // count: getInvoiceLength('paid'),
+      count: paidCount,
     },
     {
       value: 'unpaid',
       label: 'En attente',
       color: 'warning',
-      // count: getInvoiceLength('unpaid'),
+      count: unpaidCount,
     },
   ];
 
@@ -292,37 +269,6 @@ export function FactureListView() {
     },
     [router] // S'assurer de la dépendance à selectedBanque
   );
-
-  // const handlePaid = useCallback(
-  //   async (slug) => {
-  //     if (!selectedBanque) {
-  //       toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
-  //       return;
-  //     }
-
-  //     const data = {
-  //       banque_id: selectedBanque?.value,
-  //       facture_ids: dataFiltered.map((row) => row.slug)
-  //     }
-
-  //     try {
-  //       // Appel à l'API backend pour valider la déclaration
-  //       const response = await axios.post(API.PaidFactures(), data);
-
-  //       if (response.data.success) {
-  //         toast.success('Factures payées avec succès !');
-  //         router.push(paths.dashboard.factures.list);
-  //       } else {
-  //         console.error('Erreur lors du paiement:', response.data.error);
-  //         toast.error('Une erreur est survenue.');
-  //       }
-  //     } catch (error) {
-  //       console.error('Erreur réseau ou serveur:', error);
-  //       alert('Erreur lors de la communication avec le serveur.');
-  //     }
-  //   },
-  //   [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
-  // );
 
   const handleChangeBanque = (event, newValue) => {
     setSelectedBanque(newValue);
@@ -495,6 +441,17 @@ export function FactureListView() {
     }
   };
 
+  const handleUpdateStatus = useCallback(() => {
+    const selectedSlugs = table.selected;
+    // Mettre à jour l'état des factures sélectionnées
+    const updatedData = tableData.map((row) => {
+      if (selectedSlugs.includes(row.slug)) {
+        return { ...row, status: 'paid' }; // Mettre à jour le statut à 'paid'
+      }
+    });
+    setTableData(updatedData);
+  }, []);
+
   if (isLoading) {
     toast.info('Téléchargement en cours, veuillez patienter...');
   }
@@ -521,11 +478,11 @@ export function FactureListView() {
         />
 
         {/* <Stack spacing={4}> */}
-        {/* <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
+        <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Total"
-              total={summary.totalCount}
+              total={totalCount}
               percent={100}
               loading={loader}
               chart={{
@@ -538,8 +495,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Payées"
-              percent={getPercentByStatus('paid')}
-              total={getInvoiceLength('paid')}
+              percent={getPercentByStatus(paidCount)}
+              total={paidCount}
               loading={loader}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -550,8 +507,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="En attente"
-              percent={getPercentByStatus('unpaid')}
-              total={getInvoiceLength('unpaid')}
+              percent={getPercentByStatus(unpaidCount)}
+              total={unpaidCount}
               loading={loader}
               chart={{
                 colors: [theme.vars.palette.error.main],
@@ -560,7 +517,7 @@ export function FactureListView() {
               }}
             />
           </Grid2>
-        </Grid2> */}
+        </Grid2>
         {/* </Stack> */}
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
@@ -578,17 +535,17 @@ export function FactureListView() {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-                // icon={
-                //   <Label
-                //     variant={
-                //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                //       'soft'
-                //     }
-                //     color={tab.color}
-                //   >
-                //     {tab.count}
-                //   </Label>
-                // }
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                      'soft'
+                    }
+                    color={tab.color}
+                  >
+                    {tab.count}
+                  </Label>
+                }
               />
             ))}
           </Tabs>
@@ -660,7 +617,7 @@ export function FactureListView() {
                     </IconButton>
                   </Tooltip>
 
-                  {(type_user === 'caissier' || type_user === 'comptable') && (
+                  {(type_user === 'treasurer' || type_user === 'accountant') && (
                     <Tooltip title="Payer">
                       <IconButton
                         color="primary"
@@ -841,8 +798,8 @@ export function FactureListView() {
             variant="contained"
             color="primary"
             onClick={() => {
-              confirm.onTrue();
-              setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
+              payeurForm.onTrue(); // Ouvre la première boîte de dialogue
+              confirm.onFalse();
             }}
           >
             Suivant
@@ -903,23 +860,14 @@ export function FactureListView() {
           </Button>
         }
       />
-      <ConfirmDialog
-        open={openSecondDialog}
-        onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
-        title="Veuillez fournir les informations suivantes"
-        content={<PayeurForm id={dataFiltered.map((row) => row.slug)} />}
-        action={
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => {
-              setOpenSecondDialog(false); // Ferme la deuxième boîte de dialogue
-              handlePaid(); // Action pour "Payer"
-            }}
-          >
-            Payer
-          </Button>
-        }
+      <PayeurForm
+        slug={table.selected}
+        open={payeurForm.value}
+        onclose={payeurForm.onFalse}
+        onSuccess={() => {
+          handleUpdateStatus();
+          payeurForm.onFalse();
+        }}
       />
     </>
   );
