@@ -63,14 +63,13 @@ import dayjs from 'src/utils/format-time'; // Ensure this imports the correct da
 
 import { label } from 'yet-another-react-lightbox';
 
-
 dayjs.locale('fr'); // Set the default locale to French
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'facture', label: 'Numero Facture' },
   { id: 'numero', label: 'Numero Déclaration' },
-  {id: 'company', label: 'Entreprise'},
+  { id: 'company', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
   { id: 'statut', label: 'Statut' },
@@ -102,17 +101,17 @@ export function FactureListView() {
   const downloadMultiplePDF = useBoolean();
 
   const [options, setOptions] = useState([]);
-  const [isLoading, setIsLoading] = useState(false); 
-  const [isLoadPDF , setIsLoadPDF] = useState(false);
-  const [isLoadZip , setIsLoadZip] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadPDF, setIsLoadPDF] = useState(false);
+  const [isLoadZip, setIsLoadZip] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-  const [loader , setLaoder] = useState(false) // Etat pour indiquer le chargement des données sur les cards
+  const [loader, setLaoder] = useState(false); // Etat pour indiquer le chargement des données sur les cards
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedBanque, setSelectedBanque] = useState(null); // Etat pour la banque sélectionnée
   const [openFirstDialog, setOpenFirstDialog] = useState(false);
   const [openSecondDialog, setOpenSecondDialog] = useState(false);
-  const [selectedFilter , setSelectedFilter] = useState('number')
+  const [selectedFilter, setSelectedFilter] = useState('number');
   const [pagination, setPagination] = useState({
     count: 0,
     next: null,
@@ -125,7 +124,7 @@ export function FactureListView() {
 
   const filters = useSetState({
     number: '',
-    declaration_number:'',
+    declaration_number: '',
     company: '',
     service: [],
     status: 'all',
@@ -161,18 +160,18 @@ export function FactureListView() {
   const fetchCount = (status) =>
     axios.get(API.listFactures(), { params: { limit: 1, status } }).then((res) => res.data.count);
 
-  useEffect(() => {
-    setLaoder(true)
-    Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
-      ([totalCount, paidCount, unpaidCount]) => {
-        setSummary({
-          totalCount,
-          countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
-        });
-        setLaoder(false)
-      }
-    );
-  }, []);
+  // useEffect(() => {
+  //   setLaoder(true)
+  //   Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
+  //     ([totalCount, paidCount, unpaidCount]) => {
+  //       setSummary({
+  //         totalCount,
+  //         countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
+  //       });
+  //       setLaoder(false)
+  //     }
+  //   );
+  // }, []);
 
   const getInvoiceLength = (status) => summary.countByStatus[status];
 
@@ -190,19 +189,19 @@ export function FactureListView() {
       value: 'all',
       label: 'Toutes',
       color: 'white',
-      count: summary.totalCount,
+      // count: summary.totalCount,
     },
     {
       value: 'paid',
       label: 'Payées',
       color: 'success',
-      count: getInvoiceLength('paid'),
+      // count: getInvoiceLength('paid'),
     },
     {
       value: 'unpaid',
       label: 'En attente',
       color: 'warning',
-      count: getInvoiceLength('unpaid'),
+      // count: getInvoiceLength('unpaid'),
     },
   ];
 
@@ -325,21 +324,21 @@ export function FactureListView() {
               ? { declaration_number: filters.state.declaration_number }
               : filters.state.company
                 ? { company: filters.state.company }
-                : {}
-          ),
+                : {}),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
 
           ...(filters.state.number ? { number: filters.state.number } : {}),
-          ...(filters.state.company ? {company : filters.state.company} : {}),
-          ...(filters.state.declaration_number ? { declaration_number: filters.state.declaration_number } : {}),
+          ...(filters.state.company ? { company: filters.state.company } : {}),
+          ...(filters.state.declaration_number
+            ? { declaration_number: filters.state.declaration_number }
+            : {}),
 
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
-              date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD'),
-              date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD')
-            }
-            : {}
-          ),
+                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD'),
+                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD'),
+              }
+            : {}),
         };
 
         const response = await axios.get(API.listFactures(), { params });
@@ -357,132 +356,129 @@ export function FactureListView() {
     };
 
     fetchFactures();
-
-  }, [table.page, 
-    table.rowsPerPage, 
-    filters.state.status , 
+  }, [
+    table.page,
+    table.rowsPerPage,
+    filters.state.status,
     filters.state.company,
-    filters.state.date_before, 
-    filters.state.date_after , 
-    filters.state.number, 
-    filters.state.declaration_number ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
-
+    filters.state.date_before,
+    filters.state.date_after,
+    filters.state.number,
+    filters.state.declaration_number,
+  ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   const fetchFactures = async (slugs) => {
-  const responses = await Promise.all(
-    slugs.map((slug) => axios.get(API.detailsFacture(slug)))
-  );
-  return responses.map((res) => res.data);
-};
+    const responses = await Promise.all(slugs.map((slug) => axios.get(API.detailsFacture(slug))));
+    return responses.map((res) => res.data);
+  };
 
-const handleDownload = async () => {
-  if (!table.selected || table.selected.length === 0) {
-    toast.warn("Aucune facture sélectionnée.");
-    return;
-  }
-
-  setIsLoadPDF(true); // Début du chargement
-
-  try {
-    const slugs = table.selected;
-    const factures = await fetchFactures(slugs);
-
-    for (const facture of factures) {
-      await generateFacturePDF(facture, facture.devise, { download: true });
+  const handleDownload = async () => {
+    if (!table.selected || table.selected.length === 0) {
+      toast.warn('Aucune facture sélectionnée.');
+      return;
     }
 
-    table.onSelectAllRows(false, []);
-    toast.success("Téléchargement réussi !");
-  } catch (err) {
-    console.error(err);
-    toast.error("Erreur lors du téléchargement !");
-  } finally {
-    setIsLoadPDF(false);
-  }
-};
+    setIsLoadPDF(true); // Début du chargement
 
-const handleDownloadZip = async () => {
-  if (!table.selected || table.selected.length === 0) {
-    toast.warn("Aucune facture sélectionnée.");
-    return;
-  }
+    try {
+      const slugs = table.selected;
+      const factures = await fetchFactures(slugs);
 
-  setIsLoadZip(true);
+      for (const facture of factures) {
+        await generateFacturePDF(facture, facture.devise, { download: true });
+      }
 
-  try {
-    const slugs = table.selected;
-    const factures = await fetchFactures(slugs);
+      table.onSelectAllRows(false, []);
+      toast.success('Téléchargement réussi !');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erreur lors du téléchargement !');
+    } finally {
+      setIsLoadPDF(false);
+    }
+  };
 
-    const zip = new JSZip();
-
-    for (const facture of factures) {
-      
-    const blob = await generateFacturePDF(facture, facture.devise, {
-        download: false, // Ne pas télécharger individuellement
-      });
-
-      const filename = `facture-${facture.number}.pdf`;
-      zip.file(filename, blob);
+  const handleDownloadZip = async () => {
+    if (!table.selected || table.selected.length === 0) {
+      toast.warn('Aucune facture sélectionnée.');
+      return;
     }
 
-    // Générer le fichier ZIP
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-    saveAs(zipBlob, 'factures.zip');
-    toast.success('Téléchargement ZIP terminé !');
-    table.onSelectAllRows(false, []);
-  } catch (error) {
-    console.error(error);
-    toast.error("Erreur lors du téléchargement ZIP.");
-  } finally {
-    setIsLoadZip(false);
-  }
-};
+    setIsLoadZip(true);
 
-const handleDownloadMultiplePDF = async () => {
-  if (!table.selected || table.selected.length === 0) {
-    toast.warn("Aucune facture sélectionnée.");
-    return;
-  }
+    try {
+      const slugs = table.selected;
+      const factures = await fetchFactures(slugs);
 
-  setIsLoading(true);
+      const zip = new JSZip();
 
-  try {
-    const slugs = table.selected;
-    const factures = await fetchFactures(slugs);
+      for (const facture of factures) {
+        const blob = await generateFacturePDF(facture, facture.devise, {
+          download: false, // Ne pas télécharger individuellement
+        });
 
-    // 1. Nouveau document final
-    const mergedPdf = await PDFDocument.create();
+        const filename = `facture-${facture.number}.pdf`;
+        zip.file(filename, blob);
+      }
 
-    for (const facture of factures) {
-      // 2. Génération du PDF de cette facture (sous forme de bytes)
-      const singlePdfBytes = await generateFacturePDF(facture, facture.devise, { download: false });
+      // Générer le fichier ZIP
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      saveAs(zipBlob, 'factures.zip');
+      toast.success('Téléchargement ZIP terminé !');
+      table.onSelectAllRows(false, []);
+    } catch (error) {
+      console.error(error);
+      toast.error('Erreur lors du téléchargement ZIP.');
+    } finally {
+      setIsLoadZip(false);
+    }
+  };
 
-      // 3. Charger le PDF source
-      const singlePdfDoc = await PDFDocument.load(singlePdfBytes);
-
-      // 4. Copier toutes les pages dans le document final
-      const copiedPages = await mergedPdf.copyPages(singlePdfDoc, singlePdfDoc.getPageIndices());
-      copiedPages.forEach((page) => mergedPdf.addPage(page));
+  const handleDownloadMultiplePDF = async () => {
+    if (!table.selected || table.selected.length === 0) {
+      toast.warn('Aucune facture sélectionnée.');
+      return;
     }
 
-    // 5. Sauvegarde et téléchargement
-    const mergedPdfBytes = await mergedPdf.save();
-    saveAs(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'factures_ensemble.pdf');
-    toast.success('Téléchargement PDF groupé terminé !');
-    table.onSelectAllRows(false, []);
+    setIsLoading(true);
 
-  } catch (error) {
-    console.error('Erreur fusion PDF :', error);
-    toast.error("Erreur lors de la génération du PDF.");
-  } finally {
-    setIsLoading(false);
+    try {
+      const slugs = table.selected;
+      const factures = await fetchFactures(slugs);
+
+      // 1. Nouveau document final
+      const mergedPdf = await PDFDocument.create();
+
+      for (const facture of factures) {
+        // 2. Génération du PDF de cette facture (sous forme de bytes)
+        const singlePdfBytes = await generateFacturePDF(facture, facture.devise, {
+          download: false,
+        });
+
+        // 3. Charger le PDF source
+        const singlePdfDoc = await PDFDocument.load(singlePdfBytes);
+
+        // 4. Copier toutes les pages dans le document final
+        const copiedPages = await mergedPdf.copyPages(singlePdfDoc, singlePdfDoc.getPageIndices());
+        copiedPages.forEach((page) => mergedPdf.addPage(page));
+      }
+
+      // 5. Sauvegarde et téléchargement
+      const mergedPdfBytes = await mergedPdf.save();
+      saveAs(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'factures_ensemble.pdf');
+      toast.success('Téléchargement PDF groupé terminé !');
+      table.onSelectAllRows(false, []);
+    } catch (error) {
+      console.error('Erreur fusion PDF :', error);
+      toast.error('Erreur lors de la génération du PDF.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    toast.info('Téléchargement en cours, veuillez patienter...');
   }
-};
-
-if (isLoading) {
-  toast.info("Téléchargement en cours, veuillez patienter...");
-}
-
 
   if (loading) {
     console.info('Loading factures...');
@@ -506,7 +502,7 @@ if (isLoading) {
         />
 
         {/* <Stack spacing={4}> */}
-        <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
+        {/* <Grid2 container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Total"
@@ -545,7 +541,7 @@ if (isLoading) {
               }}
             />
           </Grid2>
-        </Grid2>
+        </Grid2> */}
         {/* </Stack> */}
 
         <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
@@ -563,17 +559,17 @@ if (isLoading) {
                 value={tab.value}
                 label={tab.label}
                 iconPosition="end"
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
-                      'soft'
-                    }
-                    color={tab.color}
-                  >
-                    {tab.count}
-                  </Label>
-                }
+                // icon={
+                //   <Label
+                //     variant={
+                //       ((tab.value === 'all' || tab.value === filters.state.status) && 'filled') ||
+                //       'soft'
+                //     }
+                //     color={tab.color}
+                //   >
+                //     {tab.count}
+                //   </Label>
+                // }
               />
             ))}
           </Tabs>
@@ -582,8 +578,8 @@ if (isLoading) {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
-            selectedFilter= {selectedFilter}
-            setSelectedFilter = {setSelectedFilter}
+            selectedFilter={selectedFilter}
+            setSelectedFilter={setSelectedFilter}
             options={{ services: tableData.map((option) => option.name) }}
           />
 
@@ -609,41 +605,55 @@ if (isLoading) {
               }}
               action={
                 <Stack direction="row">
-                 <Tooltip title="Télécharger toutes les factures (PDF unique)">
-                <span>
-                  <IconButton color='primary' onClick={downloadMultiplePDF.onTrue} disabled={isLoading}>
-                    {isLoading ? <CircularProgress size={24} /> : <Iconify icon="mdi:file-download-outline" />}
-                  </IconButton>
-                </span>
-              </Tooltip>
-
+                  <Tooltip title="Télécharger toutes les factures (PDF unique)">
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={downloadMultiplePDF.onTrue}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Iconify icon="mdi:file-download-outline" />
+                        )}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
 
                   <Tooltip title="Telecharger en pdf">
-                    <IconButton color="primary" onClick={confirmDownload.onTrue} disabled={isLoadPDF}>
-                      {isLoadPDF ? <CircularProgress size={24} /> :  <Iconify icon="eva:download-outline" /> }
+                    <IconButton
+                      color="primary"
+                      onClick={confirmDownload.onTrue}
+                      disabled={isLoadPDF}
+                    >
+                      {isLoadPDF ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Iconify icon="eva:download-outline" />
+                      )}
                     </IconButton>
                   </Tooltip>
 
                   <Tooltip title="Télécharger en ZIP">
                     <IconButton color="primary" onClick={downloadZip.onTrue} disabled={isLoadZip}>
-                   {isLoadZip ? <CircularProgress size={24} /> :  <Iconify icon="mdi:zip-box" /> }
+                      {isLoadZip ? <CircularProgress size={24} /> : <Iconify icon="mdi:zip-box" />}
                     </IconButton>
                   </Tooltip>
 
-                  { (type_user === 'caissier' || type_user === 'comptable') && (
-                  <Tooltip title="Payer">
-                    <IconButton
-                      color="primary"
-                      onClick={() => {
-                        confirm.onTrue();
-                        // Ouvre la première boîte de dialogue
-                      }}
-                    >
-                     
-                      <Iconify icon="mdi:credit-card" />
-                    </IconButton>
-                  </Tooltip>
-                   )}
+                  {(type_user === 'caissier' || type_user === 'comptable') && (
+                    <Tooltip title="Payer">
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          confirm.onTrue();
+                          // Ouvre la première boîte de dialogue
+                        }}
+                      >
+                        <Iconify icon="mdi:credit-card" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Stack>
               }
             />
@@ -733,14 +743,15 @@ if (isLoading) {
         title="Télécharger"
         content={
           <>
-            Etes vous sûr de vouloir Télécharger <strong> {table.selected.length} </strong> factures?
+            Etes vous sûr de vouloir Télécharger <strong> {table.selected.length} </strong>{' '}
+            factures?
           </>
         }
         action={
           <Button
             variant="contained"
             color="primary"
-            onClick={() => { 
+            onClick={() => {
               handleDownload(); // Action pour "Télécharger"
               confirmDownload.onFalse();
             }}
@@ -749,20 +760,21 @@ if (isLoading) {
           </Button>
         }
       />
-       <ConfirmDialog
+      <ConfirmDialog
         open={downloadMultiplePDF.value}
         onClose={downloadMultiplePDF.onFalse}
         title="Télécharger"
         content={
           <>
-            Etes vous sûr de vouloir télécharger  <strong> {table.selected.length} </strong> factures dans un seul fichier?
+            Etes vous sûr de vouloir télécharger <strong> {table.selected.length} </strong> factures
+            dans un seul fichier?
           </>
         }
         action={
           <Button
             variant="contained"
             color="primary"
-            onClick={() => { 
+            onClick={() => {
               handleDownloadMultiplePDF(); // Action pour "Télécharger"
               downloadMultiplePDF.onFalse();
             }}
@@ -772,20 +784,21 @@ if (isLoading) {
         }
       />
 
- <ConfirmDialog
+      <ConfirmDialog
         open={downloadZip.value}
         onClose={downloadZip.onFalse}
         title="Télécharger en ZIP"
         content={
           <>
-            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong> factures?
+            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong>{' '}
+            factures?
           </>
         }
         action={
           <Button
             variant="contained"
             color="primary"
-            onClick={() => { 
+            onClick={() => {
               handleDownloadZip(); // Action pour "Télécharger"
               downloadZip.onFalse();
             }}
