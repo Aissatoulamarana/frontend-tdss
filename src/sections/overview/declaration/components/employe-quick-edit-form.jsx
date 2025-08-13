@@ -102,6 +102,8 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
           .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
           .map((f) => ({ label: f.name, value: f.slug }));
 
+        sessionStorage.setItem('fonctions', JSON.stringify(uniqueBySlug));
+
         setOptions(uniqueBySlug);
       } catch (err) {
         console.error('Erreur lors du chargement des fonctions:', err);
