@@ -17,7 +17,10 @@ const API = {
   dashboardAdmin: () => `${BASE_URL}/declarations/dashboard-admin/`, // Dashboard admin
 
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
-  listUsers: () => `${BASE_URL}/users/`, // Liste des utilisateurs
+  listUsers: (params = {}) => {
+    const searchParams = new URLSearchParams(params).toString();
+    return `${BASE_URL}/users/?${searchParams}`;
+  }, // Liste des utilisateurs avec paramètres
   listUserTypes: () => `${BASE_URL}/profiles/user-types/`, // Liste des types d'utilisateurs
   deleteUser: (slug) => `${BASE_URL}/users/${slug}/`, // Suppression d'un utilisateur
   updateUser: (slug) => `${BASE_URL}/users/${slug}/`, // Mise à jour d'un utilisateur
