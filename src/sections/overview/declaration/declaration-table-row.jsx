@@ -100,14 +100,14 @@ export function DeclarationTableRow({
         }}
       >
         <TableCell padding="checkbox">
-           <Checkbox
+          <Checkbox
             checked={selected}
             onClick={(e) => {
               e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
               onSelectRow(e);
             }}
             slotProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
-          /> 
+          />
         </TableCell>
 
         <TableCell>

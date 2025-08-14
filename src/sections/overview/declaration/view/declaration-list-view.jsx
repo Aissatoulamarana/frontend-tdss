@@ -17,7 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import { Label } from 'src/components/label';
@@ -63,7 +63,6 @@ import { useMockedUser } from 'src/auth/hooks';
 import dayjs from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
 dayjs.locale('fr'); // Set the default locale to French
 
-
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -87,7 +86,7 @@ export function DeclarationListView() {
   const { user } = useMockedUser();
 
   const type_user = user?.type_name?.toLowerCase().trim();
-  
+
   // console.log('type_user:', type_user);
 
   const router = useRouter();
@@ -95,17 +94,20 @@ export function DeclarationListView() {
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const confirm = useBoolean();
+
   const confirmDownload = useBoolean();
   const downloadZip = useBoolean();
 
+  const billConfirm = useBoolean();
+
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-  const [loader , setLoader] = useState(false) // Etat pour indiquer les chargements sur les cards
+  const [loader, setLoader] = useState(false); // Etat pour indiquer les chargements sur les cards
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const [selectedFilter, setSelectedFilter] = useState('number'); // options de recherche
   // const [selectedDeclarations, setSelectedDeclarations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadZip , setIsLoadZip] = useState(false);
+  const [isLoadZip, setIsLoadZip] = useState(false);
 
   const [count, setCount] = useState();
   const downloadMultiplePDF = useBoolean();
@@ -161,74 +163,71 @@ export function DeclarationListView() {
       .then((res) => res.data.count);
 
   useEffect(() => {
-    setLoader(true),
-    Promise.all([
-      
-      fetchTotalCount(),
-      fetchCountByStatus('unsubmitted'),
-      fetchCountByStatus('submitted'),
-      fetchCountByStatus('validated'),
-      fetchCountByStatus('billed'),
-      fetchCountByStatus('rejected'),
-    ]).then(([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
-      setSummary({
-        totalCount,
-        countByStatus: {
-          unsubmitted: unsubmitCount,
-          submitted: submitCount,
-          validated: validatCount,
-          billed: billedCount,
-          rejected: rejectCount,
-        },
-      });
-      setLoader(false);
-    });
+    (setLoader(true),
+      Promise.all([
+        fetchTotalCount(),
+        fetchCountByStatus('unsubmitted'),
+        fetchCountByStatus('submitted'),
+        fetchCountByStatus('validated'),
+        fetchCountByStatus('billed'),
+        fetchCountByStatus('rejected'),
+      ]).then(
+        ([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
+          setSummary({
+            totalCount,
+            countByStatus: {
+              unsubmitted: unsubmitCount,
+              submitted: submitCount,
+              validated: validatCount,
+              billed: billedCount,
+              rejected: rejectCount,
+            },
+          });
+          setLoader(false);
+        }
+      ));
   }, [user]);
 
- const fetchEmployeesBySlug = async (slug) => {
-  if (!slug) return [];
+  const fetchEmployeesBySlug = async (slug) => {
+    if (!slug) return [];
 
-  try {
-    // 1. Premier appel pour avoir count et premiers résultats paginés
-    const {
-      data: { count, results }
-    } = await axios.get(API.Employe(slug));
-
-    let allEmployees = results;
-
-    // 2. Si les résultats sont paginés, on récupère tout d’un coup
-    if (count > results.length) {
+    try {
+      // 1. Premier appel pour avoir count et premiers résultats paginés
       const {
-        data: { results: fullResults }
-      } = await axios.get(API.Employe(slug), {
-        params: { limit: count, offset: 0 }
-      });
-      allEmployees = fullResults;
+        data: { count, results },
+      } = await axios.get(API.Employe(slug));
+
+      let allEmployees = results;
+
+      // 2. Si les résultats sont paginés, on récupère tout d’un coup
+      if (count > results.length) {
+        const {
+          data: { results: fullResults },
+        } = await axios.get(API.Employe(slug), {
+          params: { limit: count, offset: 0 },
+        });
+        allEmployees = fullResults;
+      }
+
+      return allEmployees;
+    } catch (error) {
+      console.error('Erreur lors du chargement des employés :', error);
+      return [];
     }
-
-    return allEmployees;
-  } catch (error) {
-    console.error('Erreur lors du chargement des employés :', error);
-    return [];
-  }
-};
-
-
+  };
 
   const fetchDeclarations = async (slugs) => {
     const responses = await Promise.all(
-      slugs.map((slug) => axios.get(API.detailsDeclaration(slug)))  
+      slugs.map((slug) => axios.get(API.detailsDeclaration(slug)))
     );
-   return Promise.all(
-    responses.map(async (res) => {
-      const declaration = res.data;
-      const employees = await fetchEmployeesBySlug(declaration.slug);
-      return { ...declaration, employees };
-    })
-  );
-};
-
-
+    return Promise.all(
+      responses.map(async (res) => {
+        const declaration = res.data;
+        const employees = await fetchEmployeesBySlug(declaration.slug);
+        return { ...declaration, employees };
+      })
+    );
+  };
 
   const getDeclarationLength = (status) => summary.countByStatus[status];
 
@@ -415,43 +414,43 @@ export function DeclarationListView() {
     }
   };
 
-const handleDownload = async () => {
-  if (!table.selected || table.selected.length === 0) {
-    console.warn("Aucune déclaration sélectionnée.");
-    return;
-  }
-
-  setIsLoading(true); // Début du chargement
-
-  try {
-    const slugs = table.selected;
-    const declarations = await fetchDeclarations(slugs);
-
-    for (const declaration of declarations) {
-      const logoUrl = declaration?.company?.picture;
-      const proxyBase = 'https://api.allorigins.win/raw?url=';
-      const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
-
-      const blob = await pdf(
-        <DeclarationPDF
-          declaration={declaration}
-          employees={declaration.employees}
-          logoUrl={proxiedLogoUrl}
-        />
-      ).toBlob();
-
-      saveAs(blob, `declaration-${declaration.number}.pdf`);
+  const handleDownload = async () => {
+    if (!table.selected || table.selected.length === 0) {
+      console.warn('Aucune déclaration sélectionnée.');
+      return;
     }
-  } catch (err) {
-    toast.error("Erreur lors du téléchargement :", err);
-  } finally {
-    setIsLoading(false); // Fin du chargement
-  }
-};
+
+    setIsLoading(true); // Début du chargement
+
+    try {
+      const slugs = table.selected;
+      const declarations = await fetchDeclarations(slugs);
+
+      for (const declaration of declarations) {
+        const logoUrl = declaration?.company?.picture;
+        const proxyBase = 'https://api.allorigins.win/raw?url=';
+        const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
+
+        const blob = await pdf(
+          <DeclarationPDF
+            declaration={declaration}
+            employees={declaration.employees}
+            logoUrl={proxiedLogoUrl}
+          />
+        ).toBlob();
+
+        saveAs(blob, `declaration-${declaration.number}.pdf`);
+      }
+    } catch (err) {
+      toast.error('Erreur lors du téléchargement :', err);
+    } finally {
+      setIsLoading(false); // Fin du chargement
+    }
+  };
   // Fonction pour télécharger plusieurs declarations PDF en un seul fichier
   const handleDownloadMultiplePDF = async () => {
     if (!table.selected || table.selected.length === 0) {
-      toast.warn("Aucune déclaration sélectionnée.");
+      toast.warn('Aucune déclaration sélectionnée.');
       return;
     }
 
@@ -481,10 +480,9 @@ const handleDownload = async () => {
       saveAs(new Blob([mergedPdfBytes], { type: 'application/pdf' }), 'declarations_ensemble.pdf');
       toast.success('Téléchargement PDF déclarations groupées terminé !');
       table.onSelectAllRows(false, []);
-
     } catch (error) {
       console.error('Erreur fusion PDF :', error);
-      toast.error("Erreur lors de la génération du PDF.");
+      toast.error('Erreur lors de la génération du PDF.');
     } finally {
       setIsLoading(false);
     }
@@ -492,7 +490,7 @@ const handleDownload = async () => {
   // Fonction pour télécharger plusieurs declarations en un fichier ZIP
   const handleDownloadZip = async () => {
     if (!table.selected || table.selected.length === 0) {
-      toast.warn("Aucune déclaration sélectionnée.");
+      toast.warn('Aucune déclaration sélectionnée.');
       return;
     }
 
@@ -505,8 +503,7 @@ const handleDownload = async () => {
       const zip = new JSZip();
 
       for (const declaration of declarations) {
-
-      const blob = await generateDeclarationPDF(declaration, {
+        const blob = await generateDeclarationPDF(declaration, {
           download: false, // Ne pas télécharger individuellement
         });
 
@@ -521,11 +518,58 @@ const handleDownload = async () => {
       table.onSelectAllRows(false, []);
     } catch (error) {
       console.error(error);
-      toast.error("Erreur lors du téléchargement ZIP.");
+      toast.error('Erreur lors du téléchargement ZIP.');
     } finally {
       setIsLoadZip(false);
     }
   };
+
+  const handleBilledRows = useCallback(async () => {
+    const selectedSlugs = table.selected;
+
+    if (selectedSlugs.length === 0) {
+      toast.error('Aucune déclaration sélectionnée.');
+      return;
+    }
+
+    const requestBody = {
+      declarations: selectedSlugs,
+      comment: "Déclaration facturée via l'interface.", // ou récupéré dynamiquement
+    };
+
+    try {
+      await axios.post(API.FacturerDeclaration(), requestBody);
+
+      // Mettre à jour localement le status
+      const updatedData = tableData.map((item) =>
+        selectedSlugs.includes(item.slug) ? { ...item, status: 'billed' } : item
+      );
+
+      setTableData(updatedData);
+      toast.success('Facturation réussie !');
+      table.onSelectAllRows(false, []);
+      router.push(paths.dashboard.factures.list);
+    } catch (error) {
+      console.error('Erreur lors de la facturation :', error);
+
+      const data = error.response?.data || error;
+      const messages = [];
+
+      if (data.declarations) {
+        messages.push(
+          ...(Array.isArray(data.declarations) ? data.declarations : [data.declarations])
+        );
+      }
+      if (data.details) messages.push(data.details);
+      if (data.error) messages.push(data.error);
+      if (data.message) messages.push(data.message);
+
+      const errorMessage = messages.join('');
+
+      toast.error(errorMessage);
+      table.onSelectAllRows(false, []);
+    }
+  }, [table, tableData, router]);
 
   const handleDeleteRows = useCallback(() => {
     const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
@@ -634,22 +678,30 @@ const handleDownload = async () => {
   const handleFacturer = useCallback(
     async (slug) => {
       try {
-        // Appel à l'API backend pour rejeter la déclaration
-        const response = await axios.post(API.facturerDeclaration(slug));
-        if (response) {
-          // Si succès, rediriger ou mettre à jour l'interface utilisateur
+        // Construction du corps de la requête
+        const requestBody = {
+          declarations: [slug], // tableau contenant un seul slug
+          comment: "Facturation individuelle depuis l'interface", // facultatif ou dynamique
+        };
+
+        // Appel de la route (attention à bien exécuter la fonction)
+        const response = await axios.post(API.FacturerDeclaration(), requestBody);
+
+        // En cas de succès
+        if (response.status === 200 || response.status === 201) {
           toast.success('Déclaration facturée avec succès !');
-          // Mise à jour locale du statut dans tableData
+          // Mise à jour locale du statut
           setTableData((prevData) =>
             prevData.map((item) => (item.slug === slug ? { ...item, status: 'billed' } : item))
           );
           router.push(paths.dashboard.factures.list);
         } else {
-          console.error('Erreur lors de la facturation:', response.data.error);
+          console.error('Erreur inattendue lors de la facturation:', response.data);
           toast.error('Une erreur est survenue.');
         }
       } catch (error) {
-        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        const errorMessage =
+          error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
         setError(errorMessage);
         console.error('Erreur réseau ou serveur:', error);
         toast.error(errorMessage);
@@ -715,9 +767,9 @@ const handleDownload = async () => {
               ? { title: filters.state.title }
               : filters.state.passport_number
                 ? { passport_number: filters.state.passport_number }
-                : filters.state.number ? { number: filters.state.number } 
-                : {} 
-          ),
+                : filters.state.number
+                  ? { number: filters.state.number }
+                  : {}),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
         };
 
@@ -726,7 +778,7 @@ const handleDownload = async () => {
           // Format: YYYY-MM-DD
           params.starts_at = dayjs(filters.state.starts_at).format('YYYY-MM-DD');
         }
-        
+
         if (filters.state.ends_at) {
           // Format: YYYY-MM-DD
           // On ajoute 1 jour et on soustrait 1 milliseconde pour inclure toute la journée
@@ -736,7 +788,7 @@ const handleDownload = async () => {
 
         // console.log('Fetching declarations with params:', params);
         const response = await axios.get(API.listDeclarations(), { params });
-        
+
         setTableData(response.data.results);
         setCount(response.data.count);
         setPagination({
@@ -747,7 +799,8 @@ const handleDownload = async () => {
       } catch (err) {
         console.error('Error fetching declarations:', err);
         setError(err.message || 'Erreur lors du chargement des données.');
-        const errormessage = err?.response?.data?.detail || err?.message || 'Une erreur est survenue';
+        const errormessage =
+          err?.response?.data?.detail || err?.message || 'Une erreur est survenue';
         toast.error(errormessage);
       } finally {
         setLoading(false);
@@ -757,19 +810,17 @@ const handleDownload = async () => {
     // Requête lancée à chaque changement de page, du nombre de lignes ou des filtres
 
     fetchDeclarations();
-
   }, [
-    table.page, 
-    table.rowsPerPage, 
+    table.page,
+    table.rowsPerPage,
     filters.state.number,
-    filters.state.company, 
-    filters.state.title, 
-    filters.state.passport_number, 
-    filters.state.status, 
-    filters.state.starts_at, 
-    filters.state.ends_at
+    filters.state.company,
+    filters.state.title,
+    filters.state.passport_number,
+    filters.state.status,
+    filters.state.starts_at,
+    filters.state.ends_at,
   ]);
-
 
   if (loading) {
     console.info('Loading declarations...');
@@ -792,9 +843,9 @@ const handleDownload = async () => {
 
   const allowedStatuses = allowedStatus[type_user] || allowedStatus.default;
 
-  {isLoading && (
-    toast.info('Téléchargement en cours, veuillez patienter...')
-  )}
+  {
+    isLoading && toast.info('Téléchargement en cours, veuillez patienter...');
+  }
 
   return (
     <>
@@ -841,7 +892,7 @@ const handleDownload = async () => {
               total={getDeclarationLength('validated')}
               percent={getPercentByStatus('validated')}
               chart={{
-                // colors: [theme.vars.palette.success.main],
+        larations        // colors: [theme.vars.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
                 series: [15, 18, 12, 51, 68, 11, 39, 37],
               }}
@@ -937,40 +988,74 @@ const handleDownload = async () => {
               }}
               action={
                 <Stack direction="row">
-                  <Tooltip title="Facturer">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
-                    </IconButton>
-                  </Tooltip>
                   {/* telecharger toutes les declarations en un seul fichier */}
-                  <Tooltip title="Télécharger toutes les déclarations (PDF unique)">
-                    <span>
-                      <IconButton color='primary' onClick={downloadMultiplePDF.onTrue} disabled={isLoading}>
-                        {isLoading ? <CircularProgress size={24} /> : <Iconify icon="mdi:file-download-outline" />}
+                  {type_user === 'comptable' && (
+                    <Tooltip title="Facturer">
+                      <IconButton
+                        color="primary"
+                        onClick={() => {
+                          // On récupère les lignes sélectionnées
+                          const selectedRows = tableData.filter((row) =>
+                            table.selected.includes(row.slug)
+                          );
+
+                          // Vérifie si toutes ont le statut validé
+                          const hasInvalid = selectedRows.some(
+                            (row) => row.status?.toLowerCase() !== 'validated'
+                          );
+
+                          if (hasInvalid) {
+                            toast.error(
+                              'Certaines déclarations sélectionnées ne sont pas validées. Vous ne pouvez pas les facturer.'
+                            );
+                            table.onSelectAllRows(false, []);
+                            return;
+                          }
+
+                          // Si tout est bon → on lance la facturation
+                          billConfirm.onTrue();
+                        }}
+                      >
+                        <Iconify icon="mdi:credit-card" />
                       </IconButton>
-                    </span>
-                  </Tooltip>
+                    </Tooltip>
+                  )}
                   <Tooltip title="Telecharger">
                     <IconButton color="primary" onClick={confirmDownload.onTrue}>
                       <Iconify icon="eva:download-outline" />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title="Télécharger toutes les déclarations (PDF unique)">
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={downloadMultiplePDF.onTrue}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <CircularProgress size={24} />
+                        ) : (
+                          <Iconify icon="mdi:file-download-outline" />
+                        )}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                   <Tooltip title="Télécharger en ZIP">
                     <IconButton color="primary" onClick={downloadZip.onTrue} disabled={isLoadZip}>
-                    {isLoadZip ? <CircularProgress size={24} /> :  <Iconify icon="mdi:zip-box" /> }
+                      {isLoadZip ? <CircularProgress size={24} /> : <Iconify icon="mdi:zip-box" />}
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title="Imprimer">
+                  {/* <Tooltip title="Imprimer">
                     <IconButton color="primary">
                       <Iconify icon="solar:printer-minimalistic-bold" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
 
-                  <Tooltip title="Supprimer">
+                  {/* <Tooltip title="Supprimer">
                     <IconButton color="primary" onClick={confirm.onTrue}>
                       <Iconify icon="solar:trash-bin-trash-bold" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </Stack>
               }
             />
@@ -1054,20 +1139,22 @@ const handleDownload = async () => {
           />
         </Card>
       </DashboardContent>
+
       <ConfirmDialog
         open={downloadMultiplePDF.value}
         onClose={downloadMultiplePDF.onFalse}
         title="Télécharger"
         content={
           <>
-            Etes vous sûr de vouloir télécharger  <strong> {table.selected.length} </strong> déclarations dans un seul fichier?
+            Etes vous sûr de vouloir télécharger <strong> {table.selected.length} </strong>{' '}
+            déclarations dans un seul fichier?
           </>
         }
         action={
           <Button
             variant="contained"
             color="primary"
-            onClick={() => { 
+            onClick={() => {
               handleDownloadMultiplePDF(); // Action pour "Télécharger"
               downloadMultiplePDF.onFalse();
             }}
@@ -1100,7 +1187,7 @@ const handleDownload = async () => {
         }
       />
 
-       <ConfirmDialog
+      <ConfirmDialog
         open={confirmDownload.value}
         onClose={confirmDownload.onFalse}
         title="Télécharger"
@@ -1124,25 +1211,50 @@ const handleDownload = async () => {
         }
       />
       {/* modal confirmation telechargement zip de plusieurs declarations */}
-       <ConfirmDialog
+      <ConfirmDialog
         open={downloadZip.value}
         onClose={downloadZip.onFalse}
         title="Télécharger en ZIP"
         content={
           <>
-            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong> déclarations?
+            Etes vous sûr de vouloir télécharger en ZIP <strong> {table.selected.length} </strong>{' '}
+            déclarations?
           </>
         }
         action={
           <Button
             variant="contained"
             color="primary"
-            onClick={() => { 
+            onClick={() => {
               handleDownloadZip(); // Action pour "Télécharger"
               downloadZip.onFalse();
             }}
           >
             Telecharger en ZIP
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={billConfirm.value}
+        onClose={billConfirm.onFalse}
+        title="Facturer"
+        content={
+          <>
+            Etes vous sûr de vouloir facturer <strong> {table.selected.length} </strong>{' '}
+            declarations?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              handleBilledRows();
+              billConfirm.onFalse();
+            }}
+          >
+            Facturer
           </Button>
         }
       />
