@@ -125,7 +125,7 @@ export function FactureTableRow({
             />
           </Stack>
         </TableCell>
-        {row.nb_declarations > 0 ? (
+        {row.nb_declarations > 1 ? (
           <TableCell>{row.nb_declarations}</TableCell>
         ) : (
           <TableCell
