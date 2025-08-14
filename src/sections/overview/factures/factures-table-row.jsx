@@ -105,7 +105,7 @@ export function FactureTableRow({
           <Checkbox
             checked={selected}
             // onClick={onSelectRow}
-             onClick={(e) => {
+            onClick={(e) => {
               e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
               onSelectRow(e);
             }}
@@ -125,16 +125,19 @@ export function FactureTableRow({
             />
           </Stack>
         </TableCell>
-
-        <TableCell
-          onClick={handleViewDeclaration}
-          sx={{
-            cursor: 'pointer',
-            '&:hover': { color: 'primary.main', textDecoration: 'underline' },
-          }}
-        >
-          {row.declaration_number}
-        </TableCell>
+        {row.nb_declarations > 0 ? (
+          <TableCell>{row.nb_declarations}</TableCell>
+        ) : (
+          <TableCell
+            onClick={handleViewDeclaration}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+            }}
+          >
+            {row.declaration_number}
+          </TableCell>
+        )}
         <TableCell>{row.client}</TableCell>
         <TableCell>
           <ListItemText
