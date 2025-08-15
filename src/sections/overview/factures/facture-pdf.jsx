@@ -220,7 +220,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
         font: helvetica,
         color: black,
       });
-      page.drawText(formatMontant(r?.price), {
+      page.drawText(formatMontant(r?.montant), {
         x: 480,
         y: rowY,
         size: baseSize,

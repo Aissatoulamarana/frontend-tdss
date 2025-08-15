@@ -14,6 +14,29 @@ function sanitize(text) {
     .replace(/\u2007/g, ' ');
 }
 
+// === AJOUT : fonction pour découper automatiquement un texte trop long ===
+function wrapText(text, maxWidth, font, fontSize) {
+  // 🔹 Supprimer les retours à la ligne (\r et \n)
+  text = text.replace(/[\r\n]+/g, ' ').trim();
+
+  const words = text.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  for (let word of words) {
+    const testLine = currentLine ? currentLine + ' ' + word : word;
+    const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+    if (testWidth > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+  return lines;
+}
+
 export async function generateFacturePDFInit(facture, devise, { download = true } = {}) {
   const arrayBuffer = await fetch(TEMPLATE_URL).then((res) => {
     if (!res.ok) throw new Error(`Impossible de charger le template (${res.status})`);
@@ -61,9 +84,11 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
             : String(value)
     );
 
+  const permits = facture?.permits;
+
   // 1. Titre facture
   let cursorY = page.getHeight() - invoiceTopGap;
-  const invoiceText = `FACTURE N° ${facture.number}`;
+  const invoiceText = `FACTURE N° ${facture?.number}`;
   page.drawText(invoiceText, {
     x: 200,
     y: cursorY,
@@ -92,13 +117,34 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   });
 
   cursorY -= clientInfoLineGap;
-  [
-    facture.client_name,
-    `Tél : ${facture.client_contact}`,
-    `Adresse : ${facture.client_adresse}`,
-    `Région : ${facture.client_location}`,
-  ].forEach((line) => {
-    page.drawText(line, { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
+  // [
+  //   facture?.client_name,
+  //   `Tél : ${facture?.client_contact}`,
+  //   `Adresse : ${facture?.client_adresse}`,
+  //   `Région : ${facture?.client_location}`,
+  // ].forEach((line) => {
+  //   page.drawText(line, { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
+  //   cursorY -= clientInfoLineGap;
+  // });
+
+  const clientLines = [
+    { text: facture.client_name, bold: true }, // 🔹 Nom en gras
+    { text: `Tél : ${facture.client_contact}`, bold: false },
+    ...wrapText(`Adresse : ${facture.client_adresse}`, 250, helvetica, baseSize).map((line) => ({
+      text: line,
+      bold: false,
+    })),
+    { text: `Région : ${facture.client_location}`, bold: false },
+  ];
+
+  clientLines.forEach((lineObj) => {
+    page.drawText(lineObj.text, {
+      x: leftX,
+      y: cursorY,
+      size: baseSize,
+      font: lineObj.bold ? helveticaBold : helvetica, // 🔹 Si bold = true => HelveticaBold
+      color: black,
+    });
     cursorY -= clientInfoLineGap;
   });
 
@@ -113,9 +159,9 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
     return `${j}/${m}/${a}`;
   };
   [
-    ['Date facture : ', facture.created_on],
-    ['Declaration N : ', facture.declaration_number],
-    ['Date declaration : ', facture.date_declaration],
+    ['Date facture : ', facture?.created_on],
+    ['Declaration N : ', facture?.declaration_number],
+    ['Date declaration : ', facture?.declaration_date],
   ].forEach(([label, val]) => {
     const displayVal = label.includes('Date') ? formatDate(val) : val;
     page.drawText(label, { x: rightX, y: cursorY, size: baseSize, font: helvetica, color: red });
@@ -152,31 +198,31 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
 
   // 6. Lignes de données
   let rowY = headerY - headerLineGap;
-  facture.permits
-    .filter((r) => r.count > 0)
-    .forEach((r) => {
-      page.drawText(`Permis ${r.type}`, {
+  permits
+    ?.filter((r) => r?.count > 0)
+    ?.forEach((r) => {
+      page.drawText(`Permis ${r?.type ?? ''}`, {
         x: 70,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
-      page.drawText(`${r.count}`, {
+      page.drawText(`${r?.count ?? 0}`, {
         x: 210,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
-      page.drawText(formatMontant(r.price), {
+      page.drawText(formatMontant(r?.price ?? 0), {
         x: 340,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
-      page.drawText(formatMontant(r.total_price), {
+      page.drawText(formatMontant(r?.total_price ?? 0), {
         x: 480,
         y: rowY,
         size: baseSize,
@@ -202,7 +248,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
     font: helveticaBold,
     color: black,
   });
-  page.drawText(formatMontant(facture.amount), {
+  page.drawText(formatMontant(facture?.amount), {
     x: 450,
     y: rowY,
     size: totalFontSize,
@@ -213,7 +259,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   // 8. Montant en lettres
   rowY -= totalToWordsGap;
   const phr = 'Arrêté la présente facture à la somme de : ';
-  const formattedAmount = formatMontant(facture.amount);
+  const formattedAmount = formatMontant(facture?.amount);
   const numericAmount = Number(formattedAmount.replace(/[^0-9]/g, '').replace(/,/g, ''));
   const words = sanitize(amountToWords(numericAmount, devise));
   page.drawText(phr, { x: 40, y: rowY, size: baseSize, font: helvetica, color: black });
@@ -236,7 +282,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   // 9. QR & Signature
   rowY -= wordsToQrGap;
   const qrData = facture.number;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=100x100`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=80x80`;
   const qrBytes = await fetch(qrUrl).then((r) => {
     if (!r.ok) throw new Error(`Erreur chargement QR (${r.status})`);
     return r.arrayBuffer();
@@ -244,7 +290,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   const qrImg = await pdfDoc.embedPng(qrBytes);
   page.drawImage(qrImg, { x: 50, y: rowY, width: 100, height: 100 });
 
-  const sign = 'LE DIRECTEUR';
+  const sign = 'LA DIRECTION';
   page.drawText(sign, { x: 450, y: rowY + 80, size: baseSize, font: helvetica, color: black });
   const sW = helvetica.widthOfTextAtSize(sign, baseSize);
   page.drawLine({
@@ -257,7 +303,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   // Sauvegarde et téléchargement
   const pdfBytes = await pdfDoc.save();
   if (download) {
-    saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture.number}.pdf`);
+    saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture?.number}.pdf`);
   }
   return pdfBytes;
 }

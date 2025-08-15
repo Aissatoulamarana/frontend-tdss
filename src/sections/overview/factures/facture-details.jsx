@@ -68,12 +68,6 @@ export function FactureDetails({ facture, user, setFacture }) {
         });
         const total = resp1?.data?.count;
 
-        console.log('Params envoyés:', {
-          offset: 0,
-          limit: total,
-          company: facture?.client_name,
-        });
-
         const resp2 = await axios.get(API.listDeclarations(), {
           params: { offset: 0, limit: total, company: facture?.client_name, status: 'validated' },
         });
@@ -118,7 +112,8 @@ export function FactureDetails({ facture, user, setFacture }) {
         // Mise à jour de la liste affichée
         setFacture((prev) => ({
           ...prev,
-          declarations: response.data.declarations, // <-- backend renvoie toutes les déclarations
+          declarations: response?.data?.declarations,
+          amount: response?.data?.amount,
         }));
 
         setDeclarationsToAdd([]);
@@ -147,16 +142,16 @@ export function FactureDetails({ facture, user, setFacture }) {
 
       // En cas de succès
       if (response.data || response.status === 201) {
-        toast.success('Déclaration retiré avec succès !');
-        // Mise à jour locale du statut
+        toast.success('Déclaration retirée avec succès !');
+        // Mise à jour locale
         setFilteredDeclarations((prevData) =>
           prevData.filter((item) => !selectedDeclarations.includes(item.slug))
         );
         setFacture((prev) => ({
           ...prev,
-          declarations: response.data.declarations, // <-- backend renvoie toutes les déclarations
+          declarations: response.data.declarations, // mettre a jour les déclarations
+          amount: response?.data?.amount, // mettre a jour le montant
         }));
-        setSelectedDeclarations([]);
       } else {
         console.error('Erreur inattendue:', response.data);
         toast.error('Une erreur est survenue.');
@@ -212,7 +207,7 @@ export function FactureDetails({ facture, user, setFacture }) {
       <Table sx={{ minWidth: 960 }}>
         <TableHead>
           <TableRow>
-            {facture?.status === 'unpaid' && <CenteredTableCell width={40}> </CenteredTableCell>}
+            {currentStatus === 'unpaid' && <CenteredTableCell width={40}> </CenteredTableCell>}
             <CenteredTableCell width={40}>#</CenteredTableCell>
             <CenteredTableCell width={250}>Déclarations</CenteredTableCell>
             <CenteredTableCell width={250}>Date Déclaration</CenteredTableCell>
@@ -229,7 +224,7 @@ export function FactureDetails({ facture, user, setFacture }) {
                   : 'transparent',
               }}
             >
-              {facture?.status === 'unpaid' && (
+              {currentStatus === 'unpaid' && (
                 <CenteredTableCell>
                   <Checkbox
                     checked={selectedDeclarations.includes(row.slug)}
@@ -251,7 +246,17 @@ export function FactureDetails({ facture, user, setFacture }) {
               <CenteredTableCell>{index + 1}</CenteredTableCell>
 
               <CenteredTableCell>
-                <Typography variant="subtitle2">{row.number}</Typography>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                    fontSize: '0.85rem',
+                  }}
+                  onClick={() => handleDetailsDeclaration(row.slug)}
+                >
+                  {row.number}
+                </Typography>
               </CenteredTableCell>
 
               <CenteredTableCell>{fDate(row.created_on)}</CenteredTableCell>
@@ -310,7 +315,7 @@ export function FactureDetails({ facture, user, setFacture }) {
 
           {/* Total général */}
           <StyledTableRow>
-            <CenteredTableCell colSpan={3} />
+            <CenteredTableCell colSpan={currentStatus === 'unpaid' ? 3 : 2} />
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>
               {afficherMontant(facture?.amount)}
@@ -342,8 +347,7 @@ export function FactureDetails({ facture, user, setFacture }) {
     }
   }, [facture?.status]);
 
-  const handleDetailsDeclaration = () => {
-    const declarationSlug = facture?.declaration_slug;
+  const handleDetailsDeclaration = (declarationSlug) => {
     if (!declarationSlug) {
       toast.error('Le slug de la déclaration est manquant.');
       return;
@@ -364,7 +368,7 @@ export function FactureDetails({ facture, user, setFacture }) {
         devise={devise}
       />
 
-      {facture?.status === 'unpaid' && (
+      {currentStatus === 'unpaid' && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: { xs: 1, md: 2 } }}>
           <Button
             variant="contained"
@@ -409,7 +413,6 @@ export function FactureDetails({ facture, user, setFacture }) {
                   py: 0.5,
                   borderRadius: 1,
                   border: '1px solid #ccc',
-                  backgroundColor: '#fff',
                   fontSize: 14,
                   minWidth: 80,
                 }}
@@ -427,6 +430,19 @@ export function FactureDetails({ facture, user, setFacture }) {
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Date facture :{fDate(facture?.created_on)}
             </Typography>
+            {facture?.declaration_number && (
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
+                  cursor: 'pointer',
+                  '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                }}
+                onClick={() => handleDetailsDeclaration(facture?.declaration_slug)}
+              >
+                Declaration N :{facture?.declaration_number}
+              </Typography>
+            )}
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
@@ -455,7 +471,7 @@ export function FactureDetails({ facture, user, setFacture }) {
           </Stack>
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
-        {selectedDeclarations.length > 0 && facture?.status === 'unpaid' && (
+        {selectedDeclarations.length > 0 && currentStatus === 'unpaid' && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
             <Button
               variant="outlined"
@@ -470,7 +486,7 @@ export function FactureDetails({ facture, user, setFacture }) {
           </Box>
         )}
 
-        {facture?.declarations.length > 1 ? renderList : renderListPermis}
+        {facture?.declarations.length > 0 ? renderList : renderListPermis}
 
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
       </Card>
@@ -486,6 +502,7 @@ export function FactureDetails({ facture, user, setFacture }) {
               options={declarations}
               getOptionLabel={(declaration) => declaration.number}
               loading={loadDec}
+              // value={selectedBanque || null}
               onChange={handleChange}
               renderInput={(params) => (
                 <TextField
