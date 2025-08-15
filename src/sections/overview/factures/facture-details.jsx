@@ -15,7 +15,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { useState, useEffect } from 'react';
 
-import { fCurrency , fGNF , fEuro } from 'src/utils/format-number';
+import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 import { fDate } from 'src/utils/format-time';
 
 import { usePopover } from 'src/components/custom-popover';
@@ -37,7 +37,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-
 export function FactureDetails({ facture, user }) {
   const [currentStatus, setCurrentStatus] = useState('');
   const [devise, setDevise] = useState('GNF');
@@ -53,12 +52,9 @@ export function FactureDetails({ facture, user }) {
     } else if (devise === 'USD') {
       return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
     } else if (devise === 'EUR') {
-    return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
-  }
-};
-
-
-
+      return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+    }
+  };
 
   const renderFooter = (
     <Box gap={2} display="flex" alignItems="center" flexWrap="wrap" sx={{ py: 3 }}>
@@ -91,8 +87,6 @@ export function FactureDetails({ facture, user }) {
         <Box sx={{ mt: 2 }} />
         {afficherMontant(facture?.amount)}
       </TableCell>
-      
-
     </StyledTableRow>
   );
 
@@ -103,64 +97,59 @@ export function FactureDetails({ facture, user }) {
     paddingLeft: theme.spacing(1),
     paddingRight: theme.spacing(1),
   }));
-  
- // Filtrer les permis avec count > 0
- const filteredPermits = facture?.permits.filter((item) => item.count > 0) || [];
+
+  // Filtrer les permis avec count > 0
+  const filteredPermits = facture?.permits.filter((item) => item.count > 0) || [];
 
   const renderList = (
     <Scrollbar sx={{ mt: 5 }}>
-  <Table sx={{ minWidth: 960 }}>
-    <TableHead>
-      <TableRow>
-        <CenteredTableCell width={40}>#</CenteredTableCell>
-        <CenteredTableCell width={150}>Categorie de permis</CenteredTableCell>
-        <CenteredTableCell width={150}>Quantité</CenteredTableCell>
-        <CenteredTableCell width={150}>Prix Unitaire</CenteredTableCell>
-        <CenteredTableCell width={150}>Total</CenteredTableCell>
-      </TableRow>
-    </TableHead>
-    <TableBody>
-      {filteredPermits.map((row, index) => (
-        <TableRow key={index}>
-          <CenteredTableCell>{index + 1}</CenteredTableCell>
+      <Table sx={{ minWidth: 960 }}>
+        <TableHead>
+          <TableRow>
+            <CenteredTableCell width={40}>#</CenteredTableCell>
+            <CenteredTableCell width={150}>Categorie de permis</CenteredTableCell>
+            <CenteredTableCell width={150}>Quantité</CenteredTableCell>
+            <CenteredTableCell width={150}>Prix Unitaire</CenteredTableCell>
+            <CenteredTableCell width={150}>Total</CenteredTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {filteredPermits.map((row, index) => (
+            <TableRow key={index}>
+              <CenteredTableCell>{index + 1}</CenteredTableCell>
 
-          <CenteredTableCell>
-            <Typography variant="subtitle2">{row.category}</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-              Permis {row.type}
-            </Typography>
-          </CenteredTableCell>
+              <CenteredTableCell>
+                <Typography variant="subtitle2">{row.category}</Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
+                  Permis {row.type}
+                </Typography>
+              </CenteredTableCell>
 
-          <CenteredTableCell>{row.count}</CenteredTableCell>
+              <CenteredTableCell>{row.count}</CenteredTableCell>
 
-          <CenteredTableCell>{afficherMontant(row.price)}</CenteredTableCell>
+              <CenteredTableCell>{afficherMontant(row.price)}</CenteredTableCell>
 
-          <CenteredTableCell>
-            {afficherMontant(row.total_price)}
-          </CenteredTableCell>
-        </TableRow>
-      ))}
+              <CenteredTableCell>{afficherMontant(row.total_price)}</CenteredTableCell>
+            </TableRow>
+          ))}
 
-      {/* Total général */}
-      <StyledTableRow>
-        <CenteredTableCell colSpan={3} />
-        <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
-        <CenteredTableCell sx={{ fontWeight: 'bold' }}>
-          {afficherMontant(facture?.amount)}
-        </CenteredTableCell>
-      </StyledTableRow>
-    </TableBody>
-  </Table>
-</Scrollbar>
-
+          {/* Total général */}
+          <StyledTableRow>
+            <CenteredTableCell colSpan={3} />
+            <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
+            <CenteredTableCell sx={{ fontWeight: 'bold' }}>
+              {afficherMontant(facture?.amount)}
+            </CenteredTableCell>
+          </StyledTableRow>
+        </TableBody>
+      </Table>
+    </Scrollbar>
   );
-  
 
   const statusLabels = {
     paid: 'Payée',
     unpaid: 'En attente',
-    
-  }
+  };
   const getStatusColor = (status) => {
     switch (status) {
       case 'unpaid':
@@ -170,9 +159,9 @@ export function FactureDetails({ facture, user }) {
       default:
         return 'default';
     }
-  }
- 
-useEffect(() => {
+  };
+
+  useEffect(() => {
     if (facture?.status) {
       setCurrentStatus(facture?.status);
     }
@@ -185,7 +174,7 @@ useEffect(() => {
       return;
     }
     router.push(paths.dashboard.declaration.details(declarationSlug));
-  }
+  };
 
   return (
     <>
@@ -196,8 +185,7 @@ useEffect(() => {
         onChangeStatus={(e) => {
           const value = typeof e === 'string' ? e : e.target.value;
           setCurrentStatus(value);
-        }
-      }
+        }}
         devise={devise}
       />
       <Card sx={{ pt: 5, px: 5 }}>
@@ -215,7 +203,7 @@ useEffect(() => {
           />
 
           <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
-          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="subtitle2" gutterBottom>
                 Devise
               </Typography>
@@ -239,12 +227,8 @@ useEffect(() => {
               </Box>
             </Box>
 
-            <Label
-              variant="soft"
-              color={getStatusColor(currentStatus)}
-            >
-             {statusLabels[currentStatus] || 'Inconnue'}
- 
+            <Label variant="soft" color={getStatusColor(currentStatus)}>
+              {statusLabels[currentStatus] || 'Inconnue'}
             </Label>
             <Typography variant="h6"> {`FACTURE N° ${facture?.number}`}</Typography>
           </Stack>
@@ -254,9 +238,7 @@ useEffect(() => {
               CLIENT
             </Typography>
             <br />
-            <Typography variant='h6' >
-              {facture?.client_name}
-            </Typography>
+            <Typography variant="h6">{facture?.client_name}</Typography>
             <br />
             Tél : {facture?.client_contact}
             <br />
@@ -267,18 +249,22 @@ useEffect(() => {
 
           <Stack sx={{ typography: 'body2' }}>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date facture :
-              {fDate(facture?.created_on)}
+              Date facture :{fDate(facture?.created_on)}
             </Typography>
-            <Typography variant="subtitle2" sx={{ mb: 1 , cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' }}} onClick={handleDetailsDeclaration}>
-              Declaration N :
-              {facture?.declaration_number}
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mb: 1,
+                cursor: 'pointer',
+                '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+              }}
+              onClick={handleDetailsDeclaration}
+            >
+              Declaration N :{facture?.declaration_number}
             </Typography>
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date declaration :
-              {fDate(facture?.date_declaration)}
+              Date declaration :{fDate(facture?.date_declaration)}
             </Typography>
-
           </Stack>
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
