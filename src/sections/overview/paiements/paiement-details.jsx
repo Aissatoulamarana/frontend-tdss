@@ -81,7 +81,7 @@ export function PaiementDetails({ payment, user }) {
     return `${Number(amount).toLocaleString()} GNF`;
   };
 
-   const methodsLabels = {
+  const methodsLabels = {
     transfer: 'Virement',
     cheque: 'Chèque',
     deposit: 'Espèces',
@@ -97,9 +97,9 @@ export function PaiementDetails({ payment, user }) {
 
   const handleViewFactureDetails = () => {
     const factureSlug = payment?.facture_slug;
-    // console.log(factureSlug); 
+    // console.log(factureSlug);
     if (!factureSlug) {
-      toast.error("Aucun slug de facture trouvé pour ce paiement");
+      toast.error('Aucun slug de facture trouvé pour ce paiement');
       return;
     }
     router.push(paths.dashboard.factures.details(factureSlug));
@@ -170,19 +170,26 @@ export function PaiementDetails({ payment, user }) {
             </Grid>
 
             <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
-              <Typography
-                variant="body2"
-                sx={{ fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}
-              >
+              {payment?.facture_number && (
                 <Typography
-                  component="span"
-                  sx={{ fontWeight: 700, cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' }, fontSize: '0.85rem' }}
-                  onClick={handleViewFactureDetails}
+                  variant="body2"
+                  sx={{ fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}
                 >
-                  Facture N° :
-                </Typography>{' '}
-                {payment?.facture_number}
-              </Typography>
+                  <Typography
+                    component="span"
+                    sx={{
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                      fontSize: '0.85rem',
+                    }}
+                    onClick={handleViewFactureDetails}
+                  >
+                    Facture N° :
+                  </Typography>{' '}
+                  {payment?.facture_number}
+                </Typography>
+              )}
               {/* <Typography>Facture slug : {payment?.facture_slug}</Typography> */}
               {user?.type_name === 'Admin' && (
                 <>
@@ -209,7 +216,7 @@ export function PaiementDetails({ payment, user }) {
                     >
                       Méthode de paiement :
                     </Typography>{' '}
-                      {methodsLabels[payment?.payment_method]}
+                    {methodsLabels[payment?.payment_method]}
                   </Typography>
                 </>
               )}
@@ -260,7 +267,7 @@ export function PaiementDetails({ payment, user }) {
                 >
                   CLIENT :{' '}
                 </Typography>
-                {payment?.payer?.employer}
+                {payment?.client?.name}
               </Typography>
               <Box>
                 <Typography
@@ -273,7 +280,7 @@ export function PaiementDetails({ payment, user }) {
                   >
                     Nom :
                   </Typography>{' '}
-                  {payment?.payer?.first} {payment?.payer?.last}
+                  {payment?.client?.name}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -285,7 +292,7 @@ export function PaiementDetails({ payment, user }) {
                   >
                     Tél :
                   </Typography>{' '}
-                  {payment?.payer?.phone}
+                  {payment?.client?.contact}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -295,21 +302,25 @@ export function PaiementDetails({ payment, user }) {
                     component="span"
                     sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
                   >
-                    Email :
+                    Adresse :
                   </Typography>{' '}
-                  {payment?.payer?.email}
+                  {payment?.client?.adresse}
                 </Typography>
-                {/* <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
-                  <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Pays :</Typography> {payment?.payer?.country_origin}
-                </Typography> */}
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: 'text.primary' }}>
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                  >
+                    Région :
+                  </Typography>{' '}
+                  {payment?.client?.location}
+                </Typography>
               </Box>
             </Grid>
 
-             <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
-              <Box
-                sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}
-              >
-                 <Box
+            <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <Box
                   sx={{
                     width: 100,
                     height: 100,
@@ -332,88 +343,149 @@ export function PaiementDetails({ payment, user }) {
                   )}
                 </Box>
               </Box>
-              
             </Grid>
           </Grid>
         </Box>
-
-        <Box sx={{ mb: 4 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <StyledTableCell width="40%" sx={{ fontWeight: 700 }}>
-                  Description
-                </StyledTableCell>
-                <StyledTableCell width="30%" align="center" sx={{ fontWeight: 700 }}>
-                  Types de permis
-                </StyledTableCell>
-                <StyledTableCell width="30%" align="right" sx={{ fontWeight: 700 }}>
-                  Montant
-                </StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {payment?.permits
-                ?.filter((p) => p.count > 0)
-                .map((permit, index) => (
+        {payment?.factures && payment?.factures.length < 0 ? (
+          <Box sx={{ mb: 4 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell width="40%" sx={{ fontWeight: 700 }}>
+                    Description
+                  </StyledTableCell>
+                  <StyledTableCell width="30%" align="center" sx={{ fontWeight: 700 }}>
+                    Types de permis
+                  </StyledTableCell>
+                  <StyledTableCell width="30%" align="right" sx={{ fontWeight: 700 }}>
+                    Montant
+                  </StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {payment?.permits
+                  ?.filter((p) => p.count > 0)
+                  .map((permit, index) => (
+                    <TableRow key={index}>
+                      <StyledTableCell sx={{ fontWeight: 500 }}>
+                        Frais d'acquisition
+                      </StyledTableCell>
+                      <StyledTableCell align="center">
+                        <Typography component="span" sx={{ fontSize: '0.85rem' }}>
+                          Permis {permit.type} ({permit.count})
+                        </Typography>
+                      </StyledTableCell>
+                      <StyledTableCell align="right">
+                        {afficherMontant(permit.total_price)}
+                      </StyledTableCell>
+                    </TableRow>
+                  ))}
+                <StyledTableRow>
+                  <StyledTableCell
+                    colSpan={2}
+                    align="right"
+                    sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}
+                  >
+                    TOTAL TTC
+                  </StyledTableCell>
+                  <StyledTableCell
+                    align="right"
+                    sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}
+                  >
+                    {afficherMontant(payment?.amount)}
+                  </StyledTableCell>
+                </StyledTableRow>
+              </TableBody>
+            </Table>
+            <Typography
+              variant="body2"
+              sx={{ fontSize: '0.85rem', color: 'text.primary', mt: 1.5 }}
+            >
+              <Typography
+                component="span"
+                sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+              >
+                Commentaire :
+              </Typography>{' '}
+              {payment?.comment}
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ mb: 4 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell width="40%" sx={{ fontWeight: 700 }}>
+                    Factures
+                  </StyledTableCell>
+                  <StyledTableCell width="30%" align="center" sx={{ fontWeight: 700 }}>
+                    Date de facturation
+                  </StyledTableCell>
+                  <StyledTableCell width="30%" align="right" sx={{ fontWeight: 700 }}>
+                    Montant
+                  </StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {payment?.factures?.map((facture, index) => (
                   <TableRow key={index}>
-                    <StyledTableCell sx={{ fontWeight: 500 }}>Frais d'acquisition</StyledTableCell>
+                    <StyledTableCell sx={{ fontWeight: 500 }}> {facture?.number} </StyledTableCell>
                     <StyledTableCell align="center">
                       <Typography component="span" sx={{ fontSize: '0.85rem' }}>
-                        Permis {permit.type} ({permit.count})
+                        {formatDate(facture.created_on)}
                       </Typography>
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      {afficherMontant(permit.total_price)}
+                      {afficherMontant(facture?.amount)}
                     </StyledTableCell>
                   </TableRow>
                 ))}
-              <StyledTableRow>
-                <StyledTableCell
-                  colSpan={2}
-                  align="right"
-                  sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}
-                >
-                  TOTAL TTC
-                </StyledTableCell>
-                <StyledTableCell
-                  align="right"
-                  sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}
-                >
-                  {afficherMontant(payment?.amount)}
-                </StyledTableCell>
-              </StyledTableRow>
-            </TableBody>
-          </Table>
-           <Typography
-                  variant="body2"
-                  sx={{ fontSize: '0.85rem', color: 'text.primary', mt: 1.5 }}
-                >
-                  <Typography
-                    component="span"
-                    sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                <StyledTableRow>
+                  <StyledTableCell
+                    colSpan={2}
+                    align="right"
+                    sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}
                   >
-                    Commentaire :
-                  </Typography>{' '}
-                  {payment?.comment}
-                </Typography>
-        </Box>
+                    TOTAL TTC
+                  </StyledTableCell>
+                  <StyledTableCell
+                    align="right"
+                    sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.9rem' }}
+                  >
+                    {afficherMontant(payment?.amount)}
+                  </StyledTableCell>
+                </StyledTableRow>
+              </TableBody>
+            </Table>
+            <Typography
+              variant="body2"
+              sx={{ fontSize: '0.85rem', color: 'text.primary', mt: 1.5 }}
+            >
+              <Typography
+                component="span"
+                sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+              >
+                Commentaire :
+              </Typography>{' '}
+              {payment?.comment}
+            </Typography>
+          </Box>
+        )}
 
         <Box sx={{ mt: 5, mb: 8 }}>
           <Grid container spacing={2}>
-            
             <Grid item size={{ xs: 6 }}>
-              <Box 
-              sx={{
-                 display: 'flex', 
-                 flexDirection: 'column', 
-                 alignItems: 'flex-start',
-                 justifyContent: 'flex-start',
-                 }}>
-               
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  justifyContent: 'flex-start',
+                }}
+              >
                 <Typography
                   variant="body2"
-                  sx={{ fontWeight: 'bold',  textDecoration: 'underline' }}
+                  sx={{ fontWeight: 'bold', textDecoration: 'underline' }}
                 >
                   Le Client
                 </Typography>

@@ -1,6 +1,6 @@
 'use client';
 
-import  Grid  from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import { useTheme } from '@mui/material/styles';
@@ -50,12 +50,11 @@ import { fCurrency, fGNF } from 'src/utils/format-number';
 
 import dayjs from 'dayjs';
 
-
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  {id:'reference', label: 'Reference Paiement'},
-  { id: 'invoiceNumber', label: 'Numero Facture' },
+  { id: 'reference', label: 'Reference Paiement' },
+  { id: 'invoiceNumber', label: 'Facture' },
   // { id: 'numero', label: 'Numero Déclaration' },
   { id: 'type', label: 'Methode de Paiement' },
   { id: 'payer', label: 'Entreprise' },
@@ -79,13 +78,13 @@ export function PaiementListView() {
   const [currentTab, setCurrentTab] = useState('all');
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-  const [loader , setLoader] = useState(false); // État pour indiquer le chargement
+  const [loader, setLoader] = useState(false); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
-    const [pagination, setPagination] = useState({
-      count: 0,
-      next: null,
-      previous: null,
-    });
+  const [pagination, setPagination] = useState({
+    count: 0,
+    next: null,
+    previous: null,
+  });
 
   const [summary, setSummary] = useState({
     totalCount: 0,
@@ -93,7 +92,7 @@ export function PaiementListView() {
     totalAmountUsd: 0,
   });
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchSummary = async () => {
       try {
         setLoader(true);
@@ -161,28 +160,17 @@ export function PaiementListView() {
   const canReset =
     !!filters.state.name ||
     !!filters.state.name ||
-
     filters?.state?.payment_method?.length > 0 ||
- 
     (!!filters.state.date_before && !!filters.state.date_after) ||
-
     !!filters.state.facture_number ||
     !!filters.state.number;
 
   const notFound = pagination.count === 0 && canReset;
 
-   const fetchTotalCount = () => 
-    axios
-      .get(API.listPaiments(), {params: {limit:1}})
-      .then((res) => res.data.count);
+  const fetchTotalCount = () =>
+    axios.get(API.listPaiments(), { params: { limit: 1 } }).then((res) => res.data.count);
 
-  
-
-  const getTotalAmount = () =>
-    sumBy(
-    
-      (paiement) => paiement.amount
-    );
+  const getTotalAmount = () => sumBy((paiement) => paiement.amount);
 
   const getPercentByStatus = () => (getTotalAmount() / tableData.length) * 100;
 
@@ -193,23 +181,20 @@ export function PaiementListView() {
       color: 'main',
       count: pagination.count,
     },
-
   ];
 
   const PaymentMethods = [
     { id: 'transfer', label: 'Virement' },
     { id: 'deposit', label: 'Espèces' },
     { id: 'cheque', label: 'Chèques' },
-  ]
-  
+  ];
+
   const handleViewRow = useCallback(
     (slug) => {
       router.push(paths.dashboard.paiements.details(slug));
     },
     [router]
   );
-
- 
 
   useEffect(() => {
     // Fonction pour récupérer les données
@@ -219,42 +204,49 @@ export function PaiementListView() {
         const offset = table.page * table.rowsPerPage;
         const limit = table.rowsPerPage;
         const params = {
-          offset, limit,
+          offset,
+          limit,
           ...(filters.state.date_before && filters.state.date_after && !dateError
-                      ? {
-                        date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
-                        date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD ')
-                      }
-                      : {}
-                    ),
-          ...(filters.state.payment_method.length > 0 && { payment_method: filters.state.payment_method.join(',') }),
+            ? {
+                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
+                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD '),
+              }
+            : {}),
+          ...(filters.state.payment_method.length > 0 && {
+            payment_method: filters.state.payment_method.join(','),
+          }),
           ...(filters.state.facture_number && { facture_number: filters.state.facture_number }),
-          ...(filters.state.company && { company: filters.state.company}),
+          ...(filters.state.company && { company: filters.state.company }),
           ...(filters.state.number && { number: filters.state.number }),
         };
-        const response = await axios.get(API.listPaiments(), {params}); // Remplacez l'URL par celle de votre backend
-        setTableData(response.data.results); 
+        const response = await axios.get(API.listPaiments(), { params }); // Remplacez l'URL par celle de votre backend
+        setTableData(response.data.results);
         setPagination({
           count: response.data.count,
           next: response.data.next,
           previous: response.data.previous,
-        })
+        });
       } catch (err) {
-        setError(err.message || err.details || err.error || 'Erreur lors du chargement des données.');
-        toast.error(error)
+        setError(
+          err.message || err.details || err.error || 'Erreur lors du chargement des données.'
+        );
+        toast.error(error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchPaiements();
-  }, [table.page, 
-    table.rowsPerPage, 
-    filters.state.date_before, 
-    filters.state.date_after, 
-    filters.state.facture_number, 
+  }, [
+    table.page,
+    table.rowsPerPage,
+    filters.state.date_before,
+    filters.state.date_after,
+    filters.state.facture_number,
     filters.state.company,
-    filters.state.number, JSON.stringify(filters.state.payment_method),]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+    filters.state.number,
+    JSON.stringify(filters.state.payment_method),
+  ]); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
   if (loading) {
     console.info('Loading paiement...');
@@ -266,64 +258,63 @@ export function PaiementListView() {
 
   return (
     <DashboardContent maxWidth="xl">
-        <CustomBreadcrumbs
-          heading="Listes des Paiements"
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Paiements', href: paths.dashboard.paiements.list },
-            { name: 'Listes des paiements' },
-          ]}
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
+      <CustomBreadcrumbs
+        heading="Listes des Paiements"
+        links={[
+          { name: 'Dashboard', href: paths.dashboard.root },
+          { name: 'Paiements', href: paths.dashboard.paiements.list },
+          { name: 'Listes des paiements' },
+        ]}
+        sx={{ mb: { xs: 3, md: 5 } }}
+      />
 
-        {/* <Stack spacing={4}> */}
-          <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-            <Grid size={{ xs: 6, md: 4 }}>
-              <PaiementAnalytic
-                title="Nombres Total Paiements"
-                total={summary.totalCount}
-                percent={100}
-                loading={loader}
-                // chart={{
-                //   colors: [theme.vars.palette.info.main],
-                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                //   series: [20, 41, 63, 33, 28, 35, 50, 46],
-                // }}
-              />
-            </Grid>
-            <Grid size={{ xs: 6, md: 4 }}>
-              <PaiementAnalytic
-                title="Total En Dollars"
-                percent={100}
-                total={fCurrency(summary.totalAmountUsd)}
-                loading={loader}
-                // chart={{
-                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                //   series: [15, 18, 12, 51, 68, 11, 39, 37],
-                // }}
-              />
-            </Grid>
-            <Grid size={{ xs: 6, md: 4 }}>
-              <PaiementAnalytic
-                title="Total En GNF"
-                percent={100}
-                total={fGNF(summary.totalAmountGnf)}
-                loading={loader}
-                // chart={{
-                //   colors: [theme.vars.palette.success.main],
-                //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                //   series: [18, 19, 31, 8, 16, 37, 12, 33],
-                // }}
-              />
-            </Grid>
-          </Grid>
-        {/* </Stack> */}
+      {/* <Stack spacing={4}> */}
+      <Grid container spacing={3} sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <PaiementAnalytic
+            title="Nombres Total Paiements"
+            total={summary.totalCount}
+            percent={100}
+            loading={loader}
+            // chart={{
+            //   colors: [theme.vars.palette.info.main],
+            //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            //   series: [20, 41, 63, 33, 28, 35, 50, 46],
+            // }}
+          />
+        </Grid>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <PaiementAnalytic
+            title="Total En Dollars"
+            percent={100}
+            total={fCurrency(summary.totalAmountUsd)}
+            loading={loader}
+            // chart={{
+            //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            //   series: [15, 18, 12, 51, 68, 11, 39, 37],
+            // }}
+          />
+        </Grid>
+        <Grid size={{ xs: 6, md: 4 }}>
+          <PaiementAnalytic
+            title="Total En GNF"
+            percent={100}
+            total={fGNF(summary.totalAmountGnf)}
+            loading={loader}
+            // chart={{
+            //   colors: [theme.vars.palette.success.main],
+            //   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+            //   series: [18, 19, 31, 8, 16, 37, 12, 33],
+            // }}
+          />
+        </Grid>
+      </Grid>
+      {/* </Stack> */}
 
-        <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
-
+      <Card sx={{ mb: { xs: 3, md: 5 } }} lg={12}>
         <Tabs
-         value={currentTab}
-         onChange={(event, newValue) => setCurrentTab(newValue)}
+          value={currentTab}
+          onChange={(event, newValue) => setCurrentTab(newValue)}
           sx={{
             px: 2.5,
             boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
@@ -336,10 +327,7 @@ export function PaiementListView() {
               label={label}
               iconPosition="end"
               icon={
-                <Label
-                  variant={value === 'all' ? 'filled' : 'soft'}
-                  color={color}
-                >
+                <Label variant={value === 'all' ? 'filled' : 'soft'} color={color}>
                   {count}
                 </Label>
               }
@@ -347,97 +335,98 @@ export function PaiementListView() {
           ))}
         </Tabs>
 
-          <PaiementTableToolbar
+        <PaiementTableToolbar
+          filters={filters}
+          dateError={dateError}
+          onResetPage={table.onResetPage}
+          options={{ payment_method: PaymentMethods }}
+          selectedFilter={selectedFilter}
+          setSelectedFilter={setSelectedFilter}
+        />
+
+        {canReset && (
+          <PaiementTableFiltersResult
             filters={filters}
-            dateError={dateError}
             onResetPage={table.onResetPage}
+            totalResults={pagination.count}
             options={{ payment_method: PaymentMethods }}
-            selectedFilter={selectedFilter}
-            setSelectedFilter={setSelectedFilter}
+            sx={{ p: 2.5, pt: 0 }}
           />
+        )}
 
-          {canReset && (
-            <PaiementTableFiltersResult
-              filters={filters}
-              onResetPage={table.onResetPage}
-              totalResults={pagination.count}
-              options={{ payment_method: PaymentMethods }}
-              sx={{ p: 2.5, pt: 0 }}
-            />
-          )}
-
-          <Box sx={{ position: 'relative' }} lg={12}>
-          
-
-            <Scrollbar sx={{ minHeight: 444, minWidth: 1000 }}>
-              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={pagination.count}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.slug)
-                    )
-                  }
-                />
-          {loading ? (
-            <TableBody>
-              <TableRow>
-                 <TableCell colSpan={100}>
-                   <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 6 }}>
-                      <CircularProgress />
-                    </Box>
-                  </TableCell>
-              </TableRow>
-            </TableBody>
-            ):
-               (
+        <Box sx={{ position: 'relative' }} lg={12}>
+          <Scrollbar sx={{ minHeight: 444, minWidth: 1000 }}>
+            <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
+              <TableHeadCustom
+                order={table.order}
+                orderBy={table.orderBy}
+                headLabel={TABLE_HEAD}
+                rowCount={pagination.count}
+                numSelected={table.selected.length}
+                onSort={table.onSort}
+                onSelectAllRows={(checked) =>
+                  table.onSelectAllRows(
+                    checked,
+                    tableData.map((row) => row.slug)
+                  )
+                }
+              />
+              {loading ? (
                 <TableBody>
-                  {tableData
-                    .map((row) => (
-                      <PaiementTableRow
-                        key={row.slug}
-                        row={row}
-                        selected={table.selected.includes(row.slug)}
-                        onViewRow={() => handleViewRow(row.slug)}
-                        
-                      />
-                    ))}
-               {tableData.length > 0 && 
-                tableData.length < table.rowsPerPage && (
-                  <TableEmptyRows
-                    height={table.dense ? 56 : 56 + 20}
-                    emptyRows={table.rowsPerPage - tableData.length}
-                  />
-                )}
+                  <TableRow>
+                    <TableCell colSpan={100}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          py: 6,
+                        }}
+                      >
+                        <CircularProgress />
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              ) : (
+                <TableBody>
+                  {tableData.map((row) => (
+                    <PaiementTableRow
+                      key={row.slug}
+                      row={row}
+                      selected={table.selected.includes(row.slug)}
+                      onViewRow={() => handleViewRow(row.slug)}
+                    />
+                  ))}
+                  {tableData.length > 0 && tableData.length < table.rowsPerPage && (
+                    <TableEmptyRows
+                      height={table.dense ? 56 : 56 + 20}
+                      emptyRows={table.rowsPerPage - tableData.length}
+                    />
+                  )}
                   <TableNoData notFound={notFound} />
                 </TableBody>
               )}
-              </Table>
-            </Scrollbar>
-          </Box>
+            </Table>
+          </Scrollbar>
+        </Box>
 
-          <TablePaginationCustom
-            page={table.page}
-            dense={table.dense}
-            count={pagination.count}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onChangeDense={table.onChangeDense}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-          />
-        </Card>
-      </DashboardContent>
+        <TablePaginationCustom
+          page={table.page}
+          dense={table.dense}
+          count={pagination.count}
+          rowsPerPage={table.rowsPerPage}
+          onPageChange={table.onChangePage}
+          onChangeDense={table.onChangeDense}
+          onRowsPerPageChange={table.onChangeRowsPerPage}
+        />
+      </Card>
+    </DashboardContent>
   );
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name,  startDate, endDate } = filters;
+  const { name, startDate, endDate } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -458,12 +447,11 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
     );
   }
 
- 
-
-
   if (!dateError) {
     if (startDate && endDate) {
-      inputData = inputData.filter((paiement) => fIsBetween(paiement.date_paiement, startDate, endDate));
+      inputData = inputData.filter((paiement) =>
+        fIsBetween(paiement.date_paiement, startDate, endDate)
+      );
     }
   }
 

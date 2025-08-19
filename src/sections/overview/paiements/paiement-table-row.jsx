@@ -67,28 +67,42 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
         </TableCell>
         <TableCell>{row.number}</TableCell>
 
-        <TableCell>
-          <Stack spacing={2} direction="row" alignItems="center">
-            <ListItemText
-              disableTypography
-              primary={
-                <Typography variant="body2" noWrap sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' }, fontSize: '0.85rem' }}
-                  onClick={(event) => {event.stopPropagation(); handleDetailsFactures();} }
-                >
-                  {row.facture_number}
-                </Typography>
-              }
-              secondary={
-                <Link
-                  noWrap
-                  variant="body2"
-                  onClick={onViewRow}
-                  sx={{ color: 'text.disabled', cursor: 'pointer' }}
-                />
-              }
-            />
-          </Stack>
-        </TableCell>
+        {row?.nb_factures > 1 ? (
+          <TableCell>{row?.nb_factures}</TableCell>
+        ) : (
+          <TableCell>
+            <Stack spacing={2} direction="row" alignItems="center">
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                      fontSize: '0.85rem',
+                    }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDetailsFactures();
+                    }}
+                  >
+                    {row.facture_number}
+                  </Typography>
+                }
+                secondary={
+                  <Link
+                    noWrap
+                    variant="body2"
+                    onClick={onViewRow}
+                    sx={{ color: 'text.disabled', cursor: 'pointer' }}
+                  />
+                }
+              />
+            </Stack>
+          </TableCell>
+        )}
         {/* <TableCell>{row.declaration_number}</TableCell> */}
 
         <TableCell>
