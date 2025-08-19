@@ -224,7 +224,7 @@ export function FactureTableRow({
       </CustomPopover>
 
       <PayeurForm
-        slug={row.slug}
+        slug={[row.slug]}
         open={payeurForm.value}
         onclose={payeurForm.onFalse}
         onSuccess={() => {

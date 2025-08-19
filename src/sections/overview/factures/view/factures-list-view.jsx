@@ -99,6 +99,7 @@ export function FactureListView() {
   const confirmDownload = useBoolean();
   const downloadZip = useBoolean();
   const downloadMultiplePDF = useBoolean();
+  const payeurForm = useBoolean();
 
   const [options, setOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -476,6 +477,21 @@ export function FactureListView() {
     }
   };
 
+  const handleUpdateStatus = useCallback(() => {
+    const selectedSlugs = table.selected;
+    if (!selectedSlugs || selectedSlugs.length === 0) {
+      toast.warn('Aucune facture sélectionnée.');
+      return;
+    }
+    // Mettre à jour l'état des factures sélectionnées
+    const updatedData = tableData.map((row) => {
+      if (selectedSlugs.includes(row.slug)) {
+        return { ...row, status: 'paid' }; // Mettre à jour le statut à 'paid'
+      }
+    });
+    setTableData(updatedData);
+  }, []);
+
   if (isLoading) {
     toast.info('Téléchargement en cours, veuillez patienter...');
   }
@@ -641,7 +657,7 @@ export function FactureListView() {
                     </IconButton>
                   </Tooltip>
 
-                  {(type_user === 'caissier' || type_user === 'comptable') && (
+                  {(type_user === 'treasurer' || type_user === 'accountant') && (
                     <Tooltip title="Payer">
                       <IconButton
                         color="primary"
@@ -822,8 +838,8 @@ export function FactureListView() {
             variant="contained"
             color="primary"
             onClick={() => {
-              confirm.onTrue();
-              setOpenFirstDialog(true); // Ouvre la première boîte de dialogue
+              payeurForm.onTrue(); // Ouvre la première boîte de dialogue
+              confirm.onFalse();
             }}
           >
             Suivant
@@ -884,23 +900,14 @@ export function FactureListView() {
           </Button>
         }
       />
-      <ConfirmDialog
-        open={openSecondDialog}
-        onClose={() => setOpenSecondDialog(false)} // Ferme la deuxième boîte de dialogue
-        title="Veuillez fournir les informations suivantes"
-        content={<PayeurForm id={dataFiltered.map((row) => row.slug)} />}
-        action={
-          <Button
-            variant="contained"
-            color="success"
-            onClick={() => {
-              setOpenSecondDialog(false); // Ferme la deuxième boîte de dialogue
-              handlePaid(); // Action pour "Payer"
-            }}
-          >
-            Payer
-          </Button>
-        }
+      <PayeurForm
+        slug={table.selected}
+        open={payeurForm.value}
+        onclose={payeurForm.onFalse}
+        onSuccess={() => {
+          handleUpdateStatus();
+          payeurForm.onFalse();
+        }}
       />
     </>
   );
