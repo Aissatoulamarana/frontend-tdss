@@ -38,6 +38,10 @@ const NewPayeurSchema = z.object({
   payment_comment: z.string().optional(),
 });
 
+function appendMany(formData, key, values) {
+  values.forEach((value) => formData.append(key, value));
+}
+
 export function PayeurForm({ slug, open, onclose, onSuccess }) {
   const [devises, setDevises] = useState([]);
   const [countries, setCountries] = useState([]);
@@ -90,15 +94,45 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === 'payment_document' && value instanceof File) {
-          formData.append(key, value);
-        } else if (value !== null && value !== undefined) {
-          formData.append(key, String(value));
-        }
-      });
+      // 1. Validation
+      if (!slug || slug.length === 0) {
+        toast.error('Veuillez sélectionner au moins une facture.');
+        return;
+      }
 
+      if (!data.payment_document || !(data.payment_document instanceof File)) {
+        toast.error('Veuillez sélectionner un document PDF valide.');
+        return;
+      }
+
+      const formData = new FormData();
+
+      // 3. Ajout des champs TEXTUELS un par un (comme dans Postman)
+      formData.append('payer_first', data.payer_first);
+      formData.append('payer_last', data.payer_last);
+      formData.append('payer_email', data.payer_email);
+      formData.append('payer_phone', data.payer_phone);
+      formData.append('payer_country_origin', data.payer_country_origin);
+      formData.append('payer_address', data.payer_address);
+      formData.append('payment_payment_method', data.payment_payment_method);
+      formData.append('payment_devise', data.payment_devise);
+      formData.append('payment_comment', data.payment_comment || '');
+
+      console.log('Slugs recus en paramètre:', slug);
+
+      // -> Chaque facture comme entrée SEPAREE avec la même clé
+      const factureSlugs = slug.map((s) => s.trim()).filter(Boolean);
+      console.log('Facture Slugs:', factureSlugs);
+
+      if (factureSlugs.length === 0) {
+        toast.error('Veuillez sélectionner au moins une facture.');
+        return;
+      }
+      appendMany(formData, 'payment_factures', factureSlugs);
+
+      formData.append('payment_document', data.payment_document);
+
+      console.log('Envoi des données au backend :', formData);
       await axios.post(API.paidFacture(slug), formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });

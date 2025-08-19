@@ -67,7 +67,7 @@ const API = {
   detailsEmployee: (slug) => `${BASE_URL}/employees/${slug}/`, // details d'un employé
 
   listFactures: () => `${BASE_URL}/factures/`, // Liste des factures
-  paidFacture: (slug) => `${BASE_URL}/factures/${slug}/mark-paid/`, // Paiement d'une facture
+  paidFacture: () => `${BASE_URL}/factures/mark-paid/`, // Paiement d'une facture
   detailsFacture: (slug) => `${BASE_URL}/factures/${slug}/`, // Details d'une facture
   facturesFirstLineDashboardCaissier: (month) =>
     `${BASE_URL}/factures/dashboard-caissier/first-line/?month=${month}`, // Premiere ligne du tableau de bord des caissiers
