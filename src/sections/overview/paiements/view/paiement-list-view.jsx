@@ -61,6 +61,7 @@ const TABLE_HEAD = [
   { id: 'payer', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
   { id: 'createDate', label: 'Date ' },
+  { id: 'status', label: 'Status ' },
 
   { id: '' },
 ];
