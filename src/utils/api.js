@@ -1,5 +1,7 @@
 //  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
 
+import { remove } from 'nprogress';
+
 const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
 
 const API = {
@@ -74,6 +76,9 @@ const API = {
 
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
+  addInvoiceToPayment: (slug) => `${BASE_URL}/payments/${slug}/add_factures/`, // Ajouter une facture à un paiement
+  removeInvoiceFromPayment: (slug) => `${BASE_URL}/payments/${slug}/remove_factures/`, // Supprimer une facture d'un paiement
+
   paiementsMonthly: (year) => `${BASE_URL}/payments/payment-monthly/?year=${year}`, // Paiements
 
   createFonction: () => `${BASE_URL}/jobs/`, // Ajouter une fonction
