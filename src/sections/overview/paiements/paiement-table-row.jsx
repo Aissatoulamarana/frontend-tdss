@@ -25,8 +25,9 @@ import { toast } from 'sonner';
 
 // ----------------------------------------------------------------------
 
-export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
+export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow, onValidateRow }) {
   const confirm = useBoolean();
+  const validate = useBoolean();
   const router = useRouter();
   const popover = usePopover();
 
@@ -150,7 +151,13 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton
+            color={popover.open ? 'inherit' : 'default'}
+            onClick={(e) => {
+              e.stopPropagation(); // Empêche la propagation vers le TableRow
+              popover.onOpen(e); // Passe l'événement à la fonction onOpen
+            }}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -171,16 +178,34 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
             <Iconify icon="solar:eye-bold" />
             Voir
           </MenuItem>
+          {row?.status === 'pending' && (
+            <MenuItem
+              onClick={() => {
+                popover.onClose();
+                confirm.onTrue();
+              }}
+            >
+              <Iconify icon="eva:checkmark-circle-2-fill" />
+              Valider
+            </MenuItem>
+          )}
         </MenuList>
       </CustomPopover>
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Payer"
-        content="Are you sure want to delete?"
+        title="Valider le paiement"
+        content="Etes vous sur de vouloir valider ce paiement?"
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
-            Payer
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onValidateRow();
+              confirm.onFalse();
+            }}
+          >
+            Valider
           </Button>
         }
       />

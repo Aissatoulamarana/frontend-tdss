@@ -49,6 +49,7 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 import { fCurrency, fGNF } from 'src/utils/format-number';
 
 import dayjs from 'dayjs';
+import { set } from 'nprogress';
 
 // ----------------------------------------------------------------------
 
@@ -192,6 +193,29 @@ export function PaiementListView() {
   const handleViewRow = useCallback(
     (slug) => {
       router.push(paths.dashboard.paiements.details(slug));
+    },
+    [router]
+  );
+
+  const handleValidate = useCallback(
+    async (slug) => {
+      try {
+        const response = await axios.post(API.validatePayment(slug));
+
+        if (response.data || response.status === 200) {
+          toast.success('Paiement validé avec succès');
+          setTableData((prevData) =>
+            prevData.map((item) => (item.slug === slug ? { ...item, status: 'validated' } : item))
+          );
+          router.push(paths.dashboard.paiements.list);
+        } else {
+          toast.error('Erreur lors de la validation du paiement');
+        }
+      } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage);
+        toast.error(`Erreur lors de la validation du paiement : ${errorMessage}`);
+      }
     },
     [router]
   );
@@ -396,6 +420,7 @@ export function PaiementListView() {
                       row={row}
                       selected={table.selected.includes(row.slug)}
                       onViewRow={() => handleViewRow(row.slug)}
+                      onValidateRow={() => handleValidate(row.slug)}
                     />
                   ))}
                   {tableData.length > 0 && tableData.length < table.rowsPerPage && (
