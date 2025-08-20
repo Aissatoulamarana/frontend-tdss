@@ -76,7 +76,7 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
           <NoSsr>
             {payment && (
               <PDFDownloadLink
-                document={payment ? <PaiementPDF payment={payment} /> : <span />}
+                document={<PaiementPDF payment={payment} />}
                 fileName={`recu-paiement-${payment?.number || ''}.pdf`}
                 style={{ textDecoration: 'none' }}
               >
