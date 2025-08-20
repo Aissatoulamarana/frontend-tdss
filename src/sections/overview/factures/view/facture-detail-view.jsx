@@ -47,7 +47,7 @@ export function FactureDetailsView({ slug }) {
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
-      {facture && <FactureDetails facture={facture} user={user} />}
+      {facture && <FactureDetails facture={facture} user={user} setFacture={setFacture} />}
     </DashboardContent>
   );
 }

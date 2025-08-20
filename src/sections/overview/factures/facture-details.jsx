@@ -48,12 +48,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export function FactureDetails({ facture, user }) {
+export function FactureDetails({ facture, user, setFacture }) {
   const [currentStatus, setCurrentStatus] = useState('');
   const [devise, setDevise] = useState('GNF');
   const [error, setError] = useState('');
   const [declarations, setDeclarations] = useState([]);
   const [selectedDeclarations, setSelectedDeclarations] = useState([]);
+  const [declarationsToAdd, setDeclarationsToAdd] = useState([]);
   const [filteredDeclarations, setFilteredDeclarations] = useState([]);
   const [loadDec, setLoadDec] = useState(false);
 
@@ -85,7 +86,7 @@ export function FactureDetails({ facture, user }) {
       }
     };
     fetchDeclarations();
-  }, [facture?.client_name]);
+  }, [facture]);
 
   const router = useRouter();
 
@@ -104,13 +105,35 @@ export function FactureDetails({ facture, user }) {
     }
   };
 
-  const handleAdd = () => {
-    console.log('Ajouter une nouvelle déclaration');
-  };
+  const handleAdd = useCallback(async () => {
+    try {
+      const requestBody = {
+        declarations: declarationsToAdd,
+      };
+      const response = await axios.post(API.ajouterDeclaration(facture?.slug), requestBody);
 
-  // const handleRemove = () => {
-  //   console.log('retirer une déclaration');
-  // };
+      if (response.data || response.status === 200) {
+        toast.success('Déclaration ajoutée avec succès');
+
+        // Mise à jour de la liste affichée
+        setFacture((prev) => ({
+          ...prev,
+          declarations: response.data.declarations, // <-- backend renvoie toutes les déclarations
+        }));
+
+        setDeclarationsToAdd([]);
+      } else {
+        console.error('Erreur inattendue:', response.data);
+        toast.error('Une erreur est survenue.');
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
+      setError(errorMessage);
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error(errorMessage);
+    }
+  });
 
   const handleRemove = useCallback(async () => {
     try {
@@ -129,6 +152,11 @@ export function FactureDetails({ facture, user }) {
         setFilteredDeclarations((prevData) =>
           prevData.filter((item) => !selectedDeclarations.includes(item.slug))
         );
+        setFacture((prev) => ({
+          ...prev,
+          declarations: response.data.declarations, // <-- backend renvoie toutes les déclarations
+        }));
+        setSelectedDeclarations([]);
       } else {
         console.error('Erreur inattendue:', response.data);
         toast.error('Une erreur est survenue.');
@@ -144,7 +172,7 @@ export function FactureDetails({ facture, user }) {
 
   const handleChange = (event, newValue) => {
     if (newValue) {
-      console.log('Déclaration sélectionnée:', newValue);
+      setDeclarationsToAdd(newValue.map((item) => item?.slug));
     }
   };
 
@@ -228,7 +256,7 @@ export function FactureDetails({ facture, user }) {
 
               <CenteredTableCell>{fDate(row.created_on)}</CenteredTableCell>
 
-              <CenteredTableCell>{afficherMontant(row.price)}</CenteredTableCell>
+              <CenteredTableCell>{afficherMontant(row.montant)}</CenteredTableCell>
             </TableRow>
           ))}
 
@@ -452,12 +480,12 @@ export function FactureDetails({ facture, user }) {
         onClose={confirm.onFalse} // Ferme la deuxième boîte de dialogue
         title="Veuillez selectionner la declaration que vous voulez ajouter"
         content={
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2, mt: 3 }}>
             <Autocomplete
+              multiple
               options={declarations}
               getOptionLabel={(declaration) => declaration.number}
               loading={loadDec}
-              // value={selectedBanque || null}
               onChange={handleChange}
               renderInput={(params) => (
                 <TextField
@@ -489,6 +517,7 @@ export function FactureDetails({ facture, user }) {
             color="success"
             onClick={() => {
               handleAdd(); // Action pour "Ajouter une nouvelle déclaration"
+              confirm.onFalse();
             }}
           >
             Ajouter
