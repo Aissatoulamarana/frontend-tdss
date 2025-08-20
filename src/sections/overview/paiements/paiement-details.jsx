@@ -240,9 +240,17 @@ export function PaiementDetails({ payment, user, setPayment }) {
 
   return (
     <>
-      <PaiementToolbar payment={payment} componentRef={componentRef} />
+      <PaiementToolbar
+        payment={payment}
+        componentRef={componentRef}
+        currentStatus={currentStatus}
+        onChangeStatus={(e) => {
+          const value = typeof e === 'string' ? e : e.target.value;
+          setCurrentStatus(value);
+        }}
+      />
 
-      {payment?.status === 'pending' && (
+      {currentStatus === 'pending' && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: { xs: 2, md: 2 } }}>
           <Button
             variant="contained"
@@ -563,7 +571,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
           </Box>
         ) : (
           <Box sx={{ mb: 4 }}>
-            {selectedFacture.length > 0 && payment?.status === 'pending' && (
+            {selectedFacture.length > 0 && currentStatus === 'pending' && (
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
                 <Button
                   variant="outlined"
@@ -579,7 +587,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
             <Table>
               <TableHead>
                 <TableRow>
-                  {payment?.status === 'pending' && (
+                  {currentStatus === 'pending' && (
                     <StyledTableCell width="5%" sx={{ fontWeight: 700 }}></StyledTableCell>
                   )}
                   <StyledTableCell width="40%" sx={{ fontWeight: 700 }}>
@@ -603,7 +611,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
                         : 'transparent',
                     }}
                   >
-                    {payment?.status === 'pending' && (
+                    {currentStatus === 'pending' && (
                       <StyledTableCell>
                         <Checkbox
                           checked={selectedFacture.includes(facture.slug)}
@@ -637,8 +645,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
                   </TableRow>
                 ))}
                 <StyledTableRow>
-                  <StyledTableCell></StyledTableCell>
-
+                  {currentStatus === 'pensing' && <StyledTableCell></StyledTableCell>}
                   <StyledTableCell
                     colSpan={2}
                     align="right"

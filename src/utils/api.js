@@ -78,6 +78,7 @@ const API = {
   detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
   addInvoiceToPayment: (slug) => `${BASE_URL}/payments/${slug}/add_factures/`, // Ajouter une facture à un paiement
   removeInvoiceFromPayment: (slug) => `${BASE_URL}/payments/${slug}/remove_factures/`, // Supprimer une facture d'un paiement
+  validatePayment: (slug) => `${BASE_URL}/payments/${slug}/validate/`, // Valider un paiement
 
   paiementsMonthly: (year) => `${BASE_URL}/payments/payment-monthly/?year=${year}`, // Paiements
 
