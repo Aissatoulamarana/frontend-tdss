@@ -108,21 +108,43 @@ export function PaiementDetails({ payment, user, setPayment }) {
     const fetchFactures = async () => {
       setLoadFac(true);
       try {
+        // Premier appel (juste pour savoir s'il y a des factures et récupérer le count)
         const resp1 = await axios.get(API.listFactures(), {
-          params: { offset: 0, limit: 1, company: payment?.client?.name, status: 'unpaid' },
+          params: { offset: 0, limit: 5, company: payment?.client?.name, status: 'unpaid' },
         });
-        const total = resp1?.data?.count;
 
+        const total = resp1?.data?.count || 0;
+
+        // Si pas de factures -> rien à faire
+        if (total === 0) {
+          setFactures([]);
+          setLoadFac(false);
+          return;
+        }
+
+        // Si seulement une facture, pas besoin d’un 2ème appel
+        if (total <= 5) {
+          setFactures(resp1?.data?.results || []);
+          setLoadFac(false);
+          return;
+        }
+
+        // Si plusieurs factures, 2ème appel nécessaire
         const resp2 = await axios.get(API.listFactures(), {
           params: { offset: 0, limit: total, company: payment?.client?.name, status: 'unpaid' },
         });
+
         setFactures(resp2?.data?.results || []);
         setLoadFac(false);
       } catch (error) {
         toast.error('Erreur lors de la récupération des factures');
+        setLoadFac(false);
       }
     };
-    fetchFactures();
+
+    if (payment?.client?.name) {
+      fetchFactures();
+    }
   }, [payment]);
 
   const handleRemoveFacture = useCallback(async () => {
@@ -645,7 +667,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
                   </TableRow>
                 ))}
                 <StyledTableRow>
-                  {currentStatus === 'pensing' && <StyledTableCell></StyledTableCell>}
+                  {currentStatus === 'pending' && <StyledTableCell></StyledTableCell>}
                   <StyledTableCell
                     colSpan={2}
                     align="right"
@@ -729,7 +751,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
             <Autocomplete
               multiple
               options={factures}
-              getOptionLabel={(facture) => facture.number}
+              getOptionLabel={(facture) => `${facture.number} - ${facture.client}`}
               loading={loadFac}
               onChange={handleChange}
               renderInput={(params) => (
