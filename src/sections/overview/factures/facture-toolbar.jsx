@@ -125,7 +125,7 @@ export function FactureToolbar({ facture, user, currentStatus, onChangeStatus, d
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
           {/* Bouton d'aperçu PDF */}
           {facture && facture.declarations ? (
-            facture.declarations.length > 1 ? (
+            facture.declarations.length > 0 ? (
               <Tooltip title="Aperçu PDF">
                 <span>
                   <IconButton onClick={handlePreview} disabled={loading}>
@@ -143,7 +143,7 @@ export function FactureToolbar({ facture, user, currentStatus, onChangeStatus, d
               </Tooltip>
             )
           ) : null}
-          {facture?.declarations.length > 1 ? (
+          {facture?.declarations.length > 0 ? (
             <IconButton onClick={() => generateFacturePDF(facture, devise)}>
               <Iconify icon="eva:cloud-download-fill" />
             </IconButton>

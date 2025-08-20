@@ -160,8 +160,8 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   };
   [
     ['Date facture : ', facture?.created_on],
-    ['Declaration N : ', facture?.declaration_number],
-    ['Date declaration : ', facture?.declaration_date],
+    ['Declaration N : ', facture?.declaration_number || facture?.declarations?.[0]?.number],
+    ['Date declaration : ', facture?.declaration_date || facture?.declarations?.[0]?.created_on],
   ].forEach(([label, val]) => {
     const displayVal = label.includes('Date') ? formatDate(val) : val;
     page.drawText(label, { x: rightX, y: cursorY, size: baseSize, font: helvetica, color: red });

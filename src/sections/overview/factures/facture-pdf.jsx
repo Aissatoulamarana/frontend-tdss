@@ -213,15 +213,15 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
         font: helvetica,
         color: black,
       });
-      page.drawText(`${r?.employees}`, {
-        x: 345,
+      page.drawText(`${r?.nb_employee}`, {
+        x: 360,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
       page.drawText(formatMontant(r?.montant), {
-        x: 480,
+        x: 470,
         y: rowY,
         size: baseSize,
         font: helvetica,
