@@ -155,21 +155,34 @@ export function PaiementDetails({ payment, user, setPayment }) {
       const response = await axios.post(API.removeInvoiceFromPayment(payment?.slug), requestBody);
 
       if (response?.data || response?.status === 200) {
-        toast.success('Factures ajoutées avec succès');
+        toast.success('Factures retirées avec succès');
         setFilteredFactures((prevData) =>
           prevData.filter((facture) => !selectedFacture.includes(facture.slug))
         );
-        setPayment((prev) => ({
-          ...prev,
-          factures: response.data.factures,
-        }));
+        // setPayment((prev) => ({
+        //   ...prev,
+        //   factures: response.data.factures,
+        // }));
         setSelectedFacture([]);
       } else {
-        toast.error("Erreur lors de l'ajout des factures");
+        toast.error('Erreur lors du retirement des factures');
       }
     } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
+      const data = error?.response?.data || error;
+      const messages = [];
+      if (data?.factures) {
+        messages.push(...(Array.isArray(data.factures) ? data.factures : [data.factures]));
+      }
+      if (data?.message) {
+        messages.push(data.message);
+      }
+      if (data?.detail) {
+        messages.push(data.detail);
+      }
+      if (data?.error) {
+        messages.push(data.error);
+      }
+      const errorMessage = messages.join('');
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -189,6 +202,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
           ...prev,
           factures: response.data.factures,
         }));
+        setFilteredFactures(response.data.factures);
         setFacturesToAdd([]);
       } else {
         toast.error("Erreur lors de l'ajout des factures");
