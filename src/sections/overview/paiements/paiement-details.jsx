@@ -11,12 +11,25 @@ import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { useRef, useState, useEffect } from 'react';
+import Checkbox from '@mui/material/Checkbox';
+import { Button } from '@mui/material';
+import { Autocomplete } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import { CircularProgress } from '@mui/material';
+import { Iconify } from 'src/components/iconify';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 
 import { useReactToPrint } from 'react-to-print';
 
 import { PaiementToolbar } from './paiement-toolbar';
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { useBoolean } from 'src/hooks/use-boolean';
+import { toast } from 'sonner';
+import { px } from 'framer-motion';
+import { set } from 'nprogress';
 
 // ----------------------------------------------------------------------
 
@@ -46,10 +59,20 @@ const Logo = styled('img')({
   width: 'auto',
 });
 
-export function PaiementDetails({ payment, user }) {
+export function PaiementDetails({ payment, user, setPayment }) {
   const componentRef = useRef();
   const router = useRouter();
+  const [selectedFacture, setSelectedFacture] = useState([]);
+  const [error, setError] = useState(null);
+  const [loadFac, setLoadFac] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState('');
+  const [facturesToAdd, setFacturesToAdd] = useState([]);
+  const [filteredFactures, setFilteredFactures] = useState([]);
+  const [factures, setFactures] = useState([]);
   const [qrUrl, setQrUrl] = useState('');
+
+  const confirm = useBoolean();
+  const confirmRemove = useBoolean();
 
   const afficherMontant = (montant) => {
     if (payment?.devise.sign === 'GNF') {
@@ -81,6 +104,94 @@ export function PaiementDetails({ payment, user }) {
     return `${Number(amount).toLocaleString()} GNF`;
   };
 
+  useEffect(() => {
+    const fetchFactures = async () => {
+      setLoadFac(true);
+      try {
+        const resp1 = await axios.get(API.listFactures(), {
+          params: { offset: 0, limit: 1, company: payment?.client?.name, status: 'unpaid' },
+        });
+        const total = resp1?.data?.count;
+
+        const resp2 = await axios.get(API.listFactures(), {
+          params: { offset: 0, limit: total, company: payment?.client?.name, status: 'unpaid' },
+        });
+        setFactures(resp2?.data?.results || []);
+        setLoadFac(false);
+      } catch (error) {
+        toast.error('Erreur lors de la récupération des factures');
+      }
+    };
+    fetchFactures();
+  }, [payment]);
+
+  const handleRemoveFacture = useCallback(async () => {
+    try {
+      const requestBody = {
+        factures: selectedFacture,
+      };
+      const response = await axios.post(API.removeInvoiceFromPayment(payment?.slug), requestBody);
+
+      if (response?.data || response?.status === 200) {
+        toast.success('Factures ajoutées avec succès');
+        setFilteredFactures((prevData) =>
+          prevData.filter((facture) => !selectedFacture.includes(facture.slug))
+        );
+        setPayment((prev) => ({
+          ...prev,
+          factures: response.data.factures,
+        }));
+        setSelectedFacture([]);
+      } else {
+        toast.error("Erreur lors de l'ajout des factures");
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
+      setError(errorMessage);
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error(errorMessage);
+    }
+  });
+
+  const handleAddFacture = useCallback(async () => {
+    try {
+      const requestBody = {
+        factures: facturesToAdd,
+      };
+      const response = await axios.post(API.addInvoiceToPayment(payment?.slug), requestBody);
+
+      if (response?.data || response?.status === 200) {
+        toast.success('Factures ajoutées avec succès');
+        setPayment((prev) => ({
+          ...prev,
+          factures: response.data.factures,
+        }));
+        setFacturesToAdd([]);
+      } else {
+        toast.error("Erreur lors de l'ajout des factures");
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || 'Erreur lors de l’ajout des factures.';
+      setError(errorMessage);
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error(errorMessage);
+    }
+  });
+
+  const handleChange = (event, newValue) => {
+    if (newValue) {
+      setFacturesToAdd(newValue.map((item) => item.slug));
+    }
+  };
+
+  useEffect(() => {
+    if (payment?.factures) {
+      setFilteredFactures(payment.factures);
+    }
+  }, [payment?.factures]);
+
   const methodsLabels = {
     transfer: 'Virement',
     cheque: 'Chèque',
@@ -105,9 +216,49 @@ export function PaiementDetails({ payment, user }) {
     router.push(paths.dashboard.factures.details(factureSlug));
   };
 
+  const statusLabels = {
+    pending: 'En attente',
+    validated: 'Validée',
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'warning.main';
+      case 'validated':
+        return 'success.main';
+      default:
+        return 'default';
+    }
+  };
+
+  useEffect(() => {
+    if (payment?.status) {
+      setCurrentStatus(payment.status);
+    }
+  }, [payment?.status]);
+
   return (
     <>
       <PaiementToolbar payment={payment} componentRef={componentRef} />
+
+      {payment?.status === 'pending' && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: { xs: 2, md: 2 } }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => confirm.onTrue()}
+            startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+            sx={{
+              mb: { xs: 1, md: 1 },
+              fontSize: '0.875rem',
+              px: 2,
+            }}
+          >
+            Ajouter une facture
+          </Button>
+        </Box>
+      )}
 
       <Card sx={{ pt: 4, px: 4, borderRadius: 1 }} ref={componentRef}>
         <Box sx={{ mb: 5 }}>
@@ -412,9 +563,25 @@ export function PaiementDetails({ payment, user }) {
           </Box>
         ) : (
           <Box sx={{ mb: 4 }}>
+            {selectedFacture.length > 0 && payment?.status === 'pending' && (
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={() => confirmRemove.onTrue()}
+                  startIcon={<Iconify icon="eva:trash-2-outline" />}
+                  sx={{ mb: { xs: 1, md: 1 }, fontSize: '0.875rem', px: 2 }}
+                >
+                  Retirer
+                </Button>
+              </Box>
+            )}
             <Table>
               <TableHead>
                 <TableRow>
+                  {payment?.status === 'pending' && (
+                    <StyledTableCell width="5%" sx={{ fontWeight: 700 }}></StyledTableCell>
+                  )}
                   <StyledTableCell width="40%" sx={{ fontWeight: 700 }}>
                     Factures
                   </StyledTableCell>
@@ -427,8 +594,37 @@ export function PaiementDetails({ payment, user }) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {payment?.factures?.map((facture, index) => (
-                  <TableRow key={index}>
+                {filteredFactures?.map((facture, index) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      backgroundColor: selectedFacture.includes(facture.number)
+                        ? 'rgba(0, 171, 85, 0.08)'
+                        : 'transparent',
+                    }}
+                  >
+                    {payment?.status === 'pending' && (
+                      <StyledTableCell>
+                        <Checkbox
+                          checked={selectedFacture.includes(facture.slug)}
+                          onChange={(e) => {
+                            const selected = [...selectedFacture];
+                            if (e.target.checked) {
+                              selected.push(facture.slug);
+                            } else {
+                              const index = selected.indexOf(facture.slug);
+                              if (index > -1) {
+                                selected.splice(index, 1);
+                              }
+                            }
+                            setSelectedFacture(selected);
+                          }}
+                          inputProps={{
+                            'aria-label': `Select facture ${index + 1}`,
+                          }}
+                        />
+                      </StyledTableCell>
+                    )}
                     <StyledTableCell sx={{ fontWeight: 500 }}> {facture?.number} </StyledTableCell>
                     <StyledTableCell align="center">
                       <Typography component="span" sx={{ fontSize: '0.85rem' }}>
@@ -441,6 +637,8 @@ export function PaiementDetails({ payment, user }) {
                   </TableRow>
                 ))}
                 <StyledTableRow>
+                  <StyledTableCell></StyledTableCell>
+
                   <StyledTableCell
                     colSpan={2}
                     align="right"
@@ -514,6 +712,81 @@ export function PaiementDetails({ payment, user }) {
           </Grid>
         </Box>
       </Card>
+
+      <ConfirmDialog
+        open={confirm.value}
+        onClose={confirm.onFalse}
+        title="Ajouter des factures"
+        content={
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2, mt: 3 }}>
+            <Autocomplete
+              multiple
+              options={factures}
+              getOptionLabel={(facture) => facture.number}
+              loading={loadFac}
+              onChange={handleChange}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Rechercher ou sélectionner une facture"
+                  placeholder="Taper pour rechercher une facture"
+                  variant="outlined"
+                  fullWidth
+                  slotProps={{
+                    input: {
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadFac ? <CircularProgress size={20} /> : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    },
+                  }}
+                  sx={{ width: '100%' }}
+                />
+              )}
+            />
+          </Box>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              handleAddFacture();
+              confirm.onFalse();
+            }}
+            startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+          >
+            Ajouter
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={confirmRemove.value}
+        onClose={confirmRemove.onFalse}
+        title="Retirer des factures"
+        content={
+          <Typography>
+            Êtes-vous sûr de vouloir retirer les factures sélectionnées du paiement ?
+          </Typography>
+        }
+        action={
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={() => {
+              handleRemoveFacture();
+              confirmRemove.onFalse();
+            }}
+            startIcon={<Iconify icon="eva:trash-2-outline" />}
+          >
+            Retirer
+          </Button>
+        }
+      />
     </>
   );
 }

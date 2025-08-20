@@ -19,7 +19,7 @@ export function PaiementDetailsView({ slug }) {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const {user} = useMockedUser();
+  const { user } = useMockedUser();
 
   useEffect(() => {
     const fetchPayment = async () => {
@@ -27,29 +27,27 @@ export function PaiementDetailsView({ slug }) {
         const response = await axios.get(API.detailsPaiement(slug));
         setPayment(response.data);
       } catch (error) {
-        setError(error.message || error.details || error.error)
+        setError(error.message || error.details || error.error);
         toast.error(error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     };
     fetchPayment();
   }, [slug]);
 
-
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading={`PAIEMENT N° ${payment?.number}`}	
+        heading={`PAIEMENT N° ${payment?.number}`}
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Paiements', href: paths.dashboard.paiements.list },
-          { name:`PAIEMENT N° ${payment?.number}` },
+          { name: `PAIEMENT N° ${payment?.number}` },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
-      <PaiementDetails payment={payment} user={user} />
-
+      <PaiementDetails payment={payment} user={user} setPayment={setPayment} />
     </DashboardContent>
   );
 }
