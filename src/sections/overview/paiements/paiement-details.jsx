@@ -28,8 +28,6 @@ import axios from 'src/utils/axios';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { toast } from 'sonner';
-import { px } from 'framer-motion';
-import { set } from 'nprogress';
 
 // ----------------------------------------------------------------------
 
@@ -159,10 +157,13 @@ export function PaiementDetails({ payment, user, setPayment }) {
         setFilteredFactures((prevData) =>
           prevData.filter((facture) => !selectedFacture.includes(facture.slug))
         );
-        // setPayment((prev) => ({
-        //   ...prev,
-        //   factures: response.data.factures,
-        // }));
+        // Mettre à jour seulement le montant dans l'état payment
+        if (response.data?.amount !== undefined) {
+          setPayment((prevPayment) => ({
+            ...prevPayment,
+            amount: response.data.amount,
+          }));
+        }
         setSelectedFacture([]);
       } else {
         toast.error('Erreur lors du retirement des factures');
@@ -198,10 +199,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
 
       if (response?.data || response?.status === 200) {
         toast.success('Factures ajoutées avec succès');
-        setPayment((prev) => ({
-          ...prev,
-          factures: response.data.factures,
-        }));
+        setPayment(response?.data);
         setFilteredFactures(response.data.factures);
         setFacturesToAdd([]);
       } else {

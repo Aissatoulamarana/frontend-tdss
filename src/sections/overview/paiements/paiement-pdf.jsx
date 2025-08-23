@@ -236,7 +236,7 @@ export function PaiementPDF({ payment }) {
               styles.tableCellLast,
             ]}
           >
-            {convertirMontant(payment.amount)}
+            {convertirMontant(payment?.amount)}
           </Text>
         </View>
       </View>
@@ -266,15 +266,3 @@ export function PaiementPDF({ payment }) {
     </Document>
   );
 }
-
-// PaiementPDF.propTypes = {
-//   payment: PropTypes.shape({
-//     reference: PropTypes.string,
-//     number: PropTypes.string,
-//     facture_number: PropTypes.string,
-//     amount: PropTypes.number,
-//     devise: PropTypes.shape({ sign: PropTypes.string }),
-//     payer: PropTypes.object,
-//     permits: PropTypes.arrayOf(PropTypes.object)
-//   }).isRequired,
-// };

@@ -74,9 +74,9 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
 
           {/* Bouton de téléchargement PDF */}
           <NoSsr>
-            {payment && (
+            {payment ? (
               <PDFDownloadLink
-                document={<PaiementPDF payment={payment} />}
+                document={payment ? <PaiementPDF payment={payment} /> : <div>Chargement...</div>}
                 fileName={`recu-paiement-${payment?.number || ''}.pdf`}
                 style={{ textDecoration: 'none' }}
               >
@@ -92,7 +92,7 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
                   </Tooltip>
                 )}
               </PDFDownloadLink>
-            )}
+            ) : null}
           </NoSsr>
 
           {/* Bouton d'impression */}
