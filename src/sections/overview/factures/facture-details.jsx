@@ -48,13 +48,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export function FactureDetails({ facture, user, setFacture }) {
+export function FactureDetails({ facture, user }) {
   const [currentStatus, setCurrentStatus] = useState('');
   const [devise, setDevise] = useState('GNF');
   const [error, setError] = useState('');
   const [declarations, setDeclarations] = useState([]);
   const [selectedDeclarations, setSelectedDeclarations] = useState([]);
-  const [declarationsToAdd, setDeclarationsToAdd] = useState([]);
   const [filteredDeclarations, setFilteredDeclarations] = useState([]);
   const [loadDec, setLoadDec] = useState(false);
 
@@ -86,7 +85,7 @@ export function FactureDetails({ facture, user, setFacture }) {
       }
     };
     fetchDeclarations();
-  }, [facture]);
+  }, [facture?.client_name]);
 
   const router = useRouter();
 
@@ -105,35 +104,13 @@ export function FactureDetails({ facture, user, setFacture }) {
     }
   };
 
-  const handleAdd = useCallback(async () => {
-    try {
-      const requestBody = {
-        declarations: declarationsToAdd,
-      };
-      const response = await axios.post(API.ajouterDeclaration(facture?.slug), requestBody);
+  const handleAdd = () => {
+    console.log('Ajouter une nouvelle déclaration');
+  };
 
-      if (response.data || response.status === 200) {
-        toast.success('Déclaration ajoutée avec succès');
-
-        // Mise à jour de la liste affichée
-        setFacture((prev) => ({
-          ...prev,
-          declarations: response.data.declarations, // <-- backend renvoie toutes les déclarations
-        }));
-
-        setDeclarationsToAdd([]);
-      } else {
-        console.error('Erreur inattendue:', response.data);
-        toast.error('Une erreur est survenue.');
-      }
-    } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
-      setError(errorMessage);
-      console.error('Erreur réseau ou serveur:', error);
-      toast.error(errorMessage);
-    }
-  });
+  // const handleRemove = () => {
+  //   console.log('retirer une déclaration');
+  // };
 
   const handleRemove = useCallback(async () => {
     try {
@@ -152,11 +129,6 @@ export function FactureDetails({ facture, user, setFacture }) {
         setFilteredDeclarations((prevData) =>
           prevData.filter((item) => !selectedDeclarations.includes(item.slug))
         );
-        setFacture((prev) => ({
-          ...prev,
-          declarations: response.data.declarations, // <-- backend renvoie toutes les déclarations
-        }));
-        setSelectedDeclarations([]);
       } else {
         console.error('Erreur inattendue:', response.data);
         toast.error('Une erreur est survenue.');
@@ -172,7 +144,7 @@ export function FactureDetails({ facture, user, setFacture }) {
 
   const handleChange = (event, newValue) => {
     if (newValue) {
-      setDeclarationsToAdd(newValue.map((item) => item?.slug));
+      console.log('Déclaration sélectionnée:', newValue);
     }
   };
 
@@ -262,7 +234,7 @@ export function FactureDetails({ facture, user, setFacture }) {
 
           {/* Total général */}
           <StyledTableRow>
-            <CenteredTableCell colSpan={3} />
+            <CenteredTableCell colSpan={2} />
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>
               {afficherMontant(facture?.amount)}
@@ -427,6 +399,19 @@ export function FactureDetails({ facture, user, setFacture }) {
             <Typography variant="subtitle2" sx={{ mb: 1 }}>
               Date facture :{fDate(facture?.created_on)}
             </Typography>
+            {facture?.declaration_number && (
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  mb: 1,
+                  cursor: 'pointer',
+                  '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                }}
+                onClick={handleDetailsDeclaration}
+              >
+                Declaration N :{facture?.declaration_number}
+              </Typography>
+            )}
           </Stack>
 
           <Stack sx={{ typography: 'body2' }}>
@@ -470,7 +455,7 @@ export function FactureDetails({ facture, user, setFacture }) {
           </Box>
         )}
 
-        {facture?.declarations.length > 1 ? renderList : renderListPermis}
+        {facture?.declarations.length > 0 ? renderList : renderListPermis}
 
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
       </Card>
@@ -480,12 +465,12 @@ export function FactureDetails({ facture, user, setFacture }) {
         onClose={confirm.onFalse} // Ferme la deuxième boîte de dialogue
         title="Veuillez selectionner la declaration que vous voulez ajouter"
         content={
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2, mt: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2 }}>
             <Autocomplete
-              multiple
               options={declarations}
               getOptionLabel={(declaration) => declaration.number}
               loading={loadDec}
+              // value={selectedBanque || null}
               onChange={handleChange}
               renderInput={(params) => (
                 <TextField
@@ -517,7 +502,6 @@ export function FactureDetails({ facture, user, setFacture }) {
             color="success"
             onClick={() => {
               handleAdd(); // Action pour "Ajouter une nouvelle déclaration"
-              confirm.onFalse();
             }}
           >
             Ajouter

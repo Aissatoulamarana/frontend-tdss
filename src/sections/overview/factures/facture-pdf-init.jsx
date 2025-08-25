@@ -2,7 +2,6 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { saveAs } from 'file-saver';
 import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
 import { amountToWords } from 'src/utils/number-to-words';
-import { number } from 'prop-types';
 
 const TEMPLATE_URL = '/pdf/facture-pdf.pdf';
 
@@ -38,7 +37,7 @@ function wrapText(text, maxWidth, font, fontSize) {
   return lines;
 }
 
-export async function generateFacturePDF(facture, devise, { download = true } = {}) {
+export async function generateFacturePDFInit(facture, devise, { download = true } = {}) {
   const arrayBuffer = await fetch(TEMPLATE_URL).then((res) => {
     if (!res.ok) throw new Error(`Impossible de charger le template (${res.status})`);
     return res.arrayBuffer();
@@ -55,14 +54,14 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
   const clientInfoLineGap = 16; // interligne infos client
   const invoiceToDateGap = 35; // gap entre facture et bloc dates
   const dateInfoLineGap = 16; // interligne infos dates
-  const dateToSeparatorGap = 70; // gap avant ligne séparatrice
+  const dateToSeparatorGap = 35; // gap avant ligne séparatrice
   const separatorToHeaderGap = 20; // gap ligne->header tableau
   const headerLineGap = 25; // interligne header->lignes data
   const dataLineGap = 24; // interligne des lignes de données
   const dataToTotalGap = 10; // gap avant TOTAL GENERAL
   const totalBoxPadding = 8; // padding haut/bas de la box total
   const totalFontSize = 16; // taille police total
-  const totalToWordsGap = 50; // gap avant montant en lettres
+  const totalToWordsGap = 70; // gap avant montant en lettres
   const wordsToQrGap = 120; // gap avant QR/signature
 
   // Couleurs & tailles
@@ -85,11 +84,11 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
             : String(value)
     );
 
-  const mockDeclarations = facture?.declarations;
+  const permits = facture?.permits;
 
   // 1. Titre facture
   let cursorY = page.getHeight() - invoiceTopGap;
-  const invoiceText = `FACTURE N° ${facture.number}`;
+  const invoiceText = `FACTURE N° ${facture?.number}`;
   page.drawText(invoiceText, {
     x: 200,
     y: cursorY,
@@ -119,16 +118,15 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
 
   cursorY -= clientInfoLineGap;
   // [
-  //   facture.client_name,
-  //   `Tél : ${facture.client_contact}`,
-  //   ...wrapText(`Adresse : ${facture.client_adresse}`, 250, helvetica, baseSize),
-  //   `Région : ${facture.client_location}`,
+  //   facture?.client_name,
+  //   `Tél : ${facture?.client_contact}`,
+  //   `Adresse : ${facture?.client_adresse}`,
+  //   `Région : ${facture?.client_location}`,
   // ].forEach((line) => {
   //   page.drawText(line, { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
   //   cursorY -= clientInfoLineGap;
   // });
 
-  // === MODIFICATION : gestion de l'adresse longue + nom client en gras ===
   const clientLines = [
     { text: facture.client_name, bold: true }, // 🔹 Nom en gras
     { text: `Tél : ${facture.client_contact}`, bold: false },
@@ -160,7 +158,11 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
     const a = d.getFullYear();
     return `${j}/${m}/${a}`;
   };
-  [['Date facture : ', facture.created_on]].forEach(([label, val]) => {
+  [
+    ['Date facture : ', facture?.created_on],
+    ['Declaration N : ', facture?.declaration_number || facture?.declarations?.[0]?.number],
+    ['Date declaration : ', facture?.declaration_date || facture?.declarations?.[0]?.created_on],
+  ].forEach(([label, val]) => {
     const displayVal = label.includes('Date') ? formatDate(val) : val;
     page.drawText(label, { x: rightX, y: cursorY, size: baseSize, font: helvetica, color: red });
     page.drawText(displayVal, {
@@ -184,8 +186,8 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
 
   // 5. Headers tableau
   const headerY = lineY - separatorToHeaderGap;
-  ['Declarations', 'Date Déclaration', 'Employés', 'Montant'].forEach((h, i) => {
-    page.drawText(h, { x: 65 + i * 140, y: headerY, size: baseSize, font: helvetica, color: red });
+  ['Catégorie de permis', 'Quantité', 'Prix unitaire', 'Total'].forEach((h, i) => {
+    page.drawText(h, { x: 55 + i * 140, y: headerY, size: baseSize, font: helvetica, color: red });
   });
   page.drawLine({
     start: { x: 49, y: headerY - 6 },
@@ -196,32 +198,32 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
 
   // 6. Lignes de données
   let rowY = headerY - headerLineGap;
-  mockDeclarations
-    .filter((r) => r)
-    .forEach((r) => {
-      page.drawText(`${r.number}`, {
-        x: 60,
+  permits
+    ?.filter((r) => r?.count > 0)
+    ?.forEach((r) => {
+      page.drawText(`Permis ${r?.type ?? ''}`, {
+        x: 70,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
-      page.drawText(`${formatDate(r.created_on)}`, {
-        x: 215,
+      page.drawText(`${r?.count ?? 0}`, {
+        x: 210,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
-      page.drawText(`${r?.nb_employee}`, {
-        x: 360,
+      page.drawText(formatMontant(r?.price ?? 0), {
+        x: 340,
         y: rowY,
         size: baseSize,
         font: helvetica,
         color: black,
       });
-      page.drawText(formatMontant(r?.montant), {
-        x: 470,
+      page.drawText(formatMontant(r?.total_price ?? 0), {
+        x: 480,
         y: rowY,
         size: baseSize,
         font: helvetica,
@@ -246,7 +248,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
     font: helveticaBold,
     color: black,
   });
-  page.drawText(formatMontant(facture.amount), {
+  page.drawText(formatMontant(facture?.amount), {
     x: 450,
     y: rowY,
     size: totalFontSize,
@@ -257,7 +259,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
   // 8. Montant en lettres
   rowY -= totalToWordsGap;
   const phr = 'Arrêté la présente facture à la somme de : ';
-  const formattedAmount = formatMontant(facture.amount);
+  const formattedAmount = formatMontant(facture?.amount);
   const numericAmount = Number(formattedAmount.replace(/[^0-9]/g, '').replace(/,/g, ''));
   const words = sanitize(amountToWords(numericAmount, devise));
   page.drawText(phr, { x: 40, y: rowY, size: baseSize, font: helvetica, color: black });
@@ -286,7 +288,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
     return r.arrayBuffer();
   });
   const qrImg = await pdfDoc.embedPng(qrBytes);
-  page.drawImage(qrImg, { x: 50, y: rowY, width: 80, height: 80 });
+  page.drawImage(qrImg, { x: 50, y: rowY, width: 100, height: 100 });
 
   const sign = 'LA DIRECTION';
   page.drawText(sign, { x: 450, y: rowY + 80, size: baseSize, font: helvetica, color: black });
@@ -301,7 +303,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
   // Sauvegarde et téléchargement
   const pdfBytes = await pdfDoc.save();
   if (download) {
-    saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture.number}.pdf`);
+    saveAs(new Blob([pdfBytes], { type: 'application/pdf' }), `Facture_${facture?.number}.pdf`);
   }
   return pdfBytes;
 }
