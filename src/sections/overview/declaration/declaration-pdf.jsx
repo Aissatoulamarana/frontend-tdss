@@ -1,17 +1,8 @@
 // DeclarationPDF.jsx
 import React, { useMemo } from 'react';
-import {
-  Document,
-  Page,
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  Font,
-} from '@react-pdf/renderer';
+import { Document, Page, View, Text, Image, StyleSheet, Font } from '@react-pdf/renderer';
 import { fDate } from 'src/utils/format-time';
 import { pdf } from '@react-pdf/renderer';
-
 
 // Enregistrement de la police Roboto
 Font.register({
@@ -100,7 +91,7 @@ const useStyles = () =>
           borderColor: '#ddd',
           borderRadius: 4,
           overflow: 'hidden',
-          marginBottom: 12,  
+          marginBottom: 12,
         },
         tableRow: {
           flexDirection: 'row',
@@ -148,50 +139,48 @@ const useStyles = () =>
     []
   );
 
-  // Fonction pour générer un PDF sous forme de bytes
-  export const generateDeclarationPDF = async (declaration, options = { download: false }) => {
-    const { download } = options;
-    const logoUrl = declaration?.company?.picture;
-    const proxyBase = 'https://api.allorigins.win/raw?url=';
-    const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
+// Fonction pour générer un PDF sous forme de bytes
+export const generateDeclarationPDF = async (declaration, options = { download: false }) => {
+  const { download } = options;
+  const logoUrl = declaration?.company?.picture;
+  const proxyBase = 'https://api.allorigins.win/raw?url=';
+  const proxiedLogoUrl = logoUrl ? proxyBase + encodeURIComponent(logoUrl) : null;
 
-    const pdfDoc = (
-      <DeclarationPDF
-        declaration={declaration}
-        employees={declaration.employees}
-        logoUrl={proxiedLogoUrl}
-      />
-    );
+  const pdfDoc = (
+    <DeclarationPDF
+      declaration={declaration}
+      employees={declaration.employees}
+      logoUrl={proxiedLogoUrl}
+    />
+  );
 
-    const blob = await pdf(pdfDoc).toBlob();
-    
-    if (download) {
-      saveAs(blob, `declaration-${declaration.number}.pdf`);
-      return null;
-    }
+  const blob = await pdf(pdfDoc).toBlob();
 
-    const arrayBuffer = await blob.arrayBuffer();
-    return arrayBuffer;
-  };
+  if (download) {
+    saveAs(blob, `declaration-${declaration.number}.pdf`);
+    return null;
+  }
 
-export  function DeclarationPDF({ declaration, employees, logoUrl }) {
+  const arrayBuffer = await blob.arrayBuffer();
+  return arrayBuffer;
+};
+
+export function DeclarationPDF({ declaration, employees, logoUrl }) {
   const styles = useStyles();
   const { company, number, created_on, reference } = declaration;
 
-
-
   // Stats
   const total = employees?.length || 0;
-  const cadres = employees?.filter(e => e?.job?.category === 'Cadre')?.length;
-  const agents = employees?.filter(e => e?.job?.category === 'Agent de maitrise')?.length;
-  const ouvriers = employees?.filter(e => e?.job?.category === 'Ouvrier')?.length;
+  const cadres = employees?.filter((e) => e?.job?.category === 'Cadre')?.length;
+  const agents = employees?.filter((e) => e?.job?.category === 'Agent de maitrise')?.length;
+  const ouvriers = employees?.filter((e) => e?.job?.category === 'Ouvrier')?.length;
 
   const qrData = encodeURIComponent(`Declaration- ${number} - ${total} personnes`);
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
 
   const typeLabels = {
-    new:      'Nouveau',
-    renewal:  'Renouvellement',
+    new: 'Nouveau',
+    renewal: 'Renouvellement',
     // ajoute d’autres cas si nécessaire
   };
 
@@ -200,7 +189,7 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.headerRow}>
-          {logoUrl && <Image src={ logoUrl} style={styles.logo} />}
+          {logoUrl && <Image src={logoUrl} style={styles.logo} />}
           <View style={styles.companyInfo}>
             <Text style={styles.companyName}>{company?.name}</Text>
             <Text style={styles.companyDetails}>{company?.adresse}</Text>
@@ -235,30 +224,29 @@ export  function DeclarationPDF({ declaration, employees, logoUrl }) {
 
         {/* Tableau */}
         <View style={styles.table}>
-          <View style={[styles.tableRow, styles.tableHeader]} >
-            {['N°', 'Passeport', 'Nom', 'Prénom',  'Fonction', 'Catégorie', 'Type'].map((h, i) => (
+          <View style={[styles.tableRow, styles.tableHeader]}>
+            {['N°', 'Passeport', 'Nom', 'Prénom', 'Fonction', 'Catégorie', 'Type'].map((h, i) => (
               <Text
                 key={i}
                 style={[
-                  styles.headerCell, 
+                  styles.headerCell,
                   i === 0 && styles.firtColumn,
-                  i === 6 && styles.noBorderRight]}
+                  i === 6 && styles.noBorderRight,
+                ]}
               >
                 {h}
               </Text>
             ))}
           </View>
           {employees?.map((emp, i) => (
-            <View key={i} style={styles.tableRow} wrap={false} >
+            <View key={i} style={styles.tableRow} wrap={false}>
               <Text style={[styles.cell, styles.firtColumn]}>{i + 1}</Text>
               <Text style={styles.cell}>{emp?.passport_number}</Text>
-              <Text style={styles.cell}>{emp?.first}</Text>
               <Text style={styles.cell}>{emp?.last}</Text>
+              <Text style={styles.cell}>{emp?.first}</Text>
               <Text style={styles.cell}>{emp?.job?.name}</Text>
               <Text style={styles.cell}>{emp?.job?.category}</Text>
-              <Text style={[styles.cell, styles.noBorderRight]}>
-                {typeLabels[emp?.type]}
-              </Text>
+              <Text style={[styles.cell, styles.noBorderRight]}>{typeLabels[emp?.type]}</Text>
             </View>
           ))}
         </View>
