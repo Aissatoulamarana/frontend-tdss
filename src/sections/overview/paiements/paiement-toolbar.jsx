@@ -4,7 +4,11 @@
 // import PropTypes from 'prop-types';
 import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
 import { useReactToPrint } from 'react-to-print';
-
+import { useCallback, useState } from 'react';
+import axios from 'src/utils/axios';
+import API from 'src/utils/api';
+import { toast } from 'src/components/snackbar';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -23,8 +27,28 @@ import { PaiementPDF } from './paiement-pdf';
 
 // ----------------------------------------------------------------------
 
-export function PaiementToolbar({ payment, componentRef }) {
+export function PaiementToolbar({ payment, componentRef, currentStatus, onChangeStatus }) {
   const view = useBoolean();
+  const confirm = useBoolean();
+
+  const [error, setError] = useState(null);
+
+  const handleValidate = useCallback(async (slug) => {
+    try {
+      const response = await axios.post(API.validatePayment(slug));
+
+      if (response.data || response.status === 200) {
+        toast.success('Paiement validé avec succès');
+        onChangeStatus('validated');
+      } else {
+        toast.error('Erreur lors de la validation du paiement');
+      }
+    } catch (error) {
+      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      setError(errorMessage);
+      toast.error(`Erreur lors de la validation du paiement : ${error}`);
+    }
+  });
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -33,52 +57,60 @@ export function PaiementToolbar({ payment, componentRef }) {
   });
 
   return (
-    <> 
-   <Stack
+    <>
+      <Stack
         spacing={3}
         direction={{ xs: 'column', sm: 'row' }}
         alignItems={{ xs: 'flex-end', sm: 'center' }}
         sx={{ mb: { xs: 3, md: 5 } }}
       >
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-      {/* Bouton d'aperçu PDF */}
-      <Tooltip title="Aperçu PDF">
-        <IconButton onClick={view.onTrue}>
-          <Iconify icon="eva:eye-fill" />
-        </IconButton>
-      </Tooltip>
+          {/* Bouton d'aperçu PDF */}
+          <Tooltip title="Aperçu PDF">
+            <IconButton onClick={view.onTrue}>
+              <Iconify icon="eva:eye-fill" />
+            </IconButton>
+          </Tooltip>
 
-      {/* Bouton de téléchargement PDF */}
-      <NoSsr>
-        {payment && (
-          <PDFDownloadLink
-            document={payment ? <PaiementPDF payment={payment} /> : <span />}
-            fileName={`recu-paiement-${payment?.number || ''}.pdf`}
-            style={{ textDecoration: 'none' }}
-          >
-            {({ loading }) => (
-              <Tooltip title="Télécharger">
-                <IconButton>
-                  {loading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    <Iconify icon="eva:cloud-download-fill" />
-                  )}
-                </IconButton>
-              </Tooltip>
-            )}
-          </PDFDownloadLink>
-        )}
-      </NoSsr>
+          {/* Bouton de téléchargement PDF */}
+          <NoSsr>
+            {payment ? (
+              <PDFDownloadLink
+                document={payment ? <PaiementPDF payment={payment} /> : <div>Chargement...</div>}
+                fileName={`recu-paiement-${payment?.number || ''}.pdf`}
+                style={{ textDecoration: 'none' }}
+              >
+                {({ loading }) => (
+                  <Tooltip title="Télécharger">
+                    <IconButton>
+                      {loading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        <Iconify icon="eva:cloud-download-fill" />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </PDFDownloadLink>
+            ) : null}
+          </NoSsr>
 
-      {/* Bouton d'impression */}
-      <Tooltip title="Imprimer">
-        <IconButton onClick={handlePrint}>
-          <Iconify icon="eva:printer-fill" />
-        </IconButton>
-      </Tooltip>
-      </Stack>
+          {/* Bouton d'impression */}
+          <Tooltip title="Imprimer">
+            <IconButton onClick={handlePrint}>
+              <Iconify icon="eva:printer-fill" />
+            </IconButton>
+          </Tooltip>
 
+          {/* Bouton de validation */}
+          {currentStatus === 'pending' && (
+            <Tooltip title="Valider">
+              <IconButton onClick={() => confirm.onTrue()}>
+                <Iconify icon="eva:checkmark-circle-2-fill" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Stack>
       </Stack>
       {/* Dialogue d'aperçu PDF */}
       <Dialog
@@ -93,7 +125,7 @@ export function PaiementToolbar({ payment, componentRef }) {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Aperçu du reçu de paiement
           </Typography>
-          
+
           {payment && (
             <PDFDownloadLink
               document={<PaiementPDF payment={payment} />}
@@ -112,12 +144,12 @@ export function PaiementToolbar({ payment, componentRef }) {
               )}
             </PDFDownloadLink>
           )}
-          
+
           <IconButton onClick={view.onFalse}>
             <Iconify icon="eva:close-fill" />
           </IconButton>
         </DialogActions>
-        
+
         <DialogContent sx={{ p: 0, height: '100%' }}>
           {payment && (
             <PDFViewer width="100%" height="100%" style={{ border: 'none' }}>
@@ -126,7 +158,26 @@ export function PaiementToolbar({ payment, componentRef }) {
           )}
         </DialogContent>
       </Dialog>
-   
+
+      {/* Dialogue de confirmation de validation */}
+      <ConfirmDialog
+        open={confirm.value}
+        onClose={confirm.onFalse}
+        title="Valider le paiement"
+        content="Êtes-vous sûr de vouloir valider ce paiement ?"
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              handleValidate(payment.slug);
+              confirm.onFalse();
+            }}
+          >
+            Valider
+          </Button>
+        }
+      />
     </>
   );
 }

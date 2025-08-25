@@ -21,11 +21,12 @@ import { fDate, fTime } from 'src/utils/format-time';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
-import { toast } from 'sonner';
+import { toast } from 'src/components/snackbar';
+import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
+export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow, onValidateRow }) {
   const confirm = useBoolean();
   const router = useRouter();
   const popover = usePopover();
@@ -55,6 +56,22 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
     router.push(paths.dashboard.factures.details(factureSlug));
   };
 
+  const statusLabels = {
+    pending: 'En attente',
+    validated: 'Validé',
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'validated':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
+
   return (
     <>
       <TableRow hover selected={selected} onClick={onViewRow} sx={{ cursor: 'pointer' }}>
@@ -67,28 +84,42 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
         </TableCell>
         <TableCell>{row.number}</TableCell>
 
-        <TableCell>
-          <Stack spacing={2} direction="row" alignItems="center">
-            <ListItemText
-              disableTypography
-              primary={
-                <Typography variant="body2" noWrap sx={{ cursor: 'pointer', '&:hover': { color: 'primary.main', textDecoration: 'underline' }, fontSize: '0.85rem' }}
-                  onClick={(event) => {event.stopPropagation(); handleDetailsFactures();} }
-                >
-                  {row.facture_number}
-                </Typography>
-              }
-              secondary={
-                <Link
-                  noWrap
-                  variant="body2"
-                  onClick={onViewRow}
-                  sx={{ color: 'text.disabled', cursor: 'pointer' }}
-                />
-              }
-            />
-          </Stack>
-        </TableCell>
+        {row?.nb_factures > 1 ? (
+          <TableCell>{row?.nb_factures}</TableCell>
+        ) : (
+          <TableCell>
+            <Stack spacing={2} direction="row" alignItems="center">
+              <ListItemText
+                disableTypography
+                primary={
+                  <Typography
+                    variant="body2"
+                    noWrap
+                    sx={{
+                      cursor: 'pointer',
+                      '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                      fontSize: '0.85rem',
+                    }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDetailsFactures();
+                    }}
+                  >
+                    {row.facture_number}
+                  </Typography>
+                }
+                secondary={
+                  <Link
+                    noWrap
+                    variant="body2"
+                    onClick={onViewRow}
+                    sx={{ color: 'text.disabled', cursor: 'pointer' }}
+                  />
+                }
+              />
+            </Stack>
+          </TableCell>
+        )}
         {/* <TableCell>{row.declaration_number}</TableCell> */}
 
         <TableCell>
@@ -111,7 +142,7 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
             />
           </Stack>
         </TableCell>
-        <TableCell>{row.payer}</TableCell>
+        <TableCell>{row.payer || row.client}</TableCell>
 
         <TableCell>
           <ListItemText
@@ -135,8 +166,20 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
           />
         </TableCell>
 
+        <TableCell>
+          <Label variant="soft" color={getStatusColor(row.status)}>
+            {statusLabels[row.status] || 'Inconnu'}
+          </Label>
+        </TableCell>
+
         <TableCell align="right" sx={{ px: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+          <IconButton
+            color={popover.open ? 'inherit' : 'default'}
+            onClick={(e) => {
+              e.stopPropagation(); // Empêche la propagation vers le TableRow
+              popover.onOpen(e); // Passe l'événement à la fonction onOpen
+            }}
+          >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
         </TableCell>
@@ -157,16 +200,34 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow }) {
             <Iconify icon="solar:eye-bold" />
             Voir
           </MenuItem>
+          {row?.status === 'pending' && (
+            <MenuItem
+              onClick={() => {
+                popover.onClose();
+                confirm.onTrue();
+              }}
+            >
+              <Iconify icon="eva:checkmark-circle-2-fill" />
+              Valider
+            </MenuItem>
+          )}
         </MenuList>
       </CustomPopover>
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Payer"
-        content="Are you sure want to delete?"
+        title="Valider le paiement"
+        content="Etes vous sur de vouloir valider ce paiement?"
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
-            Payer
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onValidateRow();
+              confirm.onFalse();
+            }}
+          >
+            Valider
           </Button>
         }
       />
