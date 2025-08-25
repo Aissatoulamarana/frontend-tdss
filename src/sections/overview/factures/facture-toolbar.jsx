@@ -124,6 +124,7 @@ export function FactureToolbar({ facture, user, currentStatus, onChangeStatus, d
       >
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
           {/* Bouton d'aperçu PDF */}
+
           {facture && facture.declarations ? (
             facture.declarations.length > 0 ? (
               <Tooltip title="Aperçu PDF">
@@ -194,7 +195,7 @@ export function FactureToolbar({ facture, user, currentStatus, onChangeStatus, d
       </Dialog>
 
       <PayeurForm
-        slug={facture?.slug}
+        slug={[facture?.slug]}
         open={payeurForm.value}
         onclose={payeurForm.onFalse}
         onSuccess={() => {
