@@ -49,6 +49,8 @@ const API = {
   move: (slug) => `${BASE_URL}/declarations/${slug}/move-employees/`, // deplacer des employés d'une déclaration à une autre
   unsubmitDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/unsubmit/`, // remettre le statut a non soumettre
 
+  statsDeclaration: () => `${BASE_URL}/declarations/stats/`,
+
   // Dashboard Agent
   agentDashboard: (year = null) => {
     let url = `${BASE_URL}/declarations/dashboard-agent/`;
