@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import API from 'src/utils/api';
 import { getDevises, getCountries } from 'src/utils/options';
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
+import LoadingButton from '@mui/lab/LoadingButton';
 
 const NewPayeurSchema = z.object({
   payer_last: z.string().min(1, { message: 'Le nom est obligatoire' }),
@@ -100,10 +101,10 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
         return;
       }
 
-      if (!data.payment_document || !(data.payment_document instanceof File)) {
-        toast.error('Veuillez sélectionner un document PDF valide.');
-        return;
-      }
+      // if (!data.payment_document || !(data.payment_document instanceof File)) {
+      //   toast.error('Veuillez sélectionner un document PDF valide.');
+      //   return;
+      // }
 
       const formData = new FormData();
 
@@ -118,11 +119,8 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
       formData.append('payment_devise', data.payment_devise);
       formData.append('payment_comment', data.payment_comment || '');
 
-      console.log('Slugs recus en paramètre:', slug);
-
       // -> Chaque facture comme entrée SEPAREE avec la même clé
       const factureSlugs = slug.map((s) => s.trim()).filter(Boolean);
-      console.log('Facture Slugs:', factureSlugs);
 
       if (factureSlugs.length === 0) {
         toast.error('Veuillez sélectionner au moins une facture.');
@@ -132,7 +130,6 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
 
       formData.append('payment_document', data.payment_document);
 
-      console.log('Envoi des données au backend :', formData);
       await axios.post(API.paidFacture(slug), formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
@@ -280,9 +277,10 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
             <Button variant="outlined" onClick={() => setStep(1)}>
               Retour
             </Button>
-            <Button type="submit" variant="contained" disabled={isSubmitting}>
+
+            <LoadingButton type="submit" variant="contained" loading={isSubmitting}>
               Payer
-            </Button>
+            </LoadingButton>
           </DialogActions>
         )}
       </Form>

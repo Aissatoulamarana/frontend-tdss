@@ -48,12 +48,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-export function FactureDetails({ facture, user }) {
+export function FactureDetails({ facture, user, setFacture }) {
   const [currentStatus, setCurrentStatus] = useState('');
   const [devise, setDevise] = useState('GNF');
   const [error, setError] = useState('');
   const [declarations, setDeclarations] = useState([]);
   const [selectedDeclarations, setSelectedDeclarations] = useState([]);
+  const [declarationsToAdd, setDeclarationsToAdd] = useState([]);
   const [filteredDeclarations, setFilteredDeclarations] = useState([]);
   const [loadDec, setLoadDec] = useState(false);
 
@@ -67,12 +68,6 @@ export function FactureDetails({ facture, user }) {
         });
         const total = resp1?.data?.count;
 
-        console.log('Params envoyés:', {
-          offset: 0,
-          limit: total,
-          company: facture?.client_name,
-        });
-
         const resp2 = await axios.get(API.listDeclarations(), {
           params: { offset: 0, limit: total, company: facture?.client_name, status: 'validated' },
         });
@@ -85,7 +80,7 @@ export function FactureDetails({ facture, user }) {
       }
     };
     fetchDeclarations();
-  }, [facture?.client_name]);
+  }, [facture]);
 
   const router = useRouter();
 
@@ -104,13 +99,36 @@ export function FactureDetails({ facture, user }) {
     }
   };
 
-  const handleAdd = () => {
-    console.log('Ajouter une nouvelle déclaration');
-  };
+  const handleAdd = useCallback(async () => {
+    try {
+      const requestBody = {
+        declarations: declarationsToAdd,
+      };
+      const response = await axios.post(API.ajouterDeclaration(facture?.slug), requestBody);
 
-  // const handleRemove = () => {
-  //   console.log('retirer une déclaration');
-  // };
+      if (response.data || response.status === 200) {
+        toast.success('Déclaration ajoutée avec succès');
+
+        // Mise à jour de la liste affichée
+        setFacture((prev) => ({
+          ...prev,
+          declarations: response?.data?.declarations,
+          amount: response?.data?.amount,
+        }));
+
+        setDeclarationsToAdd([]);
+      } else {
+        console.error('Erreur inattendue:', response.data);
+        toast.error('Une erreur est survenue.');
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || error?.message || 'Erreur lors de la facturation.';
+      setError(errorMessage);
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error(errorMessage);
+    }
+  });
 
   const handleRemove = useCallback(async () => {
     try {
@@ -124,11 +142,16 @@ export function FactureDetails({ facture, user }) {
 
       // En cas de succès
       if (response.data || response.status === 201) {
-        toast.success('Déclaration retiré avec succès !');
-        // Mise à jour locale du statut
+        toast.success('Déclaration retirée avec succès !');
+        // Mise à jour locale
         setFilteredDeclarations((prevData) =>
           prevData.filter((item) => !selectedDeclarations.includes(item.slug))
         );
+        setFacture((prev) => ({
+          ...prev,
+          declarations: response.data.declarations, // mettre a jour les déclarations
+          amount: response?.data?.amount, // mettre a jour le montant
+        }));
       } else {
         console.error('Erreur inattendue:', response.data);
         toast.error('Une erreur est survenue.');
@@ -144,7 +167,7 @@ export function FactureDetails({ facture, user }) {
 
   const handleChange = (event, newValue) => {
     if (newValue) {
-      console.log('Déclaration sélectionnée:', newValue);
+      setDeclarationsToAdd(newValue.map((item) => item?.slug));
     }
   };
 
@@ -184,7 +207,7 @@ export function FactureDetails({ facture, user }) {
       <Table sx={{ minWidth: 960 }}>
         <TableHead>
           <TableRow>
-            {facture?.status === 'unpaid' && <CenteredTableCell width={40}> </CenteredTableCell>}
+            {currentStatus === 'unpaid' && <CenteredTableCell width={40}> </CenteredTableCell>}
             <CenteredTableCell width={40}>#</CenteredTableCell>
             <CenteredTableCell width={250}>Déclarations</CenteredTableCell>
             <CenteredTableCell width={250}>Date Déclaration</CenteredTableCell>
@@ -201,7 +224,7 @@ export function FactureDetails({ facture, user }) {
                   : 'transparent',
               }}
             >
-              {facture?.status === 'unpaid' && (
+              {currentStatus === 'unpaid' && (
                 <CenteredTableCell>
                   <Checkbox
                     checked={selectedDeclarations.includes(row.slug)}
@@ -223,7 +246,17 @@ export function FactureDetails({ facture, user }) {
               <CenteredTableCell>{index + 1}</CenteredTableCell>
 
               <CenteredTableCell>
-                <Typography variant="subtitle2">{row.number}</Typography>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    cursor: 'pointer',
+                    '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                    fontSize: '0.85rem',
+                  }}
+                  onClick={() => handleDetailsDeclaration(row.slug)}
+                >
+                  {row.number}
+                </Typography>
               </CenteredTableCell>
 
               <CenteredTableCell>{fDate(row.created_on)}</CenteredTableCell>
@@ -234,7 +267,7 @@ export function FactureDetails({ facture, user }) {
 
           {/* Total général */}
           <StyledTableRow>
-            <CenteredTableCell colSpan={2} />
+            <CenteredTableCell colSpan={3} />
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>
               {afficherMontant(facture?.amount)}
@@ -282,7 +315,7 @@ export function FactureDetails({ facture, user }) {
 
           {/* Total général */}
           <StyledTableRow>
-            <CenteredTableCell colSpan={3} />
+            <CenteredTableCell colSpan={currentStatus === 'unpaid' ? 3 : 2} />
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>TOTAL</CenteredTableCell>
             <CenteredTableCell sx={{ fontWeight: 'bold' }}>
               {afficherMontant(facture?.amount)}
@@ -314,8 +347,7 @@ export function FactureDetails({ facture, user }) {
     }
   }, [facture?.status]);
 
-  const handleDetailsDeclaration = () => {
-    const declarationSlug = facture?.declaration_slug;
+  const handleDetailsDeclaration = (declarationSlug) => {
     if (!declarationSlug) {
       toast.error('Le slug de la déclaration est manquant.');
       return;
@@ -336,7 +368,7 @@ export function FactureDetails({ facture, user }) {
         devise={devise}
       />
 
-      {facture?.status === 'unpaid' && (
+      {currentStatus === 'unpaid' && (
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: { xs: 1, md: 2 } }}>
           <Button
             variant="contained"
@@ -381,7 +413,6 @@ export function FactureDetails({ facture, user }) {
                   py: 0.5,
                   borderRadius: 1,
                   border: '1px solid #ccc',
-                  backgroundColor: '#fff',
                   fontSize: 14,
                   minWidth: 80,
                 }}
@@ -407,7 +438,7 @@ export function FactureDetails({ facture, user }) {
                   cursor: 'pointer',
                   '&:hover': { color: 'primary.main', textDecoration: 'underline' },
                 }}
-                onClick={handleDetailsDeclaration}
+                onClick={() => handleDetailsDeclaration(facture?.declaration_slug)}
               >
                 Declaration N :{facture?.declaration_number}
               </Typography>
@@ -440,7 +471,7 @@ export function FactureDetails({ facture, user }) {
           </Stack>
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
-        {selectedDeclarations.length > 0 && facture?.status === 'unpaid' && (
+        {selectedDeclarations.length > 0 && currentStatus === 'unpaid' && (
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
             <Button
               variant="outlined"
@@ -465,8 +496,9 @@ export function FactureDetails({ facture, user }) {
         onClose={confirm.onFalse} // Ferme la deuxième boîte de dialogue
         title="Veuillez selectionner la declaration que vous voulez ajouter"
         content={
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 2, mt: 3 }}>
             <Autocomplete
+              multiple
               options={declarations}
               getOptionLabel={(declaration) => declaration.number}
               loading={loadDec}
@@ -502,6 +534,7 @@ export function FactureDetails({ facture, user }) {
             color="success"
             onClick={() => {
               handleAdd(); // Action pour "Ajouter une nouvelle déclaration"
+              confirm.onFalse();
             }}
           >
             Ajouter

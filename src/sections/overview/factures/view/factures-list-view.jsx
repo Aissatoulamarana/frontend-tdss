@@ -479,10 +479,6 @@ export function FactureListView() {
 
   const handleUpdateStatus = useCallback(() => {
     const selectedSlugs = table.selected;
-    if (!selectedSlugs || selectedSlugs.length === 0) {
-      toast.warn('Aucune facture sélectionnée.');
-      return;
-    }
     // Mettre à jour l'état des factures sélectionnées
     const updatedData = tableData.map((row) => {
       if (selectedSlugs.includes(row.slug)) {
