@@ -14,7 +14,7 @@ import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
-export function DeclarationEditStatusDate({ type  }) {
+export function DeclarationEditStatusDate({ type }) {
   const { watch, setValue, control } = useFormContext();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -22,9 +22,9 @@ export function DeclarationEditStatusDate({ type  }) {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [open, setOpen] = useState(false);
 
-  const {user} = useMockedUser();
-  const company = user?.companies[0]?.type_code.toLowerCase().trim();
-
+  const { user } = useMockedUser();
+  const company =
+    user?.companies?.length === 1 ? user.companies[0].type_code.toLowerCase().trim() : null;
 
   const values = watch();
 
@@ -56,7 +56,7 @@ export function DeclarationEditStatusDate({ type  }) {
           setValue('company', userCompany.value);
           setSelectedCompany(userCompany);
         } else {
-        setCompanies(initialCompanies);
+          setCompanies(initialCompanies);
         }
       } catch (error) {
         console.error('Erreur lors du chargement initial des entreprises:', error);
@@ -91,68 +91,67 @@ export function DeclarationEditStatusDate({ type  }) {
       direction={{ xs: 'column', sm: 'row' }}
       sx={{ p: 3, bgcolor: 'background.neutral' }}
     >
-      {company !== 'entreprise' ? (
-      <Controller
-        name="company"
-        control={control}
-        render={({ field, fieldState: { error } }) => (
-          <Autocomplete
-            {...field}
-            fullWidth
-            options={companies}
-            loading={loading}
-            value={selectedCompany}
-            inputValue={inputValue}
-            onChange={handleCompanyChange}
-            onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
-            open={open && companies.length > 0}
-            onOpen={() => setOpen(true)}
-            onClose={() => setOpen(false)}
-            getOptionLabel={(option) => option.label || ''}
-            isOptionEqualToValue={(option, value) => option.value === value?.value}
-            filterOptions={(options, state) =>
-              options.filter((option) =>
-                option.label.toLowerCase().includes(state.inputValue.toLowerCase())
-              )
-            }
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Entreprise *"
-                placeholder="Rechercher une entreprise..."
-                error={!!error}
-                helperText={error?.message}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
-            )}
-            renderOption={(props, option) => (
-              <MenuItem {...props} key={option.slug} value={option.value}>
-                {option.label}
-              </MenuItem>
-            )}
-            noOptionsText="Aucune entreprise trouvée"
-            loadingText="Chargement..."
-          />
-        )}
-      />
+      {companies.length > 1 ? (
+        <Controller
+          name="company"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <Autocomplete
+              {...field}
+              fullWidth
+              options={companies}
+              loading={loading}
+              value={selectedCompany}
+              inputValue={inputValue}
+              onChange={handleCompanyChange}
+              onInputChange={(event, newInputValue) => setInputValue(newInputValue)}
+              open={open && companies.length > 0}
+              onOpen={() => setOpen(true)}
+              onClose={() => setOpen(false)}
+              getOptionLabel={(option) => option.label || ''}
+              isOptionEqualToValue={(option, value) => option.value === value?.value}
+              filterOptions={(options, state) =>
+                options.filter((option) =>
+                  option.label.toLowerCase().includes(state.inputValue.toLowerCase())
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Entreprise *"
+                  placeholder="Rechercher une entreprise..."
+                  error={!!error}
+                  helperText={error?.message}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <MenuItem {...props} key={option.slug} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              )}
+              noOptionsText="Aucune entreprise trouvée"
+              loadingText="Chargement..."
+            />
+          )}
+        />
       ) : (
         <Field.Text
           name="company"
           label="Entreprise *"
-          value= {selectedCompany?.label || ''}
+          value={selectedCompany?.label || ''}
           InputLabelProps={{ shrink: true }}
           disabled
         />
-      )
-      } 
+      )}
 
       <Field.Select
         disabled
