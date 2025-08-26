@@ -107,13 +107,13 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
   // 2. Bloc CLIENT
   cursorY -= invoiceToClientGap;
   const leftX = 50;
-  page.drawText('CLIENT', { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: blue });
+  page.drawText('CLIENT', { x: leftX, y: cursorY, size: baseSize, font: helvetica, color: black });
   const cW = helvetica.widthOfTextAtSize('CLIENT', baseSize);
   page.drawLine({
     start: { x: leftX, y: cursorY - 2 },
     end: { x: leftX + cW, y: cursorY - 2 },
     thickness: 0.5,
-    color: blue,
+    color: black,
   });
 
   cursorY -= clientInfoLineGap;
