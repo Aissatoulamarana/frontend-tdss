@@ -45,9 +45,9 @@ export function DeclarationSummary({ title, percent, total, loading, chart = {},
         {percent > 0 && '+'}
         {fPercent(percent)}
       </Box>
-      <Box component="span" sx={{ typography: 'body2', color: 'text.secondary' }}>
+      {/* <Box component="span" sx={{ typography: 'body2', color: 'text.secondary' }}>
         last 7 days
-      </Box>
+      </Box> */}
     </Box>
   );
 
@@ -62,12 +62,12 @@ export function DeclarationSummary({ title, percent, total, loading, chart = {},
       {...other}
     >
       <Box sx={{ flexGrow: 1 }}>
-         <Box sx={{ typography: 'subtitle2' }}>{title}</Box>
-         {loading ? (
+        <Box sx={{ typography: 'subtitle2' }}>{title}</Box>
+        {loading ? (
           <CircularProgress size={32} sx={{ my: 2 }} />
         ) : (
-         <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{fNumber(total)}</Box>
-         )}
+          <Box sx={{ mt: 1.5, mb: 1, typography: 'h3' }}>{fNumber(total)}</Box>
+        )}
 
         {renderTrending}
       </Box>
