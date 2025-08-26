@@ -17,7 +17,7 @@ export function fNumber(inputValue, options) {
   const number = processInput(inputValue);
   if (number === null) return '';
 
-  const fm = new Intl.NumberFormat(locale.code, {
+  const fm = new Intl.NumberFormat('fr-FR', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
     ...options,
@@ -62,9 +62,8 @@ export function fGNF(inputValue, options) {
   return fm;
 }
 
-
 // ----------------------------------------------------------------------
-export function fEuro (inputValue, options) {
+export function fEuro(inputValue, options) {
   const locale = formatNumberLocale() || DEFAULT_LOCALE;
 
   const number = processInput(inputValue);
