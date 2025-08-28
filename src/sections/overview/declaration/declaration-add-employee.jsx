@@ -154,20 +154,30 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       onClose();
       window.location.reload(); // Recharger la page pour voir les changements
       router.push(paths.dashboard.declaration.details(declaration?.slug));
-    } catch (error) {
-      console.error("Erreur lors de l'envoi au backend:", error);
-      if (error.response) {
-        console.error('Erreur avec le serveur:', error.response.data);
-        toast.error(
-          `Erreur serveur: ${error.response.data?.message || 'Problème interne du serveur'}`
-        );
-      } else if (error.request) {
-        console.error('Erreur avec la requête:', error.request);
-        toast.error('Erreur de requête : Vérifiez votre connexion');
+    } catch (err) {
+      const data = err.response?.data || err || err.message || err.details || err.messages;
+      let messages = [];
+
+      if (Array.isArray(data)) {
+        // Exemple: [{ reference: ["Dossier en cours ..."] }]
+        data.forEach((errObj) => {
+          Object.keys(errObj).forEach((key) => {
+            const value = errObj[key];
+            if (Array.isArray(value)) {
+              messages.push(...value); // push tous les messages
+            } else {
+              messages.push(value);
+            }
+          });
+        });
       } else {
-        console.error('Erreur générale:', error.message);
-        toast.error(`Erreur inconnue: ${error.message}`);
+        // fallback si jamais ce n'est pas un tableau
+        if (data.message) messages.push(data.message);
+        else messages.push('Erreur inconnue');
       }
+
+      // Afficher les erreurs
+      messages.forEach((msg) => toast.error(msg));
     } finally {
       loadingSend.onFalse();
     }
