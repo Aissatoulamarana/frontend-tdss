@@ -110,6 +110,13 @@ export function DeclarationListView() {
   const [isLoadZip, setIsLoadZip] = useState(false);
 
   const [count, setCount] = useState();
+  const [totalCount, setTotalCount] = useState();
+  const [submitCount, setSubmitCount] = useState();
+  const [UnSubmitCount, setUnSubmitCount] = useState();
+  const [validCount, setValidCount] = useState();
+  const [rejectCount, setRejectCount] = useState();
+  const [billCount, setBillCount] = useState();
+
   const downloadMultiplePDF = useBoolean();
 
   const [pagination, setPagination] = useState({
@@ -117,8 +124,6 @@ export function DeclarationListView() {
     next: null,
     previous: null,
   });
-
-  const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
 
   const filters = useSetState({
     number: '', // mot-clé pour filtrer par numéro ou type de déclaration
@@ -154,39 +159,27 @@ export function DeclarationListView() {
 
   const notFound = pagination.count === 0 && canReset;
 
-  const fetchTotalCount = () =>
-    axios.get(API.listDeclarations(), { params: { limit: 1 } }).then((res) => res.data.count);
-
-  const fetchCountByStatus = (status) =>
-    axios
-      .get(API.listDeclarations(), { params: { limit: 1, status } })
-      .then((res) => res.data.count);
-
   useEffect(() => {
-    (setLoader(true),
-      Promise.all([
-        fetchTotalCount(),
-        fetchCountByStatus('unsubmitted'),
-        fetchCountByStatus('submitted'),
-        fetchCountByStatus('validated'),
-        fetchCountByStatus('billed'),
-        fetchCountByStatus('rejected'),
-      ]).then(
-        ([totalCount, unsubmitCount, submitCount, validatCount, billedCount, rejectCount]) => {
-          setSummary({
-            totalCount,
-            countByStatus: {
-              unsubmitted: unsubmitCount,
-              submitted: submitCount,
-              validated: validatCount,
-              billed: billedCount,
-              rejected: rejectCount,
-            },
-          });
-          setLoader(false);
-        }
-      ));
-  }, [user]);
+    const fetchStats = async () => {
+      setLoader(true);
+      try {
+        const { data } = await axios.get(API.statsDeclaration());
+
+        setTotalCount(data?.total_declarations);
+        setSubmitCount(data?.submitted);
+        setUnSubmitCount(data?.unsubmitted);
+        setValidCount(data?.validated);
+        setRejectCount(data?.rejected);
+        setBillCount(data?.billed);
+      } catch (err) {
+        toast.error('Erreur lors du chargement des stats', err);
+      } finally {
+        setLoader(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const fetchEmployeesBySlug = async (slug) => {
     if (!slug) return [];
@@ -229,16 +222,10 @@ export function DeclarationListView() {
     );
   };
 
-  const getDeclarationLength = (status) => summary.countByStatus[status];
-
-  const getTotalAmount = (status) =>
-    sumBy(
-      tableData.filter((item) => item.status === status),
-      (declaration) => declaration.montant_facture
-    );
-
-  // const getPercentByStatus = (status) => (useDeclarationCount(status) / pagination.count) * 100;
-  const getPercentByStatus = (status) => (getDeclarationLength(status) / summary.totalCount) * 100;
+  const getPercentByCount = (number) => {
+    if (!totalCount || totalCount === 0) return 0;
+    return (number / totalCount) * 100;
+  };
 
   const allowedStatusByRole = {
     admin: ['all', 'submitted', 'validated', 'billed', 'unsubmitted', 'rejected'],
@@ -262,7 +249,7 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="all">
         <DeclarationSummary
           title="Total"
-          total={summary.totalCount}
+          total={totalCount}
           percent={100}
           loading={loader}
           chart={{
@@ -277,8 +264,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="validated">
         <DeclarationSummary
           title="Validées"
-          total={getDeclarationLength('validated')}
-          percent={getPercentByStatus('validated')}
+          total={validCount}
+          percent={getPercentByCount(validCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.success.main],
@@ -292,8 +279,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="unsubmitted">
         <DeclarationSummary
           title="Brouillon"
-          total={getDeclarationLength('unsubmitted')}
-          percent={getPercentByStatus('unsubmitted')}
+          total={UnSubmitCount}
+          percent={getPercentByCount(UnSubmitCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.warning.main],
@@ -307,8 +294,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="rejected">
         <DeclarationSummary
           title="Rejetées"
-          total={getDeclarationLength('rejected')}
-          percent={getPercentByStatus('rejected')}
+          total={rejectCount}
+          percent={getPercentByCount(rejectCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.error.main],
@@ -322,8 +309,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="billed">
         <DeclarationSummary
           title="Facturées"
-          total={getDeclarationLength('billed')}
-          percent={getPercentByStatus('billed')}
+          total={billCount}
+          percent={getPercentByCount(billCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.primary.main],
@@ -337,8 +324,8 @@ export function DeclarationListView() {
       <Grid size={{ xs: 6, md: 3 }} key="submitted">
         <DeclarationSummary
           title="Soumises"
-          total={getDeclarationLength('submitted')}
-          percent={getPercentByStatus('submitted')}
+          total={submitCount}
+          percent={getPercentByCount(submitCount)}
           loading={loader}
           chart={{
             colors: [theme.vars.palette.secondary.main],
@@ -355,38 +342,38 @@ export function DeclarationListView() {
       value: 'all',
       label: 'Toutes',
       color: 'main',
-      count: summary.totalCount,
+      count: totalCount,
     },
     {
       value: 'submitted',
       label: 'Soumises',
       color: 'warnning',
-      count: getDeclarationLength('submitted'),
+      count: submitCount,
     },
     {
       value: 'validated',
       label: 'Validées',
       color: 'success',
-      count: getDeclarationLength('validated'),
+      count: validCount,
     },
     {
       value: 'billed',
       label: 'Facturées',
       color: 'primary',
-      count: getDeclarationLength('billed'),
+      count: billCount,
     },
     {
       value: 'unsubmitted',
       label: 'Brouillon',
       color: 'warning',
-      count: getDeclarationLength('unsubmitted'),
+      count: UnSubmitCount,
     },
 
     {
       value: 'rejected',
       label: 'Rejetées',
       color: 'error',
-      count: getDeclarationLength('rejected'),
+      count: rejectCount,
     },
   ];
 

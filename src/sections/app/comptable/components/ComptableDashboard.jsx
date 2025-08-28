@@ -29,7 +29,7 @@ import { ComptableWidgetSummary } from './ComptableWidgetSummary';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 import { useRouter } from 'next/navigation';
-import { fCurrency, fEuro , fGNF } from 'src/utils/format-number';
+import { fCurrency, fEuro, fGNF } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -62,8 +62,6 @@ const UPCOMING_DUE_DATES = [
 
 // ----------------------------------------------------------------------
 
-
-
 export function ComptableDashboard() {
   const theme = useTheme();
   const { user } = useAuthContext();
@@ -79,7 +77,6 @@ export function ComptableDashboard() {
   const [devise, setDevise] = useState('GNF');
   const router = useRouter();
 
-
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i); // 5 dernières années
@@ -91,14 +88,14 @@ export function ComptableDashboard() {
   };
 
   const afficherMontant = (montant) => {
-  if (devise === 'GNF') {
-    return fGNF(montant);
-  } else if (devise === 'USD') {
-    return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
-  } else if (devise === 'EUR') {
-    return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
-  }
-};
+    if (devise === 'GNF') {
+      return fGNF(montant);
+    } else if (devise === 'USD') {
+      return fCurrency(montant / 9200); // Exemple: 1 USD = 9200 GNF
+    } else if (devise === 'EUR') {
+      return fEuro(montant / 10000); // Exemple: 1 EUR = 10000 GNF
+    }
+  };
 
   // États pour les données du dashboard
   const [dashboardData, setDashboardData] = useState({
@@ -299,19 +296,18 @@ export function ComptableDashboard() {
     try {
       setLoadingEcheances(true);
       setErrorEcheances(null);
-      
+
       // Utiliser l'instance axios configurée qui gère déjà l'authentification
       const response = await axios.get(API.getEcheances());
-      
+
       // Vérifier que la réponse contient des données valides
       if (!response.data) {
         throw new Error('Aucune donnée reçue du serveur');
       }
-      
+
       // S'assurer que les données sont un tableau avant d'utiliser slice
       const echeancesData = Array.isArray(response.data) ? response.data : [];
       setEcheances(echeancesData.slice(0, 5));
-      
     } catch (err) {
       console.error('Erreur lors du chargement des échéances:', {
         message: err.message,
@@ -320,23 +316,23 @@ export function ComptableDashboard() {
         config: {
           url: err.config?.url,
           method: err.config?.method,
-          headers: err.config?.headers
-        }
+          headers: err.config?.headers,
+        },
       });
-      
+
       // Afficher un message d'erreur plus détaillé
-      const errorMessage = err.response?.data?.detail || 
-                         err.response?.data?.message || 
-                         'Impossible de charger les échéances. Veuillez réessayer.';
+      const errorMessage =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        'Impossible de charger les échéances. Veuillez réessayer.';
       setErrorEcheances(errorMessage);
-      
+
       // Si l'erreur est une erreur d'authentification (401), déconnecter l'utilisateur
       if (err.response?.status === 401) {
-        console.error('Erreur d\'authentification - Déconnexion...');
+        console.error("Erreur d'authentification - Déconnexion...");
         // Vous pourriez vouloir rediriger vers la page de connexion ici
         // ou déclencher une déconnexion
       }
-      
     } finally {
       setLoadingEcheances(false);
     }
@@ -463,7 +459,6 @@ export function ComptableDashboard() {
                   py: 0.5,
                   borderRadius: 1,
                   border: '1px solid #ccc',
-                  backgroundColor: '#fff',
                   fontSize: 14,
                   minWidth: 80,
                 }}
@@ -473,7 +468,6 @@ export function ComptableDashboard() {
                 <option value="EUR">EUR</option>
               </Box>
             </Box>
-           
           </Stack>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
             <Box
@@ -735,7 +729,6 @@ export function ComptableDashboard() {
           </Card>
         </Grid>
 
-        
         {/* Tableau des déclarations récentes */}
         <Grid item xs={12} md={9}>
           <Card>
@@ -801,7 +794,10 @@ export function ComptableDashboard() {
                     {errorEcheances}
                   </Alert>
                 ) : echeances.length === 0 ? (
-                  <Typography variant="body2" sx={{ p: 3, color: 'text.secondary', textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ p: 3, color: 'text.secondary', textAlign: 'center' }}
+                  >
                     Aucune échéance à venir
                   </Typography>
                 ) : (
@@ -834,7 +830,6 @@ export function ComptableDashboard() {
                             {echeance.days_between && ` (${echeance.days_between} jours)`}
                           </Typography>
                         </Box>
-                        
                       </Stack>
                     </Box>
                   ))
