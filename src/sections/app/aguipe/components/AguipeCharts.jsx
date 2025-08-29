@@ -1,152 +1,211 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardHeader, Box, Stack, Button, CardContent } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-// Les fonctions de formatage ne sont pas utilisées dans ce composant
-import { DatePicker } from '@mui/x-date-pickers';
-import dynamic from 'next/dynamic';
-
-// Chargement dynamique du composant Chart pour éviter les problèmes de SSR
-const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+import { Card, CardHeader, Box, CardContent, Skeleton, Typography } from '@mui/material';
+import { fNumber } from 'src/utils/format-number';
+import { Chart, useChart } from 'src/components/chart';
 
 // ----------------------------------------------------------------------
 
-const CHART_DATA = [
-  {
-    name: 'Déclarations',
-    type: 'area',
-    data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30, 21],
-  },
-  {
-    name: 'Paiements',
-    type: 'area',
-    data: [44, 55, 41, 67, 22, 43, 21, 41, 56, 27, 43, 27],
-  },
-  {
-    name: 'Factures',
-    type: 'line',
-    data: [30, 25, 36, 30, 45, 35, 64, 52, 59, 36, 39, 25],
-  },
-];
+const MONTHS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
 
-const CHART_CATEGORIES = [
-  'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-  'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
-];
+// Fonction pour formater les données du graphique
+const formatChartData = (data) => {
+  if (!data || typeof data !== 'object') {
+    return Array(12).fill(0);
+  }
+  
+  // Créer un tableau de 12 mois avec les valeurs correspondantes
+  const monthlyData = Array(12).fill(0);
+  
+  // Parcourir les clés de l'objet de données
+  Object.entries(data).forEach(([key, value]) => {
+    const monthIndex = parseInt(key, 10) - 1; // Convertir en index 0-11
+    if (monthIndex >= 0 && monthIndex < 12) {
+      monthlyData[monthIndex] = Number(value) || 0;
+    }
+  });
+  
+  return monthlyData;
+};
 
-// ----------------------------------------------------------------------
-
-export function AguipeCharts() {
+export function AguipeCharts({ statistique_shart, loading = false, period = 'this_month' }) {
   const theme = useTheme();
-  const isDarkMode = theme.palette.mode === 'dark';
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  
+  // Vérifier si on a des données
+  const hasData = statistique_shart && 
+                 (Object.keys(statistique_shart.declaration || {}).length > 0 ||
+                  Object.keys(statistique_shart.facture || {}).length > 0 ||
+                  Object.keys(statistique_shart.payment || {}).length > 0);
+  
+  // Préparer les données pour le graphique
+  const chartData = [
+    {
+      name: 'Déclarations',
+      type: 'line',
+      data: formatChartData(statistique_shart?.declaration)
+    },
+    {
+      name: 'Factures',
+      type: 'line',
+      data: formatChartData(statistique_shart?.facture)
+    },
+    {
+      name: 'Paiements',
+      type: 'line',
+      data: formatChartData(statistique_shart?.payment)
+    }
+  ];
+  
 
-  const chartOptions = {
+
+  const chartOptions = useChart({
     chart: {
-      height: 350,
       type: 'line',
       stacked: false,
-      zoom: {
+      toolbar: { show: true },
+      zoom: { enabled: true },
+      animations: {
         enabled: true,
+        easing: 'easeinout',
+        speed: 800,
+        animateGradually: {
+          enabled: true,
+          delay: 150
+        },
+        dynamicAnimation: {
+          enabled: true,
+          speed: 350
+        }
       },
-      toolbar: {
-        show: true,
+      dropShadow: {
+        enabled: true,
+        top: 3,
+        left: 2,
+        blur: 4,
+        opacity: 0.1,
       },
     },
     stroke: {
-      width: [0, 2, 2],
-      curve: 'smooth'
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: '50%',
-      },
-    },
-    fill: {
-      opacity: [0.85, 0.25, 1],
-      gradient: {
-        inverseColors: false,
-        shade: 'light',
-        type: 'vertical',
-        opacityFrom: 0.85,
-        opacityTo: 0.55,
-        stops: [0, 100, 100, 100],
-      },
+      width: [3, 3, 3],
+      curve: 'smooth',
     },
     markers: {
-      size: 0,
+      size: 5,
+      strokeWidth: 0,
+      hover: {
+        size: 7,
+      }
     },
     xaxis: {
-      categories: CHART_CATEGORIES,
+      categories: MONTHS,
       labels: {
         style: {
           colors: theme.palette.text.secondary,
         },
+        formatter: (value, index) => {
+          // Afficher tous les mois, même ceux sans données
+          return value;
+        }
       },
+      axisBorder: {
+        show: true,
+      },
+      axisTicks: {
+        show: true,
+      },
+      tooltip: {
+        enabled: true
+      }
     },
     yaxis: {
-      min: 0,
       labels: {
+        formatter: (value) => fNumber(value),
         style: {
           colors: theme.palette.text.secondary,
         },
       },
     },
     tooltip: {
-      shared: true,
-      intersect: false,
       y: {
-        formatter: function formatYAxis(y) {
-          if (typeof y !== 'undefined') {
-            return `${y.toFixed(0)} opérations`;
-          }
-          return y;
-        },
+        formatter: (value) => fNumber(value),
       },
-      theme: isDarkMode ? 'light' : 'dark',
+      marker: {
+        show: true,
+      },
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'right',
+      markers: {
+        radius: 12,
+      },
+      itemMargin: {
+        vertical: 8,
+      },
     },
     colors: [
       theme.palette.primary.main,
       theme.palette.success.main,
       theme.palette.warning.main,
     ],
-  };
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 3,
+    },
+    noData: {
+      text: 'Aucune donnée disponible',
+      align: 'center',
+      verticalAlign: 'middle',
+      offsetX: 0,
+      offsetY: 0,
+      style: {
+        color: theme.palette.text.secondary,
+        fontSize: '14px',
+        fontFamily: theme.typography.fontFamily,
+      }
+    }
+  });
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader title="Chargement des statistiques..." />
+        <Box sx={{ p: 3, pb: 1 }}>
+          <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 2 }} />
+        </Box>
+      </Card>
+    );
+  }
 
   return (
     <Card>
-      <CardHeader 
-        title="Activité mensuelle" 
-        action={
-          <Stack direction="row" spacing={2} alignItems="center">
-            <DatePicker
-              label="Début"
-              value={startDate}
-              onChange={(newValue) => setStartDate(newValue)}
-              slotProps={{ textField: { size: 'small' } }}
-            />
-            <DatePicker
-              label="Fin"
-              value={endDate}
-              onChange={(newValue) => setEndDate(newValue)}
-              slotProps={{ textField: { size: 'small' } }}
-            />
-            <Button variant="contained" size="small">
-              Appliquer
-            </Button>
-          </Stack>
-        }
+      <CardHeader
+        title="Statistiques mensuelles"
+        subheader="Évolution des déclarations, factures et paiements"
       />
       <CardContent>
-        <Box sx={{ height: 400, position: 'relative' }}>
-          <Chart
-            type="line"
-            series={CHART_DATA}
-            options={chartOptions}
-            height="100%"
-            loading={false}
-          />
+        <Box sx={{ height: 400, minWidth: '100%' }}>
+          {hasData ? (
+            <Chart
+              type="line"
+              series={chartData}
+              options={chartOptions}
+              height="100%"
+            />
+          ) : (
+            <Box
+              sx={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'text.secondary',
+              }}
+            >
+              <Typography variant="body1">Aucune donnée disponible pour la période sélectionnée</Typography>
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>

@@ -3,116 +3,56 @@
 import { useState } from 'react';
 import {
   Card,
-  CardHeader,
   Table,
+  Stack,
+  TableRow,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
+  Typography,
+  TableContainer,
   TablePagination,
-  TableRow,
+  Avatar,
+  Button,
   IconButton,
   Tooltip,
-  Stack,
+  Skeleton,
+  Box,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { fDate } from 'src/utils/format-time';
-import { Label } from 'src/components/label';
-import { Scrollbar } from 'src/components/scrollbar';
+import { Label } from 'src/components/label/label';
 import { Iconify } from 'src/components/iconify';
-import { ReportExport } from './ReportExport';
 
 // ----------------------------------------------------------------------
 
-// Données mockées pour les déclarations récentes
-const DECLARATIONS = [
-  {
-    id: 'DEC-2023-001',
-    date: new Date(2023, 10, 15),
-    entreprise: 'Entreprise A',
-    montant: 1250000,
-    statut: 'soumis',
-  },
-  {
-    id: 'DEC-2023-002',
-    date: new Date(2023, 10, 14),
-    entreprise: 'Entreprise B',
-    montant: 985000,
-    statut: 'en_attente',
-  },
-  {
-    id: 'DEC-2023-003',
-    date: new Date(2023, 10, 13),
-    entreprise: 'Entreprise C',
-    montant: 745000,
-    statut: 'rejeté',
-  },
-  {
-    id: 'DEC-2023-004',
-    date: new Date(2023, 10, 12),
-    entreprise: 'Entreprise D',
-    montant: 1560000,
-    statut: 'soumis',
-  },
-  {
-    id: 'DEC-2023-005',
-    date: new Date(2023, 10, 11),
-    entreprise: 'Entreprise E',
-    montant: 890000,
-    statut: 'en_attente',
-  },
-  {
-    id: 'DEC-2023-006',
-    date: new Date(2023, 10, 10),
-    entreprise: 'Entreprise F',
-    montant: 1120000,
-    statut: 'soumis',
-  },
-  {
-    id: 'DEC-2023-007',
-    date: new Date(2023, 10, 9),
-    entreprise: 'Entreprise G',
-    montant: 650000,
-    statut: 'rejeté',
-  },
-].map((item, index) => ({ ...item, id: `DEC-2023-${String(index + 1).padStart(3, '0')}` }));
-
-// Fonction pour obtenir la couleur du statut
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'soumis':
-      return 'success';
-    case 'en_attente':
-      return 'warning';
-    case 'rejeté':
-      return 'error';
-    default:
-      return 'default';
-  }
+const STATUS_TRANSLATIONS = {
+  paid: { label: 'Payé', color: 'success' },
+  pending: { label: 'En attente', color: 'warning' },
+  unpaid: { label: 'Impayé', color: 'error' },
+  draft: { label: 'Brouillon', color: 'default' },
+  submitted: { label: 'Soumis', color: 'info' },
+  billed: { label: 'Facturé', color: 'primary' },
+  unsubmitted: { label: 'Non soumis', color: 'default' },
+  // Valeur par défaut pour les statuts inconnus
+  _default: { label: 'Inconnu', color: 'default' }
 };
 
-// Fonction pour formater le statut
-const formatStatus = (status) => {
-  const statusMap = {
-    soumis: 'Soumis',
-    en_attente: 'En attente',
-    rejeté: 'Rejeté',
+// Fonction utilitaire pour obtenir la traduction d'un statut
+const getStatusInfo = (status) => {
+  if (!status) return STATUS_TRANSLATIONS._default;
+  return STATUS_TRANSLATIONS[status.toLowerCase()] || { 
+    label: status, 
+    color: 'default' 
   };
-  return statusMap[status] || status;
 };
 
 // ----------------------------------------------------------------------
 
-export function AguipeTables() {
+export function AguipeTables({ declarations = [], loading = false }) {
   const theme = useTheme();
-  const [tableData] = useState(DECLARATIONS);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const handleViewRow = (id) => {
-    // Gérer la vue détaillée
-    console.log('Voir détails:', id);
-  };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -123,88 +63,112 @@ export function AguipeTables() {
     setPage(0);
   };
 
-  // Trier les données pour afficher d'abord les déclarations en attente, puis rejetées, puis soumises
-  const sortedData = [...tableData].sort((a, b) => {
-    // Priorité 1: En attente
-    if (a.statut === 'en_attente' && b.statut !== 'en_attente') return -1;
-    if (a.statut !== 'en_attente' && b.statut === 'en_attente') return 1;
-
-    // Priorité 2: Rejeté
-    if (a.statut === 'rejeté' && b.statut !== 'rejeté') return -1;
-    if (a.statut !== 'rejeté' && b.statut === 'rejeté') return 1;
-
-    // Priorité 3: Par date (plus récent en premier)
-    return new Date(b.date) - new Date(a.date);
-  });
-
-  // Pagination
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - sortedData.length) : 0;
-  const paginatedData = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-  return (
-    <Card>
-      <CardHeader
-        title="Déclarations récentes"
-        action={
-          <Stack direction="row" spacing={1} alignItems="center">
-            <ReportExport data={DECLARATIONS} defaultTitle="Rapport_Declarations" />
-          </Stack>
-        }
-      />
-
-      <Scrollbar>
-        <TableContainer sx={{ minWidth: 800 }}>
+  if (loading) {
+    return (
+      <Card>
+        <TableContainer sx={{ overflow: 'unset' }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>ID Déclaration</TableCell>
-                <TableCell>Date</TableCell>
+                <TableCell>Numéro</TableCell>
                 <TableCell>Entreprise</TableCell>
-                <TableCell align="right">Montant</TableCell>
+                <TableCell>Date</TableCell>
                 <TableCell>Statut</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell align="right">Employés</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedData.map((row) => (
-                <TableRow hover key={row.id}>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{fDate(row.date, 'dd/MM/yyyy')}</TableCell>
-                  <TableCell>{row.entreprise}</TableCell>
-                  <TableCell align="right">{row.montant} GNF</TableCell>
+              {[...Array(5)].map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell colSpan={5}>
+                    <Skeleton variant="text" height={60} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 3 }}>
+        <Typography variant="h6">Dernières déclarations</Typography>
+      </Stack>
+
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Numéro</TableCell>
+              <TableCell>Entreprise</TableCell>
+              <TableCell>Date</TableCell>
+              <TableCell>Statut</TableCell>
+              <TableCell align="right">Employés</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {declarations
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((row) => (
+                <TableRow hover key={row.reference}>
                   <TableCell>
-                    <Label color={getStatusColor(row.statut)} sx={{ textTransform: 'capitalize' }}>
-                      {formatStatus(row.statut)}
+                    <Typography variant="subtitle2">{row.number}</Typography>
+                  </TableCell>
+                  <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Avatar
+                      alt={row.company}
+                      src={row.company_logo}
+                      sx={{ mr: 2, bgcolor: 'primary.main' }}
+                    >
+                      {row.company ? row.company.charAt(0) : 'C'}
+                    </Avatar>
+                    <Typography variant="subtitle2" noWrap>
+                      {row.company}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{fDate(row.created_on)}</TableCell>
+                  <TableCell>
+                    <Label color={getStatusInfo(row.status).color}>
+                      {getStatusInfo(row.status).label}
                     </Label>
                   </TableCell>
                   <TableCell align="right">
-                    <Tooltip title="Voir les détails">
-                      <IconButton onClick={() => handleViewRow(row.id)}>
-                        <Iconify icon="eva:eye-outline" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Télécharger">
-                      <IconButton>
-                        <Iconify icon="eva:download-outline" />
-                      </IconButton>
+                    <Tooltip 
+                      title={`${row.employees?.length || 0} employé(s)`}
+                      arrow
+                    >
+                      <Box 
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          bgcolor: 'primary.lighter',
+                          color: 'primary.dark',
+                          borderRadius: 1,
+                          px: 1.5,
+                          py: 0.5,
+                          minWidth: 40,
+                          fontWeight: 'fontWeightMedium',
+                        }}
+                      >
+                        <Iconify icon="mdi:account-group" width={16} sx={{ mr: 0.5 }} />
+                        {row.employees?.length || 0}
+                      </Box>
                     </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Scrollbar>
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <TablePagination
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={sortedData.length}
+        count={declarations.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
