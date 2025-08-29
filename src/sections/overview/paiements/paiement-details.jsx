@@ -240,9 +240,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
     return `${j}/${m}/${a}`;
   };
 
-  const handleViewFactureDetails = () => {
-    const factureSlug = payment?.facture_slug;
-    // console.log(factureSlug);
+  const handleViewFactureDetails = (factureSlug) => {
     if (!factureSlug) {
       toast.error('Aucun slug de facture trouvé pour ce paiement');
       return;
@@ -376,7 +374,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
                       '&:hover': { color: 'primary.main', textDecoration: 'underline' },
                       fontSize: '0.85rem',
                     }}
-                    onClick={handleViewFactureDetails}
+                    onClick={() => handleViewFactureDetails(payment?.facture_slug)}
                   >
                     Facture N° :
                   </Typography>{' '}
@@ -667,7 +665,19 @@ export function PaiementDetails({ payment, user, setPayment }) {
                         />
                       </StyledTableCell>
                     )}
-                    <StyledTableCell sx={{ fontWeight: 500 }}> {facture?.number} </StyledTableCell>
+                    <StyledTableCell sx={{ fontWeight: 500 }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          cursor: 'pointer',
+                          '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                          fontSize: '0.85rem',
+                        }}
+                        onClick={() => handleViewFactureDetails(facture?.slug)}
+                      >
+                        {facture?.number}
+                      </Typography>
+                    </StyledTableCell>
                     <StyledTableCell align="center">
                       <Typography component="span" sx={{ fontSize: '0.85rem' }}>
                         {formatDate(facture.created_on)}
