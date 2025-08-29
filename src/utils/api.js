@@ -74,7 +74,7 @@ const API = {
   facturesFirstLineDashboardCaissier: (month) =>
     `${BASE_URL}/factures/dashboard-caissier/first-line/?month=${month}`, // Premiere ligne du tableau de bord des caissiers
   facturesLastUnpaid: () => `${BASE_URL}/factures/last-unpaid/`, // dernieres Factures non payées
-  // PaidFactures: (slug) => `${BASE_URL}/paid_factures/${slug}/`, // payer plusieurs factures a la fois
+  statsFactures: () => `${BASE_URL}/factures/stats`,
 
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
