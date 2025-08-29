@@ -101,6 +101,9 @@ export function FactureListView() {
   const downloadMultiplePDF = useBoolean();
   const payeurForm = useBoolean();
 
+  const [totalCount, setTotalCount] = useState();
+  const [paidCount, setPaidCount] = useState();
+  const [unpaidCount, setUnpaidCount] = useState();
   const [options, setOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadPDF, setIsLoadPDF] = useState(false);
@@ -155,54 +158,46 @@ export function FactureListView() {
 
   const notFound = pagination.count === 0 && canReset;
 
-  const fetchTotalCount = () =>
-    axios.get(API.listFactures(), { params: { limit: 1 } }).then((res) => res.data.count);
-
-  const fetchCount = (status) =>
-    axios.get(API.listFactures(), { params: { limit: 1, status } }).then((res) => res.data.count);
-
   useEffect(() => {
-    setLaoder(true);
-    Promise.all([fetchTotalCount(), fetchCount('paid'), fetchCount('unpaid')]).then(
-      ([totalCount, paidCount, unpaidCount]) => {
-        setSummary({
-          totalCount,
-          countByStatus: { all: totalCount, paid: paidCount, unpaid: unpaidCount },
-        });
+    const fetchStats = async () => {
+      setLaoder(true);
+      try {
+        const { data } = await axios.get(API.statsFactures());
+        setTotalCount(data?.total_factures);
+        setPaidCount(data?.paid);
+        setUnpaidCount(data?.unpaid);
+      } catch (err) {
+        toast.error('Erreur lors des chargements des stats', err);
+      } finally {
         setLaoder(false);
       }
-    );
+    };
+    fetchStats();
   }, []);
 
-  const getInvoiceLength = (status) => summary.countByStatus[status];
-
-  const getTotalAmount = (status) =>
-    sumBy(
-      tableData.filter((item) => item.status === status),
-      (facture) => facture.amount
-    );
-
-  const getPercentByStatus = (status) =>
-    summary.totalCount > 0 ? (getInvoiceLength(status) / summary.totalCount) * 100 : 0;
+  const getPercentByStatus = (number) => {
+    if (!totalCount || totalCount === 0) return 0;
+    return (number / totalCount) * 100;
+  };
 
   const TABS = [
     {
       value: 'all',
       label: 'Toutes',
       color: 'white',
-      count: summary.totalCount,
+      count: totalCount,
     },
     {
       value: 'paid',
       label: 'Payées',
       color: 'success',
-      count: getInvoiceLength('paid'),
+      count: paidCount,
     },
     {
       value: 'unpaid',
       label: 'En attente',
       color: 'warning',
-      count: getInvoiceLength('unpaid'),
+      count: unpaidCount,
     },
   ];
 
@@ -274,37 +269,6 @@ export function FactureListView() {
     },
     [router] // S'assurer de la dépendance à selectedBanque
   );
-
-  // const handlePaid = useCallback(
-  //   async (slug) => {
-  //     if (!selectedBanque) {
-  //       toast.error("Veuillez sélectionner une banque avant de valider le paiement.");
-  //       return;
-  //     }
-
-  //     const data = {
-  //       banque_id: selectedBanque?.value,
-  //       facture_ids: dataFiltered.map((row) => row.slug)
-  //     }
-
-  //     try {
-  //       // Appel à l'API backend pour valider la déclaration
-  //       const response = await axios.post(API.PaidFactures(), data);
-
-  //       if (response.data.success) {
-  //         toast.success('Factures payées avec succès !');
-  //         router.push(paths.dashboard.factures.list);
-  //       } else {
-  //         console.error('Erreur lors du paiement:', response.data.error);
-  //         toast.error('Une erreur est survenue.');
-  //       }
-  //     } catch (error) {
-  //       console.error('Erreur réseau ou serveur:', error);
-  //       alert('Erreur lors de la communication avec le serveur.');
-  //     }
-  //   },
-  //   [router, selectedBanque] // S'assurer de la dépendance à selectedBanque
-  // );
 
   const handleChangeBanque = (event, newValue) => {
     setSelectedBanque(newValue);
@@ -518,7 +482,7 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Total"
-              total={summary.totalCount}
+              total={totalCount}
               percent={100}
               loading={loader}
               chart={{
@@ -531,8 +495,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="Payées"
-              percent={getPercentByStatus('paid')}
-              total={getInvoiceLength('paid')}
+              percent={getPercentByStatus(paidCount)}
+              total={paidCount}
               loading={loader}
               chart={{
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
@@ -543,8 +507,8 @@ export function FactureListView() {
           <Grid2 size={{ xs: 6, md: 4 }}>
             <FactureAnalytic
               title="En attente"
-              percent={getPercentByStatus('unpaid')}
-              total={getInvoiceLength('unpaid')}
+              percent={getPercentByStatus(unpaidCount)}
+              total={unpaidCount}
               loading={loader}
               chart={{
                 colors: [theme.vars.palette.error.main],
