@@ -49,7 +49,7 @@ import { PaiementTableToolbar } from '../paiement-table-toolbar';
 import { fCurrency, fGNF } from 'src/utils/format-number';
 
 import dayjs from 'dayjs';
-import { set } from 'nprogress';
+import { useMockedUser } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -70,6 +70,9 @@ const TABLE_HEAD = [
 
 export function PaiementListView() {
   const theme = useTheme();
+
+  const { user } = useMockedUser();
+  const type_user = user?.type_code.trim();
 
   const router = useRouter();
 
@@ -220,6 +223,25 @@ export function PaiementListView() {
     },
     [router]
   );
+
+  const handleDelete = useCallback(async (slug) => {
+    try {
+      const response = await axios.delete(API.removePayment(slug));
+
+      if (response.data || response.status === 200) {
+        toast.success('Paiement supprimé avec succès');
+        const deleteRows = tableData.filter((row) => row.slug !== slug);
+        setTableData(deleteRows);
+        // router.push(paths.dashboard.paiements.list);
+      } else {
+        toast.error('Erreur lors de la validation du paiement');
+      }
+    } catch (error) {
+      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      setError(errorMessage);
+      toast.error(`Erreur lors de la validation du paiement : ${errorMessage}`);
+    }
+  }, []);
 
   useEffect(() => {
     // Fonction pour récupérer les données
@@ -419,9 +441,12 @@ export function PaiementListView() {
                     <PaiementTableRow
                       key={row.slug}
                       row={row}
+                      user={user}
+                      type_user={type_user}
                       selected={table.selected.includes(row.slug)}
                       onViewRow={() => handleViewRow(row.slug)}
                       onValidateRow={() => handleValidate(row.slug)}
+                      onRemoveRow={() => handleDelete(row.slug)}
                     />
                   ))}
                   {tableData.length > 0 && tableData.length < table.rowsPerPage && (

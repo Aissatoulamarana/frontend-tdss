@@ -12,14 +12,14 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Checkbox from '@mui/material/Checkbox';
-import { Button } from '@mui/material';
+import { Button, MenuItem } from '@mui/material';
 import { Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { CircularProgress } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { fCurrency, fGNF, fEuro } from 'src/utils/format-number';
-
+import { Field } from 'src/components/hook-form';
 import { useReactToPrint } from 'react-to-print';
 
 import { PaiementToolbar } from './paiement-toolbar';
@@ -28,6 +28,9 @@ import axios from 'src/utils/axios';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { toast } from 'sonner';
+import { getDevises } from 'src/utils/options';
+import { DeviseSelector } from './composants/devise-selector';
+import { UploadDocument } from './composants/upload-document';
 
 // ----------------------------------------------------------------------
 
@@ -68,9 +71,11 @@ export function PaiementDetails({ payment, user, setPayment }) {
   const [filteredFactures, setFilteredFactures] = useState([]);
   const [factures, setFactures] = useState([]);
   const [qrUrl, setQrUrl] = useState('');
+  const [devises, setDevises] = useState([]);
 
   const confirm = useBoolean();
   const confirmRemove = useBoolean();
+  const confirmUpload = useBoolean();
 
   const afficherMontant = (montant) => {
     if (payment?.devise.sign === 'GNF') {
@@ -91,6 +96,10 @@ export function PaiementDetails({ payment, user, setPayment }) {
       setQrUrl(`https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`);
     }
   }, [payment]);
+
+  useEffect(() => {
+    getDevises().then(setDevises);
+  }, []);
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -253,6 +262,31 @@ export function PaiementDetails({ payment, user, setPayment }) {
     validated: 'Validée',
   };
 
+  const handleChangeDevise = async (devise) => {
+    try {
+      const requestBody = { devise: devise.slug };
+
+      const response = await axios.patch(API.updatepayment(payment?.slug), requestBody);
+
+      if (response?.data || response?.status === 200) {
+        toast.success('Devise mise a jour avec succès');
+        setPayment((prevPayment) => ({
+          ...prevPayment,
+          devise: response.data.devise,
+        }));
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour :', error);
+    }
+  };
+
+  const updateDocument = useCallback((newDocument) => {
+    setPayment((prevPayment) => ({
+      ...prevPayment,
+      document: newDocument,
+    }));
+  }, []);
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
@@ -270,12 +304,19 @@ export function PaiementDetails({ payment, user, setPayment }) {
     }
   }, [payment?.status]);
 
+  const handleOpenDocument = () => {
+    if (payment?.document) {
+      window.open(payment.document, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <>
       <PaiementToolbar
         payment={payment}
         componentRef={componentRef}
         currentStatus={currentStatus}
+        user={user}
         onChangeStatus={(e) => {
           const value = typeof e === 'string' ? e : e.target.value;
           setCurrentStatus(value);
@@ -324,7 +365,13 @@ export function PaiementDetails({ payment, user, setPayment }) {
                     </Box>
                   </Grid>
 
-                  <Grid item size={{ xs: 4 }} display="flex" justifyContent="flex-end">
+                  <Grid
+                    item
+                    size={{ xs: 4 }}
+                    display="flex"
+                    justifyContent="flex-end"
+                    flexDirection="column"
+                  >
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                       <Logo
                         src="/logo/logo-single.png"
@@ -346,16 +393,19 @@ export function PaiementDetails({ payment, user, setPayment }) {
                 <Divider sx={{ mt: 2, mb: 2, borderColor: 'white', borderWidth: 1 }} />
 
                 {/* Titre centré */}
-                <Typography
-                  variant="h6"
-                  align="center"
-                  sx={{ fontWeight: 600, letterSpacing: 0.5, mb: 2 }}
-                >
-                  RECU DE PAIEMENT N° {payment?.number || payment?.reference}
-                </Typography>
+                <Box sx={{ position: 'relative', mb: 2, width: '100%' }}>
+                  {/* Titre centré */}
+                  <Typography
+                    variant="h6"
+                    align="center"
+                    sx={{ fontWeight: 600, letterSpacing: 0.5 }}
+                  >
+                    RECU DE PAIEMENT N° {payment?.number || payment?.reference}
+                  </Typography>
+                </Box>
 
                 {/* Ligne horizontale */}
-                <Divider sx={{ mt: 1, mb: 3, borderColor: 'white', borderWidth: 1 }} />
+                <Divider sx={{ mt: 1, mb: 2, borderColor: 'white', borderWidth: 1 }} />
               </Box>
               <Divider sx={{ mt: 2, borderStyle: 'solid', borderColor: 'divider', opacity: 0.7 }} />
             </Grid>
@@ -381,36 +431,68 @@ export function PaiementDetails({ payment, user, setPayment }) {
                   {payment?.facture_number}
                 </Typography>
               )}
-              {/* <Typography>Facture slug : {payment?.facture_slug}</Typography> */}
-              {user?.type_name === 'Admin' && (
-                <>
-                  <Typography
-                    variant="body2"
-                    sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}
-                  >
-                    <Typography
-                      component="span"
-                      sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
-                    >
-                      Référence :
-                    </Typography>{' '}
-                    {payment?.facture_ref}
-                  </Typography>
 
+              <>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                  >
+                    Référence :
+                  </Typography>{' '}
+                  {payment?.reference}
+                </Typography>
+
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}
+                >
+                  <Typography
+                    component="span"
+                    sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                  >
+                    Méthode de paiement :
+                  </Typography>{' '}
+                  {methodsLabels[payment?.payment_method]}
+                </Typography>
+                <DeviseSelector payment={payment} devises={devises} onClick={handleChangeDevise} />
+                {payment?.document ? (
                   <Typography
                     variant="body2"
-                    sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: '0.85rem',
+                      color: 'text.primary', // couleur normale
+                      cursor: 'pointer',
+                      '&:hover': {
+                        color: 'primary.main',
+                        textDecoration: 'underline',
+                      },
+                    }}
+                    onClick={handleOpenDocument}
                   >
-                    <Typography
-                      component="span"
-                      sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
-                    >
-                      Méthode de paiement :
-                    </Typography>{' '}
-                    {methodsLabels[payment?.payment_method]}
+                    Justificatif du paiement
+                    <Iconify
+                      icon="material-symbols:open-in-new"
+                      width={18}
+                      height={18}
+                      sx={{ mr: 0.5 }}
+                    />
                   </Typography>
-                </>
-              )}
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      Aucun justificatif
+                    </Typography>
+                    <Button size="small" onClick={() => confirmUpload.onTrue()}>
+                      Ajouter
+                    </Button>
+                  </Box>
+                )}
+              </>
             </Grid>
 
             <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
@@ -427,10 +509,8 @@ export function PaiementDetails({ payment, user, setPayment }) {
                 </Typography>{' '}
                 {payment ? formatDate(payment.created_on) : ''}
               </Typography>
-              {/* <Typography variant="body2" align="right" sx={{ mt: 0.75, fontSize: '0.85rem', color: 'text.primary', fontWeight: 400 }}>
-                <Typography component="span" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}>Devise :</Typography> {payment?.devise?.name} ({payment?.devise?.sign})
-              </Typography> */}
-              {user?.type_name === 'Admin' && (
+
+              {user?.type_code === 'admin' && (
                 <Typography
                   variant="body2"
                   align="right"
@@ -445,6 +525,31 @@ export function PaiementDetails({ payment, user, setPayment }) {
                   {payment?.created_by?.name}
                 </Typography>
               )}
+              {/* QR Code à droite */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                <Box
+                  sx={{
+                    width: 100,
+                    height: 100,
+                    p: 1,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {qrUrl ? (
+                    <img
+                      src={qrUrl}
+                      alt="QR Code"
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <Typography variant="caption" align="center">
+                      QR Code en cours de chargement...
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
             </Grid>
 
             <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
@@ -511,27 +616,72 @@ export function PaiementDetails({ payment, user, setPayment }) {
 
             <Grid item size={{ xs: 6 }} sx={{ mt: 2 }}>
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <Box
-                  sx={{
-                    width: 100,
-                    height: 100,
-                    p: 1,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  {qrUrl ? (
-                    <img
-                      src={qrUrl}
-                      alt="QR Code"
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <Typography variant="caption" align="center">
-                      QR Code en cours de chargement...
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}
+                  >
+                    <Typography
+                      component="span"
+                      sx={{
+                        fontWeight: 700,
+                        color: 'text.primary',
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      INFORMATIONS DU PAYEUR :
                     </Typography>
-                  )}
+                    {/* {payment?.payer.first} */}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}
+                  >
+                    <Typography
+                      component="span"
+                      sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                    >
+                      Nom :
+                    </Typography>{' '}
+                    {[payment?.payer?.last, payment?.payer?.first].filter(Boolean).join(' ')}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}
+                  >
+                    <Typography
+                      component="span"
+                      sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                    >
+                      Email :
+                    </Typography>{' '}
+                    {payment?.payer?.email}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}
+                  >
+                    <Typography
+                      component="span"
+                      sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                    >
+                      Tél :
+                    </Typography>{' '}
+                    {payment?.payer?.phone}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontSize: '0.85rem', color: 'text.primary', mb: 0.5 }}
+                  >
+                    <Typography
+                      component="span"
+                      sx={{ fontWeight: 700, color: 'text.primary', fontSize: '0.85rem' }}
+                    >
+                      Adresse :
+                    </Typography>{' '}
+                    {payment?.payer?.address}
+                  </Typography>
                 </Box>
               </Box>
             </Grid>
@@ -837,6 +987,13 @@ export function PaiementDetails({ payment, user, setPayment }) {
             Retirer
           </Button>
         }
+      />
+
+      <UploadDocument
+        slug={payment?.slug}
+        open={confirmUpload.value}
+        onclose={confirmUpload.onFalse}
+        onUpdate={updateDocument}
       />
     </>
   );

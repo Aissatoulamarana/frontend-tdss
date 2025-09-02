@@ -76,6 +76,8 @@ const API = {
 
   listPaiments: () => `${BASE_URL}/payments/`, // Liste des paiements
   detailsPaiement: (slug) => `${BASE_URL}/payments/${slug}/`, // Details d'un paiement
+  removePayment: (slug) => `${BASE_URL}/payments/${slug}/`, // supprimer un paiement
+  updatepayment: (slug) => `${BASE_URL}/payments/${slug}/`, // modifier les informations d'un paiment
   addInvoiceToPayment: (slug) => `${BASE_URL}/payments/${slug}/add_factures/`, // Ajouter une facture à un paiement
   removeInvoiceFromPayment: (slug) => `${BASE_URL}/payments/${slug}/remove_factures/`, // Supprimer une facture d'un paiement
   validatePayment: (slug) => `${BASE_URL}/payments/${slug}/validate/`, // Valider un paiement
@@ -169,15 +171,15 @@ const API = {
   getLastValidatedDeclarations: () => `${BASE_URL}/declarations/last-validated/`,
 
   getEcheances: () => `${BASE_URL}/factures/echeances/`,
-  
+
   // Tableau de bord AGUIP
   getAguipDashboard: (startDate = null, endDate = null) => {
     let url = `${BASE_URL}/declarations/dashboard-aguip/`;
     const params = new URLSearchParams();
-    
+
     if (startDate) params.append('start_date', startDate);
     if (endDate) params.append('end_date', endDate);
-    
+
     const queryString = params.toString();
     return queryString ? `${url}?${queryString}` : url;
   },

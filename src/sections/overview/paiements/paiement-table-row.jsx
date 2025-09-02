@@ -26,8 +26,17 @@ import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow, onValidateRow }) {
+export function PaiementTableRow({
+  row,
+  selected,
+  onViewRow,
+  onRemoveRow,
+  onValidateRow,
+  type_user,
+  user,
+}) {
   const confirm = useBoolean();
+  const removeConfirm = useBoolean();
   const router = useRouter();
   const popover = usePopover();
 
@@ -211,8 +220,20 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow, onVali
               Valider
             </MenuItem>
           )}
+          {row?.status === 'pending' && type_user === 'admin' && (
+            <MenuItem
+              onClick={() => {
+                popover.onClose();
+                removeConfirm.onTrue();
+              }}
+            >
+              <Iconify icon="eva:checkmark-circle-2-fill" />
+              Supprimer
+            </MenuItem>
+          )}
         </MenuList>
       </CustomPopover>
+
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
@@ -228,6 +249,25 @@ export function PaiementTableRow({ row, selected, onViewRow, onDeleteRow, onVali
             }}
           >
             Valider
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={removeConfirm.value}
+        onClose={removeConfirm.onFalse}
+        title="Supprimer le paiement"
+        content="Etes vous sur de vouloir supprimer ce paiement?"
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              onRemoveRow();
+              removeConfirm.onFalse();
+            }}
+          >
+            Supprimer
           </Button>
         }
       />

@@ -22,14 +22,20 @@ import Typography from '@mui/material/Typography';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { Iconify } from 'src/components/iconify';
-
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
 import { PaiementPDF } from './paiement-pdf';
+import { UpdatePaiement } from './paiement-update';
 
 // ----------------------------------------------------------------------
 
-export function PaiementToolbar({ payment, componentRef, currentStatus, onChangeStatus }) {
+export function PaiementToolbar({ payment, componentRef, currentStatus, onChangeStatus, user }) {
   const view = useBoolean();
   const confirm = useBoolean();
+  const updateConfirm = useBoolean();
+  const deleteConfirm = useBoolean();
+
+  const router = useRouter();
 
   const [error, setError] = useState(null);
 
@@ -49,6 +55,26 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
       toast.error(`Erreur lors de la validation du paiement : ${error}`);
     }
   });
+
+  const handleDelete = useCallback(
+    async (slug) => {
+      try {
+        const response = await axios.delete(API.removePayment(slug));
+
+        if (response || response.data || response.status === 200) {
+          toast.success('Paiement supprimé avec succès');
+          router.push(paths.dashboard.paiements.list);
+        } else {
+          toast.error('Erreur lors de la validation du paiement');
+        }
+      } catch (error) {
+        const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+        setError(errorMessage);
+        toast.error(`Erreur lors de la validation du paiement : ${errorMessage}`);
+      }
+    },
+    [router]
+  );
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -104,11 +130,25 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
 
           {/* Bouton de validation */}
           {currentStatus === 'pending' && (
-            <Tooltip title="Valider">
-              <IconButton onClick={() => confirm.onTrue()}>
-                <Iconify icon="eva:checkmark-circle-2-fill" />
-              </IconButton>
-            </Tooltip>
+            <>
+              <Tooltip title="Valider">
+                <IconButton onClick={() => confirm.onTrue()}>
+                  <Iconify icon="eva:checkmark-circle-2-fill" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Modifier">
+                <IconButton onClick={() => updateConfirm.onTrue()}>
+                  <Iconify icon="eva:edit-2-fill" />
+                </IconButton>
+              </Tooltip>
+              {user?.type_code === 'admin' && (
+                <Tooltip title="Supprimer">
+                  <IconButton onClick={() => deleteConfirm.onTrue()}>
+                    <Iconify icon="eva:trash-2-outline" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </>
           )}
         </Stack>
       </Stack>
@@ -159,6 +199,12 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
         </DialogContent>
       </Dialog>
 
+      <UpdatePaiement
+        paiement={payment}
+        open={updateConfirm.value}
+        onclose={updateConfirm.onFalse}
+      />
+
       {/* Dialogue de confirmation de validation */}
       <ConfirmDialog
         open={confirm.value}
@@ -175,6 +221,25 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
             }}
           >
             Valider
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={deleteConfirm.value}
+        onClose={deleteConfirm.onFalse}
+        title="Supprimer le paiement"
+        content="Êtes-vous sûr de vouloir supprimer ce paiement ?"
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              handleDelete(payment?.slug);
+              deleteConfirm.onFalse();
+            }}
+          >
+            Supprimer
           </Button>
         }
       />
