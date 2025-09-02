@@ -29,7 +29,7 @@ import { UpdatePaiement } from './paiement-update';
 
 // ----------------------------------------------------------------------
 
-export function PaiementToolbar({ payment, componentRef, currentStatus, onChangeStatus }) {
+export function PaiementToolbar({ payment, componentRef, currentStatus, onChangeStatus, user }) {
   const view = useBoolean();
   const confirm = useBoolean();
   const updateConfirm = useBoolean();
@@ -61,7 +61,7 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
       try {
         const response = await axios.delete(API.removePayment(slug));
 
-        if (response.data || response.status === 200) {
+        if (response || response.data || response.status === 200) {
           toast.success('Paiement supprimé avec succès');
           router.push(paths.dashboard.paiements.list);
         } else {
@@ -141,11 +141,13 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
                   <Iconify icon="eva:edit-2-fill" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Supprimer">
-                <IconButton onClick={() => deleteConfirm.onTrue()}>
-                  <Iconify icon="eva:trash-2-outline" />
-                </IconButton>
-              </Tooltip>
+              {user?.type_code === 'admin' && (
+                <Tooltip title="Supprimer">
+                  <IconButton onClick={() => deleteConfirm.onTrue()}>
+                    <Iconify icon="eva:trash-2-outline" />
+                  </IconButton>
+                </Tooltip>
+              )}
             </>
           )}
         </Stack>
@@ -233,7 +235,7 @@ export function PaiementToolbar({ payment, componentRef, currentStatus, onChange
             variant="contained"
             color="error"
             onClick={() => {
-              handleDelete(payment.slug);
+              handleDelete(payment?.slug);
               deleteConfirm.onFalse();
             }}
           >
