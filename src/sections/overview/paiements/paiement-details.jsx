@@ -316,6 +316,7 @@ export function PaiementDetails({ payment, user, setPayment }) {
         payment={payment}
         componentRef={componentRef}
         currentStatus={currentStatus}
+        user={user}
         onChangeStatus={(e) => {
           const value = typeof e === 'string' ? e : e.target.value;
           setCurrentStatus(value);
