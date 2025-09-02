@@ -87,12 +87,44 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
       setLoadingOptions(true);
       // Vérifier si on a déjà le cache en session
-      const cached = sessionStorage.getItem('fonctions');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        setAllOptions(parsed); // Affiche directement les données en cache
+      // Étape 1 : lecture cache session
+      const cachedSession = sessionStorage.getItem('fonctions');
+      let optionsToUse = cachedSession ? JSON.parse(cachedSession) : null;
+
+      // Étape 2 : sinon, lecture cache localStorage
+      if (!optionsToUse) {
+        const cachedLocal = localStorage.getItem('fonctions');
+        if (cachedLocal) {
+          const parsedLocal = JSON.parse(cachedLocal);
+          optionsToUse = parsedLocal.data;
+          // Copier en session pour la session courante
+          sessionStorage.setItem('fonctions', JSON.stringify(optionsToUse));
+        }
+      }
+
+      // Afficher immédiatement ce qu’on a
+      if (optionsToUse) {
+        setAllOptions(optionsToUse);
+      }
+
+      // Étape 3 : Vérifier si on doit rafraîchir depuis l’API
+      const cachedLocal = localStorage.getItem('fonctions');
+      let shouldFetch = true;
+
+      if (cachedLocal) {
+        const parsedLocal = JSON.parse(cachedLocal);
+        const lastFetch = parsedLocal.lastFetch || 0;
+        const now = Date.now();
+
+        // ex : si le cache a moins de 24h → pas besoin de recharger
+        if (now - lastFetch < 24 * 60 * 60 * 1000) {
+          shouldFetch = false;
+        }
+      }
+
+      if (!shouldFetch) {
         setLoadingOptions(false);
-        return; // Pas besoin d'appeler le serveur
+        return;
       }
 
       try {
@@ -114,6 +146,13 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
           .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
           .map((f) => ({ label: f.name, value: f.slug }));
 
+        // Sauvegarde avec la date du fetch
+        const cachePayload = {
+          data: uniqueBySlug,
+          lastFetch: Date.now(),
+        };
+
+        localStorage.setItem('fonctions', JSON.stringify(cachePayload));
         sessionStorage.setItem('fonctions', JSON.stringify(uniqueBySlug));
 
         setAllOptions(uniqueBySlug);
