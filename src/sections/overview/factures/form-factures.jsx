@@ -128,7 +128,9 @@ export function PayeurForm({ slug, open, onclose, onSuccess }) {
       }
       appendMany(formData, 'payment_factures', factureSlugs);
 
-      formData.append('payment_document', data.payment_document);
+      if (data.payment_document instanceof File) {
+        formData.append('payment_document', data.payment_document);
+      }
 
       await axios.post(API.paidFacture(slug), formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
