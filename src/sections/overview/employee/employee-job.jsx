@@ -4,20 +4,15 @@ import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-
 import Grid from '@mui/material/Grid2';
-
-
+import Typography from '@mui/material/Typography';
 
 import { Iconify } from 'src/components/iconify';
 
-// import { ProfilePostItem } from './profile-post-item';
-
 // ----------------------------------------------------------------------
 
-export function EmployeeJob({ info, posts }) {
-
-  const JobArray = Array.isArray(info) ? info : [info];
+export function EmployeeJob({ info }) {
+  const JobArray = Array.isArray(info) ? info : [];
 
   const fileRef = useRef(null);
 
@@ -27,71 +22,63 @@ export function EmployeeJob({ info, posts }) {
     }
   };
 
-
-
   const renderAbout = (
     <Card sx={{ overflow: 'visible' }}>
-
       <Box sx={{ p: 3 }}>
-
-        {/* Reference */}
-        <Box display="flex" alignItems="center" justifyContent="space-around" flexWrap="wrap">
-
-          <Box display="flex" alignItems="center" mx={2}>
-            <Iconify icon="mdi:briefcase" width={28} sx={{ mr: 1, color: 'primary.main' }} />
-            <Box>
-              <Box sx={{ fontWeight: 600 }}>Nom</Box>
-              <Link variant="body2" color="text.secondary">
-                {info?.name}
-              </Link>
+        {info?.map((i, index) => (
+          <Box
+            key={index}
+            display="flex"
+            alignItems="center"
+            justifyContent="space-around"
+            flexWrap="wrap"
+            mb={2} // espace entre les cartes
+          >
+            {/* Nom */}
+            <Box display="flex" alignItems="center" mx={2}>
+              <Iconify icon="mdi:briefcase" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>Nom</Typography>
+                <Link variant="body2" color="text.secondary">
+                  {i?.name}
+                </Link>
+              </Box>
             </Box>
-          </Box>
 
+            {/* Categorie de Fonction */}
+            <Box display="flex" alignItems="center" mx={2}>
+              <Iconify icon="mdi:tag" width={28} sx={{ mr: 1, color: 'primary.main' }} />
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>Categorie de Fonction</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {i?.category}
+                </Typography>
+              </Box>
+            </Box>
 
-          {/* Numero Passeport  */}
-
-          <Box display="flex" alignItems="center" mx={2}>
-            <Iconify icon="mdi:tag" width={28} sx={{ mr: 1, color: 'primary.main' }} />
-            <Box>
-              <Box sx={{ fontWeight: 600 }}>Categorie de Fonction</Box>
-              <Box variant="body2" color="text.secondary">
-                {info.category}
+            {/* Permis */}
+            <Box display="flex" alignItems="center" mx={2}>
+              <Iconify
+                icon="mdi:card-account-details"
+                width={28}
+                sx={{ mr: 1, color: 'primary.main' }}
+              />
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>Permis</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {i?.permit}
+                </Typography>
               </Box>
             </Box>
           </Box>
-
-
-          {/* Contact */}
-
-          <Box display="flex" alignItems="center" mx={2}>
-            <Iconify icon="mdi:card-account-details" width={28} sx={{ mr: 1, color: 'primary.main' }} />
-            <Box>
-              <Box sx={{ fontWeight: 600 }}>Permis</Box>
-              <Box variant="body2" color="text.secondary">
-                {info?.permit}
-              </Box>
-            </Box>
-          </Box>
-
-
-
-
-
-        </Box>
+        ))}
       </Box>
     </Card>
   );
 
-
   return (
-
-    <Grid size={{ xs: 12, md: 4 }}>
-      <Stack spacing={3}>
-        {renderAbout}
-
-
-      </Stack>
+    <Grid xs={12} md={4}>
+      <Stack spacing={3}>{renderAbout}</Stack>
     </Grid>
-
   );
 }

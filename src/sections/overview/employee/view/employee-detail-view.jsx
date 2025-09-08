@@ -25,11 +25,11 @@ const TABS_ENTREPRISE = [
     label: 'Déclarations',
     icon: <Iconify icon="solar:document-add-bold" width={24} />,
   },
-  {
-    value: 'permis',
-    label: 'Permits',
-    icon: <Iconify icon="mdi:card-account-details" width={24} />,
-  },
+  // {
+  //   value: 'permis',
+  //   label: 'Permits',
+  //   icon: <Iconify icon="mdi:card-account-details" width={24} />,
+  // },
 ];
 
 export function EmployeeDetailsView({ slug }) {
@@ -37,7 +37,7 @@ export function EmployeeDetailsView({ slug }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [declarations, setDeclarations] = useState([]);
-  const [job, setJob] = useState();
+  const [job, setJob] = useState([]);
 
   const router = useRouter();
   const tabs = useTabs('profile');
@@ -49,7 +49,7 @@ export function EmployeeDetailsView({ slug }) {
         const response = await axios.get(API.detailsEmployee(slug));
         // console.log('Réponse API complète :', response.data);
         setEmployee(response.data);
-        setJob(response.data.job);
+        setJob(response.data.jobs);
 
         const { declarations: employeeDeclarations } = response.data;
         // console.log('Déclarations brutes :', employeeDeclarations);
