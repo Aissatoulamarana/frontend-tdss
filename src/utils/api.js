@@ -42,6 +42,7 @@ const API = {
   supprimerDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/`, // Supprimer une déclaration
 
   rejetterDeclaration: (slug) => `${BASE_URL}/declarations/${slug}/reject/`, // Rejetter une déclaration
+
   retirerDeclaration: (slug) => `${BASE_URL}/factures/${slug}/remove-declaration/`, // Supprimer une déclaration dans une facture
   ajouterDeclaration: (slug) => `${BASE_URL}/factures/${slug}/add-declaration/`, // Ajouter une déclaration dans une facture
 
