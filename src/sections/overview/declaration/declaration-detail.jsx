@@ -15,7 +15,6 @@ import { usePopover } from 'src/components/custom-popover';
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
 
-
 import FilteredTable from './components/tableau';
 import { DeclarationToolbar } from './declaration-toolbar';
 import { DeclarationAddEmployee } from './declaration-add-employee';
@@ -27,18 +26,17 @@ import { useMockedUser } from 'src/auth/hooks';
 // ----------------------------------------------------------------------
 
 export function DeclarationDetails({ declaration, employees }) {
-
   const [open, setOpen] = useState(false);
   const [currentStatus, setCurrentStatus] = useState('');
   const [openDialog, setOpenDialog] = useState(true); // État pour le modal
+
   // const statusOptions = [{ value: declaration?.status, label: declaration?.status }];
 
   const user = useMockedUser();
 
   const popover = usePopover();
 
-
-
+  const company = declaration?.company;
 
   const handleChangeStatus = useCallback((event) => {
     setCurrentStatus(event.target.value);
@@ -76,14 +74,13 @@ export function DeclarationDetails({ declaration, employees }) {
   const statusOptions = [
     {
       value: declaration?.status,
-      label: statusLabels[declaration?.status] || declaration?.status
-    }
+      label: statusLabels[declaration?.status] || declaration?.status,
+    },
   ];
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
-  
 
   useEffect(() => {
     if (declaration?.status) {
@@ -91,50 +88,53 @@ export function DeclarationDetails({ declaration, employees }) {
     }
   }, [declaration?.status]);
 
+  const qrData = encodeURIComponent(
+    `Facture N° ${declaration?.number} - ${company?.name} ${employees?.length} personnes`
+  );
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
+
   return (
-
     <>
-{declaration?.status === 'rejected' && (
-      <Dialog
-            open={openDialog}
-            onClose={() => { }}
-            sx={{
-              '& .MuiDialog-paper': {
-                width: '40%', // Réduction de la largeur
-                borderRadius: '12px', // Coins arrondis pour un look plus moderne
-                padding: '5px' // Ajout de padding
-              }
-            }}
-          >
-            <DialogTitle sx={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>
-              Motif de rejet
-            </DialogTitle>
-            <DialogContent sx={{ fontSize: '14px', textAlign: 'center' }}>
-              Cette declaration a été rejetée.
-              <br />  
-              Motif : {declaration?.reject_reason}
-            </DialogContent>
-            <DialogActions sx={{ justifyContent: 'center' }}>
-              <Button
-                onClick={handleCloseDialog}
-                variant="contained"
-                color="primary"
-                sx={{ borderRadius: '8px', padding: '6px 20px', fontSize: '14px' }}
-              >
-                OK
-              </Button>
-            </DialogActions>
-          </Dialog>
-          )}
-
+      {declaration?.status === 'rejected' && (
+        <Dialog
+          open={openDialog}
+          onClose={() => {}}
+          sx={{
+            '& .MuiDialog-paper': {
+              width: '40%', // Réduction de la largeur
+              borderRadius: '12px', // Coins arrondis pour un look plus moderne
+              padding: '5px', // Ajout de padding
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center' }}>
+            Motif de rejet
+          </DialogTitle>
+          <DialogContent sx={{ fontSize: '14px', textAlign: 'center' }}>
+            Cette declaration a été rejetée.
+            <br />
+            Motif : {declaration?.reject_reason}
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center' }}>
+            <Button
+              onClick={handleCloseDialog}
+              variant="contained"
+              color="primary"
+              sx={{ borderRadius: '8px', padding: '6px 20px', fontSize: '14px' }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
 
       <DeclarationToolbar
         declaration={declaration}
         currentStatus={currentStatus || ''}
         onChangeStatus={(e) => {
-        const value = typeof e === 'string' ? e : e.target.value;
-        setCurrentStatus(value);
-          }}
+          const value = typeof e === 'string' ? e : e.target.value;
+          setCurrentStatus(value);
+        }}
         statusOptions={statusOptions}
         employees={employees}
       />
@@ -147,10 +147,10 @@ export function DeclarationDetails({ declaration, employees }) {
             onClick={handleOpen}
             sx={{
               mb: { xs: 1, md: 1 },
-              maxWidth: '100px',      // Limite la largeur du bouton
+              maxWidth: '100px', // Limite la largeur du bouton
               minWidth: 'auto',
-              px: 2,                  // Réduit le padding horizontal
-              fontSize: '0.875rem',    // Taille de police réduite si nécessaire
+              px: 2, // Réduit le padding horizontal
+              fontSize: '0.875rem', // Taille de police réduite si nécessaire
             }}
           >
             Ajouter
@@ -181,11 +181,49 @@ export function DeclarationDetails({ declaration, employees }) {
           />
           <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
             <Label variant="soft" color={getStatusColor(currentStatus)}>
-                        {statusLabels[currentStatus] || 'Inconnu'}
-             </Label>
+              {statusLabels[currentStatus] || 'Inconnu'}
+            </Label>
 
             <Typography variant="h6"> {declaration?.number}</Typography>
           </Stack>
+
+          <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-start' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              <strong>
+                <u>CLIENT :</u>
+              </strong>
+              <br />
+              {company?.name}
+            </Typography>
+
+            <Typography variant="body2">
+              <strong>Adresse :</strong> {company?.adresse}
+            </Typography>
+
+            <Typography variant="body2">
+              <strong>Région :</strong> {company?.location}
+            </Typography>
+
+            <Typography variant="body2">
+              <strong>Téléphone :</strong> {company?.contact}
+            </Typography>
+
+            <Typography variant="body2">
+              <strong>Email :</strong> {company?.email}
+            </Typography>
+          </Stack>
+
+          <Stack
+            sx={{
+              typography: 'body2',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Box sx={{ width: 90, height: 90 }} component="img" alt="qrCode" src={qrUrl} />
+          </Stack>
+
           <Box
             gridColumn={{ xs: '1', sm: 'span 2' }}
             display="flex"
@@ -218,7 +256,7 @@ export function DeclarationDetails({ declaration, employees }) {
         </Box>
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={4} />
 
-        {declaration && (<FilteredTable declaration={declaration} employees={employees} />)}
+        {declaration && <FilteredTable declaration={declaration} employees={employees} />}
 
         <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
       </Card>
