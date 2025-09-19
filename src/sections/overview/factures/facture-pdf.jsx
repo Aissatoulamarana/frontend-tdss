@@ -142,7 +142,8 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
   ];
 
   clientLines.forEach((lineObj) => {
-    page.drawText(lineObj.text, {
+    const sanitized = sanitize(lineObj.text);
+    page.drawText(sanitized, {
       x: leftX,
       y: cursorY,
       size: baseSize,
