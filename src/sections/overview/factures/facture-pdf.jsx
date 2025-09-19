@@ -12,7 +12,9 @@ function sanitize(text) {
     .replace(/\u202F/g, ' ')
     .replace(/\u00A0/g, ' ')
     .replace(/\u2009/g, ' ')
-    .replace(/\u2007/g, ' ');
+    .replace(/\u2007/g, ' ')
+    .replace(/А/g, 'A')
+    .replace(/а/g, 'a');
 }
 
 // === AJOUT : fonction pour découper automatiquement un texte trop long ===
