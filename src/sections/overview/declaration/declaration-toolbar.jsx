@@ -44,7 +44,7 @@ export function DeclarationToolbar({
   const router = useRouter();
 
   const { user } = useMockedUser();
-  const type = user?.type_name?.toLowerCase().trim();
+  const type = user?.type_code?.toLowerCase().trim();
   const profil = user?.companies[0]?.type_name?.toLowerCase().trim();
 
   // const [logoData, setLogoData] = useState(null);
@@ -241,13 +241,6 @@ export function DeclarationToolbar({
             </IconButton>
           </Tooltip>
 
-          {type === 'admin' && profil === 'tdss' && declaration?.status === 'unsubmitted' && (
-            <Tooltip title="Modifier">
-              <IconButton onClick={handleEdit}>
-                <Iconify icon="solar:pen-bold" />
-              </IconButton>
-            </Tooltip>
-          )}
           {renderDownload}
           <Box sx={{ display: 'none' }}>
             <DeclarationDetailsPrint
@@ -262,6 +255,14 @@ export function DeclarationToolbar({
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip>
+
+          {(type === 'agent' || type === 'admin') && declaration?.status === 'unsubmitted' && (
+            <Tooltip title="Modifier">
+              <IconButton onClick={handleEdit}>
+                <Iconify icon="solar:pen-bold" />
+              </IconButton>
+            </Tooltip>
+          )}
 
           {type === 'agent' && (currentStatus === 'rejected' || currentStatus === 'submitted') && (
             <Tooltip title="Mettre en edition">
