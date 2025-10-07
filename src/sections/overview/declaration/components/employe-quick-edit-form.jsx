@@ -73,64 +73,84 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
     let isMounted = true;
 
     async function fetchAllFonctions() {
-      setLoadingOptions(true);
+      setLoading(true); // ✅ on affiche le loader
+
       try {
-        // Étape 1 : lecture cache session
+        // --- ÉTAPE 1 : Lecture cache session ---
         const cachedSession = sessionStorage.getItem('fonctions');
         let optionsToUse = cachedSession ? JSON.parse(cachedSession) : null;
 
-        // Étape 2 : sinon, lecture cache localStorage
+        // console.log('🧠 Options depuis cache:', optionsToUse);
+
+        // --- ÉTAPE 2 : Lecture cache localStorage si session vide ---
         if (!optionsToUse) {
           const cachedLocal = localStorage.getItem('fonctions');
           if (cachedLocal) {
             const parsedLocal = JSON.parse(cachedLocal);
-            optionsToUse = parsedLocal.data;
-            // Copier en session pour la session courante
-            sessionStorage.setItem('fonctions', JSON.stringify(optionsToUse));
+            const localData = Array.isArray(parsedLocal) ? parsedLocal : parsedLocal.data || []; // ✅ robustesse
+
+            if (localData.length > 0) {
+              optionsToUse = localData;
+              // Copie vers la session pour cette session de navigation
+              sessionStorage.setItem('fonctions', JSON.stringify(localData));
+            }
           }
         }
 
-        // Afficher immédiatement ce qu’on a
-        if (optionsToUse) {
+        // --- ÉTAPE 3 : Afficher immédiatement ce qu’on a ---
+        if (optionsToUse && Array.isArray(optionsToUse)) {
           setOptions(optionsToUse);
         }
 
-        // Étape 3 : Vérifier si on doit rafraîchir depuis l’API
+        // --- ÉTAPE 4 : Vérifier si on doit rafraîchir depuis l’API ---
         const cachedLocal = localStorage.getItem('fonctions');
         let shouldFetch = true;
 
         if (cachedLocal) {
-          const parsedLocal = JSON.parse(cachedLocal);
-          const lastFetch = parsedLocal.lastFetch || 0;
-          const now = Date.now();
-
-          // ex : si le cache a moins de 24h → pas besoin de recharger
-          if (now - lastFetch < 24 * 60 * 60 * 1000) {
-            shouldFetch = false;
+          try {
+            const parsedLocal = JSON.parse(cachedLocal);
+            const lastFetch = parsedLocal.lastFetch || 0;
+            const now = Date.now();
+            // Moins de 24h => pas besoin de refetch
+            if (now - lastFetch < 24 * 60 * 60 * 1000) {
+              shouldFetch = false;
+            }
+          } catch {
+            shouldFetch = true; // cache corrompu
           }
         }
 
         if (!shouldFetch) {
-          setLoadingOptions(false);
+          setLoading(false);
+
           return;
         }
 
-        // Étape 4 : fetch complet depuis l’API
+        // --- ÉTAPE 5 : Fetch complet depuis l’API ---
         const resp1 = await axios.get(API.listFonctionAgent(), {
           params: { offset: 0, limit: 100 },
         });
-        const total = resp1.data.count;
+
+        const total = resp1?.data?.count ?? 0;
 
         const resp2 = await axios.get(API.listFonctionAgent(), {
-          params: { offset: 0, limit: total },
+          params: { offset: 0, limit: total || 100 },
         });
+
         if (!isMounted) return;
 
-        const uniqueBySlug = resp2.data.results
+        const results = resp2?.data?.results || [];
+        const uniqueBySlug = results
           .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
-          .map((f) => ({ label: f.name, value: f.slug }));
+          .map((f) => ({
+            label: f.name || f.label || 'Fonction inconnue',
+            value: f.slug,
+          }));
 
-        // Sauvegarde avec la date du fetch
+        // console.log('✅ Résultats API:', resp2.data);
+        // console.log('✅ Options calculées:', uniqueBySlug);
+
+        // --- ÉTAPE 6 : Sauvegarde cache ---
         const cachePayload = {
           data: uniqueBySlug,
           lastFetch: Date.now(),
@@ -141,14 +161,17 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
         setOptions(uniqueBySlug);
       } catch (err) {
-        console.error(err);
+        console.error('Erreur lors du chargement des fonctions :', err);
+        toast.error('Impossible de charger la liste des fonctions.');
       } finally {
-        if (isMounted) setLoading(false);
-        setLoadingOptions(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchAllFonctions();
+
     return () => {
       isMounted = false;
     };
