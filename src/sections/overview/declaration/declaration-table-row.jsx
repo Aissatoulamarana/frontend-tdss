@@ -172,7 +172,7 @@ export function DeclarationTableRow({
           </MenuItem>
 
           {/* {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && ( */}
-          {(user?.type_name === 'Agent' || user?.type_name === 'Admin') &&
+          {(user?.type_code === 'agent' || user?.type_code === 'admin') &&
             ['unsubmitted'].includes(row.status) && (
               <MenuItem
                 onClick={() => {
@@ -185,7 +185,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {user?.type_name === 'Agent' && ['rejected', 'submitted'].includes(row.status) && (
+          {user?.type_code === 'agent' && ['rejected', 'submitted'].includes(row.status) && (
             <MenuItem
               key="unsubmit"
               onClick={() => {
@@ -198,7 +198,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type_name === 'Agent' &&
+          {user?.type_code === 'agent' &&
             !['validated', 'billed', 'rejected', 'submitted'].includes(row.status) && (
               <MenuItem
                 key="submit"
