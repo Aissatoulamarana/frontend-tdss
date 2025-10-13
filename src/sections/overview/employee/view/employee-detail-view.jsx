@@ -16,6 +16,7 @@ import { EmployeeCover } from '../employee-cover';
 import { EmployeeInfo } from '../employee-info';
 import { EmployeeDeclarations } from '../employee-declaration';
 import { EmployeeJob } from '../employee-job';
+import { EmployeeDoc } from '../employee-doc';
 
 const TABS_ENTREPRISE = [
   { value: 'profile', label: 'Infos', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
@@ -25,11 +26,11 @@ const TABS_ENTREPRISE = [
     label: 'Déclarations',
     icon: <Iconify icon="solar:document-add-bold" width={24} />,
   },
-  // {
-  //   value: 'permis',
-  //   label: 'Permits',
-  //   icon: <Iconify icon="mdi:card-account-details" width={24} />,
-  // },
+  {
+    value: 'doc',
+    label: 'Documents',
+    icon: <Iconify icon="mdi:file" width={24} />,
+  },
 ];
 
 export function EmployeeDetailsView({ slug }) {
@@ -38,32 +39,39 @@ export function EmployeeDetailsView({ slug }) {
   const [error, setError] = useState(null);
   const [declarations, setDeclarations] = useState([]);
   const [job, setJob] = useState([]);
+  const [documents, setDocuments] = useState([]);
 
   const router = useRouter();
   const tabs = useTabs('profile');
 
-  useEffect(() => {
-    // Récupération des données du profil
-    const fetchEmployee = async () => {
-      try {
-        const response = await axios.get(API.detailsEmployee(slug));
-        // console.log('Réponse API complète :', response.data);
-        setEmployee(response.data);
-        setJob(response.data.jobs);
+  // Récupération des données du profil
 
-        const { declarations: employeeDeclarations } = response.data;
-        // console.log('Déclarations brutes :', employeeDeclarations);
-        setDeclarations(Array.isArray(employeeDeclarations) ? employeeDeclarations : []);
-      } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchEmployee = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(API.detailsEmployee(slug));
 
-    fetchEmployee();
+      setEmployee(response.data);
+      setJob(response.data.jobs);
+      setDocuments(response.data.documents);
+
+      const { declarations: employeeDeclarations } = response.data;
+
+      setDeclarations(Array.isArray(employeeDeclarations) ? employeeDeclarations : []);
+    } catch (err) {
+      setError(err.message || 'Erreur lors du chargement des données.');
+    } finally {
+      setLoading(false);
+    }
   }, [slug]);
-  // console.log(`declarations de lemploye ${declarations}`);
+
+  useEffect(() => {
+    fetchEmployee();
+  }, [fetchEmployee]);
+
+  const handleDocumentUploaded = () => {
+    fetchEmployee();
+  };
 
   const displayedTabs = TABS_ENTREPRISE;
 
@@ -115,6 +123,13 @@ export function EmployeeDetailsView({ slug }) {
         <EmployeeDeclarations declarations={declarations} loading={loading} employee={employee} />
       )}
       {tabs.value === 'fonction' && <EmployeeJob info={job} />}
+      {tabs.value === 'doc' && (
+        <EmployeeDoc
+          documents={documents}
+          employee={employee}
+          onDocumentUploaded={handleDocumentUploaded}
+        />
+      )}
     </DashboardContent>
   );
 }
