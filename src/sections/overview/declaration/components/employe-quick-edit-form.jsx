@@ -14,7 +14,7 @@ import { isValidPhoneNumber } from 'react-phone-number-input/input';
 import { toast } from 'sonner';
 import { z as zod } from 'zod';
 import CircularProgress from '@mui/material/CircularProgress';
-import { TextField, Autocomplete } from '@mui/material';
+import { TextField, Autocomplete, MenuItem } from '@mui/material';
 
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 
@@ -33,6 +33,12 @@ export const employeQuickEditSchema = zod.object({
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
 
   job: zod.string().min(1, { message: 'le type est requis!' }),
+  country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
+  address: zod.string().optional(),
+  sexe: zod.string().optional(),
+  birthday: zod.date().optional(),
+  contract_starts_at: zod.date().optional(),
+  contract_duration: zod.number().optional(),
 });
 
 // ----------------------------------------------------------------------
@@ -41,6 +47,11 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
   const user = useMockedUser();
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const genders = [
+    { value: 'Male', label: 'Homme' },
+    { value: 'Female', label: 'Femme' },
+  ];
 
   const defaultValues = useMemo(() => {
     const currentJobSlug =
@@ -52,6 +63,12 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
       passport_number: currentEmployee?.passport_number || '',
       phone: currentEmployee?.phone || '',
       job: currentJobSlug || '',
+      country: currentEmployee?.country || '',
+      address: currentEmployee?.address || '',
+      sexe: currentEmployee?.sexe || '',
+      birthday: currentEmployee?.birthday || null,
+      contract_starts_at: currentEmployee?.contract_starts_at || null,
+      contract_duration: currentEmployee?.contract_duration || null,
     };
   }, [currentEmployee]);
 
@@ -253,11 +270,26 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             display="grid"
             gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
           >
+            <Field.CountrySelect name="country" label="Nationalité" />
             <Field.Text name="passport_number" label="Numero du passeport " />
             <Field.Text name="last" label="Nom " />
             <Field.Text name="first" label="Prénom " />
 
+            <Field.Select name="gender" label="Genre">
+              {genders.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Field.Select>
+
+            <Field.DatePicker name="birthday" label="Date Naissance" />
+
             <Field.Phone name="phone" label="Numéro de Téléphone" />
+            <Field.Text name="address" label="Adresse " />
+
+            <Field.DatePicker name="contract_starts_at" label="Date de debut du contrat" />
+            <Field.Text type="number" name="contract_duration" label="Duree du contrat" />
 
             {/* Remplacement du Field.Select par Autocomplete */}
             <Autocomplete
@@ -287,7 +319,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
                 <TextField
                   {...params}
                   label="Fonction *"
-                  size="small"
+                  // size="small"
                   fullWidth
                   error={!!methods.formState.errors.job}
                   helperText={methods.formState.errors.job?.message}
