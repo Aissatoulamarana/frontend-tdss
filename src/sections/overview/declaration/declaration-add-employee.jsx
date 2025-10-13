@@ -7,6 +7,7 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { TextField, Autocomplete } from '@mui/material';
 import debounce from 'lodash.debounce';
@@ -41,6 +42,12 @@ export const employeSchema = zod.object({
   job: zod.string().min(1, { message: 'la fonction est requise!' }),
   type: zod.string().default('new'),
   reference: zod.string().optional(),
+  country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
+  address: zod.string().optional(),
+  sexe: zod.string().optional(),
+  birthday: zod.date().optional(),
+  contract_starts_at: zod.date().optional(),
+  contract_duration: zod.number().optional(),
 });
 
 // Schéma global pour le formulaire qui attend un tableau d'employés
@@ -57,6 +64,11 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const router = useRouter();
   const loadingSend = useBoolean();
   const renewalModal = useBoolean();
+
+  const genders = [
+    { value: 'Male', label: 'Homme' },
+    { value: 'Female', label: 'Femme' },
+  ];
 
   // Utilisation du schéma global pour la validation
   const methods = useForm({
@@ -230,6 +242,12 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       job: '',
       first: '',
       phone: '',
+      country: '',
+      address: '',
+      sexe: '',
+      birthday: '',
+      contract_starts_at: '',
+      contract_duration: '',
       locked: false,
       passportExists: false,
     });
@@ -261,6 +279,12 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         type: 'renewal',
         reference: data.reference,
         job: data.job.slug, // champ libre
+        country: data?.country,
+        sexe: data?.sexe,
+        birthday: data?.birthday,
+        address: data?.address,
+        contract_starts_at: data?.contract_starts_at,
+        contract_duration: data?.contract_duration,
         passportExists: true,
         locked: true,
       });
@@ -356,6 +380,12 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         reference: undefined,
         passportExists: false,
         locked: false,
+        country: row?.Nationalite || '',
+        address: row?.Adresse || '',
+        sexe: row?.Sexe || '',
+        birthday: row?.Date_Naissance || '',
+        contract_duration: row?.Duree_Contrat || '',
+        contract_starts_at: row?.Date_Debut_Contrat || '',
       };
     });
 
@@ -419,58 +449,154 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
             <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
               {fields.map((item, index) => (
-                <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
+                <Stack key={item.id} alignItems="flex-end" spacing={2}>
+                  {/* PREMIÈRE LIGNE - CORRECTION DE L'ALIGNEMENT */}
                   <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
-                    <Field.Text
-                      size="small"
-                      name={`employees[${index}].passport_number`}
-                      label="Numéro Passeport"
-                      disabled={values.employees[index].locked}
-                      inputlabelprops={{ shrink: true }}
-                      onBlur={(e) => handlePassportBlur(e, index)}
-                      onChange={(e) => handlePassportChange(e, index)}
-                      error={
-                        values.employees[index].passportExists && !values.employees[index].locked
-                      }
-                      helperText={
-                        values.employees[index].passportExists
-                          ? values.employees[index].locked
-                            ? '✅ Ce passeport existe déjà, il est bien enregistré.'
-                            : '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
-                          : ''
-                      }
-                      FormHelperTextProps={{
-                        sx: {
-                          color: values.employees[index].locked ? 'success.main' : 'error.main',
-                        },
-                      }}
-                    />
-                    <Field.Phone
-                      size="small"
-                      name={`employees[${index}].phone`}
-                      label="Numéro de Téléphone"
-                      placeholder="votre numero de téléphone"
-                      sx={{ width: '100%' }}
-                      inputlabelprops={{ shrink: true }}
-                      // disabled={values.employees[index].locked}
-                    />
-                    <Field.Text
-                      size="small"
-                      name={`employees[${index}].last`}
-                      label="Nom"
-                      inputlabelprops={{ shrink: true }}
-                      disabled={values.employees[index].locked}
-                    />
-                    <Field.Text
-                      size="small"
-                      name={`employees[${index}].first`}
-                      label="Prénom"
-                      inputlabelprops={{ shrink: true }}
-                      disabled={values.employees[index].locked}
-                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.CountrySelect
+                        size="small"
+                        name={`employees[${index}].country`}
+                        label="Nationalité"
+                        placeholder="Choisissez une nationalité"
+                        inputlabelprops={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        required
+                      />
+                    </Box>
 
-                    {/* Remplacement du Field.Select par Autocomplete */}
-                    <Box sx={{ minWidth: 160, maxWidth: { md: 200 } }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].passport_number`}
+                        label="Numéro Passeport"
+                        disabled={values.employees[index]?.locked}
+                        InputLabelProps={{ shrink: true }}
+                        onBlur={(e) => handlePassportBlur(e, index)}
+                        onChange={(e) => handlePassportChange(e, index)}
+                        error={
+                          values.employees[index]?.passportExists &&
+                          !values.employees[index]?.locked
+                        }
+                        helperText={
+                          values.employees[index]?.passportExists
+                            ? values.employees[index]?.locked
+                              ? '✅ Ce passeport existe déjà, il est bien enregistré.'
+                              : '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
+                            : ''
+                        }
+                        FormHelperTextProps={{
+                          sx: {
+                            color: values.employees[index]?.locked ? 'success.main' : 'error.main',
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].last`}
+                        label="Nom"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].first`}
+                        label="Prénom"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Select
+                        size="small"
+                        name={`employees[${index}].sexe`}
+                        label="Genre"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      >
+                        {genders?.map((gender) => (
+                          <MenuItem key={gender.value} value={String(gender?.value)}>
+                            {gender?.label}
+                          </MenuItem>
+                        ))}
+                      </Field.Select>
+                    </Box>
+                  </Stack>
+
+                  {/* DEUXIÈME LIGNE - CORRECTION DE L'ALIGNEMENT */}
+                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.DatePicker
+                        size="small"
+                        name={`employees[${index}].birthday`}
+                        label="Date Naissance"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        slotProps={{
+                          textField: {
+                            size: 'small',
+                            fullWidth: true,
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Phone
+                        size="small"
+                        name={`employees[${index}].phone`}
+                        label="Numéro de Téléphone"
+                        placeholder="Votre numéro de téléphone"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].address`}
+                        label="Adresse"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.DatePicker
+                        size="small"
+                        name={`employees[${index}].contract_starts_at`}
+                        label="Date début contrat"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        slotProps={{
+                          textField: {
+                            size: 'small',
+                            fullWidth: true,
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        type="number"
+                        name={`employees[${index}].contract_duration`}
+                        label="Durée Contrat (an)"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        inputProps={{ min: 1, step: 1 }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Autocomplete
                         size="small"
                         options={allOptions}
@@ -478,7 +604,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         loading={loadingOptions}
                         fullWidth
                         value={getJobOption(values.employees[index]?.job)}
-                        // disabled={values.employees[index]?.locked}
+                        disabled={values.employees[index]?.locked}
                         filterOptions={(opts, state) =>
                           opts.filter((o) =>
                             o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
@@ -491,15 +617,18 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                             setValue(`employees[${index}].job`, '');
                           }
                         }}
-                        renderOption={(props, option, { index: optionIndex }) => (
-                          <li {...props} key={`${option.value}-${optionIndex}`}>
-                            {option.label}
-                          </li>
-                        )}
+                        renderOption={(props, option) => {
+                          const { key, ...otherProps } = props;
+                          return (
+                            <li key={`${option.value}-${option.label}`} {...otherProps}>
+                              {option.label}
+                            </li>
+                          );
+                        }}
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            label="Fonction *"
+                            label="Fonction"
                             size="small"
                             fullWidth
                             error={!!methods.formState.errors.employees?.[index]?.job}
@@ -519,6 +648,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                       />
                     </Box>
                   </Stack>
+
                   <Button
                     size="small"
                     color="error"

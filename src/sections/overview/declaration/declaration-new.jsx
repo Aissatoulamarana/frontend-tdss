@@ -16,7 +16,6 @@ import API from 'src/utils/api';
 
 import { Form } from 'src/components/hook-form';
 
-
 import { toast } from 'sonner';
 import { DeclarationNewEditDetails } from './declaration-edit-detail';
 import { DeclarationEditStatusDate } from './declaration-status-edit';
@@ -28,21 +27,21 @@ export const NewInvoiceSchema = zod.object({
     zod.object({
       passport_number: zod.string().min(1, { message: 'Numero du passeport obligatoire' }),
       job: zod.string().min(1, { message: 'le champ fonction est obligatoire!' }),
-      phone: zod.string().min(1, { message: "Entrez votre numero de téléphone " }),
+      phone: zod.string().min(1, { message: 'Entrez votre numero de téléphone ' }),
       first: zod.string().min(1, { message: 'Entrez votre prenom ' }),
       last: zod.string().min(1, { message: 'Entrez votre nom ' }),
-      // type: zod.string().min(1),
-      // reference: zod.string().optional(),
-
+      country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
+      address: zod.string().optional(),
+      sexe: zod.string().min(1),
+      birthday: zod.date().optional(),
+      contract_starts_at: zod.date().optional(),
+      contract_duration: zod.number().optional(),
     })
   ),
 
   company: zod.string().min(1, { message: "Veuillez selectionner l'entreprise !" }),
   title: zod.string().min(1, { message: 'le titre de la déclaration est obligatoire' }),
- 
 });
-
-
 
 // ----------------------------------------------------------------------
 
@@ -51,30 +50,29 @@ export function DeclarationNew({ declaration, type, formData }) {
   const loadingSave = useBoolean();
   const loadingSend = useBoolean();
 
-
-
-  const defaultValues = useMemo(() => ({
-    status: declaration?.status || 'brouillon',
-    title: declaration?.title || '',
-    company: declaration?.company || '',
-    employees: formData?.length > 0
-      ? formData
-      : declaration?.employees || [
-        {
-          passport_number: '',
-          first: '',
-          last: '',
-          phone: '',
-          job: '',
-          identifier: '',
-          // type:  'NEW',
-          // reference: '', 
-        },
-      ],
-  }), [declaration, formData]);
-
-
- 
+  const defaultValues = useMemo(
+    () => ({
+      status: declaration?.status || 'brouillon',
+      title: declaration?.title || '',
+      company: declaration?.company || '',
+      employees:
+        formData?.length > 0
+          ? formData
+          : declaration?.employees || [
+              {
+                passport_number: '',
+                first: '',
+                last: '',
+                phone: '',
+                job: '',
+                identifier: '',
+                // type:  'NEW',
+                // reference: '',
+              },
+            ],
+    }),
+    [declaration, formData]
+  );
 
   // Initialisation du formulaire
   const methods = useForm({
@@ -89,7 +87,6 @@ export function DeclarationNew({ declaration, type, formData }) {
     formState: { isSubmitting },
   } = methods;
 
-
   const handleCreateAndSend = handleSubmit(async (data) => {
     // Démarre le chargement
     loadingSend.onTrue();
@@ -98,8 +95,6 @@ export function DeclarationNew({ declaration, type, formData }) {
       let response;
 
       //  slug;
-
-
 
       // Simuler un délai pour des actions asynchrones (optionnel)
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -119,16 +114,13 @@ export function DeclarationNew({ declaration, type, formData }) {
         toast.success('Déclaration créée avec succès');
       }
 
-
       const { slug } = response.data;
-
 
       // Réinitialiser le formulaire après succès
       reset();
 
       // Rediriger l'utilisateur après la soumission
       router.push(paths.dashboard.declaration.details(slug));
-
     } catch (error) {
       console.error("Erreur lors de l'envoi au backend:", error);
 
@@ -136,29 +128,29 @@ export function DeclarationNew({ declaration, type, formData }) {
       if (error.response) {
         // Erreur liée à la réponse du serveur
         console.error('Erreur avec le serveur:', error.response.data);
-        toast.error(`Erreur serveur: ${error.response.data?.message || 'Problème interne du serveur'}`);
+        toast.error(
+          `Erreur serveur: ${error.response.data?.message || 'Problème interne du serveur'}`
+        );
       } else if (error.request) {
         // Erreur liée à la requête
         console.error('Erreur avec la requête:', error.request);
-        toast.error("Erreur de requête : Vérifiez votre connexion");
+        toast.error('Erreur de requête : Vérifiez votre connexion');
       } else {
         // Autres erreurs
         console.error('Erreur générale:', error.message);
         toast.error(`Erreur inconnue: ${error.message}`);
       }
-
     } finally {
       // Arrêter le chargement, que ce soit en cas de succès ou d'échec
       loadingSend.onFalse();
     }
   });
 
-
   return (
     <Form methods={methods}>
       <Card>
         <DeclarationEditStatusDate type={type} />
-        <DeclarationNewEditDetails formData={formData}  />
+        <DeclarationNewEditDetails formData={formData} />
       </Card>
 
       <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
@@ -167,7 +159,7 @@ export function DeclarationNew({ declaration, type, formData }) {
           size="large"
           variant="outlined"
           loading={loadingSave.value && isSubmitting}
-        // onClick={handleSaveAsDraft}
+          // onClick={handleSaveAsDraft}
         >
           Brouillon
         </LoadingButton>
