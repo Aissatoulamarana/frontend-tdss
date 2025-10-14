@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-// import MenuItem from '@mui/material/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
@@ -28,6 +28,8 @@ import { Iconify } from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { toast } from 'src/components/snackbar';
+import { number } from 'prop-types';
+import { Height } from '@mui/icons-material';
 
 // ----------------------------------------------------------------------
 
@@ -55,6 +57,11 @@ export function DeclarationNewEditDetails({ formData }) {
 
   // const typedec = type?.trim();
 
+  const genders = [
+    { value: 'Male', label: 'Homme' },
+    { value: 'Female', label: 'Femme' },
+  ];
+
   const { fields, append, remove } = useFieldArray({ control, name: 'employees' });
 
   const values = watch();
@@ -70,7 +77,12 @@ export function DeclarationNewEditDetails({ formData }) {
       job: '',
       first: '',
       phone: '',
-      // type:'NEW',
+      country: '',
+      address: '',
+      sexe: '',
+      birthday: '',
+      contract_starts_at: '',
+      contract_duration: '',
       locked: false,
       passportExists: false,
       // On initialise les fichiers à null (ils seront mis à jour via le modal)
@@ -105,15 +117,21 @@ export function DeclarationNewEditDetails({ formData }) {
       }
 
       append({
-        passport_number: data.passport_number,
-        last: data.last,
-        first: data.first,
-        phone: data.phone,
+        passport_number: data?.passport_number,
+        last: data?.last,
+        first: data?.first,
+        phone: data?.phone,
         type: 'renewal',
-        reference: data.reference,
-        job: data.job.slug, // champ libre
+        reference: data?.reference,
+        job: data?.job?.slug, // champ libre
         passportExists: true,
         locked: true,
+        country: data?.country,
+        sexe: data?.sexe,
+        birthday: data?.birthday,
+        address: data?.address,
+        contract_starts_at: data?.contract_starts_at,
+        contract_duration: data?.contract_duration,
       });
 
       renewalModal.onFalse(); // Ferme la modale
@@ -308,15 +326,21 @@ export function DeclarationNewEditDetails({ formData }) {
       })();
 
       return {
-        passport_number: row.Numero || '',
-        phone: row.Telephone ? `+${String(row.Telephone)}` : '',
-        last: row.Nom || '',
-        first: row.Prenom || '',
+        passport_number: row?.Numero || '',
+        phone: row?.Telephone ? `+${String(row?.Telephone)}` : '',
+        last: row?.Nom || '',
+        first: row?.Prenom || '',
         job: jobSlug,
         type: 'new',
         reference: undefined,
         passportExists: false,
         locked: false,
+        country: row?.Nationalite || '',
+        address: row?.Adresse || '',
+        sexe: row?.Sexe || '',
+        birthday: row?.Date_Naissance || '',
+        contract_duration: row?.Duree_Contrat || '',
+        contract_starts_at: row?.Date_Debut_Contrat || '',
       };
     });
 
@@ -328,11 +352,17 @@ export function DeclarationNewEditDetails({ formData }) {
   useEffect(() => {
     if (formData?.length > 0 && options?.length > 0) {
       const importedData = formData.map((row) => ({
-        Fonction: row.Fonction?.trim() || '',
-        Numero: row.Numero || '',
-        Nom: row.Nom || '',
-        Prenom: row.Prenom || '',
-        Telephone: row.Telephone || '',
+        Fonction: row?.Fonction?.trim() || '',
+        Numero: row?.Numero || '',
+        Nom: row?.Nom || '',
+        Prenom: row?.Prenom || '',
+        Telephone: row?.Telephone || '',
+        Nationalite: row?.Nationalite || '',
+        Adresse: row?.Adresse || '',
+        Sexe: row?.Sexe || '',
+        Date_Naissance: row?.Date_Naissance || '',
+        Duree_Contrat: row?.Duree_Contrat || '',
+        Date_Debut_Contrat: row?.Date_Debut_Contrat || '',
       }));
 
       handleImportData(importedData); // <-- appelle la fonction existante
@@ -471,7 +501,7 @@ export function DeclarationNewEditDetails({ formData }) {
 
       <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
         {fields.map((item, index) => (
-          <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
+          <Stack key={item.id} alignItems="flex-end" spacing={2}>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
               {/* {typedec === 'Renouvellement' || typedec === 'Duplicata' && (
                 <Field.Text
@@ -482,6 +512,17 @@ export function DeclarationNewEditDetails({ formData }) {
                   onChange={(e) => handleIdentifierChange(e, index)}
                 />
               )} */}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Field.CountrySelect
+                  size="small"
+                  name={`employees[${index}].country`}
+                  label="Nationalité"
+                  placeholder="Choisissez une nationalité"
+                  inputlabelprops={{ shrink: true }}
+                  disabled={values.employees[index].locked}
+                  required
+                />
+              </Box>
 
               <Field.Text
                 size="small"
@@ -504,16 +545,7 @@ export function DeclarationNewEditDetails({ formData }) {
                       : 'success.main', // vert sinon
                   },
                 }}
-              />
-
-              <Field.Phone
-                size="small"
-                name={`employees[${index}].phone`}
-                label="Numéro de Téléphone *"
-                placeholder="votre numero de téléphone  "
-                sx={{ width: '100%' }}
-                inputlabelprops={{ shrink: true }}
-                disabled={values.employees[index].locked}
+                sx={{ flex: 1 }}
               />
 
               <Field.Text
@@ -522,6 +554,7 @@ export function DeclarationNewEditDetails({ formData }) {
                 label="Nom *"
                 inputlabelprops={{ shrink: true }}
                 disabled={values.employees[index].locked}
+                sx={{ flex: 1 }}
               />
               <Field.Text
                 size="small"
@@ -529,6 +562,96 @@ export function DeclarationNewEditDetails({ formData }) {
                 label="Prénom *"
                 inputlabelprops={{ shrink: true }}
                 disabled={values.employees[index].locked}
+                sx={{ flex: 1 }}
+              />
+
+              <Field.Select
+                size="small"
+                name={`employees[${index}].sexe`}
+                label="Genre"
+                inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
+                sx={{ flex: 1 }}
+              >
+                {genders?.map((gender) => (
+                  <MenuItem key={gender.value} value={String(gender?.value)}>
+                    {gender?.label}
+                  </MenuItem>
+                ))}
+              </Field.Select>
+            </Stack>
+
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Field.DatePicker
+                  size="small"
+                  name={`employees[${index}].birthday`}
+                  label="Date Naissance"
+                  InputLabelProps={{ shrink: true }}
+                  disabled={values.employees[index]?.locked}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      fullWidth: true,
+                    },
+                  }}
+                  onChange={(newValue) => {
+                    // Convertir string ou moment en Date
+                    setValue(`employees[${index}].birthday`, newValue ? new Date(newValue) : null);
+                  }}
+                />
+              </Box>
+
+              <Field.Phone
+                size="small"
+                name={`employees[${index}].phone`}
+                label="Numéro de Téléphone *"
+                placeholder="Votre numéro de téléphone"
+                sx={{ flex: 1 }}
+                inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
+              />
+
+              <Field.Text
+                size="small"
+                name={`employees[${index}].address`}
+                label="Adresse *"
+                inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
+                sx={{ flex: 1 }}
+              />
+
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Field.DatePicker
+                  size="small"
+                  name={`employees[${index}].contract_starts_at`}
+                  label="Date début contrat"
+                  InputLabelProps={{ shrink: true }}
+                  disabled={values.employees[index]?.locked}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      fullWidth: true,
+                    },
+                  }}
+                  onChange={(newValue) => {
+                    // Convertir string ou moment en Date
+                    setValue(
+                      `employees[${index}].contract_starts_at`,
+                      newValue ? new Date(newValue) : null
+                    );
+                  }}
+                />
+              </Box>
+
+              <Field.Text
+                size="small"
+                type="number"
+                name={`employees[${index}].contract_duration`}
+                label="Durée Contrat (année)*"
+                inputlabelprops={{ shrink: true }}
+                disabled={values.employees[index].locked}
+                sx={{ flex: 1 }}
               />
 
               <Autocomplete
@@ -549,12 +672,8 @@ export function DeclarationNewEditDetails({ formData }) {
                     setValue(`employees[${index}].job`, '');
                   }
                 }}
-                // On surcharge renderOption pour forcer une key unique
                 renderOption={(props, option, { index }) => (
-                  <li
-                    {...props}
-                    key={`${option.value}-${index}`} // utilisez le slug + index
-                  >
+                  <li {...props} key={`${option.value}-${index}`}>
                     {option.label}
                   </li>
                 )}
@@ -564,8 +683,6 @@ export function DeclarationNewEditDetails({ formData }) {
                     label="Fonction *"
                     size="small"
                     fullWidth
-                    // error={!!watch(`employees[${index}].job`)}
-                    // helperText={watch(`employees[${index}].job`) ? '' : 'Fonction requise'}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (
@@ -577,10 +694,8 @@ export function DeclarationNewEditDetails({ formData }) {
                     }}
                   />
                 )}
+                sx={{ flex: 1 }}
               />
-            </Stack>
-
-            <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
               {/* {typedec !== "Duplicata" && (
                 <Button onClick={handleOpenModal} variant="outlined">
                   {typedec === "Renouvellement" ? "Ancien Permis" : "Données Biométriques"}
@@ -774,6 +889,7 @@ export function DeclarationNewEditDetails({ formData }) {
               color="error"
               startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
               onClick={() => handleRemove(index)}
+              sx={{ mt: 1 }}
             >
               Supprimer
             </Button>
