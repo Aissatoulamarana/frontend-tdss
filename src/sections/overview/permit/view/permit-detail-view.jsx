@@ -1,7 +1,9 @@
+'use client';
 import { Iconify } from 'src/components/iconify';
 import { useTabs } from 'src/hooks/use-tabs';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { paths } from 'src/routes/paths';
 
 const TABS_PERMITS = [
   { value: 'details', label: 'Détails', icon: <Iconify icon="solar:user-id-bold" width={24} /> },

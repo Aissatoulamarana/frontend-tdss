@@ -8,8 +8,11 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 import Tooltip from '@mui/material/Tooltip';
+import { CustomPopover } from 'src/components/custom-popover';
+import MenuItem from '@mui/material/MenuItem';
+import MenuList from '@mui/material/MenuList';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
@@ -41,14 +44,24 @@ import {
 
 import { TableToolbar } from 'src/sections/composants/table-toolbar';
 import { TableFiltersResult } from 'src/sections/composants/table-filters-results';
-import { TableRowComPermit } from 'src/sections/composants/table-row';
+import { TableRowComPermit } from './permit-table-row';
+import { id } from 'date-fns/locale';
+import { number } from 'prop-types';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Nom' },
-  { id: 'type', label: 'Type ' },
-  { id: 'price', label: 'Prix' },
-  { id: 'devise', label: 'Devise' },
+  { id: 'number', label: 'Numéro Carte' },
+  { id: 'reference', label: 'Reference' },
+  { id: 'passport', label: 'Numéro Passeport' },
+  { id: 'name', label: 'Nom Complet' },
+  { id: 'phone', label: 'Téléphone' },
+  { id: 'sexe', label: 'Genre' },
+  { id: 'country', label: 'Nationalité' },
+  { id: 'function', label: 'Fonction' },
+  { id: 'entreprise', label: 'Entreprise' },
+  { id: 'type', label: 'Type Permis ' },
+
+  { id: 'statut', label: 'Status' },
 
   { id: '', width: 88 },
 ];
@@ -61,6 +74,18 @@ export function PermitListView() {
   const router = useRouter();
 
   const confirm = useBoolean();
+
+  const allColumns = TABLE_HEAD.map((column) => column.id).filter((id) => id);
+  const [visibleColumns, setVisibleColumns] = useState(allColumns);
+  const columnSelector = useBoolean();
+
+  const toggleColumn = (id) => {
+    if (visibleColumns.includes(id)) {
+      setVisibleColumns(visibleColumns.filter((column) => column !== id));
+    } else {
+      setVisibleColumns([...visibleColumns, id]);
+    }
+  };
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
@@ -129,21 +154,89 @@ export function PermitListView() {
     [filters, table]
   );
 
-  useEffect(() => {
-    // Fonction pour récupérer les permits
-    const fetchPermits = async () => {
-      try {
-        const response = await axios.get(API.listPermits());
-        setTableData(response.data.results);
-      } catch (err) {
-        setError(err.message || 'Erreur lors du chargement des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   // Fonction pour récupérer les permits
+  //   const fetchPermits = async () => {
+  //     try {
+  //       const response = await axios.get(API.listPermits());
+  //       setTableData(response.data.results);
+  //     } catch (err) {
+  //       setError(err.message || 'Erreur lors du chargement des données.');
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchPermits();
-  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+  //   fetchPermits();
+  // }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
+
+  const permits = [
+    {
+      slug: '1',
+      first: 'Paul',
+      last: 'Dupont',
+      number: 'Permit 1',
+      reference: '0001',
+      passport_number: '0852474',
+      phone: '621456369',
+      sexe: 'Homme',
+      country: 'France',
+      function: 'Chef de projet',
+      company: 'Entreprise 1',
+      permis: 'Permit A',
+      status: 'submitted',
+    },
+    {
+      slug: '2',
+      first: 'John',
+      last: 'Doe',
+      number: 'Permit 2',
+      reference: '0002',
+      passport_number: '0852474',
+      phone: '621456369',
+      sexe: 'Homme',
+      country: 'France',
+      function: 'Chef de projet',
+      company: 'Entreprise 2',
+      permis: 'Permit B',
+      status: 'unsubmitted',
+    },
+    {
+      slug: '3',
+      first: 'Jane',
+      last: 'Smith',
+      number: 'Permit 3',
+      reference: '0003',
+      passport_number: '0852474',
+      phone: '621456369',
+      sexe: 'Femme',
+      country: 'France',
+      function: 'Chef de projet',
+      company: 'Entreprise 3',
+      permis: 'Permit C',
+      status: 'rejected',
+    },
+    {
+      slug: '4',
+      first: 'Bob',
+      last: 'Johnson',
+      number: 'Permit 4',
+      reference: '0004',
+      passport_number: '0852474',
+      phone: '621456369',
+      sexe: 'Homme',
+      country: 'France',
+      function: 'Chef de projet',
+      company: 'Entreprise 4',
+      permis: 'Permit D',
+      status: 'validated',
+    },
+  ];
+
+  useEffect(() => {
+    setTableData(permits);
+    setLoading(false);
+  }, []);
 
   if (loading) {
     console.info('Loading ...');
@@ -180,6 +273,7 @@ export function PermitListView() {
             filters={filters}
             onResetPage={table.onResetPage}
             options={{ profil: _roles }}
+            onOpenColumnSelector={columnSelector.onTrue}
           />
 
           {canReset && (
@@ -216,7 +310,7 @@ export function PermitListView() {
                 <TableHeadCustom
                   order={table.order}
                   orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
+                  headLabel={TABLE_HEAD.filter((col) => visibleColumns.includes(col.id) || !col.id)}
                   rowCount={dataFiltered.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
@@ -239,6 +333,7 @@ export function PermitListView() {
                       <TableRowComPermit
                         key={row.slug}
                         row={row}
+                        visibleColumns={visibleColumns}
                         selected={table.selected.includes(row.slug)}
                         onSelectRow={() => table.onSelectRow(row.slug)}
                         onDeleteRow={() => handleDeleteRow(row.slug)}
@@ -268,6 +363,26 @@ export function PermitListView() {
             onRowsPerPageChange={table.onChangeRowsPerPage}
           />
         </Card>
+
+        <CustomPopover
+          open={columnSelector.value}
+          onClose={columnSelector.onFalse}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <MenuList dense sx={{ width: 200 }}>
+            {TABLE_HEAD.filter((col) => col.id).map((col) => (
+              <MenuItem key={col.id} onClick={() => toggleColumn(col.id)}>
+                <input
+                  type="checkbox"
+                  checked={visibleColumns.includes(col.id)}
+                  readOnly
+                  style={{ marginRight: 8 }}
+                />
+                {col.label}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </CustomPopover>
       </DashboardContent>
 
       <ConfirmDialog
