@@ -37,7 +37,7 @@ export function PermitDetailView({ slug }) {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'Permits', href: paths.dashboard.permit.list },
-          { name: 'Détails' },
+          { name: 'Détails Permis' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
