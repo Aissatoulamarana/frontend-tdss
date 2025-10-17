@@ -39,14 +39,15 @@ export const employeSchema = zod.object({
   last: zod.string().min(1, { message: 'le nom est obligatoire' }),
   passport_number: zod.string().min(1, { message: 'le numero de passeport est obligatoire' }),
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
+  email: zod.string().email({ message: 'Email doit etre un email valide !' }).optional(),
   job: zod.string().min(1, { message: 'la fonction est requise!' }),
   type: zod.string().default('new'),
   reference: zod.string().optional(),
   country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
   address: zod.string().optional(),
   sexe: zod.string().optional(),
-  birthday: zod.date().optional(),
-  contract_starts_at: zod.date().optional(),
+  birthday: zod.iso.date().optional(),
+  contract_starts_at: zod.iso.date().optional(),
   contract_duration: zod.number().optional(),
 });
 
@@ -58,16 +59,18 @@ const formSchema = zod.object({
 export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const [allOptions, setAllOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
-  const [data, setData] = useState();
+  const [countries, setCountries] = useState([]);
+
   const [passportInput, setPassportInput] = useState('');
   const [loadingRenew, setLoadingRenew] = useState(false);
+  const [loadingCountries, setLoadingCountries] = useState(false);
   const router = useRouter();
   const loadingSend = useBoolean();
   const renewalModal = useBoolean();
 
   const genders = [
-    { value: 'Male', label: 'Homme' },
-    { value: 'Female', label: 'Femme' },
+    { value: 'male', label: 'Homme' },
+    { value: 'female', label: 'Femme' },
   ];
 
   // Utilisation du schéma global pour la validation
@@ -182,6 +185,42 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     };
   }, [declaration?.status]);
 
+  useEffect(() => {
+    let isMounted = true; // à déclarer ici
+
+    async function fetchCountries() {
+      setLoadingCountries(true);
+      try {
+        // Premier appel (limite 100)
+        const resp1 = await axios.get(API.listCountry(), {
+          params: { offset: 0, limit: 100 },
+        });
+
+        const total = resp1.data.count;
+
+        if (total > 100) {
+          // Deuxième appel avec la vraie limite totale
+          const resp2 = await axios.get(API.listCountry(), {
+            params: { offset: 0, limit: total },
+          });
+          if (isMounted) setCountries(resp2.data.results);
+        } else {
+          if (isMounted) setCountries(resp1.data.results);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des pays :', error);
+      } finally {
+        if (isMounted) setLoadingCountries(false);
+      }
+    }
+
+    fetchCountries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // <= le tableau de dépendances vide
+
   const handleAddEmployee = handleSubmit(async (data) => {
     loadingSend.onTrue();
     try {
@@ -244,7 +283,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       phone: '',
       country: '',
       address: '',
-      sexe: '',
+      email: '',
+      sexe: 'male',
       birthday: '',
       contract_starts_at: '',
       contract_duration: '',
@@ -281,6 +321,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         job: data.job.slug, // champ libre
         country: data?.country,
         sexe: data?.sexe,
+        email: data?.email,
         birthday: data?.birthday,
         address: data?.address,
         contract_starts_at: data?.contract_starts_at,
@@ -370,6 +411,12 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         return findByValue?.value || findByLabel?.value || '';
       })();
 
+      const countrySlug = (() => {
+        const findByValue = countries.find((c) => c.slug === row.Nationalite);
+        const findByLabel = countries.find((c) => c.name === row.Nationalite);
+        return findByValue?.slug || findByLabel?.slug || '';
+      })();
+
       return {
         passport_number: row.Numero || '',
         phone: row.Telephone ? `+${String(row.Telephone)}` : '',
@@ -380,8 +427,9 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         reference: undefined,
         passportExists: false,
         locked: false,
-        country: row?.Nationalite || '',
+        country: countrySlug || '',
         address: row?.Adresse || '',
+        email: row?.Email || '',
         sexe: row?.Sexe || '',
         birthday: row?.Date_Naissance || '',
         contract_duration: row?.Duree_Contrat || '',
@@ -401,6 +449,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
   // Fonction pour obtenir l'option correspondant à une valeur
   const getJobOption = (jobValue) => allOptions.find((option) => option.value === jobValue) || null;
+
+  const getCountryOption = (slug) => countries.find((c) => c.slug === slug);
 
   return (
     <Dialog
@@ -453,14 +503,48 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                   {/* PREMIÈRE LIGNE - CORRECTION DE L'ALIGNEMENT */}
                   <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Field.CountrySelect
+                      <Autocomplete
                         size="small"
-                        name={`employees[${index}].country`}
-                        label="Nationalité"
-                        placeholder="Choisissez une nationalité"
-                        inputlabelprops={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
-                        required
+                        options={countries}
+                        getOptionLabel={(option) => option.name}
+                        value={getCountryOption(values.employees[index].country) || null}
+                        filterOptions={(opts, state) =>
+                          opts.filter((o) =>
+                            o.name.toLowerCase().includes(state.inputValue.trim().toLowerCase())
+                          )
+                        }
+                        onChange={(e, option) => {
+                          if (option) {
+                            setValue(`employees[${index}].country`, option.slug);
+                          } else {
+                            setValue(`employees[${index}].country`, '');
+                          }
+                        }}
+                        renderOption={(props, option, { index }) => (
+                          <li {...props} key={`${option.value}-${index}`}>
+                            {option.name}
+                          </li>
+                        )}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            size="small"
+                            label="Nationalité"
+                            placeholder="Choisissez une nationalité"
+                            fullWidth
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {loadingCountries ? (
+                                    <CircularProgress color="inherit" size={20} />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
                       />
                     </Box>
 
@@ -527,10 +611,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         ))}
                       </Field.Select>
                     </Box>
-                  </Stack>
 
-                  {/* DEUXIÈME LIGNE - CORRECTION DE L'ALIGNEMENT */}
-                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Field.DatePicker
                         size="small"
@@ -544,6 +625,19 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                             fullWidth: true,
                           },
                         }}
+                      />
+                    </Box>
+                  </Stack>
+
+                  {/* DEUXIÈME LIGNE - CORRECTION DE L'ALIGNEMENT */}
+                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].email`}
+                        label="Adresse Email"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
                       />
                     </Box>
 
