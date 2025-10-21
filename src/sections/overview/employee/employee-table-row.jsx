@@ -9,6 +9,7 @@ import TableRow from '@mui/material/TableRow';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
+import { Label } from 'src/components/label';
 
 // import { ClientQuickEditForm } from './client-quick-edit-form';
 
@@ -16,6 +17,22 @@ import { Iconify } from 'src/components/iconify';
 
 export function EmployeeTableRow({ row, selected, onViewRow }) {
   const popover = usePopover();
+
+  const statusLabels = {
+    enrolled: 'Enrôlé',
+    unenrolled: 'Non enrôlé',
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'enrolled':
+        return 'success';
+      case 'unenrolled':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
 
   return (
     <>
@@ -52,13 +69,18 @@ export function EmployeeTableRow({ row, selected, onViewRow }) {
             </Stack>
           </Stack>
         </TableCell>
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.declaration_count}</TableCell>
+        <TableCell>{row.email}</TableCell>
+        <TableCell>{row.phone}</TableCell>
+        <TableCell sx={{ textAlign: 'center' }}>{row.declaration_count}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.phone}</TableCell>
-
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.job}</TableCell>
-
+        <TableCell>{row.job}</TableCell>
         <TableCell>
+          <Label variant="soft" color={getStatusColor(row.status)}>
+            {statusLabels[row.status] || 'Inconnu'}
+          </Label>
+        </TableCell>
+
+        {/* <TableCell>
           <Stack direction="row" alignItems="center">
             <IconButton
               color={popover.open ? 'inherit' : 'default'}
@@ -70,7 +92,7 @@ export function EmployeeTableRow({ row, selected, onViewRow }) {
               <Iconify icon="eva:more-vertical-fill" />
             </IconButton>
           </Stack>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
 
       <CustomPopover
