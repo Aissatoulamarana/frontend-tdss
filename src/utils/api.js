@@ -149,7 +149,7 @@ const API = {
   Devises: () => `${BASE_URL}/devises/list/`,
   listPermits: () => `${BASE_URL}/permits/`,
 
-  listCountry: () => `${BASE_URL}/payments/countries/`,
+  listCountry: () => `${BASE_URL}/regions/countries/`,
 
   // job-category
   createJobCategory: () => `${BASE_URL}/jobs/job-category/`,
