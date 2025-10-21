@@ -45,14 +45,17 @@ const STATUS_OPTIONS = [{ value: 'all', label: 'Tous' }];
 
 const TABLE_HEAD = [
   { id: 'reference', label: 'Reference ' },
-  { id: 'numero', label: 'Numéro Passport ' },
+  { id: 'numero', label: 'N° Passeport  ' },
   { id: 'name', label: 'Nom Complet' },
-  { id: 'declaration', label: 'Nombre declaration' },
-  { id: 'phoneNumber', label: 'Numéro de téléphone' },
+  { id: 'email', label: 'Email' },
+  { id: 'phoneNumber', label: 'Téléphone' },
+  { id: 'declaration', label: ' Déclaration.s' },
+
   { id: 'job', label: 'Fonction' },
+  { id: 'status', label: 'Statut' },
 
   // { id: 'status', label: 'Status' },
-  { id: '', width: 88 },
+  // { id: '', width: 88 },
 ];
 
 // ----------------------------------------------------------------------
@@ -129,17 +132,18 @@ export function EmployeeListView() {
               : filters.state.name
                 ? { name: filters.state.name }
                 : {}),
-          ...(filters.state.job?.length > 0 && { 
-            job: typeof filters.state.job[0] === 'object' 
-              ? filters.state.job[0].name  // Envoyer le nom de la fonction
-              : filters.state.job[0]       // Ou la valeur directe si c'est une chaîne
+          ...(filters.state.job?.length > 0 && {
+            job:
+              typeof filters.state.job[0] === 'object'
+                ? filters.state.job[0].name // Envoyer le nom de la fonction
+                : filters.state.job[0], // Ou la valeur directe si c'est une chaîne
           }),
         };
 
         console.log('Paramètres de la requête:', params);
         const response = await axios.get(url, { params });
-        console.log('Réponse de l\'API:', response.data);
-        
+        console.log("Réponse de l'API:", response.data);
+
         setTableData(response.data.results);
         setPagination({
           count: response.data.count,
