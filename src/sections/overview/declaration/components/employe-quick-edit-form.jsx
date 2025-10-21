@@ -31,14 +31,14 @@ export const employeQuickEditSchema = zod.object({
   passport_number: zod.string().min(1, { message: 'le numero de passeport est obligatoire' }),
 
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-
+  email: zod.string().email({ message: 'Email doit etre un email valide !' }).optional(),
   job: zod.string().min(1, { message: 'le type est requis!' }),
-  country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
+  country: zod.string().optional(),
   address: zod.string().optional(),
   sexe: zod.string().optional(),
-  birthday: zod.date().optional(),
-  contract_starts_at: zod.date().optional(),
-  contract_duration: zod.number().optional(),
+  contract_starts_at: zod.string().date().optional(),
+  birthday: zod.string().date().optional(),
+  contract_duration: zod.number().optional().default(0),
 });
 
 // ----------------------------------------------------------------------
@@ -48,14 +48,22 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [countries, setCountries] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+
   const genders = [
-    { value: 'Male', label: 'Homme' },
-    { value: 'Female', label: 'Femme' },
+    { value: 'male', label: 'Homme' },
+    { value: 'female', label: 'Femme' },
   ];
 
   const defaultValues = useMemo(() => {
     const currentJobSlug =
       typeof currentEmployee?.job === 'object' ? currentEmployee?.job?.slug : currentEmployee?.job;
+
+    const currentCountrySlug =
+      typeof currentEmployee?.country === 'object'
+        ? currentEmployee?.country?.slug
+        : currentEmployee?.country;
 
     return {
       first: currentEmployee?.first || '',
@@ -63,7 +71,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
       passport_number: currentEmployee?.passport_number || '',
       phone: currentEmployee?.phone || '',
       job: currentJobSlug || '',
-      country: currentEmployee?.country || '',
+      country: currentCountrySlug || '',
       address: currentEmployee?.address || '',
       sexe: currentEmployee?.sexe || '',
       birthday: currentEmployee?.birthday || null,
@@ -87,6 +95,42 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
   } = methods;
 
   useEffect(() => {
+    let isMounted = true; // à déclarer ici
+
+    async function fetchCountries() {
+      setLoadingCountries(true);
+      try {
+        // Premier appel (limite 100)
+        const resp1 = await axios.get(API.listCountry(), {
+          params: { offset: 0, limit: 100 },
+        });
+
+        const total = resp1.data.count;
+
+        if (total > 100) {
+          // Deuxième appel avec la vraie limite totale
+          const resp2 = await axios.get(API.listCountry(), {
+            params: { offset: 0, limit: total },
+          });
+          if (isMounted) setCountries(resp2.data.results);
+        } else {
+          if (isMounted) setCountries(resp1.data.results);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des pays :', error);
+      } finally {
+        if (isMounted) setLoadingCountries(false);
+      }
+    }
+
+    fetchCountries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // <= le tableau de dépendances vide
+
+  useEffect(() => {
     let isMounted = true;
 
     async function fetchAllFonctions() {
@@ -96,8 +140,6 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
         // --- ÉTAPE 1 : Lecture cache session ---
         const cachedSession = sessionStorage.getItem('fonctions');
         let optionsToUse = cachedSession ? JSON.parse(cachedSession) : null;
-
-        // console.log('🧠 Options depuis cache:', optionsToUse);
 
         // --- ÉTAPE 2 : Lecture cache localStorage si session vide ---
         if (!optionsToUse) {
@@ -164,9 +206,6 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             value: f.slug,
           }));
 
-        // console.log('✅ Résultats API:', resp2.data);
-        // console.log('✅ Options calculées:', uniqueBySlug);
-
         // --- ÉTAPE 6 : Sauvegarde cache ---
         const cachePayload = {
           data: uniqueBySlug,
@@ -202,6 +241,9 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
       // Adaptation spéciale pour job
       if (key === 'job' && typeof originalValue === 'object') {
+        originalValue = originalValue?.slug;
+      }
+      if ((key = 'contry' && typeof originalValue === 'object')) {
         originalValue = originalValue?.slug;
       }
 
@@ -251,6 +293,9 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
   const currentJobValue = watch('job');
   const currentJobOption = options.find((option) => option.value === currentJobValue);
 
+  const currentCountry = watch('country');
+  const currentCountryOption = countries.find((c) => c.slug === currentCountry);
+
   return (
     <Dialog
       fullWidth
@@ -270,12 +315,52 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             display="grid"
             gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
           >
-            <Field.CountrySelect name="country" label="Nationalité" />
+            <Autocomplete
+              options={countries}
+              getOptionLabel={(option) => option.name}
+              value={currentCountryOption || null}
+              filterOptions={(opts, state) =>
+                opts.filter((o) =>
+                  o.name.toLowerCase().includes(state.inputValue.trim().toLowerCase())
+                )
+              }
+              onChange={(e, option) => {
+                if (option) {
+                  setValue(`country`, option.slug);
+                } else {
+                  setValue(`country`, '');
+                }
+              }}
+              renderOption={(props, option, { index }) => (
+                <li {...props} key={`${option.value}-${index}`}>
+                  {option.name}
+                </li>
+              )}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Nationalité"
+                  placeholder="Choisissez une nationalité"
+                  fullWidth
+                  error={!!methods.formState.errors.country}
+                  helperText={methods.formState.errors.country?.message}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {loadingCountries ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+            />
             <Field.Text name="passport_number" label="Numero du passeport " />
             <Field.Text name="last" label="Nom " />
             <Field.Text name="first" label="Prénom " />
 
-            <Field.Select name="gender" label="Genre">
+            <Field.Select name="sexe" label="Genre">
               {genders.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
                   {option.label}

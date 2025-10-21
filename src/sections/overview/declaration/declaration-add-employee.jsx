@@ -39,16 +39,26 @@ export const employeSchema = zod.object({
   last: zod.string().min(1, { message: 'le nom est obligatoire' }),
   passport_number: zod.string().min(1, { message: 'le numero de passeport est obligatoire' }),
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
-  email: zod.string().email({ message: 'Email doit etre un email valide !' }).optional(),
+  email: zod
+    .union([
+      zod.string().length(0), // Permettre les chaînes vides
+      zod.string().email({ message: 'Email doit etre un email valide !' }),
+    ])
+    .optional(),
   job: zod.string().min(1, { message: 'la fonction est requise!' }),
   type: zod.string().default('new'),
   reference: zod.string().optional(),
   country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
   address: zod.string().optional(),
   sexe: zod.string().optional(),
-  birthday: zod.iso.date().optional(),
-  contract_starts_at: zod.iso.date().optional(),
-  contract_duration: zod.number().optional(),
+  birthday: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+
+  contract_starts_at: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+  contract_duration: zod
+    .union([zod.number(), zod.literal('')])
+    .transform((val) => (val === '' ? 0 : val))
+    .optional()
+    .default(0),
 });
 
 // Schéma global pour le formulaire qui attend un tableau d'employés
@@ -532,6 +542,10 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                             label="Nationalité"
                             placeholder="Choisissez une nationalité"
                             fullWidth
+                            error={!!methods.formState.errors?.employees?.[index]?.country}
+                            helperText={
+                              methods.formState.errors?.employees?.[index]?.country?.message || ''
+                            }
                             InputProps={{
                               ...params.InputProps,
                               endAdornment: (

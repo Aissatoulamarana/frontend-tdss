@@ -23,7 +23,7 @@ import { toast } from 'src/components/snackbar';
 // ----------------------------------------------------------------------
 
 export function DeclarationNewEditDetails({ formData }) {
-  const { control, setValue, watch, reset } = useFormContext();
+  const { control, setValue, watch, reset, formState } = useFormContext();
   const DEFAULT_LIMIT = 100;
   const MAX_EMPLOYEES = 20;
   const [options, setOptions] = useState([]);
@@ -31,8 +31,6 @@ export function DeclarationNewEditDetails({ formData }) {
   const [loading, setLoading] = useState(false);
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
-
-  
 
   const [passportInput, setPassportInput] = useState('');
   const [params, setParams] = useState({
@@ -367,9 +365,11 @@ export function DeclarationNewEditDetails({ formData }) {
                     <TextField
                       {...params}
                       size="small"
-                      label="Nationalité"
+                      label="Nationalité*"
                       placeholder="Choisissez une nationalité"
                       fullWidth
+                      error={!!formState.errors?.employees?.[index]?.country}
+                      helperText={formState.errors?.employees?.[index]?.country?.message || ''}
                       InputProps={{
                         ...params.InputProps,
                         endAdornment: (
@@ -394,17 +394,23 @@ export function DeclarationNewEditDetails({ formData }) {
                 inputlabelprops={{ shrink: true }}
                 onChange={(e) => handlePassportChange(e, index)}
                 onBlur={(e) => handlePassportBlur(e, index)}
-                error={values.employees[index].passportExists} // true = duplication
+                error={
+                  values.employees[index].passportExists ||
+                  !!formState.errors?.employees?.[index]?.passport_number
+                } // true = duplication
                 helperText={
-                  values.employees[index].passportExists
+                  formState.errors?.employees?.[index]?.passport_number?.message ||
+                  (values.employees[index].passportExists
                     ? '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
-                    : ''
+                    : '')
                 }
                 FormHelperTextProps={{
                   sx: {
-                    color: values.employees[index].passportExists
-                      ? 'error.main' // bordure/texte en rouge si existe déjà
-                      : 'success.main', // vert sinon
+                    color:
+                      formState.errors?.employees?.[index]?.passport_number ||
+                      values.employees[index].passportExists
+                        ? 'error.main'
+                        : 'success.main',
                   },
                 }}
                 sx={{ flex: 1 }}
@@ -462,7 +468,7 @@ export function DeclarationNewEditDetails({ formData }) {
               <Field.Text
                 size="small"
                 name={`employees[${index}].email`}
-                label="Adresse  Email*"
+                label="Adresse Email"
                 inputlabelprops={{ shrink: true }}
                 disabled={values.employees[index].locked}
                 sx={{ flex: 1 }}
@@ -480,7 +486,7 @@ export function DeclarationNewEditDetails({ formData }) {
               <Field.Text
                 size="small"
                 name={`employees[${index}].address`}
-                label="Adresse *"
+                label="Adresse "
                 inputlabelprops={{ shrink: true }}
                 disabled={values.employees[index].locked}
                 sx={{ flex: 1 }}
@@ -506,7 +512,7 @@ export function DeclarationNewEditDetails({ formData }) {
                 size="small"
                 type="number"
                 name={`employees[${index}].contract_duration`}
-                label="Durée Contrat (année)*"
+                label="Durée Contrat (année)"
                 inputlabelprops={{ shrink: true }}
                 disabled={values.employees[index].locked}
                 sx={{ flex: 1 }}
@@ -541,6 +547,8 @@ export function DeclarationNewEditDetails({ formData }) {
                     label="Fonction *"
                     size="small"
                     fullWidth
+                    error={!!formState.errors?.employees?.[index]?.job}
+                    helperText={formState.errors?.employees?.[index]?.job?.message || ''}
                     InputProps={{
                       ...params.InputProps,
                       endAdornment: (

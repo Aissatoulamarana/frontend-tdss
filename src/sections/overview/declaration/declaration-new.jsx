@@ -32,12 +32,22 @@ export const NewInvoiceSchema = zod.object({
       last: zod.string().min(1, { message: 'Entrez votre nom ' }),
       country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
       address: zod.string().optional(),
-      email: zod.string().email({ message: 'Email doit etre un email valide !' }).optional(),
+      email: zod
+        .union([
+          zod.string().length(0), // Permettre les chaînes vides
+          zod.string().email({ message: 'Email doit etre un email valide !' }),
+        ])
+        .optional(),
 
-      sexe: zod.string().min(1),
-      birthday: zod.iso.date().optional(),
-      contract_starts_at: zod.iso.date().optional(),
-      contract_duration: zod.number().optional(),
+      sexe: zod.string().optional(),
+      birthday: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+
+      contract_starts_at: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+      contract_duration: zod
+        .union([zod.number(), zod.literal('')])
+        .transform((val) => (val === '' ? 0 : val))
+        .optional()
+        .default(0),
     })
   ),
 
@@ -71,7 +81,7 @@ export function DeclarationNew({ declaration, type, formData }) {
                 identifier: '',
                 birthday: '',
                 contract_starts_at: '',
-                contract_duration: '',
+                contract_duration: 0,
                 country: '',
                 sexe: 'male',
                 address: '',
