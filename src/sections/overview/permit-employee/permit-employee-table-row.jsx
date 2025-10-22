@@ -26,6 +26,9 @@ export function TableRowComPermit({
   onValidateRow,
   onRejetRow,
   onSubmitRow,
+  onUnsubmitRow,
+  onDeliverRow,
+  onPrintRow,
   visibleColumns,
 }) {
   const confirm = useBoolean();
@@ -39,6 +42,10 @@ export function TableRowComPermit({
   const rejetConfirm = useBoolean();
   const submitConfirm = useBoolean();
   const editConfirm = useBoolean();
+  const unsubmitConfirm = useBoolean();
+  const deliverConfirm = useBoolean();
+
+  const printConfirm = useBoolean();
 
   const [motifRejet, setMotifRejet] = useState('');
 
@@ -57,14 +64,18 @@ export function TableRowComPermit({
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'unsubmitted':
-        return 'warning';
+      case 'printed':
+        return 'success';
+      case 'delivered':
+        return 'primary';
       case 'submitted':
         return 'info';
       case 'rejected':
         return 'error';
       case 'validated':
         return 'success';
+      case 'processing':
+        return 'warning';
       default:
         return 'default';
     }
@@ -89,9 +100,9 @@ export function TableRowComPermit({
           {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
         </TableCell>
 
-        {visibleColumns.includes('number') && (
+        {/* {visibleColumns.includes('number') && (
           <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.number}</TableCell>
-        )}
+        )} */}
 
         {visibleColumns.includes('reference') && (
           <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.reference}</TableCell>
@@ -115,20 +126,22 @@ export function TableRowComPermit({
         )}
         {visibleColumns.includes('phone') && <TableCell>{row.phone}</TableCell>}
 
-        {visibleColumns.includes('sexe') && <TableCell>{row.sexe}</TableCell>}
+        {/* {visibleColumns.includes('sexe') && <TableCell>{row.sexe}</TableCell>} */}
 
-        {visibleColumns.includes('country') && <TableCell>{row.country}</TableCell>}
+        {/* {visibleColumns.includes('country') && <TableCell>{row.country}</TableCell>} */}
 
-        {visibleColumns.includes('function') && <TableCell>{row.function}</TableCell>}
+        {visibleColumns.includes('function') && <TableCell>{row.job?.name}</TableCell>}
 
-        {visibleColumns.includes('entreprise') && <TableCell>{row.company}</TableCell>}
+        {/* {visibleColumns.includes('entreprise') && <TableCell>{row.company}</TableCell>} */}
 
-        {visibleColumns.includes('type') && <TableCell>{row.permis}</TableCell>}
+        {visibleColumns.includes('type') && <TableCell>{row.job?.permit}</TableCell>}
+
+        {visibleColumns.includes('typedec') && <TableCell>{row.type_display}</TableCell>}
 
         {visibleColumns.includes('statut') && (
           <TableCell>
             <Label variant="soft" color={getStatusColor(row.status)}>
-              {statusLabels[row.status] || 'Inconnu'}
+              {row.status_display || 'Inconnu'}
             </Label>
           </TableCell>
         )}
@@ -154,7 +167,7 @@ export function TableRowComPermit({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
-          {row.status === 'unsubmitted' && (
+          {row.status === 'processing' && (
             <MenuItem
               onClick={() => {
                 submitConfirm.onTrue();
@@ -168,29 +181,53 @@ export function TableRowComPermit({
           )}
 
           {row.status === 'submitted' && (
-            <MenuItem
-              onClick={() => {
-                validateConfirm.onTrue();
-                popover.onClose();
-              }}
-              sx={{ color: 'success.main' }}
-            >
-              <Iconify icon="solar:check-bold" />
-              Valider
-            </MenuItem>
+            <>
+              <MenuItem
+                onClick={() => {
+                  validateConfirm.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ color: 'success.main' }}
+              >
+                <Iconify icon="solar:check-bold" />
+                Valider
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  rejetConfirm.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ color: 'error.main' }}
+              >
+                <Iconify icon="solar:check-bold" />
+                Rejeter
+              </MenuItem>
+            </>
           )}
 
-          {row.status === 'submitted' && (
-            <MenuItem
-              onClick={() => {
-                rejetConfirm.onTrue();
-                popover.onClose();
-              }}
-              sx={{ color: 'error.main' }}
-            >
-              <Iconify icon="solar:check-bold" />
-              Rejeter
-            </MenuItem>
+          {row.status === 'validated' && (
+            <>
+              <MenuItem
+                onClick={() => {
+                  printConfirm.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ color: 'success.main' }}
+              >
+                <Iconify icon="mdi:truck-delivery" />
+                imprimer le permis
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  deliverConfirm.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ color: 'success.main' }}
+              >
+                <Iconify icon="mdi:truck-delivery" />
+                délivrer le permis
+              </MenuItem>
+            </>
           )}
 
           {/* <MenuItem
@@ -224,7 +261,14 @@ export function TableRowComPermit({
         title="Soumettre"
         content="Etes vous sur de vouloir soumettre ce dossier?"
         action={
-          <Button variant="contained" color="success" onClick={onSubmitRow}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onSubmitRow();
+              submitConfirm.onFalse();
+            }}
+          >
             Soumettre
           </Button>
         }
@@ -236,8 +280,72 @@ export function TableRowComPermit({
         title="Valider"
         content="Etes vous sur de vouloir valider ce dossier?"
         action={
-          <Button variant="contained" color="success" onClick={onValidateRow}>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onValidateRow();
+              validateConfirm.onFalse();
+            }}
+          >
             Valider
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={deliverConfirm.value}
+        onClose={deliverConfirm.onFalse}
+        title="Delivrer"
+        content="Etes vous sur de vouloir delivrer ce dossier?"
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onDeliverRow();
+              deliverConfirm.onFalse();
+            }}
+          >
+            Delivrer
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={printConfirm.value}
+        onClose={printConfirm.onFalse}
+        title="Imprimer"
+        content="Etes vous sur de vouloir imprimer ce dossier?"
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onPrintRow();
+              printConfirm.onFalse();
+            }}
+          >
+            Imprimer
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={unsubmitConfirm.value}
+        onClose={unsubmitConfirm.onFalse}
+        title="Mettre en édition"
+        content="Etes vous sur de vouloir mettre en édition ce dossier?"
+        action={
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => {
+              onUnsubmitRow();
+              unsubmitConfirm.onFalse();
+            }}
+          >
+            Mettre en édition
           </Button>
         }
       />

@@ -1,5 +1,5 @@
 import { CONFIG } from 'src/config-global';
-import { PermitDetailView } from 'src/sections/overview/permit/view';
+import { PermitDetailView } from 'src/sections/overview/permit-employee/view';
 
 export const metadata = { title: `Details Permit | Dashboard - ${CONFIG.appName}` };
 

@@ -203,7 +203,11 @@ export function useNavData() {
                           icon: ICONS.typeUser,
                         },
                         { title: 'Devises', path: paths.dashboard.devise.root, icon: ICONS.devise },
-                        { title: 'Permits', path: paths.dashboard.permit.root, icon: ICONS.permis },
+                        {
+                          title: 'Type Permits',
+                          path: paths.dashboard.permitAdmin.root,
+                          icon: ICONS.permis,
+                        },
                       ],
                     },
                   ]
