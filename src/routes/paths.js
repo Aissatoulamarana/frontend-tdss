@@ -134,6 +134,10 @@ export const paths = {
       edit: (slug) => `${ROOTS.DASHBOARD}/permit/${slug}/edit`,
     },
 
+    permitAdmin: {
+      root: `${ROOTS.DASHBOARD}/permit-admin`,
+    },
+
     // permission: {
     //   root: `${ROOTS.DASHBOARD}/permission`,
     //   new: `${ROOTS.DASHBOARD}/permission/new`,
