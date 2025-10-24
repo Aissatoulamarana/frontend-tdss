@@ -166,6 +166,12 @@ const API = {
   unsubmitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/unsubmit/`,
   validatePermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/validate/`,
 
+  // listes des api pour les documents des employés
+  addDocument: () => `${BASE_URL}/documents/`,
+
+  documents: () => `${BASE_URL}/documents/types/`,
+  updateDocument: (slug) => `${BASE_URL}/documents/${slug}/`,
+
   // Tableau de bord comptable
   getDeclarationsToInvoice: (month = null) => {
     const url = `${BASE_URL}/declarations/to-invoice/`;
