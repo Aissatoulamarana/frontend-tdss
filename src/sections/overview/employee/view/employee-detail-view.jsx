@@ -17,6 +17,7 @@ import { EmployeeInfo } from '../employee-info';
 import { EmployeeDeclarations } from '../employee-declaration';
 import { EmployeeJob } from '../employee-job';
 import { EmployeeDoc } from '../employee-doc';
+import { AfricanizationPlanTab } from '../plan-africanisation';
 
 const TABS_ENTREPRISE = [
   { value: 'profile', label: 'Infos', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
@@ -30,6 +31,11 @@ const TABS_ENTREPRISE = [
     value: 'doc',
     label: 'Documents',
     icon: <Iconify icon="mdi:file" width={24} />,
+  },
+  {
+    value: 'plan',
+    label: 'Plan de panafricanisation',
+    icon: <Iconify icon="mdi:earth" width={24} />,
   },
 ];
 
@@ -128,6 +134,14 @@ export function EmployeeDetailsView({ slug }) {
           documents={documents}
           employee={employee}
           onDocumentUploaded={handleDocumentUploaded}
+        />
+      )}
+
+      {tabs.value === 'plan' && (
+        <AfricanizationPlanTab
+          employeeId={employee?.slug}
+          employeeName={`${employee?.first} ${employee?.last}`}
+          isExpatriate={true}
         />
       )}
     </DashboardContent>
