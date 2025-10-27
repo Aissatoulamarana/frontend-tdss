@@ -7,13 +7,14 @@ import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
+import Chip from '@mui/material/Chip';
 import { Iconify } from 'src/components/iconify';
+
+import { fDate } from 'src/utils/format-time';
 
 // ----------------------------------------------------------------------
 
-export function EmployeeJob({ info }) {
-  const JobArray = Array.isArray(info) ? info : [];
-
+export function PermitInfo({ created_at, permit, expired_at, status }) {
   const fileRef = useRef(null);
 
   const handleAttach = () => {
@@ -21,6 +22,21 @@ export function EmployeeJob({ info }) {
       fileRef.current.click();
     }
   };
+
+  const getStatusConfig = (status) => {
+    const configs = {
+      unenrolled: { color: 'warning', label: 'Non Enrôlé', icon: 'mdi:clock-outline' },
+      enrolled: { color: 'success', label: 'Enrôlé', icon: 'mdi:check-circle' },
+      rejected: { color: 'error', label: 'Rejeté', icon: 'mdi:close-circle' },
+      processing: { color: 'warning', label: 'En cours', icon: 'mdi:clock-outline' },
+      validated: { color: 'success', label: 'Validé', icon: 'mdi:check-circle' },
+      printed: { color: 'info', label: 'Imprimé', icon: 'mdi:printer' },
+      delivered: { color: 'primary', label: 'Délivré', icon: 'mdi:package-variant-closed' },
+    };
+    return configs[status] || { color: 'default', label: status, icon: 'mdi:information' };
+  };
+
+  const statusConfig = getStatusConfig(status);
 
   // Composant réutilisable pour les items d'information
   const InfoItem = ({ icon, label, value, isLink = false }) => (
@@ -108,41 +124,64 @@ export function EmployeeJob({ info }) {
       }}
     >
       <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
-        <Typography
-          variant="h5"
+        {/* ================== Header ================== */}
+        <Box
           sx={{
-            fontWeight: 700,
-            color: 'text.primary',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 2,
             mb: 3,
-            fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
           }}
         >
-          <Iconify icon="mdi:briefcase-check" width={{ xs: 24, sm: 28 }} sx={{ mr: 1.5 }} />
-          Informations Professionnelles
-        </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              color: 'text.primary',
+              display: 'flex',
+              alignItems: 'center',
+              mb: 3,
+              fontSize: { xs: '1.125rem', sm: '1.25rem', md: '1.5rem' },
+            }}
+          >
+            <Iconify icon="mdi:card-account-details" width={{ xs: 24, sm: 28 }} sx={{ mr: 1.5 }} />
+            Informations Du Permis
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Chip
+              icon={<Iconify icon={statusConfig.icon} width={18} />}
+              label={statusConfig.label}
+              color={statusConfig.color}
+              sx={{
+                fontWeight: 600,
+                px: 1,
+                height: { xs: 28, sm: 32 },
+                '& .MuiChip-icon': { ml: 0.5 },
+                '& .MuiChip-label': {
+                  px: 1,
+                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                },
+              }}
+            />
+          </Stack>
+        </Box>
 
         <Divider sx={{ mb: 3 }} />
-        {info?.map((i, index) => (
-          <Box
-            key={index}
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-            }} // espace entre les cartes
-          >
-            {/* Nom */}
-            <InfoItem icon="mdi:briefcase" label="Fonction" value={i?.name} />
 
-            {/* Categorie de Fonction */}
-            <InfoItem icon="mdi:tag" label="Catégorie de Fonction" value={i?.category} />
-
-            {/* Permis */}
-            <InfoItem icon="mdi:card-account-details" label="Permis de Travail" value={i?.permit} />
-          </Box>
-        ))}
+        {/* ================== Informations ================== */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
+          <InfoItem icon="mdi:card-account-details" label="Type de Permis" value={permit} />
+          <InfoItem icon="mdi:calendar-start" label="Date de création" value={fDate(created_at)} />
+          <InfoItem icon="mdi:calendar-end" label="Date d'expiration" value={fDate(expired_at)} />
+        </Box>
       </Box>
     </Card>
   );

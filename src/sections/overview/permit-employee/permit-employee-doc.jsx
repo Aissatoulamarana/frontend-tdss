@@ -30,7 +30,7 @@ const iconMap = {
   'Certificat de régulation sociale': 'mdi:certificate',
 };
 
-export function EmployeeDoc({ documents = [], employee, onDocumentUploaded }) {
+export function PermitEmployeeDoc({ documents = [], employee, onDocumentUploaded }) {
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -425,6 +425,19 @@ export function EmployeeDoc({ documents = [], employee, onDocumentUploaded }) {
                                   Ouvrir
                                 </Button>
                               </Tooltip>
+                              <Tooltip title="modifier le document">
+                                <IconButton
+                                  size="small"
+                                  color="info"
+                                  onClick={() => handleModifyDocument(docType, existingDoc)}
+                                  sx={{
+                                    border: '1px solid',
+                                    borderColor: 'info',
+                                  }}
+                                >
+                                  <Iconify icon="mdi:pencil" />
+                                </IconButton>
+                              </Tooltip>
                             </>
                           ) : (
                             <Button
@@ -432,10 +445,10 @@ export function EmployeeDoc({ documents = [], employee, onDocumentUploaded }) {
                               variant="outlined"
                               color="primary"
                               startIcon={<Iconify icon="mdi:plus" />}
-                              // onClick={() => handleAddDocument(docType)}
+                              onClick={() => handleAddDocument(docType)}
                               fullWidth
                             >
-                              Document a ajouter
+                              Ajouter
                             </Button>
                           )}
                         </Stack>
