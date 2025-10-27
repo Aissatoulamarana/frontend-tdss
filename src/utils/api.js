@@ -151,6 +151,8 @@ const API = {
 
   listCountry: () => `${BASE_URL}/payments/countries/`,
 
+  planAfricanisation: () => `${BASE_URL}/documents/create-africanization-plan/`,
+
   // job-category
   createJobCategory: () => `${BASE_URL}/jobs/job-category/`,
   listJobCategory: () => `${BASE_URL}/jobs/job-category/`,

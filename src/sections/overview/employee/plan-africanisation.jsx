@@ -45,6 +45,9 @@ import {
   Warning as WarningIcon,
 } from '@mui/icons-material';
 
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+
 const STATUS_LABELS = {
   RECRUITING: 'En cours de recrutement',
   RESIGNED: 'Employé a démissionné',
@@ -217,6 +220,12 @@ export function AfricanizationPlanTab({
       permit_expiry_alert: checkPermitExpiry(),
       files: files,
     };
+
+    const response = await axios.post(API.planAfricanisation(), newPlan);
+    if (response.status !== 201) {
+      alert("Erreur lors de la sauvegarde du plan d'africanisation");
+      return;
+    }
 
     if (selectedPlan) {
       setPlans(plans.map((p) => (p.id === selectedPlan.id ? { ...p, ...newPlan } : p)));
