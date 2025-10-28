@@ -103,6 +103,11 @@ export function useNavData() {
                 path: paths.dashboard.permit.root,
                 icon: ICONS.permis,
               },
+              {
+                title: "Plan d'Africanisation",
+                path: paths.dashboard.planAfricanisation.root,
+                icon: ICONS.permis,
+              },
             ]
           : []),
         ...(type === 'comptable' || type === 'caissier' || type === 'admin' || type === 'aguipe'

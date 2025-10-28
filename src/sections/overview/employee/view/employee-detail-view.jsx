@@ -32,11 +32,6 @@ const TABS_ENTREPRISE = [
     label: 'Documents',
     icon: <Iconify icon="mdi:file" width={24} />,
   },
-  {
-    value: 'plan',
-    label: 'Plan de panafricanisation',
-    icon: <Iconify icon="mdi:earth" width={24} />,
-  },
 ];
 
 export function EmployeeDetailsView({ slug }) {
@@ -134,14 +129,6 @@ export function EmployeeDetailsView({ slug }) {
           documents={documents}
           employee={employee}
           onDocumentUploaded={handleDocumentUploaded}
-        />
-      )}
-
-      {tabs.value === 'plan' && (
-        <AfricanizationPlanTab
-          employeeId={employee?.slug}
-          employeeName={`${employee?.first} ${employee?.last}`}
-          isExpatriate={true}
         />
       )}
     </DashboardContent>

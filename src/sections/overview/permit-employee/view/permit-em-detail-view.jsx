@@ -21,6 +21,7 @@ import { PermitDeclaration } from '../permit-employee-dec';
 import { PermitJob } from '../permit-job';
 import { PermitInfo } from '../info-permit';
 import { PermitToolbar } from '../permit-toolbar';
+import { PlanAfricanisation } from '../plan-africanisation';
 
 const TABS_PERMITS = [
   { value: 'info', label: 'Info Permit', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
@@ -36,6 +37,11 @@ const TABS_PERMITS = [
     value: 'doc',
     label: 'Documents',
     icon: <Iconify icon="mdi:file" width={24} />,
+  },
+  {
+    value: 'plan',
+    label: 'Plan de panafricanisation',
+    icon: <Iconify icon="mdi:earth" width={24} />,
   },
   {
     value: 'biometrie',
@@ -86,6 +92,13 @@ export function PermitDetailView({ slug }) {
     setDocuments((prevDocs) =>
       prevDocs.map((doc) => (doc.slug === updatedDoc.slug ? updatedDoc : doc))
     );
+  };
+
+  const handleUpdatePlan = (updatedPlan) => {
+    setPermit((prev) => ({
+      ...prev,
+      africanization_plan: updatedPlan, // 🔥 met à jour uniquement cette partie
+    }));
   };
 
   return (
@@ -141,7 +154,11 @@ export function PermitDetailView({ slug }) {
       )}
 
       {tabs.value === 'declaration' && (
-        <PermitDeclaration declaration={permit?.declaration} type={permit?.type_display} />
+        <PermitDeclaration
+          declaration_number={permit?.declaration_number}
+          declaration_slug={permit?.declaration_slug}
+          type={permit?.type_display}
+        />
       )}
 
       {tabs.value === 'info' && (
@@ -150,6 +167,21 @@ export function PermitDetailView({ slug }) {
           created_at={permit?.created_on}
           expired_at={permit?.card_expires_at}
           status={permit?.status}
+        />
+      )}
+      {tabs.value === 'plan' && (
+        <PlanAfricanisation
+          info={permit?.africanization_plan}
+          employeeId={permit?.slug}
+          employeeName={`${permit?.first} ${permit?.last}`}
+          isExpatriate={
+            permit &&
+            !['guinéen', 'guineen', 'guinéenne', 'guineenne'].includes(
+              permit?.nationality?.toLowerCase().trim()
+            ) &&
+            permit?.country?.toLowerCase().trim() !== 'guinée'
+          }
+          onUpdate={handleUpdatePlan}
         />
       )}
     </DashboardContent>

@@ -16,17 +16,17 @@ import { useRouter } from 'src/routes/hooks';
 
 // ----------------------------------------------------------------------
 
-export function PermitDeclaration({ declaration, type }) {
+export function PermitDeclaration({ declaration_number, declaration_slug, type }) {
   const router = useRouter();
 
   // 🔗 Fonction pour aller au détail de la déclaration
   const handleViewDeclaration = useCallback(() => {
-    if (declaration) {
-      router.push(paths.dashboard.declaration.details(declaration));
+    if (declaration_slug) {
+      router.push(paths.dashboard.declaration.details(declaration_slug));
     } else {
       console.warn('Aucune déclaration disponible');
     }
-  }, [router, declaration]);
+  }, [router, declaration_slug]);
 
   // Composant réutilisable pour les items d'information
   const InfoItem = ({ icon, label, value, isButton = false, onClick }) => (
@@ -240,8 +240,8 @@ export function PermitDeclaration({ declaration, type }) {
           <InfoItem
             icon="mdi:link-variant"
             label="Accès à la Déclaration"
-            value="Voir les détails"
             isButton
+            value={declaration_number}
             onClick={handleViewDeclaration}
           />
         </Box>
@@ -271,7 +271,7 @@ export function PermitDeclaration({ declaration, type }) {
 
   return (
     <Grid size={{ xs: 12, md: 4 }}>
-      <Stack spacing={3}>{declaration ? renderContent : renderEmpty}</Stack>
+      <Stack spacing={3}>{declaration_slug ? renderContent : renderEmpty}</Stack>
     </Grid>
   );
 }

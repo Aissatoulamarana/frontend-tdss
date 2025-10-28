@@ -82,6 +82,11 @@ export const paths = {
     //   list: `${ROOTS.DASHBOARD}/penalite/list`,
     // },
 
+    planAfricanisation: {
+      root: `${ROOTS.DASHBOARD}/plan`,
+      detail: (slug) => `${ROOTS.DASHBOARD}/plan/${slug}`,
+    },
+
     // Administration
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
