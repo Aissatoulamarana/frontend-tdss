@@ -21,6 +21,7 @@ import { PermitDeclaration } from '../permit-employee-dec';
 import { PermitJob } from '../permit-job';
 import { PermitInfo } from '../info-permit';
 import { PermitToolbar } from '../permit-toolbar';
+import { PlanAfricanisation } from '../plan-africanisation';
 
 const TABS_PERMITS = [
   { value: 'info', label: 'Info Permit', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
@@ -36,6 +37,11 @@ const TABS_PERMITS = [
     value: 'doc',
     label: 'Documents',
     icon: <Iconify icon="mdi:file" width={24} />,
+  },
+  {
+    value: 'plan',
+    label: 'Plan de panafricanisation',
+    icon: <Iconify icon="mdi:earth" width={24} />,
   },
   {
     value: 'biometrie',
@@ -150,6 +156,14 @@ export function PermitDetailView({ slug }) {
           created_at={permit?.created_on}
           expired_at={permit?.card_expires_at}
           status={permit?.status}
+        />
+      )}
+      {tabs.value === 'plan' && (
+        <PlanAfricanisation
+          info={permit?.africanization_plan}
+          employeeId={permit?.slug}
+          employeeName={`${permit?.first} ${permit?.last}`}
+          isExpatriate={true}
         />
       )}
     </DashboardContent>

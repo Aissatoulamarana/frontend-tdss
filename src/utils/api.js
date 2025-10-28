@@ -149,8 +149,6 @@ const API = {
 
   listCountry: () => `${BASE_URL}/regions/countries/`,
 
-  planAfricanisation: () => `${BASE_URL}/documents/create-africanization-plan/`,
-
   // job-category
   createJobCategory: () => `${BASE_URL}/jobs/job-category/`,
   listJobCategory: () => `${BASE_URL}/jobs/job-category/`,
@@ -167,6 +165,14 @@ const API = {
   submitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/submit/`,
   unsubmitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/unsubmit/`,
   validatePermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/validate/`,
+
+  // Listes des api pour le plan de panafricanisation
+
+  listAfricanizationPlan: () => `${BASE_URL}/documents/africanization-plans/`,
+  detailsAfricanizationPlan: (slug) => `${BASE_URL}/documents/africanization-plans/${slug}/`,
+  createAfricanizationPlan: () => `${BASE_URL}/documents/create-africanization-plan/`,
+  reassign: (slug) => `${BASE_URL}/documents/africanization-plans/${slug}/reassign/`,
+  replaceGuinean: (slug) => `${BASE_URL}/documents/africanization-plans/${slug}/replace-guinean/`,
 
   // listes des api pour les documents des employés
   addDocument: () => `${BASE_URL}/documents/`,
