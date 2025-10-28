@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,6 +39,8 @@ import { toast } from 'react-toastify';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 
+import { FileInputPreview } from './file-input-preview';
+
 // ✅ --- Schéma de validation Zod ---
 const documentSchema = (isEdit = false) =>
   z.object({
@@ -71,7 +73,7 @@ const documentSchema = (isEdit = false) =>
     expected_takeover_date: z.union([z.string().length(0), z.string().date()]).optional(),
   });
 
-export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit }) {
+export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit, onUpdate }) {
   const loadingSend = useBoolean();
 
   // --- Valeurs par défaut ---
@@ -160,11 +162,13 @@ export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit 
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         toast.success("Plan d'africanisation mis à jour avec succès");
+        onUpdate(response.data);
       } else {
         response = await axios.post(API.createAfricanizationPlan(), formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         toast.success("Plan d'africanisation créé avec succès");
+        onUpdate(response.data);
       }
 
       reset();
@@ -179,6 +183,16 @@ export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit 
       loadingSend.onFalse();
     }
   };
+
+  useEffect(() => {
+    if (isEdit && plan) {
+      setPreviews({
+        identity_card_scan: plan.identity_card_scan || null,
+        contract_scan: plan.contract_scan || null,
+        training_plan_scan: plan.training_plan_scan || null,
+      });
+    }
+  }, [isEdit, plan]);
 
   // --- Si non expatrié, pas de plan ---
 
@@ -339,109 +353,37 @@ export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit 
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Scan carte
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileChange(e, 'identity_card_scan')}
-                    />
-                  </Button>
-                  {errors.identity_card_scan && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
-                      {errors.identity_card_scan.message}
-                    </Typography>
-                  )}
-                  {previews.identity_card_scan && (
-                    <Box sx={{ mt: 1 }}>
-                      <img
-                        src={previews.identity_card_scan}
-                        alt="Aperçu"
-                        style={{
-                          width: '100%',
-                          height: 60,
-                          objectFit: 'cover',
-                          borderRadius: 4,
-                        }}
-                      />
-                    </Box>
-                  )}
+                  <FileInputPreview
+                    label="Scan carte"
+                    name="identity_card_scan"
+                    previews={previews}
+                    setPreviews={setPreviews}
+                    setValue={setValue}
+                    error={errors.identity_card_scan}
+                    isEdit={isEdit}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Scan contrat
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileChange(e, 'contract_scan')}
-                    />
-                  </Button>
-                  {errors.contract_scan && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
-                      {errors.contract_scan.message}
-                    </Typography>
-                  )}
-                  {previews.contract_scan && (
-                    <Box sx={{ mt: 1 }}>
-                      <img
-                        src={previews.contract_scan}
-                        alt="Aperçu"
-                        style={{
-                          width: '100%',
-                          height: 60,
-                          objectFit: 'cover',
-                          borderRadius: 4,
-                        }}
-                      />
-                    </Box>
-                  )}
+                  <FileInputPreview
+                    label="Scan contrat"
+                    name="contract_scan"
+                    previews={previews}
+                    setPreviews={setPreviews}
+                    setValue={setValue}
+                    error={errors.contract_scan}
+                    isEdit={isEdit}
+                  />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    fullWidth
-                    startIcon={<CloudUploadIcon />}
-                  >
-                    Plan de formation
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*,.pdf"
-                      onChange={(e) => handleFileChange(e, 'training_plan_scan')}
-                    />
-                  </Button>
-                  {errors.training_plan_scan && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
-                      {errors.training_plan_scan.message}
-                    </Typography>
-                  )}
-                  {previews.training_plan_scan && (
-                    <Box sx={{ mt: 1 }}>
-                      <img
-                        src={previews.training_plan_scan}
-                        alt="Aperçu"
-                        style={{
-                          width: '100%',
-                          height: 60,
-                          objectFit: 'cover',
-                          borderRadius: 4,
-                        }}
-                      />
-                    </Box>
-                  )}
+                  <FileInputPreview
+                    label="Plan de formation"
+                    name="training_plan_scan"
+                    previews={previews}
+                    setPreviews={setPreviews}
+                    setValue={setValue}
+                    error={errors.training_plan_scan}
+                    isEdit={isEdit}
+                  />
                 </Grid>
               </Grid>
 
@@ -479,7 +421,7 @@ export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit 
 
           <DialogActions>
             <Button onClick={onClose}>Annuler</Button>
-            <Button type="submit" variant="contained">
+            <Button type="submit" variant="contained" disabled={isSubmitting || loadingSend.value}>
               {plan ? 'Mettre à jour' : 'Créer'}
             </Button>
           </DialogActions>

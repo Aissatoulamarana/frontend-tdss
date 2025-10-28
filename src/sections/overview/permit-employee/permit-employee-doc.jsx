@@ -425,31 +425,35 @@ export function PermitEmployeeDoc({ documents = [], employee, onDocumentUploaded
                                   Ouvrir
                                 </Button>
                               </Tooltip>
-                              <Tooltip title="modifier le document">
-                                <IconButton
-                                  size="small"
-                                  color="info"
-                                  onClick={() => handleModifyDocument(docType, existingDoc)}
-                                  sx={{
-                                    border: '1px solid',
-                                    borderColor: 'info',
-                                  }}
-                                >
-                                  <Iconify icon="mdi:pencil" />
-                                </IconButton>
-                              </Tooltip>
+                              {docType.name !== 'Plan de panafricanisation' && (
+                                <Tooltip title="modifier le document">
+                                  <IconButton
+                                    size="small"
+                                    color="info"
+                                    onClick={() => handleModifyDocument(docType, existingDoc)}
+                                    sx={{
+                                      border: '1px solid',
+                                      borderColor: 'info',
+                                    }}
+                                  >
+                                    <Iconify icon="mdi:pencil" />
+                                  </IconButton>
+                                </Tooltip>
+                              )}
                             </>
                           ) : (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="primary"
-                              startIcon={<Iconify icon="mdi:plus" />}
-                              onClick={() => handleAddDocument(docType)}
-                              fullWidth
-                            >
-                              Ajouter
-                            </Button>
+                            docType.name !== 'Plan de panafricanisation' && (
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                                startIcon={<Iconify icon="mdi:plus" />}
+                                onClick={() => handleAddDocument(docType)}
+                                fullWidth
+                              >
+                                Ajouter
+                              </Button>
+                            )
                           )}
                         </Stack>
                       </Stack>

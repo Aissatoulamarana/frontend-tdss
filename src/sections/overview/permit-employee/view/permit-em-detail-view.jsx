@@ -94,6 +94,13 @@ export function PermitDetailView({ slug }) {
     );
   };
 
+  const handleUpdatePlan = (updatedPlan) => {
+    setPermit((prev) => ({
+      ...prev,
+      africanization_plan: updatedPlan, // 🔥 met à jour uniquement cette partie
+    }));
+  };
+
   return (
     <DashboardContent>
       <Box sx={{ mb: { xs: 3, md: 5 } }}>
@@ -147,7 +154,11 @@ export function PermitDetailView({ slug }) {
       )}
 
       {tabs.value === 'declaration' && (
-        <PermitDeclaration declaration={permit?.declaration} type={permit?.type_display} />
+        <PermitDeclaration
+          declaration_number={permit?.declaration_number}
+          declaration_slug={permit?.declaration_slug}
+          type={permit?.type_display}
+        />
       )}
 
       {tabs.value === 'info' && (
@@ -163,7 +174,14 @@ export function PermitDetailView({ slug }) {
           info={permit?.africanization_plan}
           employeeId={permit?.slug}
           employeeName={`${permit?.first} ${permit?.last}`}
-          isExpatriate={true}
+          isExpatriate={
+            permit &&
+            !['guinéen', 'guineen', 'guinéenne', 'guineenne'].includes(
+              permit?.nationality?.toLowerCase().trim()
+            ) &&
+            permit?.country?.toLowerCase().trim() !== 'guinée'
+          }
+          onUpdate={handleUpdatePlan}
         />
       )}
     </DashboardContent>

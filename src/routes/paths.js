@@ -84,6 +84,7 @@ export const paths = {
 
     planAfricanisation: {
       root: `${ROOTS.DASHBOARD}/plan`,
+      detail: (slug) => `${ROOTS.DASHBOARD}/plan/${slug}`,
     },
 
     // Administration

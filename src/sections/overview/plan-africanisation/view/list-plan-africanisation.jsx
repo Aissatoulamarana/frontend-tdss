@@ -196,6 +196,13 @@ export function ListPlanAfricanisationView() {
     console.log('Error:', error);
   }
 
+  const handleViewRow = useCallback(
+    async (slug) => {
+      router.push(paths.dashboard.planAfricanisation.detail(slug));
+    },
+    [router]
+  );
+
   // return a valid JSX element from the component
   return (
     <>
@@ -280,7 +287,7 @@ export function ListPlanAfricanisationView() {
                         row={row}
                         selected={table.selected.includes(row.slug)}
                         onSelectRow={() => table.onSelectRow(row.slug)}
-                        // onViewRow={() => handleViewRow(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
                         // onEditRow={() => handleEditRow(row.slug)}
                         // onSubmitRow={() => handleSubmitRow(row.slug)}
                         // onUnSubmitRow={() => handleUnSubmitRow(row.slug)}

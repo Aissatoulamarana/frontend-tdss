@@ -68,6 +68,7 @@ export function PlanTableRow({
     billed: 'Facturée',
     actif: 'Actif',
     inactif: 'Inactif',
+    termine: 'Terminé',
   };
 
   // Ajoute la couleur correspondante au statut
@@ -77,7 +78,7 @@ export function PlanTableRow({
         return 'success';
       case 'inactif':
         return 'error';
-      case 'submitted':
+      case 'termine':
         return 'info';
       case 'unsubmitted':
         return 'warning';

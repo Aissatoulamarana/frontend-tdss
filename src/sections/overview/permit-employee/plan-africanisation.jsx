@@ -29,6 +29,7 @@ export function PlanAfricanisation({
   employeeId,
   isExpatriate,
   permitExpiryDate,
+  onUpdate,
 }) {
   const fileRef = useRef(null);
   const router = useRouter();
@@ -373,6 +374,7 @@ export function PlanAfricanisation({
             plan={isEdit ? info : null}
             employeeId={employeeId}
             isEdit={isEdit}
+            onUpdate={onUpdate}
           />
         )}
         {info && (
@@ -418,7 +420,7 @@ export function PlanAfricanisation({
                     },
                   }}
                 />
-                <Button onClick={handleOpenEdit}>
+                <Button variant="contained" onClick={handleOpenEdit}>
                   <Iconify icon="mdi:edit" width={20} sx={{ mr: 0.5 }} />
                   Modifier
                 </Button>
@@ -447,12 +449,13 @@ export function PlanAfricanisation({
                     onClick={info?.employee_slug ? handleViewEmployee : null}
                   />
                 )}
-                <InfoItem icon="mdi:account" label="Nom Complet" value={info?.full_name} />
-                <InfoItem
+                <InfoItem icon="mdi:account" label="Nom " value={info?.last_name} />
+                <InfoItem icon="mdi:account" label="Prénom " value={info?.first_name} />
+                {/* <InfoItem
                   icon={info?.sexe === 'male' ? 'mdi:gender-male' : 'mdi:gender-female'}
                   label="Sexe"
                   value={info?.sexe === 'male' ? 'Masculin' : 'Féminin'}
-                />
+                /> */}
                 <InfoItem
                   icon="mdi:calendar"
                   label="Date de Naissance"
