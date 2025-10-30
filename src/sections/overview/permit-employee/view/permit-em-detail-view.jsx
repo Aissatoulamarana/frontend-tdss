@@ -83,8 +83,13 @@ export function PermitDetailView({ slug }) {
 
   useEffect(() => {
     fecthPermit();
-    setStatus(permit?.status);
   }, [fecthPermit]);
+
+  useEffect(() => {
+    if (permit) {
+      setStatus(permit.status);
+    }
+  }, [permit]);
 
   const handleDocumentUploaded = () => {
     fecthPermit();
