@@ -27,6 +27,7 @@ import { Iconify } from 'src/components/iconify';
 // import { ShareSendDialog } from './components/ShareSendDialog';
 import { DeclarationPDF } from 'src/sections/overview/declaration/declaration-pdf';
 import DeclarationDetailsPrint from 'src/sections/overview/declaration/declaration-print';
+import { WorkPermitCard } from './permit-print';
 
 import { useMockedUser } from 'src/auth/hooks';
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -36,6 +37,8 @@ import { toast } from 'src/components/snackbar';
 
 export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeStatus }) {
   const router = useRouter();
+
+  const [openPrint, setOpenPrint] = useState(false);
 
   const { user } = useMockedUser();
   const type = user?.type_code?.toLowerCase().trim();
@@ -63,21 +66,19 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
 
   const componentRef = useRef(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef: componentRef,
-    documentTitle: `Permit_${permit?.card_number}`,
-    onAfterPrint: () => console.log('Impression terminée'),
-  });
+  const handlePrint = () => {
+    setOpenPrint(true);
+  };
 
   const handleSubmitRow = useCallback(async () => {
     try {
-      // Appel à l'API backend pour valider la déclaration en envoyant l'action
+      // Appel à l'API backend pour valider le permis
 
-      const response = await axios.post(API.submitDeclaration(permit?.slug), {});
+      const response = await axios.post(API.submitPermit(permit?.slug), {});
 
       if (response) {
         // Si succès, rediriger ou mettre à jour l'interface utilisateur
-        toast.success('Déclaration soumise avec succès !');
+        toast.success('Permis soumis avec succès !');
         // Mise à jour locale du statut dans tableData
         onChangeStatus('submitted');
       } else {
@@ -94,16 +95,16 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
 
   const handleUnSubmitRow = useCallback(async () => {
     try {
-      // Appel à l'API backend pour valider la déclaration en envoyant l'action
-      const response = await axios.post(API.unsubmitDeclaration(permit?.slug), {});
+      // Appel à l'API backend pour mettre en edition le permis en envoyant l'action
+      const response = await axios.post(API.unsubmitPermit(permit?.slug), {});
 
       if (response) {
         // Si succès, rediriger ou mettre à jour l'interface utilisateur
-        toast.success('Le statut de la déclaration a été remis à non soumis avec succès !');
+        toast.success('Le statut du permis a été remis à non soumis avec succès !');
         // Mise à jour locale du statut dans tableData
         onChangeStatus('unsubmitted');
       } else {
-        console.error('Erreur lors de la validation:', response.data.error);
+        console.error('Erreur lors de la mise en edition:', response.data.error);
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
@@ -116,7 +117,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
 
   const handleValidateRow = useCallback(async () => {
     try {
-      // Appel à l'API backend pour valider la déclaration en envoyant l'action
+      // Appel à l'API backend pour valider le permis en envoyant l'action
       const response = await axios.post(API.validatePermit(permit?.slug), {});
 
       if (response) {
@@ -136,21 +137,18 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
     }
   });
 
-  const handleFacturer = useCallback(async () => {
+  const handleDeliver = useCallback(async () => {
     try {
       // Appel à l'API backend pour rejeter la déclaration
-      const requestBody = {
-        declarations: [permit?.slug],
-        comment: "Facturation individuelle depuis l'interface",
-      };
-      const response = await axios.post(API.FacturerDeclaration(), requestBody);
-      if (response) {
+
+      const response = await axios.post(API.deliverPermit(permit?.slug));
+      if (response?.data) {
         // Si succès, rediriger ou mettre à jour l'interface utilisateur
-        toast.success('Déclaration facturée avec succès !');
+        toast.success('Permis delivré avec succès !');
         // Mise à jour locale du statut dans tableData
-        onChangeStatus('billed');
+        onChangeStatus('delivered');
       } else {
-        console.error('Erreur lors de la facturation:', response.data.error);
+        console.error('Erreur lors de la delivraison:', response.data.error);
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
@@ -165,7 +163,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
     try {
       // Appel à l'API backend pour rejeter la déclaration
       const response = await axios.post(API.rejectPermit(permit?.slug), {
-        reject_reason: motifRejet,
+        motif_rejet: motifRejet,
       });
       if (response) {
         toast.success('Permit rejetée avec succès !');
@@ -182,35 +180,24 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
     }
   });
 
-  const renderDownload = (
-    <NoSsr>
-      {permit && (
-        <PDFDownloadLink
-          document={
-            permit ? (
-              <DeclarationPDF declaration={permit} employees={permit} logoUrl={proxiedLogoUrl} />
-            ) : (
-              ''
-            )
-          }
-          fileName={permit?.number}
-          style={{ textDecoration: 'none' }}
-        >
-          {({ loading }) => (
-            <Tooltip title="Telecharger">
-              <IconButton>
-                {loading ? (
-                  <CircularProgress size={24} color="inherit" />
-                ) : (
-                  <Iconify icon="eva:cloud-download-fill" />
-                )}
-              </IconButton>
-            </Tooltip>
-          )}
-        </PDFDownloadLink>
-      )}
-    </NoSsr>
-  );
+  const handlePrintPermis = useCallback(async () => {
+    try {
+      const payload = {
+        declaration_employee_slugs: [permit.slug], // ✅ Correct
+      };
+
+      const response = await axios.post(API.printPermis(), payload);
+
+      if (response.data) {
+        toast.success('Permis imprimé avec succès');
+      } else {
+        toast.error('Une erreur est survenue lors de la communication avec le serveur.');
+      }
+    } catch (error) {
+      toast.error('Une erreur est survenue lors de la communication avec le serveur.');
+      console.error(error);
+    }
+  }, [permit?.slug]);
 
   return (
     <>
@@ -221,16 +208,14 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         sx={{ mb: { xs: 3, md: 5 } }}
       >
         <Stack direction="row" spacing={1} flexGrow={1} sx={{ width: 1 }}>
-          {/* Bouton d'aperçu PDF */}
-          <Tooltip title="Aperçu PDF">
-            <IconButton onClick={view.onTrue}>
-              <Iconify icon="eva:eye-fill" />
-            </IconButton>
-          </Tooltip>
-
-          {renderDownload}
+          {/* {renderDownload} */}
           <Box sx={{ display: 'none' }}>
-            <DeclarationDetailsPrint ref={componentRef} declaration={permit} employees={permit} />
+            <WorkPermitCard
+              open={openPrint}
+              onClose={() => setOpenPrint(false)}
+              permit={permit}
+              onPrint={handlePrintPermis}
+            />
           </Box>
 
           <Tooltip title="Imprimer">
@@ -271,7 +256,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
             </>
           )}
 
-          {type === 'comptable' && currentStatus === 'validated' && (
+          {currentStatus === 'validated' && (
             <Tooltip title="Facturer">
               <IconButton onClick={() => factureConfirm.onTrue()}>
                 <Iconify icon="mdi:credit-card" />
@@ -279,55 +264,13 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
             </Tooltip>
           )}
         </Stack>
-
-        <TextField
-          fullWidth
-          select
-          label="Status"
-          value={currentStatus}
-          onChange={onChangeStatus}
-          sx={{ maxWidth: 160 }}
-          slotProps={{
-            htmlInput: { id: `status-select-label` },
-            inputLabel: { htmlFor: `status-select-label` },
-          }}
-        >
-          {statusOptions?.map((option) => (
-            <MenuItem key={option?.value} value={option?.value}>
-              {option?.label}
-            </MenuItem>
-          ))}
-        </TextField>
       </Stack>
-
-      <Dialog
-        fullScreen
-        open={view.value}
-        onClose={view.onFalse}
-        PaperProps={{
-          sx: { maxWidth: 'calc(100% - 24px)', maxHeight: 'calc(100% - 24px)' },
-        }}
-      >
-        <Box sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
-          <DialogActions sx={{ p: 1.5 }}>
-            <Button color="inherit" variant="contained" onClick={view.onFalse}>
-              Fermer
-            </Button>
-          </DialogActions>
-
-          <Box sx={{ flexGrow: 1, height: 1, overflow: 'hidden' }}>
-            <PDFViewer width="100%" height="100%" style={{ border: 'none' }}>
-              <DeclarationPDF declaration={permit} employees={employees} logoUrl={proxiedLogoUrl} />
-            </PDFViewer>
-          </Box>
-        </Box>
-      </Dialog>
 
       {/* Exemple de boîte de dialogue de confirmation pour la soumission */}
       <ConfirmDialog
         open={submitConfirm.value}
         onClose={submitConfirm.onFalse}
-        title="Soumission"
+        title="Soumission "
         content="Voulez-vous vraiment soumettre cette déclaration ?"
         action={
           <Button
@@ -347,7 +290,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         open={unsubmitConfirm.value}
         onClose={unsubmitConfirm.onFalse}
         title="Mettre en édition"
-        content="Voulez-vous vraiment mettre cette déclaration en édition ?"
+        content="Voulez-vous vraiment mettre ce dossier en édition ?"
         action={
           <Button
             variant="contained"
@@ -366,7 +309,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
       <ConfirmDialog
         open={validateConfirm.value}
         onClose={validateConfirm.onFalse}
-        title="Valider"
+        title="Validation"
         content="Voulez-vous vraiment valider cette déclaration ?"
         action={
           <Button
@@ -383,20 +326,20 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
       />
       {/* Exemple de boîte de dialogue de confirmation pour la facturation */}
       <ConfirmDialog
-        open={factureConfirm.value}
-        onClose={factureConfirm.onFalse}
-        title="Facturer"
-        content="Voulez-vous vraiment facturer cette déclaration ?"
+        open={deliverConfirm.value}
+        onClose={deliverConfirm.onFalse}
+        title="Delivraison"
+        content="Voulez-vous vraiment delivrer ce dossier ?"
         action={
           <Button
             variant="contained"
             color="primary"
             onClick={() => {
-              factureConfirm.onFalse();
-              handleFacturer();
+              deliverConfirm.onFalse();
+              handleDeliver();
             }}
           >
-            Facturer
+            Delivrer
           </Button>
         }
       />
@@ -404,10 +347,11 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
       <ConfirmDialog
         open={openRejetDialog}
         onClose={() => setOpenRejetDialog(false)}
-        title="Rejeter"
+        title="Rejeter "
         content={
           <TextField
             fullWidth
+            sx={{ mt: 2 }}
             label="Motif du rejet"
             multiline
             rows={3}

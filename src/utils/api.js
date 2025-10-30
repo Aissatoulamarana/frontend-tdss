@@ -149,6 +149,8 @@ const API = {
 
   listCountry: () => `${BASE_URL}/regions/countries/`,
 
+  listCountries: () => `${BASE_URL}/payments/countries/`,
+
   // job-category
   createJobCategory: () => `${BASE_URL}/jobs/job-category/`,
   listJobCategory: () => `${BASE_URL}/jobs/job-category/`,
@@ -159,7 +161,7 @@ const API = {
   // Listes des  api pour les permis des employés
   listPermitsEmployees: () => `${BASE_URL}/declarations/employees/`,
   detailPermitEmployee: (slug) => `${BASE_URL}/declarations/employees/${slug}/`,
-  printPermis: (slug) => `${BASE_URL}/declarations/employees/${slug}/print/`,
+  printPermis: () => `${BASE_URL}/declarations/employees/print/`,
   deliverPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/deliver/`,
   rejectPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/reject/`,
   submitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/submit/`,

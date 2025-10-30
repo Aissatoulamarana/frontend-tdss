@@ -62,7 +62,7 @@ export const getEntreprisesSearch = async (params = {}) => {
     const response = await axios.get(API.listEntreprises(params));
     return response?.data?.results || response?.data || [];
   } catch (error) {
-    console.error('Erreur lors de la recherche d\'entreprises:', error);
+    console.error("Erreur lors de la recherche d'entreprises:", error);
     return [];
   }
 };
@@ -86,7 +86,7 @@ export const getJobCategories = () =>
   fetchAndCache('job_categories', API.listJobCategory, 'results');
 export const getEmployees = () => fetchAndCache('employees', API.Employe, 'results');
 export const getJobAgent = () => fetchAndCache('jobAgent', API.listFonctionAgent, 'results');
-export const getCountries = () => fetchAndCache('countries', API.listCountry, 'results');
+export const getCountries = () => fetchAndCache('countries', API.listCountries, 'results');
 
 export const clearCache = () => {
   Object.keys(cache).forEach((key) => (cache[key] = null));
