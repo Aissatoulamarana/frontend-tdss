@@ -106,7 +106,7 @@
         "swr": "^2.3.3",
         "xlsx": "^0.18.5",
         "yet-another-react-lightbox": "^3.21.7",
-        "zod": "^3.24.2"
+        "zod": "^3.23.0"
     },
     "devDependencies": {
         "@svgr/webpack": "^8.1.0",

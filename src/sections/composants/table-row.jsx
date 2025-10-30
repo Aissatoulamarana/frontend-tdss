@@ -163,6 +163,7 @@ export function TableRowComDevise({
 }
 
 // table row for permit
+// table row for permit
 export function TableRowComPermit({
   row,
   selected,

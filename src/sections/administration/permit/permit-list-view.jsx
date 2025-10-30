@@ -28,309 +28,301 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
 import {
-    useTable,
-    emptyRows,
-    rowInPage,
-    TableNoData,
-    getComparator,
-    TableEmptyRows,
-    TableHeadCustom,
-    TableSelectedAction,
-    TablePaginationCustom,
+  useTable,
+  emptyRows,
+  rowInPage,
+  TableNoData,
+  getComparator,
+  TableEmptyRows,
+  TableHeadCustom,
+  TableSelectedAction,
+  TablePaginationCustom,
 } from 'src/components/table';
-
 
 import { TableToolbar } from 'src/sections/composants/table-toolbar';
 import { TableFiltersResult } from 'src/sections/composants/table-filters-results';
 import { TableRowComPermit } from 'src/sections/composants/table-row';
 // ----------------------------------------------------------------------
 
-
-
 const TABLE_HEAD = [
-    { id: 'name', label: 'Nom' },
-    { id: 'type', label: 'Type ' },
-    { id: 'price', label: 'Prix' },
-    { id: 'devise', label: 'Devise' },
+  { id: 'name', label: 'Nom' },
+  { id: 'type', label: 'Type ' },
+  { id: 'price', label: 'Prix' },
+  { id: 'devise', label: 'Devise' },
 
-    { id: '', width: 88 },
+  { id: '', width: 88 },
 ];
 
 // ----------------------------------------------------------------------
 
 export function PermitListView() {
-    const table = useTable();
+  const table = useTable();
 
-    const router = useRouter();
+  const router = useRouter();
 
-    const confirm = useBoolean();
+  const confirm = useBoolean();
 
-    const [tableData, setTableData] = useState([]);
-    const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-    const [error, setError] = useState(null); // État pour gérer les erreurs
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(true); // État pour indiquer le chargement
+  const [error, setError] = useState(null); // État pour gérer les erreurs
 
-    const filters = useSetState({ name: '', profil: [], status: 'all' });
+  const filters = useSetState({ name: '', profil: [], status: 'all' });
 
-    const dataFiltered = applyFilter({
-        inputData: tableData,
-        comparator: getComparator(table.order, table.orderBy),
-        filters: filters.state,
+  const dataFiltered = applyFilter({
+    inputData: tableData,
+    comparator: getComparator(table.order, table.orderBy),
+    filters: filters.state,
+  });
+
+  const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
+
+  const canReset =
+    !!filters.state.name || filters.state.profil.length > 0 || filters.state.status !== 'all';
+
+  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+
+  const handleDeleteRow = useCallback(
+    (id) => {
+      const deleteRow = tableData.filter((row) => row.id !== id);
+
+      toast.success('Suppression reussie!');
+
+      setTableData(deleteRow);
+
+      table.onUpdatePageDeleteRow(dataInPage.length);
+    },
+    [dataInPage.length, table, tableData]
+  );
+
+  const handleDeleteRows = useCallback(() => {
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+
+    toast.success('Suppression reussie!');
+
+    setTableData(deleteRows);
+
+    table.onUpdatePageDeleteRows({
+      totalRowsInPage: dataInPage.length,
+      totalRowsFiltered: dataFiltered.length,
     });
+  }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
-    const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
+  const handleEditRow = useCallback(
+    (id) => {
+      router.push(paths.dashboard.user.edit(id));
+    },
+    [router]
+  );
 
-    const canReset =
-        !!filters.state.name || filters.state.profil.length > 0 || filters.state.status !== 'all';
+  const handleViewRow = useCallback(
+    (id) => {
+      router.push(paths.dashboard.user.account);
+    },
+    [router]
+  );
 
-    const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const handleFilterStatus = useCallback(
+    (event, newValue) => {
+      table.onResetPage();
+      filters.setState({ status: newValue });
+    },
+    [filters, table]
+  );
 
-    const handleDeleteRow = useCallback(
-        (id) => {
-            const deleteRow = tableData.filter((row) => row.id !== id);
+  useEffect(() => {
+    // Fonction pour récupérer les devises
+    const fetchRegions = async () => {
+      try {
+        const response = await axios.get(API.listPermits());
+        setTableData(response.data.results);
+      } catch (err) {
+        setError(err.message || 'Erreur lors du chargement des données.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            toast.success('Suppression reussie!');
+    fetchRegions();
+  }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
 
-            setTableData(deleteRow);
+  if (loading) {
+    console.info('Loading ...');
+  }
 
-            table.onUpdatePageDeleteRow(dataInPage.length);
-        },
-        [dataInPage.length, table, tableData]
-    );
+  if (error) {
+    console.error(`Error: ${error}`);
+  }
+  return (
+    <>
+      <DashboardContent maxWidth="xl">
+        <CustomBreadcrumbs
+          heading="Permits"
+          links={[
+            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Permit', href: paths.dashboard.devise.root },
+            { name: 'Liste des Permits' },
+          ]}
+          sx={{ mb: { xs: 3, md: 5 } }}
+        />
 
-    const handleDeleteRows = useCallback(() => {
-        const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+        <Card>
+          <Tabs
+            value={filters.state.status}
+            onChange={handleFilterStatus}
+            sx={{
+              px: 2.5,
+              boxShadow: (theme) =>
+                `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+            }}
+          ></Tabs>
 
-        toast.success('Suppression reussie!');
+          <TableToolbar
+            filters={filters}
+            onResetPage={table.onResetPage}
+            options={{ profil: _roles }}
+          />
 
-        setTableData(deleteRows);
+          {canReset && (
+            <TableFiltersResult
+              filters={filters}
+              totalResults={dataFiltered.length}
+              onResetPage={table.onResetPage}
+              sx={{ p: 2.5, pt: 0 }}
+            />
+          )}
 
-        table.onUpdatePageDeleteRows({
-            totalRowsInPage: dataInPage.length,
-            totalRowsFiltered: dataFiltered.length,
-        });
-    }, [dataFiltered.length, dataInPage.length, table, tableData]);
+          <Box sx={{ position: 'relative' }}>
+            <TableSelectedAction
+              dense={table.dense}
+              numSelected={table.selected.length}
+              rowCount={dataFiltered.length}
+              onSelectAllRows={(checked) =>
+                table.onSelectAllRows(
+                  checked,
+                  dataFiltered.map((row) => row.id)
+                )
+              }
+              action={
+                <Tooltip title="Supprimer">
+                  <IconButton color="primary" onClick={confirm.onTrue}>
+                    <Iconify icon="solar:trash-bin-trash-bold" />
+                  </IconButton>
+                </Tooltip>
+              }
+            />
 
-    const handleEditRow = useCallback(
-        (id) => {
-            router.push(paths.dashboard.user.edit(id));
-        },
-        [router]
-    );
-
-    const handleViewRow = useCallback(
-        (id) => {
-            router.push(paths.dashboard.user.account);
-        },
-        [router]
-    );
-
-    const handleFilterStatus = useCallback(
-        (event, newValue) => {
-            table.onResetPage();
-            filters.setState({ status: newValue });
-        },
-        [filters, table]
-    );
-
-
-
-    useEffect(() => {
-        // Fonction pour récupérer les devises
-        const fetchRegions = async () => {
-            try {
-                const response = await axios.get(API.listPermits());
-                setTableData(response.data.results); 
-            } catch (err) {
-                setError(err.message || 'Erreur lors du chargement des données.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRegions();
-    }, []); // La dépendance vide signifie que cette fonction est appelée une fois au montage
-
-    if (loading) {
-        console.info('Loading ...');
-    }
-
-    if (error) {
-        console.error(`Error: ${error}`);
-    }
-    return (
-        <>
-            <DashboardContent maxWidth="xl">
-                <CustomBreadcrumbs
-                    heading="Permits"
-                    links={[
-                        { name: 'Dashboard', href: paths.dashboard.root },
-                        { name: 'Permit', href: paths.dashboard.devise.root },
-                        { name: "Liste des Permits" },
-                    ]}
-
-                    sx={{ mb: { xs: 3, md: 5 } }}
+            <Scrollbar>
+              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+                <TableHeadCustom
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  headLabel={TABLE_HEAD}
+                  rowCount={dataFiltered.length}
+                  numSelected={table.selected.length}
+                  onSort={table.onSort}
+                  onSelectAllRows={(checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      dataFiltered.map((row) => row.id)
+                    )
+                  }
                 />
 
-                <Card>
-                    <Tabs
-                        value={filters.state.status}
-                        onChange={handleFilterStatus}
-                        sx={{
-                            px: 2.5,
-                            boxShadow: (theme) =>
-                                `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
-                        }}
-                    >
+                <TableBody>
+                  {/* slug, name, sign, value */}
+                  {dataFiltered
+                    .slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <TableRowComPermit
+                        key={row.slug}
+                        row={row}
+                        selected={table.selected.includes(row.slug)}
+                        onSelectRow={() => table.onSelectRow(row.slug)}
+                        onDeleteRow={() => handleDeleteRow(row.slug)}
+                        onEditRow={() => handleEditRow(row.slug)}
+                        onViewRow={() => handleViewRow(row.slug)}
+                      />
+                    ))}
 
-                    </Tabs>
+                  <TableEmptyRows
+                    height={table.dense ? 56 : 56 + 20}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
+                  />
 
-                    <TableToolbar
-                        filters={filters}
-                        onResetPage={table.onResetPage}
-                        options={{ profil: _roles }}
-                    />
+                  <TableNoData notFound={notFound} />
+                </TableBody>
+              </Table>
+            </Scrollbar>
+          </Box>
 
-                    {canReset && (
-                        <TableFiltersResult
-                            filters={filters}
-                            totalResults={dataFiltered.length}
-                            onResetPage={table.onResetPage}
-                            sx={{ p: 2.5, pt: 0 }}
-                        />
-                    )}
+          <TablePaginationCustom
+            page={table.page}
+            dense={table.dense}
+            count={dataFiltered.length}
+            rowsPerPage={table.rowsPerPage}
+            onPageChange={table.onChangePage}
+            onChangeDense={table.onChangeDense}
+            onRowsPerPageChange={table.onChangeRowsPerPage}
+          />
+        </Card>
+      </DashboardContent>
 
-                    <Box sx={{ position: 'relative' }}>
-                        <TableSelectedAction
-                            dense={table.dense}
-                            numSelected={table.selected.length}
-                            rowCount={dataFiltered.length}
-                            onSelectAllRows={(checked) =>
-                                table.onSelectAllRows(
-                                    checked,
-                                    dataFiltered.map((row) => row.id)
-                                )
-                            }
-                            action={
-                                <Tooltip title="Supprimer">
-                                    <IconButton color="primary" onClick={confirm.onTrue}>
-                                        <Iconify icon="solar:trash-bin-trash-bold" />
-                                    </IconButton>
-                                </Tooltip>
-                            }
-                        />
-
-                        <Scrollbar>
-                            <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                                <TableHeadCustom
-                                    order={table.order}
-                                    orderBy={table.orderBy}
-                                    headLabel={TABLE_HEAD}
-                                    rowCount={dataFiltered.length}
-                                    numSelected={table.selected.length}
-                                    onSort={table.onSort}
-                                    onSelectAllRows={(checked) =>
-                                        table.onSelectAllRows(
-                                            checked,
-                                            dataFiltered.map((row) => row.id)
-                                        )
-                                    }
-                                />
-
-                                <TableBody>
-                                    {/* slug, name, sign, value */}
-                                    {dataFiltered
-                                        .slice(
-                                            table.page * table.rowsPerPage,
-                                            table.page * table.rowsPerPage + table.rowsPerPage
-                                        )
-                                        .map((row) => (
-                                            <TableRowComPermit
-                                                key={row.slug}
-                                                row={row}
-                                                selected={table.selected.includes(row.slug)}
-                                                onSelectRow={() => table.onSelectRow(row.slug)}
-                                                onDeleteRow={() => handleDeleteRow(row.slug)}
-                                                onEditRow={() => handleEditRow(row.slug)}
-                                                onViewRow={() => handleViewRow(row.slug)}
-
-                                            />
-                                        ))}
-
-                                    <TableEmptyRows
-                                        height={table.dense ? 56 : 56 + 20}
-                                        emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
-                                    />
-
-                                    <TableNoData notFound={notFound} />
-                                </TableBody>
-                            </Table>
-                        </Scrollbar>
-                    </Box>
-
-                    <TablePaginationCustom
-                        page={table.page}
-                        dense={table.dense}
-                        count={dataFiltered.length}
-                        rowsPerPage={table.rowsPerPage}
-                        onPageChange={table.onChangePage}
-                        onChangeDense={table.onChangeDense}
-                        onRowsPerPageChange={table.onChangeRowsPerPage}
-                    />
-                </Card>
-            </DashboardContent>
-
-            <ConfirmDialog
-                open={confirm.value}
-                onClose={confirm.onFalse}
-                title="Supprimer"
-                content={
-                    <>
-                        Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> type d'utilisateur?
-                    </>
-                }
-                action={
-                    <Button
-                        variant="contained"
-                        color="error"
-                        onClick={() => {
-                            handleDeleteRows();
-                            confirm.onFalse();
-                        }}
-                    >
-                        Supprimer
-                    </Button>
-                }
-            />
-        </>
-    );
+      <ConfirmDialog
+        open={confirm.value}
+        onClose={confirm.onFalse}
+        title="Supprimer"
+        content={
+          <>
+            Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> type
+            d'utilisateur?
+          </>
+        }
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              handleDeleteRows();
+              confirm.onFalse();
+            }}
+          >
+            Supprimer
+          </Button>
+        }
+      />
+    </>
+  );
 }
 
 function applyFilter({ inputData, comparator, filters }) {
-    const { name, status, profil } = filters;
+  const { name, status, profil } = filters;
 
-    const stabilizedThis = inputData?.map((el, index) => [el, index]);
+  const stabilizedThis = inputData?.map((el, index) => [el, index]);
 
-    stabilizedThis.sort((a, b) => {
-        const order = comparator(a[0], b[0]);
-        if (order !== 0) return order;
-        return a[1] - b[1];
-    });
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
 
-    inputData = stabilizedThis.map((el) => el[0]);
+  inputData = stabilizedThis.map((el) => el[0]);
 
-    if (name) {
-        inputData = inputData?.filter(
-            (profiltype) => profiltype?.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
-        );
-    }
+  if (name) {
+    inputData = inputData?.filter(
+      (profiltype) => profiltype?.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+    );
+  }
 
-    if (status !== 'all') {
-        inputData = inputData?.filter((profiltype) => permission?.status === status);
-    }
+  if (status !== 'all') {
+    inputData = inputData?.filter((profiltype) => permission?.status === status);
+  }
 
-    if (profil.length) {
-        inputData = inputData?.filter((permission) => profil?.includes(permission?.profile));
-    }
+  if (profil.length) {
+    inputData = inputData?.filter((permission) => profil?.includes(permission?.profile));
+  }
 
-    return inputData;
+  return inputData;
 }

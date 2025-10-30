@@ -1,7 +1,5 @@
 //  const BASE_URL = 'http://192.168.1.109:8000/api'; // Adresse de votre backend
 
-import { remove } from 'nprogress';
-
 const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
 
 const API = {
@@ -61,7 +59,7 @@ const API = {
     return url;
   },
 
-  Employe: (slug) => `${BASE_URL}/declarations/${slug}/employees/`, // Liste des employés d'une declaration
+  Employe: (slug) => `${BASE_URL}/declarations/employees/?declaration=${slug}`, // Liste des employés d'une declaration
   UpdateEmploye: (declarationSlug, employeeSlug) =>
     `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
   DeleteEmploye: (slug) => `${BASE_URL}/declarations/${slug}/delete-employees/`, // Supprimer un ou plusieurs employés d'une déclaration
@@ -149,7 +147,9 @@ const API = {
   Devises: () => `${BASE_URL}/devises/list/`,
   listPermits: () => `${BASE_URL}/permits/`,
 
-  listCountry: () => `${BASE_URL}/payments/countries/`,
+  listCountry: () => `${BASE_URL}/regions/countries/`,
+
+  listCountries: () => `${BASE_URL}/payments/countries/`,
 
   // job-category
   createJobCategory: () => `${BASE_URL}/jobs/job-category/`,
@@ -157,6 +157,30 @@ const API = {
   detailsJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
   editJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
   deleteJobCategory: (slug) => `${BASE_URL}/jobs/job-category/${slug}/`,
+
+  // Listes des  api pour les permis des employés
+  listPermitsEmployees: () => `${BASE_URL}/declarations/employees/`,
+  detailPermitEmployee: (slug) => `${BASE_URL}/declarations/employees/${slug}/`,
+  printPermis: () => `${BASE_URL}/declarations/employees/print/`,
+  deliverPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/deliver/`,
+  rejectPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/reject/`,
+  submitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/submit/`,
+  unsubmitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/unsubmit/`,
+  validatePermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/validate/`,
+
+  // Listes des api pour le plan de panafricanisation
+
+  listAfricanizationPlan: () => `${BASE_URL}/documents/africanization-plans/`,
+  detailsAfricanizationPlan: (slug) => `${BASE_URL}/documents/africanization-plans/${slug}/`,
+  createAfricanizationPlan: () => `${BASE_URL}/documents/create-africanization-plan/`,
+  reassign: (slug) => `${BASE_URL}/documents/africanization-plans/${slug}/reassign/`,
+  replaceGuinean: (slug) => `${BASE_URL}/documents/africanization-plans/${slug}/replace-guinean/`,
+
+  // listes des api pour les documents des employés
+  addDocument: () => `${BASE_URL}/documents/`,
+
+  documents: () => `${BASE_URL}/documents/types/`,
+  updateDocument: (slug) => `${BASE_URL}/documents/${slug}/`,
 
   // Tableau de bord comptable
   getDeclarationsToInvoice: (month = null) => {

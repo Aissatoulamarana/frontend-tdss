@@ -68,7 +68,7 @@ export function EmployeeTableToolbar({
   const fetchJobSuggestions = useCallback(async (searchTerm = '') => {
     try {
       setLoading(true);
-      const response = await axios.get(API.listFonctions(), {
+      const response = await axios.get(API.listFonctionAgent(), {
         params: { search: searchTerm },
       });
       setJobSuggestions(response.data.results || []);

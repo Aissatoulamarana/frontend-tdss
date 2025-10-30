@@ -23,8 +23,10 @@ export function RHFDatePicker({ name, slotProps, ...other }) {
           <DatePicker
             {...field}
             value={dayjs(field.value)}
-            onChange={(newValue) => field.onChange(dayjs(newValue).format())}
-            format={formatStr.split.date}
+            onChange={(newValue) =>
+              field.onChange(newValue ? dayjs(newValue).format('YYYY-MM-DD') : '')
+            }
+            format="DD/MM/YYYY"
             slotProps={{
               ...slotProps,
               textField: {

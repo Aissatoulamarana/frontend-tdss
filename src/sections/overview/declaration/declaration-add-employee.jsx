@@ -7,6 +7,7 @@ import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
+import MenuItem from '@mui/material/MenuItem';
 import CircularProgress from '@mui/material/CircularProgress';
 import { TextField, Autocomplete } from '@mui/material';
 import debounce from 'lodash.debounce';
@@ -38,9 +39,26 @@ export const employeSchema = zod.object({
   last: zod.string().min(1, { message: 'le nom est obligatoire' }),
   passport_number: zod.string().min(1, { message: 'le numero de passeport est obligatoire' }),
   phone: schemaHelper.phoneNumber({ isValidPhoneNumber }),
+  email: zod
+    .union([
+      zod.string().length(0), // Permettre les chaînes vides
+      zod.string().email({ message: 'Email doit etre un email valide !' }),
+    ])
+    .optional(),
   job: zod.string().min(1, { message: 'la fonction est requise!' }),
   type: zod.string().default('new'),
   reference: zod.string().optional(),
+  country: zod.string().min(1, { message: 'Veuillez selectionner une nationalité' }),
+  address: zod.string().optional(),
+  sexe: zod.string().optional(),
+  birthday: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+
+  contract_starts_at: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+  contract_duration: zod
+    .union([zod.number(), zod.literal('')])
+    .transform((val) => (val === '' ? 0 : val))
+    .optional()
+    .default(0),
 });
 
 // Schéma global pour le formulaire qui attend un tableau d'employés
@@ -51,12 +69,19 @@ const formSchema = zod.object({
 export function DeclarationAddEmployee({ declaration, open, onClose }) {
   const [allOptions, setAllOptions] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
-  const [data, setData] = useState();
+  const [countries, setCountries] = useState([]);
+
   const [passportInput, setPassportInput] = useState('');
   const [loadingRenew, setLoadingRenew] = useState(false);
+  const [loadingCountries, setLoadingCountries] = useState(false);
   const router = useRouter();
   const loadingSend = useBoolean();
   const renewalModal = useBoolean();
+
+  const genders = [
+    { value: 'male', label: 'Homme' },
+    { value: 'female', label: 'Femme' },
+  ];
 
   // Utilisation du schéma global pour la validation
   const methods = useForm({
@@ -170,6 +195,42 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     };
   }, [declaration?.status]);
 
+  useEffect(() => {
+    let isMounted = true; // à déclarer ici
+
+    async function fetchCountries() {
+      setLoadingCountries(true);
+      try {
+        // Premier appel (limite 100)
+        const resp1 = await axios.get(API.listCountry(), {
+          params: { offset: 0, limit: 100 },
+        });
+
+        const total = resp1.data.count;
+
+        if (total > 100) {
+          // Deuxième appel avec la vraie limite totale
+          const resp2 = await axios.get(API.listCountry(), {
+            params: { offset: 0, limit: total },
+          });
+          if (isMounted) setCountries(resp2.data.results);
+        } else {
+          if (isMounted) setCountries(resp1.data.results);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des pays :', error);
+      } finally {
+        if (isMounted) setLoadingCountries(false);
+      }
+    }
+
+    fetchCountries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // <= le tableau de dépendances vide
+
   const handleAddEmployee = handleSubmit(async (data) => {
     loadingSend.onTrue();
     try {
@@ -230,6 +291,13 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       job: '',
       first: '',
       phone: '',
+      country: '',
+      address: '',
+      email: '',
+      sexe: 'male',
+      birthday: '',
+      contract_starts_at: '',
+      contract_duration: '',
       locked: false,
       passportExists: false,
     });
@@ -261,6 +329,13 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         type: 'renewal',
         reference: data.reference,
         job: data.job.slug, // champ libre
+        country: data?.country,
+        sexe: data?.sexe,
+        email: data?.email,
+        birthday: data?.birthday,
+        address: data?.address,
+        contract_starts_at: data?.contract_starts_at,
+        contract_duration: data?.contract_duration,
         passportExists: true,
         locked: true,
       });
@@ -346,6 +421,12 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         return findByValue?.value || findByLabel?.value || '';
       })();
 
+      const countrySlug = (() => {
+        const findByValue = countries.find((c) => c.slug === row.Nationalite);
+        const findByLabel = countries.find((c) => c.name === row.Nationalite);
+        return findByValue?.slug || findByLabel?.slug || '';
+      })();
+
       return {
         passport_number: row.Numero || '',
         phone: row.Telephone ? `+${String(row.Telephone)}` : '',
@@ -356,6 +437,13 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         reference: undefined,
         passportExists: false,
         locked: false,
+        country: countrySlug || '',
+        address: row?.Adresse || '',
+        email: row?.Email || '',
+        sexe: row?.Sexe || '',
+        birthday: row?.Date_Naissance || '',
+        contract_duration: row?.Duree_Contrat || '',
+        contract_starts_at: row?.Date_Debut_Contrat || '',
       };
     });
 
@@ -371,6 +459,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
   // Fonction pour obtenir l'option correspondant à une valeur
   const getJobOption = (jobValue) => allOptions.find((option) => option.value === jobValue) || null;
+
+  const getCountryOption = (slug) => countries.find((c) => c.slug === slug);
 
   return (
     <Dialog
@@ -419,58 +509,202 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
 
             <Stack divider={<Divider flexItem sx={{ borderStyle: 'dashed' }} />} spacing={3}>
               {fields.map((item, index) => (
-                <Stack key={item.id} alignItems="flex-end" spacing={1.5}>
+                <Stack key={item.id} alignItems="flex-end" spacing={2}>
+                  {/* PREMIÈRE LIGNE - CORRECTION DE L'ALIGNEMENT */}
                   <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
-                    <Field.Text
-                      size="small"
-                      name={`employees[${index}].passport_number`}
-                      label="Numéro Passeport"
-                      disabled={values.employees[index].locked}
-                      inputlabelprops={{ shrink: true }}
-                      onBlur={(e) => handlePassportBlur(e, index)}
-                      onChange={(e) => handlePassportChange(e, index)}
-                      error={
-                        values.employees[index].passportExists && !values.employees[index].locked
-                      }
-                      helperText={
-                        values.employees[index].passportExists
-                          ? values.employees[index].locked
-                            ? '✅ Ce passeport existe déjà, il est bien enregistré.'
-                            : '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
-                          : ''
-                      }
-                      FormHelperTextProps={{
-                        sx: {
-                          color: values.employees[index].locked ? 'success.main' : 'error.main',
-                        },
-                      }}
-                    />
-                    <Field.Phone
-                      size="small"
-                      name={`employees[${index}].phone`}
-                      label="Numéro de Téléphone"
-                      placeholder="votre numero de téléphone"
-                      sx={{ width: '100%' }}
-                      inputlabelprops={{ shrink: true }}
-                      // disabled={values.employees[index].locked}
-                    />
-                    <Field.Text
-                      size="small"
-                      name={`employees[${index}].last`}
-                      label="Nom"
-                      inputlabelprops={{ shrink: true }}
-                      disabled={values.employees[index].locked}
-                    />
-                    <Field.Text
-                      size="small"
-                      name={`employees[${index}].first`}
-                      label="Prénom"
-                      inputlabelprops={{ shrink: true }}
-                      disabled={values.employees[index].locked}
-                    />
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Autocomplete
+                        size="small"
+                        options={countries}
+                        getOptionLabel={(option) => option.name}
+                        value={getCountryOption(values.employees[index].country) || null}
+                        filterOptions={(opts, state) =>
+                          opts.filter((o) =>
+                            o.name.toLowerCase().includes(state.inputValue.trim().toLowerCase())
+                          )
+                        }
+                        onChange={(e, option) => {
+                          if (option) {
+                            setValue(`employees[${index}].country`, option.slug);
+                          } else {
+                            setValue(`employees[${index}].country`, '');
+                          }
+                        }}
+                        renderOption={(props, option, { index }) => (
+                          <li {...props} key={`${option.value}-${index}`}>
+                            {option.name}
+                          </li>
+                        )}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            size="small"
+                            label="Nationalité"
+                            placeholder="Choisissez une nationalité"
+                            fullWidth
+                            error={!!methods.formState.errors?.employees?.[index]?.country}
+                            helperText={
+                              methods.formState.errors?.employees?.[index]?.country?.message || ''
+                            }
+                            InputProps={{
+                              ...params.InputProps,
+                              endAdornment: (
+                                <>
+                                  {loadingCountries ? (
+                                    <CircularProgress color="inherit" size={20} />
+                                  ) : null}
+                                  {params.InputProps.endAdornment}
+                                </>
+                              ),
+                            }}
+                          />
+                        )}
+                      />
+                    </Box>
 
-                    {/* Remplacement du Field.Select par Autocomplete */}
-                    <Box sx={{ minWidth: 160, maxWidth: { md: 200 } }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].passport_number`}
+                        label="Numéro Passeport"
+                        disabled={values.employees[index]?.locked}
+                        InputLabelProps={{ shrink: true }}
+                        onBlur={(e) => handlePassportBlur(e, index)}
+                        onChange={(e) => handlePassportChange(e, index)}
+                        error={
+                          values.employees[index]?.passportExists &&
+                          !values.employees[index]?.locked
+                        }
+                        helperText={
+                          values.employees[index]?.passportExists
+                            ? values.employees[index]?.locked
+                              ? '✅ Ce passeport existe déjà, il est bien enregistré.'
+                              : '❌ Ce numéro de passeport existe déjà. Cela devrait être un duplicata ou un renouvellement.'
+                            : ''
+                        }
+                        FormHelperTextProps={{
+                          sx: {
+                            color: values.employees[index]?.locked ? 'success.main' : 'error.main',
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].last`}
+                        label="Nom"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].first`}
+                        label="Prénom"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Select
+                        size="small"
+                        name={`employees[${index}].sexe`}
+                        label="Genre"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      >
+                        {genders?.map((gender) => (
+                          <MenuItem key={gender.value} value={String(gender?.value)}>
+                            {gender?.label}
+                          </MenuItem>
+                        ))}
+                      </Field.Select>
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.DatePicker
+                        size="small"
+                        name={`employees[${index}].birthday`}
+                        label="Date Naissance"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        slotProps={{
+                          textField: {
+                            size: 'small',
+                            fullWidth: true,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Stack>
+
+                  {/* DEUXIÈME LIGNE - CORRECTION DE L'ALIGNEMENT */}
+                  <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ width: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].email`}
+                        label="Adresse Email"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Phone
+                        size="small"
+                        name={`employees[${index}].phone`}
+                        label="Numéro de Téléphone"
+                        placeholder="Votre numéro de téléphone"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        name={`employees[${index}].address`}
+                        label="Adresse"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.DatePicker
+                        size="small"
+                        name={`employees[${index}].contract_starts_at`}
+                        label="Date début contrat"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        slotProps={{
+                          textField: {
+                            size: 'small',
+                            fullWidth: true,
+                          },
+                        }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Field.Text
+                        size="small"
+                        type="number"
+                        name={`employees[${index}].contract_duration`}
+                        label="Durée Contrat (an)"
+                        InputLabelProps={{ shrink: true }}
+                        disabled={values.employees[index]?.locked}
+                        inputProps={{ min: 1, step: 1 }}
+                      />
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Autocomplete
                         size="small"
                         options={allOptions}
@@ -478,7 +712,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         loading={loadingOptions}
                         fullWidth
                         value={getJobOption(values.employees[index]?.job)}
-                        // disabled={values.employees[index]?.locked}
+                        disabled={values.employees[index]?.locked}
                         filterOptions={(opts, state) =>
                           opts.filter((o) =>
                             o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
@@ -491,15 +725,18 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                             setValue(`employees[${index}].job`, '');
                           }
                         }}
-                        renderOption={(props, option, { index: optionIndex }) => (
-                          <li {...props} key={`${option.value}-${optionIndex}`}>
-                            {option.label}
-                          </li>
-                        )}
+                        renderOption={(props, option) => {
+                          const { key, ...otherProps } = props;
+                          return (
+                            <li key={`${option.value}-${option.label}`} {...otherProps}>
+                              {option.label}
+                            </li>
+                          );
+                        }}
                         renderInput={(params) => (
                           <TextField
                             {...params}
-                            label="Fonction *"
+                            label="Fonction"
                             size="small"
                             fullWidth
                             error={!!methods.formState.errors.employees?.[index]?.job}
@@ -519,6 +756,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                       />
                     </Box>
                   </Stack>
+
                   <Button
                     size="small"
                     color="error"

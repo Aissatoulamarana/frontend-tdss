@@ -74,15 +74,20 @@ export const paths = {
       details: (slug) => `/dashboard/paiements/${slug}`,
     },
     employee: {
-      list : `${ROOTS.DASHBOARD}/employee/list`,
-      details:(slug) => `${ROOTS.DASHBOARD}/employee/${slug}`,
+      list: `${ROOTS.DASHBOARD}/employee/list`,
+      details: (slug) => `${ROOTS.DASHBOARD}/employee/${slug}`,
     },
     // penalite: {
     //   root: `${ROOTS.DASHBOARD}/penalite`,
     //   list: `${ROOTS.DASHBOARD}/penalite/list`,
     // },
 
-    // Administration    
+    planAfricanisation: {
+      root: `${ROOTS.DASHBOARD}/plan`,
+      detail: (slug) => `${ROOTS.DASHBOARD}/plan/${slug}`,
+    },
+
+    // Administration
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
       new: `${ROOTS.DASHBOARD}/user/new`,
@@ -94,7 +99,7 @@ export const paths = {
     jobCategory: {
       root: `${ROOTS.DASHBOARD}/jobCategory`,
       new: `${ROOTS.DASHBOARD}/jobCategory/new`,
-      list: `${ROOTS.DASHBOARD}/jobCategory/list`, 
+      list: `${ROOTS.DASHBOARD}/jobCategory/list`,
       details: (slug) => `${ROOTS.DASHBOARD}/jobCategory/${slug}`,
       edit: (slug) => `${ROOTS.DASHBOARD}/jobCategory/${slug}/edit`,
       delete: (slug) => `${ROOTS.DASHBOARD}/jobCategory/${slug}/delete`,
@@ -111,7 +116,7 @@ export const paths = {
       details: (slug) => `/dashboard/client/${slug}`,
       edit: (slug) => `${ROOTS.DASHBOARD}/client/${slug}/edit`,
     },
-    agence :{
+    agence: {
       root: `${ROOTS.DASHBOARD}/agence`,
       new: `${ROOTS.DASHBOARD}/agence/new`,
     },
@@ -126,19 +131,25 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/userType`,
     },
     devise: {
-      root: `${ROOTS.DASHBOARD}/devise`, 
+      root: `${ROOTS.DASHBOARD}/devise`,
     },
     permit: {
       root: `${ROOTS.DASHBOARD}/permit`,
+      details: (slug) => `/dashboard/permit/${slug}`,
+      edit: (slug) => `${ROOTS.DASHBOARD}/permit/${slug}/edit`,
+    },
+
+    permitAdmin: {
+      root: `${ROOTS.DASHBOARD}/permit-admin`,
     },
 
     // permission: {
     //   root: `${ROOTS.DASHBOARD}/permission`,
     //   new: `${ROOTS.DASHBOARD}/permission/new`,
     //   list: `${ROOTS.DASHBOARD}/permission/list`,
-     
+
     // },
-    
+
     group: {
       root: `${ROOTS.DASHBOARD}/group`,
       five: `${ROOTS.DASHBOARD}/group/five`,

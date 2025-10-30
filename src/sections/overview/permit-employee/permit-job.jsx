@@ -7,13 +7,12 @@ import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
+
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export function EmployeeJob({ info }) {
-  const JobArray = Array.isArray(info) ? info : [];
-
+export function PermitJob({ info }) {
   const fileRef = useRef(null);
 
   const handleAttach = () => {
@@ -108,6 +107,7 @@ export function EmployeeJob({ info }) {
       }}
     >
       <Box sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+        {/* ================== Header ================== */}
         <Typography
           variant="h5"
           sx={{
@@ -124,25 +124,23 @@ export function EmployeeJob({ info }) {
         </Typography>
 
         <Divider sx={{ mb: 3 }} />
-        {info?.map((i, index) => (
-          <Box
-            key={index}
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 2,
-            }} // espace entre les cartes
-          >
-            {/* Nom */}
-            <InfoItem icon="mdi:briefcase" label="Fonction" value={i?.name} />
 
-            {/* Categorie de Fonction */}
-            <InfoItem icon="mdi:tag" label="Catégorie de Fonction" value={i?.category} />
-
-            {/* Permis */}
-            <InfoItem icon="mdi:card-account-details" label="Permis de Travail" value={i?.permit} />
-          </Box>
-        ))}
+        {/* ================== Informations ================== */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2,
+          }}
+        >
+          <InfoItem icon="mdi:briefcase" label="Fonction" value={info?.name} />
+          <InfoItem icon="mdi:tag" label="Catégorie de Fonction" value={info?.category} />
+          <InfoItem
+            icon="mdi:card-account-details"
+            label="Permis de Travail"
+            value={info?.permit}
+          />
+        </Box>
       </Box>
     </Card>
   );

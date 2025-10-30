@@ -1,6 +1,6 @@
 import { CONFIG } from 'src/config-global';
 
-import { PermitListView } from 'src/sections/overview/permit-employee/view';
+import { PermitListView } from 'src/sections/administration/permit/permit-list-view';
 
 // ----------------------------------------------------------------------
 
