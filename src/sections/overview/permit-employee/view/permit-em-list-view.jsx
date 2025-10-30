@@ -224,12 +224,12 @@ export function PermitListView() {
 
   const handleRejetRow = useCallback(async (slug, rejectReason) => {
     try {
-      const response = await axios.post(API.rejectPermit(slug), { reject_reason: rejectReason });
+      const response = await axios.post(API.rejectPermit(slug), { motif_rejet: rejectReason });
       if (response.data || response.status === 200) {
         toast.success('Permit rejeté avec succès!');
         setTableData((prevData) =>
           prevData.map((item) =>
-            item.slug === slug ? { ...item, status: 'rejected', reject_reason: rejectReason } : item
+            item.slug === slug ? { ...item, status: 'rejected', motif_rejet: rejectReason } : item
           )
         );
       } else {

@@ -35,7 +35,7 @@ import {
 import { Form, Field, schemaHelper } from 'src/components/hook-form';
 import API from 'src/utils/api';
 import axios from 'src/utils/axios';
-import { toast } from 'react-toastify';
+import { toast } from 'src/components/snackbar';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { isValidPhoneNumber } from 'react-phone-number-input/input';
 
@@ -174,9 +174,12 @@ export function AfricanizationPlanNew({ employeeId, plan, open, onClose, isEdit,
       reset();
       onClose();
     } catch (error) {
-      console.error('Error submitting Africanization Plan:', error);
+      console.error('Error submitting Africanization Plan:', error?.error?.[0]);
       const errorMessage =
-        error.response?.data?.message ||
+        error?.error?.[0] ||
+        error?.details ||
+        error?.detail ||
+        error?.message ||
         "Une erreur est survenue lors de la soumission du plan d'africanisation.";
       toast.error(errorMessage);
     } finally {

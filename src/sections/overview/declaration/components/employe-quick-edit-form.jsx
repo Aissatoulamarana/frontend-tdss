@@ -39,6 +39,7 @@ export const employeQuickEditSchema = zod.object({
   contract_starts_at: zod.string().date().optional(),
   birthday: zod.string().date().optional(),
   contract_duration: zod.number().optional().default(0),
+  birth_place: zod.string().optional(),
 });
 
 // ----------------------------------------------------------------------
@@ -60,23 +61,20 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
     const currentJobSlug =
       typeof currentEmployee?.job === 'object' ? currentEmployee?.job?.slug : currentEmployee?.job;
 
-    const currentCountrySlug =
-      typeof currentEmployee?.country === 'object'
-        ? currentEmployee?.country?.slug
-        : currentEmployee?.country;
-
     return {
       first: currentEmployee?.first || '',
       last: currentEmployee?.last || '',
       passport_number: currentEmployee?.passport_number || '',
       phone: currentEmployee?.phone || '',
       job: currentJobSlug || '',
-      country: currentCountrySlug || '',
+      country: currentEmployee?.country || '',
       address: currentEmployee?.address || '',
       sexe: currentEmployee?.sexe || '',
       birthday: currentEmployee?.birthday || null,
       contract_starts_at: currentEmployee?.contract_starts_at || null,
       contract_duration: currentEmployee?.contract_duration || null,
+      email: currentEmployee?.email || '',
+      birth_place: currentEmployee?.birth_place || '',
     };
   }, [currentEmployee]);
 
@@ -129,6 +127,31 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
       isMounted = false;
     };
   }, []); // <= le tableau de dépendances vide
+
+  // --- Dès que les pays sont chargés, normaliser la valeur country (nom -> slug) si besoin ---
+  useEffect(() => {
+    // si la valeur actuelle est vide, rien à faire
+    const currentCountryValue = currentEmployee?.country;
+    if (!currentCountryValue || countries.length === 0) return;
+
+    // Si currentEmployee.country est déjà un slug présent dans la liste => on set tel quel
+    const bySlug = countries.find((c) => c.slug === currentCountryValue);
+    if (bySlug) {
+      setValue('country', bySlug.slug);
+      return;
+    }
+
+    // Sinon si c'est un nom (ex: "Gambie"), on cherche le slug correspondant
+    const byName = countries.find(
+      (c) => c.name?.toLowerCase() === String(currentCountryValue).toLowerCase()
+    );
+    if (byName) {
+      setValue('country', byName.slug);
+      return;
+    }
+
+    // Sinon on laisse la valeur telle quelle (backend utilise peut-être des noms non trouvés)
+  }, [countries, currentEmployee, setValue]);
 
   useEffect(() => {
     let isMounted = true;
@@ -233,22 +256,51 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
     };
   }, []);
 
-  const getModifiedFields = (originalData, newData) => {
+  const getModifiedFields = (originalData, newData, countriesList) => {
     const modifiedFields = {};
 
     Object.keys(newData).forEach((key) => {
       let originalValue = originalData[key];
+      let newValue = newData[key];
 
-      // Adaptation spéciale pour job
+      // job: si original est objet, compare par slug
       if (key === 'job' && typeof originalValue === 'object') {
         originalValue = originalValue?.slug;
       }
-      if ((key = 'contry' && typeof originalValue === 'object')) {
-        originalValue = originalValue?.slug;
+
+      // country: normaliser original -> slug (si original était un nom)
+      if (key === 'country') {
+        // obtenir originalSlug
+        let originalSlug = originalValue;
+        if (typeof originalValue === 'object') originalSlug = originalValue?.slug;
+        else if (typeof originalValue === 'string') {
+          // essayer de convertir nom en slug via countriesList
+          const bySlug = countriesList.find((c) => c.slug === originalValue);
+          const byName = countriesList.find(
+            (c) => String(c.name).toLowerCase() === String(originalValue).toLowerCase()
+          );
+          originalSlug = bySlug ? bySlug.slug : byName ? byName.slug : originalValue;
+        }
+
+        // newValue doit déjà être un slug (on stocke slug dans onChange)
+        // si newValue est un nom (improbable), tenter la conversion aussi
+        if (typeof newValue === 'string') {
+          const bySlug2 = countriesList.find((c) => c.slug === newValue);
+          const byName2 = countriesList.find(
+            (c) => String(c.name).toLowerCase() === String(newValue).toLowerCase()
+          );
+          newValue = bySlug2 ? bySlug2.slug : byName2 ? byName2.slug : newValue;
+        }
+
+        if (newValue !== originalSlug) {
+          modifiedFields[key] = newValue;
+        }
+        return;
       }
 
-      if (newData[key] !== originalValue) {
-        modifiedFields[key] = newData[key];
+      // comparaison simple pour les autres champs
+      if (newValue !== originalValue) {
+        modifiedFields[key] = newValue;
       }
     });
 
@@ -257,7 +309,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      const modifiedData = getModifiedFields(currentEmployee, data);
+      const modifiedData = getModifiedFields(currentEmployee, data, countries);
 
       if (Object.keys(modifiedData).length === 0) {
         toast.info('Aucune modification détectée.');
@@ -293,8 +345,8 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
   const currentJobValue = watch('job');
   const currentJobOption = options.find((option) => option.value === currentJobValue);
 
-  const currentCountry = watch('country');
-  const currentCountryOption = countries.find((c) => c.slug === currentCountry);
+  const currentCountrySlug = watch('country');
+  const currentCountryOption = countries.find((c) => c.slug === currentCountrySlug) || null;
 
   return (
     <Dialog
@@ -360,6 +412,9 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             <Field.Text name="last" label="Nom " />
             <Field.Text name="first" label="Prénom " />
 
+            <Field.Text name="email" label="Email " />
+            <Field.Phone name="phone" label="Numéro de Téléphone" />
+
             <Field.Select name="sexe" label="Genre">
               {genders.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -369,8 +424,8 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
             </Field.Select>
 
             <Field.DatePicker name="birthday" label="Date Naissance" />
+            <Field.Text name="birth_place" label="Lieu de naissance " />
 
-            <Field.Phone name="phone" label="Numéro de Téléphone" />
             <Field.Text name="address" label="Adresse " />
 
             <Field.DatePicker name="contract_starts_at" label="Date de debut du contrat" />

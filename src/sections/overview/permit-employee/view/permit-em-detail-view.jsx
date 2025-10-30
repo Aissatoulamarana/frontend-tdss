@@ -57,6 +57,7 @@ export function PermitDetailView({ slug }) {
 
   const [permit, setPermit] = useState();
   const [documents, setDocuments] = useState([]);
+  const [status, setStatus] = useState();
   const [job, setJob] = useState();
   const [declarations, setDeclarations] = useState([]);
   const [error, setError] = useState(null);
@@ -82,6 +83,7 @@ export function PermitDetailView({ slug }) {
 
   useEffect(() => {
     fecthPermit();
+    setStatus(permit?.status);
   }, [fecthPermit]);
 
   const handleDocumentUploaded = () => {
@@ -103,7 +105,7 @@ export function PermitDetailView({ slug }) {
 
   return (
     <DashboardContent>
-      <Box sx={{ mb: { xs: 3, md: 5 } }}>
+      <Box sx={{ mb: { xs: 1, md: 1 } }}>
         <CustomBreadcrumbs
           heading="Détails"
           links={[
@@ -114,7 +116,7 @@ export function PermitDetailView({ slug }) {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        {/* <PermitToolbar permit={permit} currentStatus={permit?.status} /> */}
+        <PermitToolbar permit={permit} currentStatus={status} />
       </Box>
       <Card sx={{ mb: 3, height: 290, position: 'relative' }}>
         <EmployeeCover
@@ -166,7 +168,7 @@ export function PermitDetailView({ slug }) {
           permit={permit?.job?.permit}
           created_at={permit?.created_on}
           expired_at={permit?.card_expires_at}
-          status={permit?.status}
+          status={status}
         />
       )}
       {tabs.value === 'plan' && (

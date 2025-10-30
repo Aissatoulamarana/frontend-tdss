@@ -41,6 +41,7 @@ export function EmployeeDetailsView({ slug }) {
   const [declarations, setDeclarations] = useState([]);
   const [job, setJob] = useState([]);
   const [documents, setDocuments] = useState([]);
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
 
   const router = useRouter();
   const tabs = useTabs('profile');

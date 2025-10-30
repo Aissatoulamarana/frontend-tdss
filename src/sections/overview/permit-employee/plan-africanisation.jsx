@@ -91,6 +91,7 @@ export function PlanAfricanisation({
       delivered: { color: 'primary', label: 'Délivré', icon: 'mdi:package-variant-closed' },
       actif: { color: 'success', label: 'Actif', icon: 'mdi:check-circle' },
       inactif: { color: 'error', label: 'Inactif', icon: 'mdi:close-circle' },
+      termine: { color: 'success', label: 'Terminé', icon: 'mdi:check-circle' },
     };
     return configs[status] || { color: 'default', label: status, icon: 'mdi:information' };
   };

@@ -32,6 +32,7 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
       validated: { color: 'success', label: 'Validé', icon: 'mdi:check-circle' },
       printed: { color: 'info', label: 'Imprimé', icon: 'mdi:printer' },
       delivered: { color: 'primary', label: 'Délivré', icon: 'mdi:package-variant-closed' },
+      submitted: { color: 'success', label: 'Soumis', icon: 'mdi:check-circle' },
     };
     return configs[status] || { color: 'default', label: status, icon: 'mdi:information' };
   };
