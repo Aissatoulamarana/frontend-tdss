@@ -180,6 +180,9 @@ export function AfricanizationPlanDetails({ slug }) {
       processing: { color: 'warning', label: 'En cours', icon: 'mdi:clock-outline' },
       validated: { color: 'success', label: 'Validé', icon: 'mdi:check-circle' },
       rejected: { color: 'error', label: 'Rejeté', icon: 'mdi:close-circle' },
+      submitted: { color: 'primary', label: 'Soumis', icon: 'mdi:package-variant-closed' },
+      delivered: { color: 'success', label: 'Délivré', icon: 'mdi:package-variant-closed' },
+      printed: { color: 'info', label: 'Imprimé', icon: 'mdi:printer' },
     };
     return configs[status] || { color: 'default', label: status, icon: 'mdi:information' };
   };
