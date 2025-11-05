@@ -210,6 +210,9 @@ const API = {
     const queryString = params.toString();
     return queryString ? `${url}?${queryString}` : url;
   },
+
+  // listes des api pour les différents rapports
+  reportsDeclaration: () => `${BASE_URL}/reports/declarations/`,
 };
 
 export default API;
