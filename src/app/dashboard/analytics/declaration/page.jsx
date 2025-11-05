@@ -1,13 +1,12 @@
 import { CONFIG } from 'src/config-global';
 
-import { OverviewAnalyticsView } from 'src/sections/overview/analytics/declaration/view';
+// import { OverviewAnalyticsView } from 'src/sections/overview/analytics/declaration/view';
+import { RapportDeclaration } from 'src/sections/overview/rapports/declaration';
 
 // ----------------------------------------------------------------------
 
-
 export const metadata = { title: `Analytics Declaration - ${CONFIG.appName}` };
 
-
 export default function Page() {
-  return <OverviewAnalyticsView />;
+  return <RapportDeclaration />;
 }

@@ -77,7 +77,7 @@ export function useNavData() {
         ...(type === 'admin' || type === 'aguipe' || type === 'ministère'
           ? [
               {
-                title: 'Statistiques',
+                title: 'Rapports',
                 path: paths.dashboard.analytics.root,
                 icon: ICONS.analytics,
                 children: [

@@ -3,27 +3,24 @@ import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/fr';
 
-
 // ----------------------------------------------------------------------
 
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
 dayjs.locale('fr');
 
-export default dayjs;   
+export default dayjs;
 
 // Capitalise le mois (ex: avril => Avril)
 
 const capitalizeMonth = (formattedDate) => {
   const monthsRegex = /(?<=\s)([a-zàâçéèêëîïôûùüÿñæœ]+)/i;
 
-  return formattedDate.replace(monthsRegex, (month) =>
-    month.charAt(0).toUpperCase() + month.slice(1)
+  return formattedDate.replace(
+    monthsRegex,
+    (month) => month.charAt(0).toUpperCase() + month.slice(1)
   );
 };
-
-
-
 
 /**
  * Docs: https://day.js.org/docs/en/display/format
@@ -73,9 +70,9 @@ export function fDate(date, format) {
 
   const isValid = dayjs(date).isValid();
 
-  return isValid ? 
-  capitalizeMonth(dayjs(date).format(format ?? formatStr.date))
-  : 'Invalid time value';
+  return isValid
+    ? capitalizeMonth(dayjs(date).format(format ?? formatStr.date))
+    : 'Invalid time value';
 }
 
 // ----------------------------------------------------------------------
@@ -89,9 +86,9 @@ export function fTime(date, format) {
 
   const isValid = dayjs(date).isValid();
 
-  return isValid 
-  ? capitalizeMonth(dayjs(date).format(format ?? formatStr.time)) 
-  : 'Invalid time value';
+  return isValid
+    ? capitalizeMonth(dayjs(date).format(format ?? formatStr.time))
+    : 'Invalid time value';
 }
 
 // ----------------------------------------------------------------------
@@ -177,12 +174,13 @@ export function fIsSame(startDate, endDate, units) {
  * Same year: 25 Apr - 26 May 2024
  */
 export function fDateRangeShortLabel(startDate, endDate, initial) {
-  const isValid = dayjs(startDate).isValid() && dayjs(endDate).isValid();
+  if (!startDate || !endDate) return '';
 
-  const isAfter = fIsAfter(startDate, endDate);
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
 
-  if (!isValid || isAfter) {
-    return 'Invalid time value';
+  if (!start.isValid() || !end.isValid() || end.isBefore(start)) {
+    return 'Date invalide';
   }
 
   let label = `${fDate(startDate)} - ${fDate(endDate)}`;
