@@ -179,10 +179,10 @@ export function Reportfacture() {
           notFound={notFound}
           headLabel={[
             { id: 'number', label: 'Numéro' },
-            { id: 'company', label: 'Entreprise' },
-            { id: 'declaration', label: 'Declarations' },
+            { id: 'client', label: 'Entreprise' },
+            { id: 'nber_declarations', label: 'Declarations' },
             { id: 'amount', label: 'Montant' },
-            { id: 'createDate', label: 'Date de Création' },
+            { id: 'created_on', label: 'Date de Création' },
             { id: 'status', label: 'Statut' },
           ]}
         />

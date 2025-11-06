@@ -15,11 +15,19 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useCallback } from 'react';
 import { Iconify } from 'src/components/iconify';
 
-export function DecReportToolbar({ filters, options, dateError }) {
+export function DecReportToolbar({ filters, options, paymentOptions, dateError }) {
   const handleFilterStatus = useCallback(
     (event) => {
       const newValue = event.target.value;
       filters.setState({ status: newValue });
+    },
+    [filters]
+  );
+
+  const handleFilterPaymentMethod = useCallback(
+    (event) => {
+      const newValue = event.target.value;
+      filters.setState({ paymentMethod: newValue });
     },
     [filters]
   );
@@ -76,6 +84,28 @@ export function DecReportToolbar({ filters, options, dateError }) {
           ))}
         </Select>
       </FormControl>
+      {filters?.paymentMethod ||
+        (paymentOptions && (
+          <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
+            <InputLabel htmlFor="invoice-filter-payment-method-select">
+              Methode de paiement
+            </InputLabel>
+            <Select
+              value={filters.state.paymentMethod}
+              onChange={handleFilterPaymentMethod}
+              input={<OutlinedInput label="Moyen de paiement" />}
+              inputProps={{ id: 'invoice-filter-payment-method-select' }}
+              sx={{ textTransform: 'capitalize' }}
+            >
+              <MenuItem value="all">Tous</MenuItem>
+              {paymentOptions?.paymentMethod?.map((option) => (
+                <MenuItem key={option?.value} value={option?.value}>
+                  {option?.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        ))}
 
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker

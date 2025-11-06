@@ -16,13 +16,13 @@ import { DecReportToolbar } from './components/declaration-table-toolbar';
 import { fIsBetween } from 'src/utils/format-time';
 import { ExportDialog } from './components/export-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
-import { exportToPDF, exportToCSV, exportToExcel, exportToZip } from 'src/utils/export-helpers';
+import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
 import { fDate } from 'src/utils/format-time';
 
-export function RapportDeclaration() {
-  const [declarations, setDeclarations] = useState([]);
+export function ReportPaiement() {
+  const [paiements, setPaiements] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setError] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -36,6 +36,7 @@ export function RapportDeclaration() {
     number: '',
     company: '',
     status: 'all',
+    paymentMethod: 'all',
     startDate: null,
     endDate: null,
   });
@@ -49,13 +50,13 @@ export function RapportDeclaration() {
         offset,
         limit: 100,
       };
-      const resp = await axios.get(API.reportsDeclaration());
+      const resp = await axios.get(API.reportsPaiement());
       const newData = resp?.data || [];
 
       if (newData.length < 100) {
         setHasMore(false);
       }
-      setDeclarations(newData);
+      setPaiements(newData);
       setOffset((prev) => prev + 100);
     } catch (error) {
       console.log(error);
@@ -72,7 +73,7 @@ export function RapportDeclaration() {
   }, []);
 
   const dataFiltered = applyFilter({
-    inputData: declarations,
+    inputData: paiements,
     filters: filters.state,
     dateError,
   });
@@ -89,6 +90,27 @@ export function RapportDeclaration() {
 
   const notFound = !dataFiltered.length && canReset;
 
+  const STATUS_TRANSLATIONS = {
+    pending: 'En  attente',
+    validated: 'Validé',
+  };
+
+  const PAYMENT_METHOD = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Dépôts',
+  };
+
+  const columns = [
+    { key: 'number', label: 'Numéro' },
+    { key: 'client', label: 'Entreprise' },
+    { key: 'nber_factures', label: 'Factures' },
+    { key: 'payment_method', label: 'Méthode de Paiement', translate: PAYMENT_METHOD },
+    { key: 'amount', label: 'Montant', isCurrency: true },
+    { key: 'created_on', label: 'Date de Création', isDate: true },
+    { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
+  ];
+
   const handleExport = async (format) => {
     setIsExporting(true);
     try {
@@ -96,16 +118,16 @@ export function RapportDeclaration() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDF(exportData, 'rapport-declarations.pdf');
+          await exportToPDFM(exportData, columns, 'paiemnts.pdf');
           break;
         case 'csv':
-          exportToCSV(exportData, 'rapport-declarations.csv');
+          exportToCSVM(exportData, columns, 'rapport-paiements.csv');
           break;
         case 'excel':
-          exportToExcel(exportData, 'rapport-declarations.xlsx');
+          exportToExcelM(exportData, columns, 'rapport-paiements.xlsx');
           break;
         case 'zip':
-          await exportToZip(exportData, 'rapport-declarations.zip');
+          await exportToZipM(exportData, columns, 'rapport-paiements.zip');
           break;
         default:
           console.error('Format non supporté');
@@ -120,23 +142,18 @@ export function RapportDeclaration() {
     }
   };
 
-  const STATUS_TRANSLATIONS = {
-    submitted: 'Soumise',
-    validated: 'Validée',
-    rejected: 'Rejetée',
-    billed: 'Facturée',
-    unsubmitted: 'Non soumise',
-    processing: 'En traitement',
-  };
-
-  const statusOptions = Array.from(new Set(declarations.map((d) => d?.status).filter(Boolean))).map(
+  const statusOptions = Array.from(new Set(paiements.map((d) => d?.status).filter(Boolean))).map(
     (s) => ({ value: s, label: STATUS_TRANSLATIONS[s] || s })
   );
+
+  const paymentOptions = Array.from(
+    new Set(paiements.map((d) => d?.payment_method).filter(Boolean))
+  ).map((s) => ({ value: s, label: PAYMENT_METHOD[s] || s }));
 
   return (
     <DashboardContent maxWidth="xl">
       <CustomBreadcrumbs
-        heading="Rapport des déclarations"
+        heading="Rapport des paiements"
         links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Rapports' }]}
         action={
           <Button
@@ -154,6 +171,7 @@ export function RapportDeclaration() {
         filters={filters}
         dateError={dateError}
         options={{ status: statusOptions }}
+        paymentOptions={paymentOptions}
       />
 
       {canReset && (
@@ -166,7 +184,7 @@ export function RapportDeclaration() {
 
       <Grid2 size={{ xs: 12, md: 12 }}>
         <DeclarationNew
-          title="Rapports des déclarations"
+          title="Rapports des paiemnts"
           tableData={paginatedData}
           totalCount={dataFiltered.length}
           loading={loading}
@@ -174,8 +192,10 @@ export function RapportDeclaration() {
           notFound={notFound}
           headLabel={[
             { id: 'number', label: 'Numéro' },
-            { id: 'company', label: 'Entreprise' },
-            { id: 'nber_employees', label: 'Employés' },
+            { id: 'client', label: 'Entreprise' },
+            { id: 'nber_factures', label: 'Factures' },
+            { id: 'payment_method', label: 'Méthode de Paiement' },
+            { id: 'amount', label: 'Montant' },
             { id: 'created_on', label: 'Date de Création' },
             { id: 'status', label: 'Statut' },
           ]}
@@ -193,36 +213,41 @@ export function RapportDeclaration() {
 }
 
 function applyFilter({ inputData, filters, dateError }) {
-  const { number, company, status, startDate, endDate } = filters;
+  const { number, company, status, startDate, endDate, paymentMethod } = filters;
 
   let filteredData = [...inputData];
 
   // Filtrage par numéro
   if (number) {
-    filteredData = filteredData.filter((declaration) =>
-      declaration?.number?.toLowerCase().includes(number.toLowerCase())
+    filteredData = filteredData.filter((paiement) =>
+      paiement?.number?.toLowerCase().includes(number.toLowerCase())
     );
   }
 
   // Filtrage par entreprise
   if (company) {
-    filteredData = filteredData.filter((declaration) =>
-      declaration?.company?.toLowerCase().includes(company.toLowerCase())
+    filteredData = filteredData.filter((paiement) =>
+      paiement?.client?.toLowerCase().includes(company?.toLowerCase())
     );
   }
 
   // Filtrage par statut
   if (status !== 'all') {
-    filteredData = filteredData.filter((declaration) => declaration?.status === status);
+    filteredData = filteredData.filter((paiement) => paiement?.status === status);
+  }
+
+  //filtrage par methode de paiement
+  if (paymentMethod !== 'all') {
+    filteredData = filteredData.filter((paiement) => paiement?.payment_method === paymentMethod);
   }
 
   // Filtrage par date
   const sDate = startDate instanceof Date ? startDate : startDate ? new Date(startDate) : null;
   const eDate = endDate instanceof Date ? endDate : endDate ? new Date(endDate) : null;
   if (!dateError && sDate && eDate) {
-    filteredData = filteredData.filter((declaration) => {
+    filteredData = filteredData.filter((paiement) => {
       // Parser created_on en Date (gère le format ISO avec Z)
-      const created = declaration?.created_on ? new Date(declaration.created_on) : null;
+      const created = paiement?.created_on ? new Date(paiement.created_on) : null;
       if (!created || isNaN(created)) return false; // ignore si date invalide côté back
       // Utilise ta fonction utilitaire fIsBetween si elle accepte Dates
       return fIsBetween(created, sDate, eDate);

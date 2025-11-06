@@ -65,7 +65,7 @@ export function DeclarationNew({
           ) : (
             <TableBody>
               {tableData.map((row, index) => (
-                <RowItem key={`${row.number}-${index}`} row={row} />
+                <DynamicRow key={`${row.number}-${index}`} row={row} headLabel={headLabel} />
               ))}
               {tableData.length > 0 && tableData.length < table.rowsPerPage && (
                 <TableEmptyRows
@@ -93,29 +93,7 @@ export function DeclarationNew({
   );
 }
 
-function RowItem({ row }) {
-  const popover = usePopover();
-
-  const handleDownload = () => {
-    popover.onClose();
-    console.info('DOWNLOAD', row.slug);
-  };
-
-  const handlePrint = () => {
-    popover.onClose();
-    console.info('PRINT', row.slug);
-  };
-
-  const handleShare = () => {
-    popover.onClose();
-    console.info('SHARE', row.slug);
-  };
-
-  const handleDelete = () => {
-    popover.onClose();
-    console.info('DELETE', row.slug);
-  };
-
+function DynamicRow({ row, headLabel }) {
   const getLabelStatus = (status) => {
     switch (status) {
       case 'unsubmitted':
@@ -132,41 +110,53 @@ function RowItem({ row }) {
         return 'Non Payée';
       case 'paid':
         return 'Payée';
+      case 'pending':
+        return 'En attente';
+      default:
+        return status || '—';
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'unsubmitted':
+        return 'warning';
+      case 'rejected':
+        return 'error';
+      case 'submitted':
+        return 'primary';
+      case 'validated':
+        return 'success';
+      case 'billed':
+        return 'success';
+      case 'unpaid':
+        return 'warning';
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'warning';
       default:
         return 'default';
     }
   };
 
+  const formatValue = (id, value) => {
+    if (id === 'amount') return fGNF(value);
+    if (id === 'createDate' || id === 'created_on') return fDateTime(value);
+    if (id === 'status')
+      return (
+        <Label variant="soft" color={getStatusColor(row.status)}>
+          {getLabelStatus(row.status)}
+        </Label>
+      );
+    return value || '—';
+  };
+
   return (
-    <>
-      <TableRow>
-        {row?.number && <TableCell>{row.number}</TableCell>}
-
-        {row?.company && <TableCell>{row?.company}</TableCell>}
-        {row?.client && <TableCell>{row?.client}</TableCell>}
-        {row?.nber_declarations && <TableCell>{row?.nber_declarations}</TableCell>}
-        {row?.amount && <TableCell>{fGNF(row?.amount)}</TableCell>}
-
-        {row?.nber_employees && <TableCell>{row?.nber_employees}</TableCell>}
-        <TableCell>{fDateTime(row?.created_on)}</TableCell>
-
-        <TableCell>
-          <Label
-            variant="soft"
-            color={
-              (row.status === 'unsubmitted' && 'warning') ||
-              (row.status === 'rejected' && 'error') ||
-              (row?.status === 'submitted' && 'primary') ||
-              (row?.status === 'validated' && 'success') ||
-              (row?.status === 'billed' && 'success') ||
-              (row?.status === 'unpaid' && 'warning') ||
-              (row?.status === 'paid' && 'success')
-            }
-          >
-            {getLabelStatus(row.status)}
-          </Label>
-        </TableCell>
-      </TableRow>
-    </>
+    <TableRow>
+      {headLabel.map((col, i) => (
+        <TableCell key={i}>{formatValue(col.id, row[col.id])}</TableCell>
+      ))}
+    </TableRow>
   );
 }
