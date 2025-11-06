@@ -15,7 +15,7 @@ import { TablePaginationCustom, TableEmptyRows, TableNoData } from 'src/componen
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 
-import { fCurrency } from 'src/utils/format-number';
+import { fCurrency, fGNF } from 'src/utils/format-number';
 
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -128,6 +128,10 @@ function RowItem({ row }) {
         return 'Validée';
       case 'billed':
         return 'Facturée';
+      case 'unpaid':
+        return 'Non Payée';
+      case 'paid':
+        return 'Payée';
       default:
         return 'default';
     }
@@ -136,11 +140,14 @@ function RowItem({ row }) {
   return (
     <>
       <TableRow>
-        <TableCell>{row.number}</TableCell>
+        {row?.number && <TableCell>{row.number}</TableCell>}
 
-        <TableCell>{row.company}</TableCell>
+        {row?.company && <TableCell>{row?.company}</TableCell>}
+        {row?.client && <TableCell>{row?.client}</TableCell>}
+        {row?.nber_declarations && <TableCell>{row?.nber_declarations}</TableCell>}
+        {row?.amount && <TableCell>{fGNF(row?.amount)}</TableCell>}
 
-        <TableCell>{row?.nber_employees}</TableCell>
+        {row?.nber_employees && <TableCell>{row?.nber_employees}</TableCell>}
         <TableCell>{fDateTime(row?.created_on)}</TableCell>
 
         <TableCell>
@@ -151,43 +158,15 @@ function RowItem({ row }) {
               (row.status === 'rejected' && 'error') ||
               (row?.status === 'submitted' && 'primary') ||
               (row?.status === 'validated' && 'success') ||
-              (row?.status === 'billed' && 'success')
+              (row?.status === 'billed' && 'success') ||
+              (row?.status === 'unpaid' && 'warning') ||
+              (row?.status === 'paid' && 'success')
             }
           >
             {getLabelStatus(row.status)}
           </Label>
         </TableCell>
-
-        <TableCell align="right" sx={{ pr: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>
       </TableRow>
-
-      <CustomPopover
-        open={popover.open}
-        anchorEl={popover.anchorEl}
-        onClose={popover.onClose}
-        slotProps={{ arrow: { placement: 'right-top' } }}
-      >
-        <MenuList>
-          <MenuItem onClick={handleDownload}>
-            <Iconify icon="eva:cloud-download-fill" />
-            Télécharger
-          </MenuItem>
-
-          <MenuItem onClick={handlePrint}>
-            <Iconify icon="solar:printer-minimalistic-bold" />
-            Imprimer
-          </MenuItem>
-
-          <MenuItem onClick={handleShare}>
-            <Iconify icon="solar:share-bold" />
-            Partager
-          </MenuItem>
-        </MenuList>
-      </CustomPopover>
     </>
   );
 }

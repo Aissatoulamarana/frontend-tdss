@@ -34,6 +34,8 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
     billed: 'Facturée',
     unsubmitted: 'Non soumise',
     processing: 'En traitement',
+    paid: 'Payée',
+    unpaid: 'Non payée',
   };
 
   return (
