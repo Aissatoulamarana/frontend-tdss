@@ -19,6 +19,10 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
     handleRemoveFilter('status', 'all');
   }, [handleRemoveFilter]);
 
+  const handleRemovePaymentMethod = useCallback(() => {
+    handleRemoveFilter('paymentMethod', 'all');
+  }, [handleRemoveFilter]);
+
   const handleRemoveCompany = useCallback(() => {
     handleRemoveFilter('company', '');
   }, [handleRemoveFilter]);
@@ -36,6 +40,13 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
     processing: 'En traitement',
     paid: 'Payée',
     unpaid: 'Non payée',
+    pending: 'En attente',
+  };
+
+  const PAYMENT_METHOD = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Dépôts',
   };
 
   return (
@@ -56,6 +67,18 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
           {...chipProps}
           label={STATUS_TRANSLATIONS[filters.state.status] || filters.state.status}
           onDelete={handleRemoveStatus}
+          sx={{ textTransform: 'capitalize' }}
+        />
+      </FiltersBlock>
+
+      <FiltersBlock
+        label="Méthode de paiement:"
+        isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
+      >
+        <Chip
+          {...chipProps}
+          label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
+          onDelete={handleRemovePaymentMethod}
           sx={{ textTransform: 'capitalize' }}
         />
       </FiltersBlock>
