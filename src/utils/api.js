@@ -213,6 +213,7 @@ const API = {
 
   // listes des api pour les différents rapports
   reportsDeclaration: () => `${BASE_URL}/reports/declarations/`,
+  reportsFactures: () => `${BASE_URL}/reports/factures/`,
 };
 
 export default API;

@@ -5,6 +5,8 @@ import { autoTable } from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
+import { fDate } from './format-time';
+import { fGNF } from './format-number';
 
 /**
  * Exporte les données en format PDF
@@ -65,7 +67,7 @@ export const exportToCSV = (data, filename = 'rapport-declarations.csv') => {
           row.company || '',
           row.nber_employees || '0',
           new Date(row.created_on).toLocaleDateString('fr-FR'),
-          row.status || '',
+          STATUS_TRANSLATIONS[row.status] || row.status || '',
         ].join(';')
       ),
     ].join('\n');
@@ -94,7 +96,7 @@ export const exportToExcel = (data, filename = 'rapport-declarations.xlsx') => {
       row.company || '-',
       row.nber_employees || 0,
       new Date(row.created_on).toLocaleDateString('fr-FR'),
-      row.status || '-',
+      STATUS_TRANSLATIONS[row.status] || row.status || '-',
     ]),
   ];
 
@@ -132,7 +134,7 @@ export const exportToZip = async (data, filename = 'rapport-declarations.zip') =
         row.company || '',
         row.nber_employees || '0',
         new Date(row.created_on).toLocaleDateString('fr-FR'),
-        row.status || '',
+        STATUS_TRANSLATIONS[row.status] || row.status || '',
       ].join(';')
     ),
   ].join('\n');
@@ -174,6 +176,165 @@ Contenu du fichier ZIP:
   zip.file('README.txt', readmeContent);
 
   // Générer et télécharger le ZIP
+  const content = await zip.generateAsync({ type: 'blob' });
+  saveAs(content, filename);
+};
+
+const formatAmountForPdf = (raw) => {
+  if (raw === undefined || raw === null || raw === '') return '-';
+  // extraire uniquement les chiffres et le signe décimal si présent
+  const numeric = parseFloat(String(raw).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(numeric)) return '-';
+  // format fr sans décimales pour GNF (crée souvent des \u00A0)
+  const formatted = new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numeric);
+  // remplacer espace insécable par espace normal pour jspdf-autotable
+  const safe = formatted.replace(/\u00A0/g, ' ');
+  return `${safe} FG`; // ou ' F G' si tu veux
+};
+
+export const exportToPDFM = async (data, columns, filename) => {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  doc.setFontSize(14);
+  doc.text(`Rapport ${filename} `, 14, 20);
+
+  const tableData = data.map((row) =>
+    columns.map((col) => {
+      let value = row[col.key] ?? '-';
+      if (col.translate) value = col.translate[value] ?? value;
+      if (col.isDate) value = new Date(value).toLocaleDateString('fr-FR');
+      // if (col?.isCurrency) {
+      //   // Supprime tout sauf chiffres, points et virgules
+      //   const cleaned = String(value).replace(/[^\d.,]/g, '');
+
+      //   // Convertit proprement en nombre
+      //   const numberValue = parseFloat(cleaned.replace(',', '.'));
+
+      //   // Si c’est un vrai nombre, on ajoute FG
+      //   value = !isNaN(numberValue) ? `${numberValue.toLocaleString('fr-FR')} FG` : '-';
+      // }
+
+      return value;
+    })
+  );
+
+  autoTable(doc, {
+    head: [columns.map((col) => col.label)],
+    body: tableData,
+    startY: 35,
+    styles: { fontSize: 10 },
+    columnStyles: {
+      3: {
+        // Index de la colonne "Montant"
+        cellWidth: 30,
+        overflow: 'ellipsize', // ou 'linebreak' si tu veux le retour à la ligne
+      },
+      1: {
+        // Index de la colonne "Entreprise"
+        cellWidth: 60,
+        overflow: 'linebreak',
+      },
+    },
+  });
+
+  doc.save(filename);
+};
+
+export const exportToCSVM = (data, columns, filename = 'export.csv') => {
+  const BOM = '\uFEFF';
+  const csvContent =
+    BOM +
+    [
+      columns.map((c) => c.label).join(';'),
+      ...data.map((row) =>
+        columns
+          .map((col) => {
+            let value = row[col.key] ?? '';
+            if (col.translate) value = col.translate[value] ?? value;
+            if (col.isDate) value = new Date(value).toLocaleDateString('fr-FR');
+
+            return value;
+          })
+          .join(';')
+      ),
+    ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  saveAs(blob, filename);
+};
+
+export const exportToExcelM = (data, columns, filename = 'export.xlsx') => {
+  const worksheetData = [
+    columns.map((c) => c.label),
+    ...data.map((row) =>
+      columns.map((col) => {
+        let value = row[col.key] ?? '-';
+        if (col.translate) value = col.translate[value] ?? value;
+        if (col.isDate) value = new Date(value).toLocaleDateString('fr-FR');
+        return value;
+      })
+    ),
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Données');
+
+  // Ajuster largeur colonnes
+  ws['!cols'] = columns.map(() => ({ wch: 15 }));
+
+  XLSX.writeFile(wb, filename);
+};
+
+export const exportToZipM = async (data, columns, filename = 'export.zip') => {
+  const zip = new JSZip();
+
+  // CSV
+  const csvContent = [columns.map((c) => c.label).join(';')]
+    .concat(
+      data.map((row) =>
+        columns
+          .map((col) => {
+            let value = row[col.key] ?? '';
+            if (col.translate) value = col.translate[value] ?? value;
+            if (col.isDate) value = fDate(value);
+            return value;
+          })
+          .join(';')
+      )
+    )
+    .join('\n');
+  zip.file('data.csv', '\uFEFF' + csvContent);
+
+  // Excel
+  const worksheetData = [
+    columns.map((c) => c.label),
+    ...data.map((row) =>
+      columns.map((col) => {
+        let value = row[col.key] ?? '-';
+        if (col.translate) value = col.translate[value] ?? value;
+        if (col.isDate) value = new Date(value).toLocaleDateString('fr-FR');
+        return value;
+      })
+    ),
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Données');
+  const excelBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+  zip.file('data.xlsx', excelBuffer);
+
+  // JSON
+  zip.file('data.json', JSON.stringify(data, null, 2));
+
+  // README
+  const readmeContent = `Rapport généré le: ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+Nombre d'enregistrements: ${data.length}
+Contenu du ZIP: CSV, Excel, JSON`;
+  zip.file('README.txt', readmeContent);
+
   const content = await zip.generateAsync({ type: 'blob' });
   saveAs(content, filename);
 };
