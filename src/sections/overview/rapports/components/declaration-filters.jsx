@@ -71,17 +71,19 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
         />
       </FiltersBlock>
 
-      <FiltersBlock
-        label="Méthode de paiement:"
-        isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
-      >
-        <Chip
-          {...chipProps}
-          label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
-          onDelete={handleRemovePaymentMethod}
-          sx={{ textTransform: 'capitalize' }}
-        />
-      </FiltersBlock>
+      {filters?.paymentMethod && (
+        <FiltersBlock
+          label="Méthode de paiement:"
+          isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
+        >
+          <Chip
+            {...chipProps}
+            label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
+            onDelete={handleRemovePaymentMethod}
+            sx={{ textTransform: 'capitalize' }}
+          />
+        </FiltersBlock>
+      )}
 
       <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
         <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
