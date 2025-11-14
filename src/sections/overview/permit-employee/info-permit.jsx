@@ -23,6 +23,15 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   const getStatusConfig = (status) => {
     const configs = {
       unenrolled: { color: 'warning', label: 'Non Enrôlé', icon: 'mdi:clock-outline' },
@@ -38,6 +47,32 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
   };
 
   const statusConfig = getStatusConfig(status);
+
+  const SectionTitle = ({ title }) => (
+    <Typography
+      variant="subtitle2"
+      sx={{
+        color: 'primary.main',
+        fontWeight: 700,
+        mb: 2.5,
+        fontSize: { xs: '0.8125rem', sm: '0.875rem' },
+        textTransform: 'uppercase',
+        letterSpacing: 1.2,
+        display: 'flex',
+        alignItems: 'center',
+        '&::before': {
+          content: '""',
+          width: 4,
+          height: 16,
+          bgcolor: 'primary.main',
+          borderRadius: 1,
+          mr: 1,
+        },
+      }}
+    >
+      {title}
+    </Typography>
+  );
 
   // Composant réutilisable pour les items d'information
   const InfoItem = ({ icon, label, value, isLink = false }) => (
@@ -113,6 +148,54 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
     </Box>
   );
 
+  const getRelevantDates = () => {
+    const dates = [];
+
+    if (permit?.validated_at) {
+      dates.push({
+        icon: 'mdi:check-decagram',
+        label: 'Date de Validation',
+        value: formatDate(permit.validated_at),
+      });
+    }
+
+    if (permit?.printed_at) {
+      dates.push({
+        icon: 'mdi:printer-check',
+        label: "Date d'Impression",
+        value: formatDate(permit.printed_at),
+      });
+    }
+
+    if (permit?.delivered_at) {
+      dates.push({
+        icon: 'mdi:package-variant-closed-check',
+        label: 'Date de Livraison',
+        value: formatDate(permit.delivered_at),
+      });
+    }
+
+    if (permit?.card_issued_at) {
+      dates.push({
+        icon: 'mdi:card-account-details',
+        label: "Date d'Émission",
+        value: formatDate(permit.card_issued_at),
+      });
+    }
+
+    if (permit?.card_expires_at) {
+      dates.push({
+        icon: 'mdi:calendar-alert',
+        label: "Date d'Expiration",
+        value: formatDate(permit.card_expires_at),
+      });
+    }
+
+    return dates;
+  };
+
+  const relevantDates = getRelevantDates();
+
   const renderAbout = (
     <Card
       sx={{
@@ -174,15 +257,34 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
         {/* ================== Informations ================== */}
         <Box
           sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 2,
+            mb: relevantDates.length > 0 ? 3 : 0,
           }}
         >
-          <InfoItem icon="mdi:card-account-details" label="Type de Permis" value={permit} />
-          <InfoItem icon="mdi:calendar-start" label="Date de création" value={fDate(created_at)} />
-          <InfoItem icon="mdi:calendar-end" label="Date d'expiration" value={fDate(expired_at)} />
+          <SectionTitle title="informations" />
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <InfoItem icon="mdi:card-account-details" label="Type de Permis" value={permit} />
+            <InfoItem
+              icon="mdi:calendar-start"
+              label="Date de création"
+              value={fDate(created_at)}
+            />
+            <InfoItem icon="mdi:calendar-end" label="Date d'expiration" value={fDate(expired_at)} />
+          </Box>
         </Box>
+        {/* ================== Section Dates importantes (selon statut) ================== */}
+        {relevantDates.length > 0 && (
+          <>
+            <Divider sx={{ my: 3 }} />
+            <Box>
+              <SectionTitle title="Suivi du Permis" />
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                {relevantDates.map((date, index) => (
+                  <InfoItem key={index} icon={date.icon} label={date.label} value={date.value} />
+                ))}
+              </Box>
+            </Box>
+          </>
+        )}
       </Box>
     </Card>
   );

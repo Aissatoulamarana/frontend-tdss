@@ -411,7 +411,7 @@ export function PermitEmloyeeInfo({ info, posts }) {
           </Box>
 
           {/* ================== Section Dates importantes (selon statut) ================== */}
-          {relevantDates.length > 0 && (
+          {/* {relevantDates.length > 0 && (
             <>
               <Divider sx={{ my: 3 }} />
               <Box>
@@ -423,7 +423,7 @@ export function PermitEmloyeeInfo({ info, posts }) {
                 </Box>
               </Box>
             </>
-          )}
+          )} */}
         </Box>
       </Card>
     </Grid>
