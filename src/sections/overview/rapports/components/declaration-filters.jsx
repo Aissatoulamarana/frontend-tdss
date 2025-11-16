@@ -3,7 +3,7 @@ import Chip from '@mui/material/Chip';
 import { fDateRangeShortLabel } from 'src/utils/format-time';
 import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-result';
 
-export function DeclarationreportFilters({ filters, totalResults, sx }) {
+export function DeclarationreportFilters({ isFacture, filters, totalResults, sx }) {
   const handleRemoveFilter = useCallback(
     (key, value = '') => {
       filters.setState({ [key]: value });
@@ -53,11 +53,14 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
       <FiltersBlock
         label="Date:"
-        isShow={Boolean(filters.state.startDate && filters.state.endDate)}
+        isShow={Boolean(filters.state.created_on_before && filters.state.created_on_after)}
       >
         <Chip
           {...chipProps}
-          label={fDateRangeShortLabel(filters.state.startDate, filters.state.endDate)}
+          label={fDateRangeShortLabel(
+            filters.state.created_on_before,
+            filters.state.created_on_after
+          )}
           onDelete={handleRemoveDate}
         />
       </FiltersBlock>
@@ -71,17 +74,19 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
         />
       </FiltersBlock>
 
-      <FiltersBlock
-        label="Méthode de paiement:"
-        isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
-      >
-        <Chip
-          {...chipProps}
-          label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
-          onDelete={handleRemovePaymentMethod}
-          sx={{ textTransform: 'capitalize' }}
-        />
-      </FiltersBlock>
+      {isFacture && (
+        <FiltersBlock
+          label="Méthode de paiement:"
+          isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
+        >
+          <Chip
+            {...chipProps}
+            label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
+            onDelete={handleRemovePaymentMethod}
+            sx={{ textTransform: 'capitalize' }}
+          />
+        </FiltersBlock>
+      )}
 
       <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
         <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
