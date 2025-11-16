@@ -12,6 +12,7 @@ import { TableHeadCustom } from 'src/components/table';
 import { Label } from 'src/components/label';
 import { fDateTime } from 'src/utils/format-time';
 import CircularProgress from '@mui/material/CircularProgress';
+import { fGNF } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 

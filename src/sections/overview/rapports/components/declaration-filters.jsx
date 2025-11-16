@@ -3,7 +3,14 @@ import Chip from '@mui/material/Chip';
 import { fDateRangeShortLabel } from 'src/utils/format-time';
 import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-result';
 
-export function DeclarationreportFilters({ isFacture, filters, totalResults, sx }) {
+export function DeclarationreportFilters({
+  isDeclaration,
+  isFacture,
+  isPaiement,
+  filters,
+  totalResults,
+  sx,
+}) {
   const handleRemoveFilter = useCallback(
     (key, value = '') => {
       filters.setState({ [key]: value });
@@ -25,6 +32,10 @@ export function DeclarationreportFilters({ isFacture, filters, totalResults, sx 
 
   const handleRemoveCompany = useCallback(() => {
     handleRemoveFilter('company', '');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveClient = useCallback(() => {
+    handleRemoveFilter('client', '');
   }, [handleRemoveFilter]);
 
   const handleRemoveNumber = useCallback(() => {
@@ -74,7 +85,7 @@ export function DeclarationreportFilters({ isFacture, filters, totalResults, sx 
         />
       </FiltersBlock>
 
-      {isFacture && (
+      {isPaiement && (
         <FiltersBlock
           label="Méthode de paiement:"
           isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
@@ -88,9 +99,17 @@ export function DeclarationreportFilters({ isFacture, filters, totalResults, sx 
         </FiltersBlock>
       )}
 
-      <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
-        <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
-      </FiltersBlock>
+      {isDeclaration && (
+        <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
+          <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
+        </FiltersBlock>
+      )}
+
+      {isFacture && (
+        <FiltersBlock label="Entreprise:" isShow={!!filters.state.client}>
+          <Chip {...chipProps} label={filters.state.client} onDelete={handleRemoveClient} />
+        </FiltersBlock>
+      )}
 
       <FiltersBlock label="Numéro:" isShow={!!filters.state.number}>
         <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />

@@ -28,6 +28,7 @@ export function RapportDeclaration() {
   const [errors, setError] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
   const [count, setCount] = useState(0);
+  const [isDeclaration, setIsDeclaration] = useState(true);
   const exportDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
@@ -211,10 +212,16 @@ export function RapportDeclaration() {
         filters={filters}
         dateError={dateError}
         options={{ status: statusOptions }}
+        isDeclaration={isDeclaration}
       />
 
       {canReset && (
-        <DeclarationreportFilters filters={filters} totalResults={count} sx={{ p: 2.5, pt: 0 }} />
+        <DeclarationreportFilters
+          filters={filters}
+          totalResults={count}
+          sx={{ p: 2.5, pt: 0 }}
+          isDeclaration={isDeclaration}
+        />
       )}
 
       <Grid2 size={{ xs: 12, md: 12 }}>

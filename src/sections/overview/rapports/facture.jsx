@@ -26,37 +26,59 @@ export function Reportfacture() {
   const [loading, setLoading] = useState(false);
   const [errors, setError] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [count, setCount] = useState(0);
+  const [isFacture, setIsFacture] = useState(true);
+
   const exportDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
   const filters = useSetState({
     number: '',
-    company: '',
+    client: '',
     status: 'all',
-    startDate: null,
-    endDate: null,
+    created_on_before: null,
+    created_on_after: null,
   });
 
-  const dateError = fIsBetween(filters.state.startDate, filters.state.endDate);
+  const dateError = fIsBetween(filters.state.created_on_before, filters.state.created_on_after);
+
+  const buildParams = (page = 0, limit = table.rowsPerPage) => {
+    const params = {
+      limit,
+      offset: page * limit,
+    };
+
+    // Ajouter les filtres seulement s'ils sont définis
+    if (filters.state.number) {
+      params.number = filters.state.number;
+    }
+    if (filters.state.client) {
+      params.client = filters.state.client;
+    }
+    if (filters.state.status !== 'all') {
+      params.status = filters.state.status;
+    }
+
+    if (filters.state.created_on_before && !dateError) {
+      params.created_on_before = dayjs(filters.state.created_on_before).format('YYYY-MM-DD');
+    }
+    if (filters.state.created_on_after && !dateError) {
+      params.created_on_after = dayjs(filters.state.created_on_after).format('YYYY-MM-DD');
+    }
+
+    return params;
+  };
 
   const fetchReport = async () => {
     setLoading(true);
     try {
-      const params = {
-        offset,
-        limit: 100,
-      };
-      const resp = await axios.get(API.reportsFactures());
-      const newData = resp?.data || [];
+      const params = buildParams(table.page);
+      const resp = await axios.get(API.reportsFactures(), { params });
+      const newData = resp?.data.results || [];
 
-      if (newData.length < 100) {
-        setHasMore(false);
-      }
       setFactures(newData);
-      setOffset((prev) => prev + 100);
+      setCount(resp?.data.count || 0);
     } catch (error) {
       console.log(error);
       const errorMessage = error?.error || error?.details || error?.message || error?.detail;
@@ -67,27 +89,55 @@ export function Reportfacture() {
     }
   };
 
+  // Fonction pour récupérer TOUTES les données pour l'export
+  const fetchAllDataForExport = async () => {
+    try {
+      const allData = [];
+      let page = 0;
+      const limit = count; // Taille de page pour l'export
+      let hasMore = true;
+
+      while (hasMore) {
+        const params = buildParams(page, limit);
+        const resp = await axios.get(API.reportsDeclaration(), { params });
+        const data = resp?.data.results || [];
+
+        allData.push(...data);
+
+        // Vérifier s'il y a encore des données
+        if (data.length < limit || allData.length >= (resp?.data.count || 0)) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+
+      return allData;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données pour export:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchReport();
-  }, []);
-
-  const dataFiltered = applyFilter({
-    inputData: factures,
-    filters: filters.state,
-    dateError,
-  });
-
-  const startIndex = table.page * table.rowsPerPage;
-  const endIndex = startIndex + table.rowsPerPage;
-  const paginatedData = dataFiltered.slice(startIndex, endIndex);
+  }, [
+    table.page,
+    table.rowsPerPage,
+    filters.state.number,
+    filters.state.client,
+    filters.state.status,
+    filters.state.created_on_before,
+    filters.state.created_on_after,
+  ]);
 
   const canReset =
     !!filters.state.number ||
-    !!filters.state.company ||
+    !!filters.state.client ||
     filters.state.status !== 'all' ||
-    (!!filters.state.startDate && !!filters.state.endDate);
+    (!!filters.state.created_on_before && !!filters.state.created_on_after);
 
-  const notFound = !dataFiltered.length && canReset;
+  const notFound = !loading && factures.length === 0 && canReset;
 
   const STATUS_TRANSLATIONS = {
     unpaid: 'Non Payée',
@@ -106,7 +156,11 @@ export function Reportfacture() {
   const handleExport = async (format) => {
     setIsExporting(true);
     try {
-      const exportData = dataFiltered;
+      const exportData = await fetchAllDataForExport();
+      if (exportData.length === 0) {
+        toast.error('Aucune donnée à exporter avec les filtres actuels');
+        return;
+      }
 
       switch (format) {
         case 'pdf':
@@ -126,6 +180,7 @@ export function Reportfacture() {
       }
 
       exportDialog.onFalse();
+      toast.success(`Export réussi: ${exportData.length} factures exportées`);
     } catch (error) {
       console.error("Erreur lors de l'export:", error);
       toast.error("Erreur lors de l'export. Vérifiez la console pour plus de détails.");
@@ -134,9 +189,14 @@ export function Reportfacture() {
     }
   };
 
-  const statusOptions = Array.from(new Set(factures.map((d) => d?.status).filter(Boolean))).map(
-    (s) => ({ value: s, label: STATUS_TRANSLATIONS[s] || s })
-  );
+  const statusOptions = [
+    { value: 'unpaid', label: 'Non Payées' },
+    { value: 'paid', label: 'Payées' },
+  ];
+
+  // const statusOptions = Array.from(new Set(factures.map((d) => d?.status).filter(Boolean))).map(
+  //   (s) => ({ value: s, label: STATUS_TRANSLATIONS[s] || s })
+  // );
 
   return (
     <DashboardContent maxWidth="xl">
@@ -148,6 +208,7 @@ export function Reportfacture() {
             variant="contained"
             startIcon={<Iconify icon="eva:download-fill" />}
             onClick={exportDialog.onTrue}
+            disabled={count === 0}
           >
             Exporter
           </Button>
@@ -159,21 +220,23 @@ export function Reportfacture() {
         filters={filters}
         dateError={dateError}
         options={{ status: statusOptions }}
+        isFacture={isFacture}
       />
 
       {canReset && (
         <DeclarationreportFilters
           filters={filters}
-          totalResults={dataFiltered.length}
+          totalResults={count}
           sx={{ p: 2.5, pt: 0 }}
+          isFacture={isFacture}
         />
       )}
 
       <Grid2 size={{ xs: 12, md: 12 }}>
         <DeclarationNew
           title="Rapports des factures"
-          tableData={paginatedData}
-          totalCount={dataFiltered.length}
+          tableData={factures}
+          totalCount={count}
           loading={loading}
           table={table}
           notFound={notFound}
@@ -196,44 +259,4 @@ export function Reportfacture() {
       />
     </DashboardContent>
   );
-}
-
-function applyFilter({ inputData, filters, dateError }) {
-  const { number, company, status, startDate, endDate } = filters;
-
-  let filteredData = [...inputData];
-
-  // Filtrage par numéro
-  if (number) {
-    filteredData = filteredData.filter((facture) =>
-      facture?.number?.toLowerCase().includes(number.toLowerCase())
-    );
-  }
-
-  // Filtrage par entreprise
-  if (company) {
-    filteredData = filteredData.filter((facture) =>
-      facture?.client?.toLowerCase().includes(company?.toLowerCase())
-    );
-  }
-
-  // Filtrage par statut
-  if (status !== 'all') {
-    filteredData = filteredData.filter((facture) => facture?.status === status);
-  }
-
-  // Filtrage par date
-  const sDate = startDate instanceof Date ? startDate : startDate ? new Date(startDate) : null;
-  const eDate = endDate instanceof Date ? endDate : endDate ? new Date(endDate) : null;
-  if (!dateError && sDate && eDate) {
-    filteredData = filteredData.filter((facture) => {
-      // Parser created_on en Date (gère le format ISO avec Z)
-      const created = facture?.created_on ? new Date(facture.created_on) : null;
-      if (!created || isNaN(created)) return false; // ignore si date invalide côté back
-      // Utilise ta fonction utilitaire fIsBetween si elle accepte Dates
-      return fIsBetween(created, sDate, eDate);
-    });
-  }
-
-  return filteredData;
 }

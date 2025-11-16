@@ -13,14 +13,24 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Iconify } from 'src/components/iconify';
 
-export function DecReportToolbar({ isFacture, filters, options, paymentOptions, dateError }) {
+export function DecReportToolbar({
+  isDeclaration,
+  isFacture,
+  isPaiement,
+  filters,
+  options,
+  paymentOptions,
+  dateError,
+}) {
   // Local state for debounced inputs
   const [localNumber, setLocalNumber] = useState(filters.state.number || '');
   const [localCompany, setLocalCompany] = useState(filters.state.company || '');
+  const [localClient, setLocalClient] = useState(filters.state.client || '');
 
   // Refs to track debounce timers
   const numberDebounceRef = useRef(null);
   const companyDebounceRef = useRef(null);
+  const clientDebounceRef = useRef(null);
 
   // Handler for immediate state update on select changes (no debounce needed)
   const handleFilterStatus = useCallback(
@@ -44,6 +54,10 @@ export function DecReportToolbar({ isFacture, filters, options, paymentOptions, 
     setLocalCompany(event.target.value);
   };
 
+  const handleClientChange = (event) => {
+    setLocalClient(event.target.value);
+  };
+
   // Debounce effect for "number" field (2 second delay)
   useEffect(() => {
     if (numberDebounceRef.current) clearTimeout(numberDebounceRef.current);
@@ -61,6 +75,14 @@ export function DecReportToolbar({ isFacture, filters, options, paymentOptions, 
     }, 1000);
     return () => clearTimeout(companyDebounceRef.current);
   }, [localCompany, filters]);
+
+  useEffect(() => {
+    if (clientDebounceRef.current) clearTimeout(clientDebounceRef.current);
+    clientDebounceRef.current = setTimeout(() => {
+      filters.setState({ client: localClient });
+    }, 1000);
+    return () => clearTimeout(clientDebounceRef.current);
+  }, [localClient, filters]);
 
   // onPaste handlers: prevent default and insert manually for immediate search
   const handleNumberPaste = (event) => {
@@ -81,6 +103,17 @@ export function DecReportToolbar({ isFacture, filters, options, paymentOptions, 
     if (companyDebounceRef.current) {
       clearTimeout(companyDebounceRef.current);
       companyDebounceRef.current = null;
+    }
+  };
+
+  const handleClientPaste = (event) => {
+    event.preventDefault();
+    const pastedValue = event.clipboardData.getData('Text');
+    setLocalClient(pastedValue);
+    filters.setState({ client: pastedValue });
+    if (clientDebounceRef.current) {
+      clearTimeout(clientDebounceRef.current);
+      clientDebounceRef.current = null;
     }
   };
 
@@ -106,6 +139,16 @@ export function DecReportToolbar({ isFacture, filters, options, paymentOptions, 
       }
     }
   }, [filters.state.company]);
+
+  useEffect(() => {
+    if (!filters.state.client) {
+      setLocalClient('');
+      if (clientDebounceRef.current) {
+        clearTimeout(clientDebounceRef.current);
+        clientDebounceRef.current = null;
+      }
+    }
+  }, [filters.state.client]);
   // ------------------------------------------------------------------
 
   // Determine if the number is invalid (non-empty and not length 11)
@@ -138,7 +181,7 @@ export function DecReportToolbar({ isFacture, filters, options, paymentOptions, 
       </FormControl>
 
       {/* Payment method filter (no change) */}
-      {isFacture &&
+      {isPaiement &&
         (filters.paymentMethod ||
           (paymentOptions && (
             <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
@@ -219,22 +262,42 @@ export function DecReportToolbar({ isFacture, filters, options, paymentOptions, 
         />
 
         {/* Company search with debounce */}
-        <TextField
-          fullWidth
-          value={localCompany}
-          onChange={handleCompanyChange}
-          onPaste={handleCompanyPaste}
-          placeholder="Rechercher par entreprise"
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        {isDeclaration && (
+          <TextField
+            fullWidth
+            value={localCompany}
+            onChange={handleCompanyChange}
+            onPaste={handleCompanyPaste}
+            placeholder="Rechercher par entreprise"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        )}
+        {isFacture && (
+          <TextField
+            fullWidth
+            value={localClient}
+            onChange={handleClientChange}
+            onPaste={handleClientPaste}
+            placeholder="Rechercher par entreprise"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        )}
       </Stack>
     </Stack>
   );
