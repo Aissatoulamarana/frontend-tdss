@@ -41,7 +41,7 @@ export function RapportDeclaration() {
     created_on_after: null,
   });
 
-  const dateError = fIsBetween(filters.state.created_on_before, filters.state.created_on_after);
+  const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
   // Fonction pour construire les paramètres
   const buildParams = (page = 0, limit = table.rowsPerPage) => {
@@ -61,11 +61,12 @@ export function RapportDeclaration() {
       params.status = filters.state.status;
     }
 
-    if (filters.state.created_on_before && !dateError) {
-      params.created_on_before = dayjs(filters.state.created_on_before).format('YYYY-MM-DD');
-    }
     if (filters.state.created_on_after && !dateError) {
       params.created_on_after = dayjs(filters.state.created_on_after).format('YYYY-MM-DD');
+    }
+
+    if (filters.state.created_on_before && !dateError) {
+      params.created_on_before = dayjs(filters.state.created_on_before).format('YYYY-MM-DD');
     }
 
     return params;
@@ -137,7 +138,7 @@ export function RapportDeclaration() {
     !!filters.state.number ||
     !!filters.state.company ||
     filters.state.status !== 'all' ||
-    (!!filters.state.created_on_before && !!filters.state.created_on_after);
+    (!!filters.state.created_on_after && !!filters.state.created_on_before);
 
   const notFound = !loading && declarations.length === 0 && canReset;
 
