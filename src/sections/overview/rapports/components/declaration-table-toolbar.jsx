@@ -17,6 +17,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Iconify } from 'src/components/iconify';
 
+import { CommonPersonFilters } from './common-filter';
+
 const DEBOUNCE_DELAY = 1000;
 
 const FILTER_PLACEHOLDERS = {
@@ -42,6 +44,7 @@ export function DecReportToolbar({
   isFacture,
   isPaiement,
   isPermit,
+  isEmployee,
   filters,
   options,
   paymentOptions,
@@ -295,151 +298,38 @@ export function DecReportToolbar({
       sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
     >
       {/* Filtre Statut */}
-      <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 150 } }}>
-        <InputLabel htmlFor="invoice-filter-status-select">Statut</InputLabel>
-        <Select
-          value={filters.state.status}
-          onChange={handleFilterStatus}
-          input={<OutlinedInput label="Statut" />}
-          inputProps={{ id: 'invoice-filter-status-select' }}
-          sx={{ textTransform: 'capitalize' }}
-        >
-          <MenuItem value="all">Tous</MenuItem>
-          {options.status.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {!isEmployee && (
+        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 150 } }}>
+          <InputLabel htmlFor="invoice-filter-status-select">Statut</InputLabel>
+          <Select
+            value={filters.state.status}
+            onChange={handleFilterStatus}
+            input={<OutlinedInput label="Statut" />}
+            inputProps={{ id: 'invoice-filter-status-select' }}
+            sx={{ textTransform: 'capitalize' }}
+          >
+            <MenuItem value="all">Tous</MenuItem>
+            {options.status.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
 
       {/* Section Permit */}
-      {isPermit && (
-        <>
-          <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 120 } }}>
-            <InputLabel>Type Permis</InputLabel>
-            <Select
-              value={filters.state.permit_type}
-              onChange={handlefilterPermitType}
-              input={<OutlinedInput label="Type Permis" />}
-              sx={{ textTransform: 'capitalize' }}
-            >
-              <MenuItem value="all">Tous</MenuItem>
-              {permitTypeOptions?.map((option) => (
-                <MenuItem key={option.slug} value={option.name}>
-                  {option.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
-            <Autocomplete
-              options={jobOptions || []}
-              getOptionLabel={(option) => option.label || ''}
-              isOptionEqualToValue={(opt, val) => opt.value === val.value}
-              loading={loading}
-              onChange={handleFilterJob}
-              fullWidth
-              value={filters.state.job || null}
-              renderOption={(props, option) => (
-                <li {...props} key={option.value}>
-                  {option.label}
-                </li>
-              )}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Filtrer par fonction"
-                  placeholder="Tapez pour rechercher..."
-                />
-              )}
-            />
-          </FormControl>
-
-          <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 130 } }}>
-            <InputLabel>Nationalité</InputLabel>
-            <Select
-              value={filters.state.nationality}
-              onChange={handleFilterCountry}
-              input={<OutlinedInput label="Nationalité" />}
-              sx={{ textTransform: 'capitalize' }}
-            >
-              <MenuItem value="all">Tous</MenuItem>
-              {countryOptions?.map((option) => (
-                <MenuItem key={option.slug} value={option.slug}>
-                  {option.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 120 } }}>
-            <InputLabel>Sexe</InputLabel>
-            <Select
-              value={filters.state.sexe}
-              onChange={handleFilterSexe}
-              input={<OutlinedInput label="Sexe" />}
-              sx={{ textTransform: 'capitalize' }}
-            >
-              <MenuItem value="all">Tous</MenuItem>
-              {sexeOptions?.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Box sx={{ position: 'relative', flexGrow: 1, width: '100%' }} ref={inputRef}>
-            <TextField
-              fullWidth
-              value={inputValue}
-              onChange={handleInputChange}
-              onFocus={() => setShowOptions(true)}
-              onPaste={handlePaste}
-              placeholder={FILTER_PLACEHOLDERS[selectedFilter] || 'Recherche'}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            {showOptions && (
-              <Paper
-                sx={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  mt: 1,
-                  zIndex: 1300,
-                  width: '100%',
-                  backgroundColor: 'background.paper',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  flexWrap: 'wrap',
-                  gap: 1,
-                  p: 1,
-                }}
-              >
-                {FILTER_OPTIONS.map((option) => (
-                  <Chip
-                    key={option.key}
-                    label={option.label}
-                    color={selectedFilter === option.key ? 'primary' : 'default'}
-                    onClick={() => handleSelectFilter(option.key)}
-                  />
-                ))}
-                {selectedFilter !== 'name' && (
-                  <Chip label="✕" size="small" onClick={() => handleSelectFilter('name')} />
-                )}
-              </Paper>
-            )}
-          </Box>
-        </>
+      {(isPermit || isEmployee) && (
+        <CommonPersonFilters
+          filters={filters.state}
+          onFiltersChange={filters.setState}
+          jobOptions={jobOptions}
+          countryOptions={countryOptions}
+          sexeOptions={sexeOptions}
+          permitTypeOptions={permitTypeOptions}
+          loading={loading}
+          isPermit={isPermit}
+        />
       )}
 
       {/* Méthode de paiement */}
@@ -463,7 +353,7 @@ export function DecReportToolbar({
       )}
 
       {/* Date pickers */}
-      {!isPermit && (
+      {!(isPermit || isEmployee) && (
         <>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
@@ -501,7 +391,7 @@ export function DecReportToolbar({
       )}
 
       {/* Champs de recherche */}
-      {!isPermit && (
+      {!(isPermit || isEmployee) && (
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth

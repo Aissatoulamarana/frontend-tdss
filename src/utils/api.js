@@ -216,6 +216,7 @@ const API = {
   reportsFactures: () => `${BASE_URL}/reports/factures/`,
   reportsPaiement: () => `${BASE_URL}/reports/payments/`,
   reportsPermits: () => `${BASE_URL}/reports/permits/`,
+  reportsEmployees: () => `${BASE_URL}/reports/employees/`,
 };
 
 export default API;
