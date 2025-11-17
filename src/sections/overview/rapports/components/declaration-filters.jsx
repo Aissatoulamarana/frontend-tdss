@@ -31,6 +31,7 @@ export function DeclarationreportFilters({
   isFacture,
   isPaiement,
   isPermit,
+  isEmployee,
   filters,
   totalResults,
   sx,
@@ -88,6 +89,10 @@ export function DeclarationreportFilters({
     handleRemoveFilter('declaration_number', '');
   }, [handleRemoveFilter]);
 
+  const handleRemovePassport = useCallback(() => {
+    handleRemoveFilter('passport', '');
+  }, [handleRemoveFilter]);
+
   const handleRemovePassportNumber = useCallback(() => {
     handleRemoveFilter('passport_number', '');
   }, [handleRemoveFilter]);
@@ -135,6 +140,37 @@ export function DeclarationreportFilters({
     [filters.state.nationality]
   );
 
+  // Fonction utilitaire pour déterminer si un champ de passeport est actif
+  const showPassportFilter = useMemo(() => {
+    if (isPermit) {
+      return !!filters.state.passport_number;
+    }
+    if (isEmployee) {
+      return !!filters.state.passport;
+    }
+    return false;
+  }, [isPermit, isEmployee, filters.state.passport_number, filters.state.passport]);
+
+  // Fonction utilitaire pour obtenir la valeur du passeport
+  const getPassportValue = useCallback(() => {
+    if (isPermit) {
+      return filters.state.passport_number;
+    }
+    if (isEmployee) {
+      return filters.state.passport;
+    }
+    return '';
+  }, [isPermit, isEmployee, filters.state.passport_number, filters.state.passport]);
+
+  // Handler pour supprimer le filtre passeport selon le type
+  const handleRemovePassportFilter = useCallback(() => {
+    if (isPermit) {
+      handleRemovePassportNumber();
+    } else if (isEmployee) {
+      handleRemovePassport();
+    }
+  }, [isPermit, isEmployee, handleRemovePassportNumber, handleRemovePassport]);
+
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
       {/* Filtre Date */}
@@ -159,8 +195,8 @@ export function DeclarationreportFilters({
         />
       </FiltersBlock>
 
-      {/* Filtres spécifiques aux Permis */}
-      {isPermit && (
+      {/* Filtres communs pour Permis et Employés */}
+      {(isPermit || isEmployee) && (
         <>
           <FiltersBlock label="Type de permis:" isShow={showPermitTypeFilter}>
             <Chip
@@ -206,21 +242,20 @@ export function DeclarationreportFilters({
             <Chip {...chipProps} label={filters.state.reference} onDelete={handleRemoveReference} />
           </FiltersBlock>
 
-          <FiltersBlock label="Numéro de passeport:" isShow={!!filters.state.passport_number}>
-            <Chip
-              {...chipProps}
-              label={filters.state.passport_number}
-              onDelete={handleRemovePassportNumber}
-            />
+          <FiltersBlock label="Numéro de passeport:" isShow={showPassportFilter}>
+            <Chip {...chipProps} label={getPassportValue()} onDelete={handleRemovePassportFilter} />
           </FiltersBlock>
 
-          <FiltersBlock label="Numéro de carte:" isShow={!!filters.state.card_number}>
-            <Chip
-              {...chipProps}
-              label={filters.state.card_number}
-              onDelete={handleRemoveCardNumber}
-            />
-          </FiltersBlock>
+          {/* Numéro de carte uniquement pour les permis */}
+          {isPermit && (
+            <FiltersBlock label="Numéro de carte:" isShow={!!filters.state.card_number}>
+              <Chip
+                {...chipProps}
+                label={filters.state.card_number}
+                onDelete={handleRemoveCardNumber}
+              />
+            </FiltersBlock>
+          )}
 
           <FiltersBlock label="Numéro de déclaration:" isShow={!!filters.state.declaration_number}>
             <Chip
@@ -228,6 +263,10 @@ export function DeclarationreportFilters({
               label={filters.state.declaration_number}
               onDelete={handleRemoveDeclarationNumber}
             />
+          </FiltersBlock>
+
+          <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
+            <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
           </FiltersBlock>
         </>
       )}
@@ -247,8 +286,8 @@ export function DeclarationreportFilters({
         </FiltersBlock>
       )}
 
-      {/* Filtre Entreprise pour Déclaration et Permis */}
-      {(isDeclaration || isPermit) && (
+      {/* Filtre Entreprise pour Déclaration (si pas déjà affiché) */}
+      {isDeclaration && !isPermit && !isEmployee && (
         <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
           <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
         </FiltersBlock>
@@ -261,10 +300,12 @@ export function DeclarationreportFilters({
         </FiltersBlock>
       )}
 
-      {/* Filtre Numéro */}
-      <FiltersBlock label="Numéro:" isShow={!!filters.state.number}>
-        <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />
-      </FiltersBlock>
+      {/* Filtre Numéro (pour les autres types) */}
+      {!isPermit && !isEmployee && (
+        <FiltersBlock label="Numéro:" isShow={!!filters.state.number}>
+          <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />
+        </FiltersBlock>
+      )}
     </FiltersResult>
   );
 }

@@ -107,6 +107,8 @@ function DynamicRow({ row, headLabel }) {
         return 'Payée';
       case 'pending':
         return 'En attente';
+      case 'processing':
+        return 'En traitement';
       default:
         return status || '—';
     }
@@ -130,6 +132,8 @@ function DynamicRow({ row, headLabel }) {
         return 'success';
       case 'pending':
         return 'warning';
+      case 'processing':
+        return 'info';
       default:
         return 'default';
     }
@@ -139,6 +143,11 @@ function DynamicRow({ row, headLabel }) {
     transfer: 'Virement',
     cheque: 'Chèque',
     deposit: 'Dépôts',
+  };
+
+  const SEXE = {
+    male: 'Homme',
+    female: 'Femme',
   };
 
   const formatValue = (id, value) => {
@@ -151,6 +160,7 @@ function DynamicRow({ row, headLabel }) {
         </Label>
       );
     }
+    if (id === 'sexe') return SEXE[value] || value || '—';
     if (id === 'payment_method') return PAYMENT_METHOD[value] || value || '—';
     if (id === 'nber_employees') return value || 0;
     return value || '—';
