@@ -26,42 +26,197 @@ import { translate } from 'pdf-lib';
 export function ReportPermit() {
   const [permits, setPermits] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [errors, setError] = useState(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [offset, setOffset] = useState(0);
+  const [count, setCount] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [countries, setCountries] = useState([]);
+  const [permitTypes, setPermitTypes] = useState([]);
+  const [jobs, setJobs] = useState([]);
   const exportDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
+  const fecthPermisType = async () => {
+    try {
+      const response = await axios.get(API.listPermits());
+      setPermitTypes(response.data?.results || []);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des types de permits:', error);
+    }
+  };
+
+  const fectCountries = async () => {
+    try {
+      const response = await axios.get(API.listCountries());
+      setCountries(response.data?.results || []);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des pays:', error);
+    }
+  };
+
+  useEffect(() => {
+    fectCountries();
+    fecthPermisType();
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchAllFonctions() {
+      setLoadingOptions(true);
+      // Vérifier si on a déjà le cache en session
+      // Étape 1 : lecture cache session
+      const cachedSession = sessionStorage.getItem('fonctions');
+      let optionsToUse = cachedSession ? JSON.parse(cachedSession) : null;
+
+      // Étape 2 : sinon, lecture cache localStorage
+      if (!optionsToUse) {
+        const cachedLocal = localStorage.getItem('fonctions');
+        if (cachedLocal) {
+          const parsedLocal = JSON.parse(cachedLocal);
+          optionsToUse = parsedLocal.data;
+          // Copier en session pour la session courante
+          sessionStorage.setItem('fonctions', JSON.stringify(optionsToUse));
+        }
+      }
+
+      // Afficher immédiatement ce qu’on a
+      if (optionsToUse) {
+        setJobs(optionsToUse);
+      }
+
+      // Étape 3 : Vérifier si on doit rafraîchir depuis l’API
+      const cachedLocal = localStorage.getItem('fonctions');
+      let shouldFetch = true;
+
+      if (cachedLocal) {
+        const parsedLocal = JSON.parse(cachedLocal);
+        const lastFetch = parsedLocal.lastFetch || 0;
+        const now = Date.now();
+
+        // ex : si le cache a moins de 24h → pas besoin de recharger
+        if (now - lastFetch < 24 * 60 * 60 * 1000) {
+          shouldFetch = false;
+        }
+      }
+
+      if (!shouldFetch) {
+        setLoadingOptions(false);
+        return;
+      }
+
+      try {
+        // 1) Premier appel pour obtenir le count
+        const resp1 = await axios.get(API.listFonctionAgent(), {
+          params: { offset: 0, limit: 1 },
+        });
+        const total = resp1.data.count;
+
+        // 2) Récupérer toutes les fonctions
+        const resp2 = await axios.get(API.listFonctionAgent(), {
+          params: { offset: 0, limit: total },
+        });
+
+        if (!isMounted) return;
+
+        // Filtre pour n'avoir qu'un slug unique et créer les options pour l'Autocomplete
+        const uniqueBySlug = resp2.data.results
+          .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
+          .map((f) => ({ label: f.name, value: f.slug }));
+
+        // Sauvegarde avec la date du fetch
+        const cachePayload = {
+          data: uniqueBySlug,
+          lastFetch: Date.now(),
+        };
+
+        localStorage.setItem('fonctions', JSON.stringify(cachePayload));
+        sessionStorage.setItem('fonctions', JSON.stringify(uniqueBySlug));
+
+        setJobs(uniqueBySlug);
+      } catch (err) {
+        console.error('Erreur lors du chargement des fonctions:', err);
+        toast.error('Erreur lors du chargement des fonctions');
+      } finally {
+        if (isMounted) setLoadingOptions(false);
+      }
+    }
+
+    fetchAllFonctions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filters = useSetState({
-    number: '',
+    card_number: '',
+    reference: '',
     company: '',
+    declaration_number: '',
     status: 'all',
     job: '',
     name: '',
     nationality: '',
-    sexe: '',
+    sexe: 'all',
     permit_type: 'all',
   });
 
-  const dateError = fIsBetween(filters.state.startDate, filters.state.endDate);
+  const buildParams = (page = 0, limit = table.rowsPerPage) => {
+    const params = {
+      limit,
+      offset: page * limit,
+    };
+
+    // Ajouter les filtres seulement s'ils sont définis
+    if (filters.state.card_number) {
+      params.number = filters.state.card_number;
+    }
+
+    if (filters.state.reference) {
+      params.reference = filters.state.reference;
+    }
+    if (filters.state.company) {
+      params.client = filters.state.company;
+    }
+    if (filters.state.declaration_number) {
+      params.declaration_number = filters.state.declaration_number;
+    }
+    if (filters.state.status !== 'all') {
+      params.status = filters.state.status;
+    }
+    if (filters.state.permit_type !== 'all') {
+      params.payment_method = filters.state.permit_type;
+    }
+
+    if (filters.state.name) {
+      params.name = filters.state.name;
+    }
+    if (filters.state.job) {
+      params.job = filters.state.job;
+    }
+    if (filters.state.nationality) {
+      params.nationality = filters.state.nationality;
+    }
+    if (filters.state.sexe !== 'all') {
+      params.sexe = filters.state.sexe;
+    }
+    return params;
+  };
 
   const fetchReport = async () => {
     setLoading(true);
     try {
-      const params = {
-        offset,
-        limit: 100,
-      };
+      const params = buildParams(table.page);
       const resp = await axios.get(API.reportsPermits());
-      const newData = resp?.data || [];
+      const newData = resp?.data?.results || [];
 
       if (newData.length < 100) {
         setHasMore(false);
       }
       setPermits(newData);
-      setOffset((prev) => prev + 100);
+      setCount(resp?.data?.count || 0);
     } catch (error) {
       console.log(error);
       const errorMessage = error?.error || error?.details || error?.message || error?.detail;
@@ -74,25 +229,34 @@ export function ReportPermit() {
 
   useEffect(() => {
     fetchReport();
-  }, []);
-
-  const dataFiltered = applyFilter({
-    inputData: permits,
-    filters: filters.state,
-    dateError,
-  });
-
-  const startIndex = table.page * table.rowsPerPage;
-  const endIndex = startIndex + table.rowsPerPage;
-  const paginatedData = dataFiltered.slice(startIndex, endIndex);
+  }, [
+    table.page,
+    table.rowsPerPage,
+    filters.state.card_number,
+    filters.state.reference,
+    filters.state.company,
+    filters.state.declaration_number,
+    filters.state.status,
+    filters.state.permit_type,
+    filters.state.name,
+    filters.state.job,
+    filters.state.nationality,
+    filters.state.sexe,
+  ]);
 
   const canReset =
-    !!filters.state.number ||
+    !!filters.state.card_number ||
+    !!filters.state.reference ||
     !!filters.state.company ||
+    !!filters.state.declaration_number ||
     filters.state.status !== 'all' ||
-    (!!filters.state.startDate && !!filters.state.endDate);
+    filters.state.permit_type !== 'all' ||
+    !!filters.state.name ||
+    !!filters.state.job ||
+    !!filters.state.nationality ||
+    filters.state.sexe !== 'all';
 
-  const notFound = !dataFiltered.length && canReset;
+  const notFound = !loading && permits.length === 0 && canReset;
 
   const STATUS_TRANSLATIONS = {
     processing: 'En traitement',
@@ -122,10 +286,39 @@ export function ReportPermit() {
     { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
   ];
 
+  const fetchAllDataForExport = async () => {
+    try {
+      const allData = [];
+      let page = 0;
+      const limit = count; // Taille de page pour l'export
+      let hasMore = true;
+
+      while (hasMore) {
+        const params = buildParams(page, limit);
+        const resp = await axios.get(API.reportsPermits(), { params });
+        const data = resp?.data.results || [];
+
+        allData.push(...data);
+
+        // Vérifier s'il y a encore des données
+        if (data.length < limit || allData.length >= (resp?.data.count || 0)) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+
+      return allData;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données pour export:', error);
+      throw error;
+    }
+  };
+
   const handleExport = async (format) => {
     setIsExporting(true);
     try {
-      const exportData = dataFiltered;
+      const exportData = await fetchAllDataForExport();
 
       switch (format) {
         case 'pdf':
@@ -153,14 +346,28 @@ export function ReportPermit() {
     }
   };
 
-  const statusOptions = Array.from(new Set(permits.map((d) => d?.status).filter(Boolean))).map(
-    (s) => ({ value: s, label: STATUS_TRANSLATIONS[s] || s })
-  );
+  const statusOptions = [
+    { value: 'processing', label: STATUS_TRANSLATIONS['processing'] },
+    { value: 'submitted', label: STATUS_TRANSLATIONS['submitted'] },
+    { value: 'validated', label: STATUS_TRANSLATIONS['validated'] },
+    { value: 'rejected', label: STATUS_TRANSLATIONS['rejected'] },
+    { value: 'printed', label: STATUS_TRANSLATIONS['printed'] },
+    { value: 'delivered', label: STATUS_TRANSLATIONS['delivered'] },
+  ];
 
-  const sexeOptions = Array.from(new Set(permits.map((d) => d?.sexe).filter(Boolean))).map((s) => ({
-    value: s,
-    label: SEXE_TRANSLATIONS[s] || s,
-  }));
+  // const statusOptions = Array.from(new Set(permits.map((d) => d?.status).filter(Boolean))).map(
+  //   (s) => ({ value: s, label: STATUS_TRANSLATIONS[s] || s })
+  // );
+
+  const sexeOptions = [
+    { value: 'male', label: SEXE_TRANSLATIONS['male'] },
+    { value: 'female', label: SEXE_TRANSLATIONS['female'] },
+  ];
+
+  // const sexeOptions = Array.from(new Set(permits.map((d) => d?.sexe).filter(Boolean))).map((s) => ({
+  //   value: s,
+  //   label: SEXE_TRANSLATIONS[s] || s,
+  // }));
 
   return (
     <DashboardContent maxWidth="xl">
@@ -181,24 +388,28 @@ export function ReportPermit() {
 
       <DecReportToolbar
         filters={filters}
-        dateError={dateError}
         options={{ status: statusOptions }}
         sexeOptions={sexeOptions}
+        jobOptions={jobs}
+        countryOptions={countries}
+        permitTypeOptions={permitTypes}
+        isPermit={true}
       />
 
       {canReset && (
         <DeclarationreportFilters
           filters={filters}
-          totalResults={dataFiltered.length}
+          totalResults={count}
           sx={{ p: 2.5, pt: 0 }}
+          isPermit={true}
         />
       )}
 
       <Grid2 size={{ xs: 12, md: 12 }}>
         <DeclarationNew
           title="Rapports des permits"
-          tableData={paginatedData}
-          totalCount={dataFiltered.length}
+          tableData={permits}
+          totalCount={count}
           loading={loading}
           table={table}
           notFound={notFound}
@@ -226,82 +437,4 @@ export function ReportPermit() {
       />
     </DashboardContent>
   );
-}
-
-function applyFilter({ inputData, filters, dateError }) {
-  const { name, number, company, status, startDate, endDate, sexe, job, permit_type, nationality } =
-    filters;
-
-  let filteredData = [...inputData];
-
-  // Filtrage par numéro
-  if (number) {
-    filteredData = filteredData.filter(
-      (permit) =>
-        permit?.reference?.toLowerCase().includes(number.toLowerCase()) ||
-        permit?.card_number?.toLowerCase().includes(number.toLowerCase()) ||
-        permit?.passport_number?.toLowerCase().includes(number.toLowerCase())
-    );
-  }
-
-  // filtrage par nom
-  if (name) {
-    const lowerName = name.toLowerCase();
-    filteredData = filteredData?.filter(
-      (permit) =>
-        (permit?.last && permit.last.toLowerCase().includes(lowerName)) ||
-        (permit?.first && permit.first.toLowerCase().includes(lowerName))
-    );
-  }
-
-  // Filtrage par entreprise
-  if (company) {
-    filteredData = filteredData.filter((permit) =>
-      permit?.client?.toLowerCase().includes(company?.toLowerCase())
-    );
-  }
-
-  // filtrage par fonction
-  if (job) {
-    filteredData = filteredData.filter((permit) =>
-      permit?.job?.toLowerCase().includes(job?.toLowerCase())
-    );
-  }
-
-  //filtrage par nationalité
-  if (nationality) {
-    filteredData = filteredData.filter((permit) =>
-      permit?.nationality?.toLowerCase().includes(nationality?.toLowerCase())
-    );
-  }
-
-  //filtrage par type de permis
-  if (permit_type !== 'all') {
-    filteredData = filteredData.filter((permit) => permit?.permit_type === permit_type);
-  }
-
-  // Filtrage par statut
-  if (status !== 'all') {
-    filteredData = filteredData.filter((permit) => permit?.status === status);
-  }
-
-  //filtrage par sexe
-  if (sexe !== 'all') {
-    filteredData = filteredData.filter((permit) => permit?.sexe === sexe);
-  }
-
-  // Filtrage par date
-  const sDate = startDate instanceof Date ? startDate : startDate ? new Date(startDate) : null;
-  const eDate = endDate instanceof Date ? endDate : endDate ? new Date(endDate) : null;
-  if (!dateError && sDate && eDate) {
-    filteredData = filteredData.filter((permit) => {
-      // Parser created_on en Date (gère le format ISO avec Z)
-      const created = permit?.created_on ? new Date(permit.created_on) : null;
-      if (!created || isNaN(created)) return false; // ignore si date invalide côté back
-      // Utilise ta fonction utilitaire fIsBetween si elle accepte Dates
-      return fIsBetween(created, sDate, eDate);
-    });
-  }
-
-  return filteredData;
 }
