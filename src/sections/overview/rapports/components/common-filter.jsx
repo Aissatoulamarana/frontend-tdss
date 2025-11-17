@@ -192,7 +192,7 @@ export function CommonPersonFilters({
         >
           <MenuItem value="all">Tous</MenuItem>
           {permitTypeOptions?.map((option) => (
-            <MenuItem key={option.slug} value={option.name}>
+            <MenuItem key={option.slug} value={option.value}>
               {option.name}
             </MenuItem>
           ))}

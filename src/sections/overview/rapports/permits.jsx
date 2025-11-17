@@ -42,7 +42,7 @@ export function ReportPermit() {
   const [count, setCount] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [countries, setCountries] = useState([]);
-  const [permitTypes, setPermitTypes] = useState([]);
+
   const [jobs, setJobs] = useState([]);
   const exportDialog = useBoolean();
 
@@ -62,14 +62,14 @@ export function ReportPermit() {
     permit_type: 'all',
   });
 
-  const fecthPermisType = async () => {
-    try {
-      const response = await axios.get(API.listPermits());
-      setPermitTypes(response.data?.results || []);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des types de permits:', error);
-    }
-  };
+  // const fecthPermisType = async () => {
+  //   try {
+  //     const response = await axios.get(API.listPermits());
+  //     setPermitTypes(response.data?.results || []);
+  //   } catch (error) {
+  //     console.error('Erreur lors de la récupération des types de permits:', error);
+  //   }
+  // };
 
   const fectCountries = async () => {
     try {
@@ -80,9 +80,15 @@ export function ReportPermit() {
     }
   };
 
+  const permitTypes = [
+    { value: 'A', name: 'Permis A' },
+    { value: 'B', name: 'Permis B' },
+    { value: 'C', name: 'Permis C' },
+  ];
+
   useEffect(() => {
     fectCountries();
-    fecthPermisType();
+    // fecthPermisType();
   }, []);
 
   useEffect(() => {

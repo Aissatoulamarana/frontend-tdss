@@ -42,7 +42,7 @@ export function ReportEmployee() {
   const [count, setCount] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [countries, setCountries] = useState([]);
-  const [permitTypes, setPermitTypes] = useState([]);
+
   const [jobs, setJobs] = useState([]);
   const exportDialog = useBoolean();
 
@@ -60,15 +60,6 @@ export function ReportEmployee() {
     permit_type: 'all',
   });
 
-  const fecthPermisType = async () => {
-    try {
-      const response = await axios.get(API.listPermits());
-      setPermitTypes(response.data?.results || []);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des types de permits:', error);
-    }
-  };
-
   const fectCountries = async () => {
     try {
       const response = await axios.get(API.listCountries());
@@ -80,7 +71,6 @@ export function ReportEmployee() {
 
   useEffect(() => {
     fectCountries();
-    fecthPermisType();
   }, []);
 
   useEffect(() => {
@@ -354,6 +344,12 @@ export function ReportEmployee() {
   const sexeOptions = [
     { value: 'male', label: SEXE_TRANSLATIONS['male'] },
     { value: 'female', label: SEXE_TRANSLATIONS['female'] },
+  ];
+
+  const permitTypes = [
+    { value: 'A', name: 'Permis A' },
+    { value: 'B', name: 'Permis B' },
+    { value: 'C', name: 'Permis C' },
   ];
 
   return (
