@@ -3,11 +3,11 @@
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Grid2 } from '@mui/material';
 import { DeclarationNew } from '../analytics/declaration/declaration-new-invoice';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { paths } from 'src/routes/paths';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -18,6 +18,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
+import { ColumnSelectorDialog } from './components/colums-selected';
 
 const STATUS_TRANSLATIONS = {
   processing: 'En traitement',
@@ -45,8 +46,39 @@ export function ReportEmployee() {
 
   const [jobs, setJobs] = useState([]);
   const exportDialog = useBoolean();
+  const columnDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
+
+  const ALL_COLUMNS = useMemo(
+    () => [
+      { key: 'reference', label: 'Référence' },
+      { key: 'passport', label: 'Passeport' },
+      { key: 'first', label: 'Prénom' },
+      { key: 'last', label: 'Nom' },
+      { key: 'phone', label: 'Téléphone' },
+      { key: 'nationality', label: 'Nationalité' },
+      { key: 'sexe', label: 'Sexe', translate: SEXE_TRANSLATIONS },
+      { key: 'nber_declarations', label: 'N° Declaration' },
+      { key: 'job', label: 'Fonction' },
+      { key: 'permit_type', label: 'Permis' },
+    ],
+    []
+  );
+
+  const DEFAULT_COLUMNS = [
+    'reference',
+    'passport',
+    'first',
+    'last',
+    'nationality',
+    'sexe',
+    'nber_declarations',
+    'job',
+    'permit_type',
+  ];
+
+  const [selectedColumns, setSelectedColumns] = useState(DEFAULT_COLUMNS);
 
   const filters = useSetState({
     reference: '',
@@ -233,6 +265,7 @@ export function ReportEmployee() {
   }, [
     table.page,
     table.rowsPerPage,
+    selectedColumns,
     filters.state.passport,
     filters.state.reference,
     filters.state.company,
@@ -245,7 +278,7 @@ export function ReportEmployee() {
   ]);
 
   const canReset =
-    !!filters.state.passport_number ||
+    !!filters.state.passport ||
     !!filters.state.reference ||
     !!filters.state.company ||
     !!filters.state.declaration_number ||
@@ -257,16 +290,31 @@ export function ReportEmployee() {
 
   const notFound = !loading && employees.length === 0 && canReset;
 
+  // Colonnes filtrées selon la sélection
+  const visibleColumns = useMemo(
+    () => ALL_COLUMNS.filter((col) => selectedColumns.includes(col.key)),
+    [ALL_COLUMNS, selectedColumns]
+  );
+
+  const tableHeaders = useMemo(
+    () => visibleColumns.map((col) => ({ id: col.key, label: col.label })),
+    [visibleColumns]
+  );
+
+  const handleApplyColumns = useCallback((columns) => {
+    setSelectedColumns(columns);
+    toast.success('Colonnes mises à jour avec succès');
+  }, []);
+
   const columns = [
     { key: 'reference', label: 'Reference' },
-
     { key: 'passport', label: 'Passeport' },
     { key: 'first', label: 'Prénom' },
     { key: 'last', label: 'Nom' },
     { key: 'phone', label: 'Téléphone' },
-    // { key: 'nationality', label: 'Nationalité' },
+    { key: 'nationality', label: 'Nationalité' },
     { key: 'sexe', label: 'Sexe', translate: SEXE_TRANSLATIONS },
-    { key: 'nber_declaration', label: 'Declaration' },
+    { key: 'nber_declarations', label: 'Declaration' },
     { key: 'job', label: 'Fonction' },
     { key: 'permit_type', label: 'Permis' },
     // { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
@@ -307,7 +355,7 @@ export function ReportEmployee() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDFM(exportData, columns, 'rapport-employés.pdf');
+          await exportToPDFM(exportData, visibleColumns, 'rapport-employés.pdf');
           break;
         case 'csv':
           exportToCSVM(exportData, columns, 'rapport-employés.csv');
@@ -358,13 +406,22 @@ export function ReportEmployee() {
         heading="Rapport des employés"
         links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Rapports' }]}
         action={
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:download-fill" />}
-            onClick={exportDialog.onTrue}
-          >
-            Exporter
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="eva:options-2-outline" />}
+              onClick={columnDialog.onTrue}
+            >
+              Colonnes ({selectedColumns.length})
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="eva:download-fill" />}
+              onClick={exportDialog.onTrue}
+            >
+              Exporter
+            </Button>
+          </Stack>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -397,21 +454,17 @@ export function ReportEmployee() {
           loading={loading}
           table={table}
           notFound={notFound}
-          headLabel={[
-            { id: 'reference', label: 'Reference' },
-            { id: 'passport', label: 'Passeport' },
-            { id: 'first', label: 'Prénom' },
-            { id: 'last', label: 'Nom' },
-            { id: 'phone', label: 'Téléphone' },
-            { id: 'sexe', label: 'Sexe' },
-            // { id: 'nationality', label: 'Nationalité' },
-            { id: 'nber_declarations', label: 'N° Déclarations' },
-            { id: 'job', label: 'Fonction' },
-            { id: 'permit_type', label: 'Permis' },
-            // { id: 'status', label: 'Statut' },
-          ]}
+          headLabel={tableHeaders}
         />
       </Grid2>
+
+      <ColumnSelectorDialog
+        open={columnDialog.value}
+        onClose={columnDialog.onFalse}
+        columns={ALL_COLUMNS}
+        selectedColumns={selectedColumns}
+        onApply={handleApplyColumns}
+      />
 
       <ExportDialog
         open={exportDialog.value}

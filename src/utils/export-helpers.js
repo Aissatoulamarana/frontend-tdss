@@ -198,41 +198,65 @@ const formatAmountForPdf = (raw) => {
   return `${safe} FG`; // ou ' F G' si tu veux
 };
 
+// Helper pour formater les valeurs
+const formatCellValue = (value, column) => {
+  if (value === null || value === undefined) return '-';
+
+  // Appliquer la traduction si disponible
+  if (column.translate && column.translate[value]) {
+    return column.translate[value];
+  }
+
+  // Formater les dates
+  if (column.isDate) {
+    try {
+      return new Date(value).toLocaleDateString('fr-FR');
+    } catch {
+      return value;
+    }
+  }
+
+  // Formater les montants
+  if (column.isCurrency) {
+    const cleaned = String(value).replace(/[^\d.,]/g, '');
+    const numberValue = parseFloat(cleaned.replace(',', '.'));
+    return !isNaN(numberValue) ? `${numberValue.toLocaleString('fr-FR')} FG` : '-';
+  }
+
+  return value;
+};
 export const exportToPDFM = async (data, columns, filename) => {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   doc.setFontSize(14);
   doc.text(`Rapport ${filename} `, 14, 20);
 
-  const tableData = data.map((row) =>
-    columns.map((col) => {
-      let value = row[col.key] ?? '-';
-      if (col.translate) value = col.translate[value] ?? value;
-      if (col.isDate) value = new Date(value).toLocaleDateString('fr-FR');
-      // if (col?.isCurrency) {
-      //   // Supprime tout sauf chiffres, points et virgules
-      //   const cleaned = String(value).replace(/[^\d.,]/g, '');
-
-      //   // Convertit proprement en nombre
-      //   const numberValue = parseFloat(cleaned.replace(',', '.'));
-
-      //   // Si c’est un vrai nombre, on ajoute FG
-      //   value = !isNaN(numberValue) ? `${numberValue.toLocaleString('fr-FR')} FG` : '-';
-      // }
-
-      return value;
-    })
-  );
+  // Préparer les données du tableau
+  const tableData = data.map((row) => columns.map((col) => formatCellValue(row[col.key], col)));
 
   autoTable(doc, {
     head: [columns.map((col) => col.label)],
     body: tableData,
     startY: 35,
     styles: { fontSize: 10 },
+    didDrawPage: (data) => {
+      // Pied de page
+      const pageCount = doc.internal.getNumberOfPages();
+      const currentPage = doc.internal.getCurrentPageInfo().pageNumber;
+      doc.setFontSize(8);
+      doc.text(
+        `Page ${currentPage} sur ${pageCount}`,
+        doc.internal.pageSize.width / 2,
+        doc.internal.pageSize.height - 10,
+        { align: 'center' }
+      );
+    },
   });
 
   doc.save(filename);
 };
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/*******  acee04eb-d6c0-4dd2-bf58-7ac7e85a3254  *******/
 export const exportToCSVM = (data, columns, filename = 'export.csv') => {
   const BOM = '\uFEFF';
   const csvContent =
