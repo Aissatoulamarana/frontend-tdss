@@ -1,5 +1,4 @@
-'use client';
-
+import { useCallback, useState, useEffect, useRef } from 'react'; // import hooks
 import { formHelperTextClasses } from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,53 +11,148 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { useCallback } from 'react';
 import { Iconify } from 'src/components/iconify';
 
-export function DecReportToolbar({ filters, options, paymentOptions, dateError }) {
+export function DecReportToolbar({
+  isDeclaration,
+  isFacture,
+  isPaiement,
+  filters,
+  options,
+  paymentOptions,
+  dateError,
+}) {
+  // Local state for debounced inputs
+  const [localNumber, setLocalNumber] = useState(filters.state.number || '');
+  const [localCompany, setLocalCompany] = useState(filters.state.company || '');
+  const [localClient, setLocalClient] = useState(filters.state.client || '');
+
+  // Refs to track debounce timers
+  const numberDebounceRef = useRef(null);
+  const companyDebounceRef = useRef(null);
+  const clientDebounceRef = useRef(null);
+
+  // Handler for immediate state update on select changes (no debounce needed)
   const handleFilterStatus = useCallback(
     (event) => {
-      const newValue = event.target.value;
-      filters.setState({ status: newValue });
+      filters.setState({ status: event.target.value });
     },
     [filters]
   );
-
   const handleFilterPaymentMethod = useCallback(
     (event) => {
-      const newValue = event.target.value;
-      filters.setState({ paymentMethod: newValue });
+      filters.setState({ payment_method: event.target.value });
     },
     [filters]
   );
 
-  const handleFilterNumber = useCallback(
-    (event) => {
-      filters.setState({ number: event.target.value });
-    },
-    [filters]
-  );
+  // Update local input state on typing
+  const handleNumberChange = (event) => {
+    setLocalNumber(event.target.value);
+  };
+  const handleCompanyChange = (event) => {
+    setLocalCompany(event.target.value);
+  };
 
-  const handleFilterCompany = useCallback(
-    (event) => {
-      filters.setState({ company: event.target.value });
-    },
-    [filters]
-  );
+  const handleClientChange = (event) => {
+    setLocalClient(event.target.value);
+  };
 
-  const handleFilterStartDate = useCallback(
-    (newValue) => {
-      filters.setState({ startDate: newValue });
-    },
-    [filters]
-  );
+  // Debounce effect for "number" field (2 second delay)
+  useEffect(() => {
+    if (numberDebounceRef.current) clearTimeout(numberDebounceRef.current);
+    numberDebounceRef.current = setTimeout(() => {
+      filters.setState({ number: localNumber });
+    }, 1000);
+    return () => clearTimeout(numberDebounceRef.current);
+  }, [localNumber, filters]);
 
-  const handleFilterEndDate = useCallback(
-    (newValue) => {
-      filters.setState({ endDate: newValue });
-    },
-    [filters]
-  );
+  // Debounce effect for "company" field (1 second delay)
+  useEffect(() => {
+    if (companyDebounceRef.current) clearTimeout(companyDebounceRef.current);
+    companyDebounceRef.current = setTimeout(() => {
+      filters.setState({ company: localCompany });
+    }, 1000);
+    return () => clearTimeout(companyDebounceRef.current);
+  }, [localCompany, filters]);
+
+  useEffect(() => {
+    if (clientDebounceRef.current) clearTimeout(clientDebounceRef.current);
+    clientDebounceRef.current = setTimeout(() => {
+      filters.setState({ client: localClient });
+    }, 1000);
+    return () => clearTimeout(clientDebounceRef.current);
+  }, [localClient, filters]);
+
+  // onPaste handlers: prevent default and insert manually for immediate search
+  const handleNumberPaste = (event) => {
+    event.preventDefault();
+    const pastedValue = event.clipboardData.getData('Text');
+    setLocalNumber(pastedValue);
+    filters.setState({ number: pastedValue });
+    if (numberDebounceRef.current) {
+      clearTimeout(numberDebounceRef.current);
+      numberDebounceRef.current = null;
+    }
+  };
+  const handleCompanyPaste = (event) => {
+    event.preventDefault();
+    const pastedValue = event.clipboardData.getData('Text');
+    setLocalCompany(pastedValue);
+    filters.setState({ company: pastedValue });
+    if (companyDebounceRef.current) {
+      clearTimeout(companyDebounceRef.current);
+      companyDebounceRef.current = null;
+    }
+  };
+
+  const handleClientPaste = (event) => {
+    event.preventDefault();
+    const pastedValue = event.clipboardData.getData('Text');
+    setLocalClient(pastedValue);
+    filters.setState({ client: pastedValue });
+    if (clientDebounceRef.current) {
+      clearTimeout(clientDebounceRef.current);
+      clientDebounceRef.current = null;
+    }
+  };
+
+  // --- NEW: Sync local inputs when filters.state is reset elsewhere ---
+  // When the shared filters state clears (ex: onResetState from FiltersResult),
+  // empty the local inputs and clear pending debounce timers so they don't reapply old values.
+  useEffect(() => {
+    if (!filters.state.number) {
+      setLocalNumber('');
+      if (numberDebounceRef.current) {
+        clearTimeout(numberDebounceRef.current);
+        numberDebounceRef.current = null;
+      }
+    }
+  }, [filters.state.number]);
+
+  useEffect(() => {
+    if (!filters.state.company) {
+      setLocalCompany('');
+      if (companyDebounceRef.current) {
+        clearTimeout(companyDebounceRef.current);
+        companyDebounceRef.current = null;
+      }
+    }
+  }, [filters.state.company]);
+
+  useEffect(() => {
+    if (!filters.state.client) {
+      setLocalClient('');
+      if (clientDebounceRef.current) {
+        clearTimeout(clientDebounceRef.current);
+        clientDebounceRef.current = null;
+      }
+    }
+  }, [filters.state.client]);
+  // ------------------------------------------------------------------
+
+  // Determine if the number is invalid (non-empty and not length 11)
+  const numberError = localNumber.length > 0 && localNumber.length !== 11;
 
   return (
     <Stack
@@ -67,6 +161,7 @@ export function DecReportToolbar({ filters, options, paymentOptions, dateError }
       direction={{ xs: 'column', md: 'row' }}
       sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
     >
+      {/* Status filter (no change) */}
       <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
         <InputLabel htmlFor="invoice-filter-status-select">Statut</InputLabel>
         <Select
@@ -78,51 +173,52 @@ export function DecReportToolbar({ filters, options, paymentOptions, dateError }
         >
           <MenuItem value="all">Tous</MenuItem>
           {options.status.map((option) => (
-            <MenuItem key={option?.value} value={option?.value}>
-              {option?.label}
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-      {filters?.paymentMethod ||
-        (paymentOptions && (
-          <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
-            <InputLabel htmlFor="invoice-filter-payment-method-select">
-              Methode de paiement
-            </InputLabel>
-            <Select
-              value={filters.state.paymentMethod}
-              onChange={handleFilterPaymentMethod}
-              input={<OutlinedInput label="Moyen de paiement" />}
-              inputProps={{ id: 'invoice-filter-payment-method-select' }}
-              sx={{ textTransform: 'capitalize' }}
-            >
-              <MenuItem value="all">Tous</MenuItem>
-              {paymentOptions?.paymentMethod?.map((option) => (
-                <MenuItem key={option?.value} value={option?.value}>
-                  {option?.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        ))}
 
+      {/* Payment method filter (no change) */}
+      {isPaiement && (
+        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
+          <InputLabel htmlFor="invoice-filter-payment-method-select">
+            Methode de paiement
+          </InputLabel>
+          <Select
+            value={filters.state.payment_method}
+            onChange={handleFilterPaymentMethod}
+            input={<OutlinedInput label="Moyen de paiement" />}
+            inputProps={{ id: 'invoice-filter-payment-method-select' }}
+            sx={{ textTransform: 'capitalize' }}
+          >
+            <MenuItem value="all">Tous</MenuItem>
+            {paymentOptions?.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
+      {/* Date pickers (no change) */}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           label="Date début"
-          value={filters.state.startDate}
-          onChange={handleFilterStartDate}
+          value={filters.state.created_on_before}
+          onChange={(newValue) => filters.setState({ created_on_before: newValue })}
           format="DD/MM/YYYY"
           slotProps={{ textField: { fullWidth: true } }}
           sx={{ maxWidth: { md: 180 } }}
         />
       </LocalizationProvider>
-
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DatePicker
           label="Date fin"
-          value={filters.state.endDate}
-          onChange={handleFilterEndDate}
+          value={filters.state.created_on_after}
+          onChange={(newValue) => filters.setState({ created_on_after: newValue })}
           format="DD/MM/YYYY"
           slotProps={{
             textField: {
@@ -141,12 +237,17 @@ export function DecReportToolbar({ filters, options, paymentOptions, dateError }
         />
       </LocalizationProvider>
 
+      {/* Search inputs with debounce and adornment */}
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
+        {/* Number search with error handling and debounce */}
         <TextField
           fullWidth
-          value={filters?.state?.number}
-          onChange={handleFilterNumber}
+          value={localNumber}
+          onChange={handleNumberChange}
+          onPaste={handleNumberPaste}
           placeholder="Rechercher par numéro"
+          error={numberError}
+          helperText={numberError ? 'Le nombre est incorrect' : ''}
           slotProps={{
             input: {
               startAdornment: (
@@ -158,21 +259,43 @@ export function DecReportToolbar({ filters, options, paymentOptions, dateError }
           }}
         />
 
-        <TextField
-          fullWidth
-          value={filters?.state?.company}
-          onChange={handleFilterCompany}
-          placeholder="Rechercher par entreprise"
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        {/* Company search with debounce */}
+        {isDeclaration && (
+          <TextField
+            fullWidth
+            value={localCompany}
+            onChange={handleCompanyChange}
+            onPaste={handleCompanyPaste}
+            placeholder="Rechercher par entreprise"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        )}
+        {(isFacture || isPaiement) && (
+          <TextField
+            fullWidth
+            value={localClient}
+            onChange={handleClientChange}
+            onPaste={handleClientPaste}
+            placeholder="Rechercher par entreprise"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        )}
       </Stack>
     </Stack>
   );
