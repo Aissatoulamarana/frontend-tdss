@@ -1,25 +1,51 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import Chip from '@mui/material/Chip';
 import { fDateRangeShortLabel } from 'src/utils/format-time';
 import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-result';
+
+const STATUS_TRANSLATIONS = {
+  submitted: 'Soumise',
+  validated: 'Validée',
+  rejected: 'Rejetée',
+  billed: 'Facturée',
+  unsubmitted: 'Non soumise',
+  processing: 'En traitement',
+  paid: 'Payée',
+  unpaid: 'Non payée',
+  pending: 'En attente',
+};
+
+const PAYMENT_METHOD_TRANSLATIONS = {
+  transfer: 'Virement',
+  cheque: 'Chèque',
+  deposit: 'Dépôts',
+};
+
+const SEXE_TRANSLATIONS = {
+  male: 'Homme',
+  female: 'Femme',
+};
 
 export function DeclarationreportFilters({
   isDeclaration,
   isFacture,
   isPaiement,
+  isPermit,
   filters,
   totalResults,
   sx,
 }) {
+  // Handler générique pour supprimer un filtre
   const handleRemoveFilter = useCallback(
-    (key, value = '') => {
-      filters.setState({ [key]: value });
+    (key, defaultValue = '') => {
+      filters.setState({ [key]: defaultValue });
     },
     [filters]
   );
 
+  // Handlers spécifiques
   const handleRemoveDate = useCallback(() => {
-    filters.setState({ startDate: null, endDate: null });
+    filters.setState({ created_on_before: null, created_on_after: null });
   }, [filters]);
 
   const handleRemoveStatus = useCallback(() => {
@@ -28,6 +54,42 @@ export function DeclarationreportFilters({
 
   const handleRemovePaymentMethod = useCallback(() => {
     handleRemoveFilter('payment_method', 'all');
+  }, [handleRemoveFilter]);
+
+  const handleRemovePermitType = useCallback(() => {
+    handleRemoveFilter('permit_type', 'all');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveSexe = useCallback(() => {
+    handleRemoveFilter('sexe', 'all');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveJob = useCallback(() => {
+    handleRemoveFilter('job', null);
+  }, [handleRemoveFilter]);
+
+  const handleRemoveCountry = useCallback(() => {
+    handleRemoveFilter('nationality', 'all');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveName = useCallback(() => {
+    handleRemoveFilter('name', '');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveReference = useCallback(() => {
+    handleRemoveFilter('reference', '');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveCardNumber = useCallback(() => {
+    handleRemoveFilter('card_number', '');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveDeclarationNumber = useCallback(() => {
+    handleRemoveFilter('declaration_number', '');
+  }, [handleRemoveFilter]);
+
+  const handleRemovePassportNumber = useCallback(() => {
+    handleRemoveFilter('passport_number', '');
   }, [handleRemoveFilter]);
 
   const handleRemoveCompany = useCallback(() => {
@@ -42,30 +104,41 @@ export function DeclarationreportFilters({
     handleRemoveFilter('number', '');
   }, [handleRemoveFilter]);
 
-  const STATUS_TRANSLATIONS = {
-    submitted: 'Soumise',
-    validated: 'Validée',
-    rejected: 'Rejetée',
-    billed: 'Facturée',
-    unsubmitted: 'Non soumise',
-    processing: 'En traitement',
-    paid: 'Payée',
-    unpaid: 'Non payée',
-    pending: 'En attente',
-  };
+  // Conditions d'affichage mémorisées
+  const showDateFilter = useMemo(
+    () => Boolean(filters.state.created_on_before && filters.state.created_on_after),
+    [filters.state.created_on_before, filters.state.created_on_after]
+  );
 
-  const PAYMENT_METHOD = {
-    transfer: 'Virement',
-    cheque: 'Chèque',
-    deposit: 'Dépôts',
-  };
+  const showStatusFilter = useMemo(
+    () => filters.state.status && filters.state.status !== 'all',
+    [filters.state.status]
+  );
+
+  const showPaymentMethodFilter = useMemo(
+    () => filters.state.payment_method && filters.state.payment_method !== 'all',
+    [filters.state.payment_method]
+  );
+
+  const showPermitTypeFilter = useMemo(
+    () => filters.state.permit_type && filters.state.permit_type !== 'all',
+    [filters.state.permit_type]
+  );
+
+  const showSexeFilter = useMemo(
+    () => filters.state.sexe && filters.state.sexe !== 'all',
+    [filters.state.sexe]
+  );
+
+  const showNationalityFilter = useMemo(
+    () => filters.state.nationality && filters.state.nationality !== 'all',
+    [filters.state.nationality]
+  );
 
   return (
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
-      <FiltersBlock
-        label="Date:"
-        isShow={Boolean(filters.state.created_on_before && filters.state.created_on_after)}
-      >
+      {/* Filtre Date */}
+      <FiltersBlock label="Date:" isShow={showDateFilter}>
         <Chip
           {...chipProps}
           label={fDateRangeShortLabel(
@@ -76,7 +149,8 @@ export function DeclarationreportFilters({
         />
       </FiltersBlock>
 
-      <FiltersBlock label="Status:" isShow={STATUS_TRANSLATIONS[filters.state.status] !== 'all'}>
+      {/* Filtre Statut */}
+      <FiltersBlock label="Statut:" isShow={showStatusFilter}>
         <Chip
           {...chipProps}
           label={STATUS_TRANSLATIONS[filters.state.status] || filters.state.status}
@@ -85,32 +159,109 @@ export function DeclarationreportFilters({
         />
       </FiltersBlock>
 
+      {/* Filtres spécifiques aux Permis */}
+      {isPermit && (
+        <>
+          <FiltersBlock label="Type de permis:" isShow={showPermitTypeFilter}>
+            <Chip
+              {...chipProps}
+              label={filters.state.permit_type}
+              onDelete={handleRemovePermitType}
+              sx={{ textTransform: 'capitalize' }}
+            />
+          </FiltersBlock>
+
+          <FiltersBlock label="Sexe:" isShow={showSexeFilter}>
+            <Chip
+              {...chipProps}
+              label={SEXE_TRANSLATIONS[filters.state.sexe] || filters.state.sexe}
+              onDelete={handleRemoveSexe}
+              sx={{ textTransform: 'capitalize' }}
+            />
+          </FiltersBlock>
+
+          <FiltersBlock label="Nationalité:" isShow={showNationalityFilter}>
+            <Chip
+              {...chipProps}
+              label={filters.state.nationality}
+              onDelete={handleRemoveCountry}
+              sx={{ textTransform: 'capitalize' }}
+            />
+          </FiltersBlock>
+
+          <FiltersBlock label="Fonction:" isShow={!!filters.state.job}>
+            <Chip
+              {...chipProps}
+              label={filters.state.job?.label || filters.state.job}
+              onDelete={handleRemoveJob}
+              sx={{ textTransform: 'capitalize' }}
+            />
+          </FiltersBlock>
+
+          <FiltersBlock label="Nom:" isShow={!!filters.state.name}>
+            <Chip {...chipProps} label={filters.state.name} onDelete={handleRemoveName} />
+          </FiltersBlock>
+
+          <FiltersBlock label="Référence:" isShow={!!filters.state.reference}>
+            <Chip {...chipProps} label={filters.state.reference} onDelete={handleRemoveReference} />
+          </FiltersBlock>
+
+          <FiltersBlock label="Numéro de passeport:" isShow={!!filters.state.passport_number}>
+            <Chip
+              {...chipProps}
+              label={filters.state.passport_number}
+              onDelete={handleRemovePassportNumber}
+            />
+          </FiltersBlock>
+
+          <FiltersBlock label="Numéro de carte:" isShow={!!filters.state.card_number}>
+            <Chip
+              {...chipProps}
+              label={filters.state.card_number}
+              onDelete={handleRemoveCardNumber}
+            />
+          </FiltersBlock>
+
+          <FiltersBlock label="Numéro de déclaration:" isShow={!!filters.state.declaration_number}>
+            <Chip
+              {...chipProps}
+              label={filters.state.declaration_number}
+              onDelete={handleRemoveDeclarationNumber}
+            />
+          </FiltersBlock>
+        </>
+      )}
+
+      {/* Filtre Méthode de paiement */}
       {isPaiement && (
-        <FiltersBlock
-          label="Méthode de paiement:"
-          isShow={PAYMENT_METHOD[filters.state.payment_method] !== 'all'}
-        >
+        <FiltersBlock label="Méthode de paiement:" isShow={showPaymentMethodFilter}>
           <Chip
             {...chipProps}
-            label={PAYMENT_METHOD[filters.state.payment_method] || filters.state.paymentMethod}
+            label={
+              PAYMENT_METHOD_TRANSLATIONS[filters.state.payment_method] ||
+              filters.state.payment_method
+            }
             onDelete={handleRemovePaymentMethod}
             sx={{ textTransform: 'capitalize' }}
           />
         </FiltersBlock>
       )}
 
-      {isDeclaration && (
+      {/* Filtre Entreprise pour Déclaration et Permis */}
+      {(isDeclaration || isPermit) && (
         <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
           <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
         </FiltersBlock>
       )}
 
-      {isFacture && (
+      {/* Filtre Client pour Facture et Paiement */}
+      {(isFacture || isPaiement) && (
         <FiltersBlock label="Entreprise:" isShow={!!filters.state.client}>
           <Chip {...chipProps} label={filters.state.client} onDelete={handleRemoveClient} />
         </FiltersBlock>
       )}
 
+      {/* Filtre Numéro */}
       <FiltersBlock label="Numéro:" isShow={!!filters.state.number}>
         <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />
       </FiltersBlock>
