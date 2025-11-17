@@ -358,8 +358,8 @@ export function DecReportToolbar({
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Date début"
-              value={filters.state.created_on_before}
-              onChange={(newValue) => filters.setState({ created_on_before: newValue })}
+              value={filters.state.created_on_after}
+              onChange={(newValue) => filters.setState({ created_on_after: newValue })}
               format="DD/MM/YYYY"
               slotProps={{ textField: { fullWidth: true } }}
               sx={{ maxWidth: { md: 180 } }}
@@ -368,8 +368,8 @@ export function DecReportToolbar({
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DatePicker
               label="Date fin"
-              value={filters.state.created_on_after}
-              onChange={(newValue) => filters.setState({ created_on_after: newValue })}
+              value={filters.state.created_on_before}
+              onChange={(newValue) => filters.setState({ created_on_before: newValue })}
               format="DD/MM/YYYY"
               slotProps={{
                 textField: {

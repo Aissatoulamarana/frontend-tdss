@@ -20,6 +20,7 @@ import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/ut
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
 import { fDate } from 'src/utils/format-time';
+import dayjs from 'dayjs';
 
 export function ReportPaiement() {
   const [paiements, setPaiements] = useState([]);
@@ -42,7 +43,7 @@ export function ReportPaiement() {
     created_on_after: null,
   });
 
-  const dateError = fIsBetween(filters.state.startDate, filters.state.endDate);
+  const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
   const buildParams = (page = 0, limit = table.rowsPerPage) => {
     const params = {
@@ -64,11 +65,11 @@ export function ReportPaiement() {
       params.payment_method = filters.state.payment_method;
     }
 
-    if (filters.state.created_on_before && !dateError) {
-      params.created_on_before = dayjs(filters.state.created_on_before).format('YYYY-MM-DD');
-    }
     if (filters.state.created_on_after && !dateError) {
       params.created_on_after = dayjs(filters.state.created_on_after).format('YYYY-MM-DD');
+    }
+    if (filters.state.created_on_before && !dateError) {
+      params.created_on_before = dayjs(filters.state.created_on_before).format('YYYY-MM-DD');
     }
 
     return params;

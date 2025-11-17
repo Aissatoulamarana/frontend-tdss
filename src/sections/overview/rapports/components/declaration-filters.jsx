@@ -111,8 +111,8 @@ export function DeclarationreportFilters({
 
   // Conditions d'affichage mémorisées
   const showDateFilter = useMemo(
-    () => Boolean(filters.state.created_on_before && filters.state.created_on_after),
-    [filters.state.created_on_before, filters.state.created_on_after]
+    () => Boolean(filters.state.created_on_after && filters.state.created_on_before),
+    [filters.state.created_on_after, filters.state.created_on_before]
   );
 
   const showStatusFilter = useMemo(
@@ -178,8 +178,8 @@ export function DeclarationreportFilters({
         <Chip
           {...chipProps}
           label={fDateRangeShortLabel(
-            filters.state.created_on_before,
-            filters.state.created_on_after
+            filters.state.created_on_after,
+            filters.state.created_on_before
           )}
           onDelete={handleRemoveDate}
         />
