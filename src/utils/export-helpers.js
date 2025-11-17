@@ -225,18 +225,6 @@ export const exportToPDFM = async (data, columns, filename) => {
     body: tableData,
     startY: 35,
     styles: { fontSize: 10 },
-    columnStyles: {
-      3: {
-        // Index de la colonne "Montant"
-        cellWidth: 30,
-        overflow: 'ellipsize', // ou 'linebreak' si tu veux le retour à la ligne
-      },
-      1: {
-        // Index de la colonne "Entreprise"
-        cellWidth: 60,
-        overflow: 'linebreak',
-      },
-    },
   });
 
   doc.save(filename);

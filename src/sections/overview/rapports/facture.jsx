@@ -99,7 +99,7 @@ export function Reportfacture() {
 
       while (hasMore) {
         const params = buildParams(page, limit);
-        const resp = await axios.get(API.reportsDeclaration(), { params });
+        const resp = await axios.get(API.reportsFactures(), { params });
         const data = resp?.data.results || [];
 
         allData.push(...data);

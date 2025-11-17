@@ -41,7 +41,7 @@ export function DecReportToolbar({
   );
   const handleFilterPaymentMethod = useCallback(
     (event) => {
-      filters.setState({ paymentMethod: event.target.value });
+      filters.setState({ payment_method: event.target.value });
     },
     [filters]
   );
@@ -181,29 +181,27 @@ export function DecReportToolbar({
       </FormControl>
 
       {/* Payment method filter (no change) */}
-      {isPaiement &&
-        (filters.paymentMethod ||
-          (paymentOptions && (
-            <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
-              <InputLabel htmlFor="invoice-filter-payment-method-select">
-                Methode de paiement
-              </InputLabel>
-              <Select
-                value={filters.state.paymentMethod}
-                onChange={handleFilterPaymentMethod}
-                input={<OutlinedInput label="Moyen de paiement" />}
-                inputProps={{ id: 'invoice-filter-payment-method-select' }}
-                sx={{ textTransform: 'capitalize' }}
-              >
-                <MenuItem value="all">Tous</MenuItem>
-                {paymentOptions.paymentMethod.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )))}
+      {isPaiement && (
+        <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 180 } }}>
+          <InputLabel htmlFor="invoice-filter-payment-method-select">
+            Methode de paiement
+          </InputLabel>
+          <Select
+            value={filters.state.payment_method}
+            onChange={handleFilterPaymentMethod}
+            input={<OutlinedInput label="Moyen de paiement" />}
+            inputProps={{ id: 'invoice-filter-payment-method-select' }}
+            sx={{ textTransform: 'capitalize' }}
+          >
+            <MenuItem value="all">Tous</MenuItem>
+            {paymentOptions?.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
 
       {/* Date pickers (no change) */}
       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -280,7 +278,7 @@ export function DecReportToolbar({
             }}
           />
         )}
-        {isFacture && (
+        {(isFacture || isPaiement) && (
           <TextField
             fullWidth
             value={localClient}

@@ -27,7 +27,7 @@ export function DeclarationreportFilters({
   }, [handleRemoveFilter]);
 
   const handleRemovePaymentMethod = useCallback(() => {
-    handleRemoveFilter('paymentMethod', 'all');
+    handleRemoveFilter('payment_method', 'all');
   }, [handleRemoveFilter]);
 
   const handleRemoveCompany = useCallback(() => {
@@ -88,11 +88,11 @@ export function DeclarationreportFilters({
       {isPaiement && (
         <FiltersBlock
           label="Méthode de paiement:"
-          isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
+          isShow={PAYMENT_METHOD[filters.state.payment_method] !== 'all'}
         >
           <Chip
             {...chipProps}
-            label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
+            label={PAYMENT_METHOD[filters.state.payment_method] || filters.state.paymentMethod}
             onDelete={handleRemovePaymentMethod}
             sx={{ textTransform: 'capitalize' }}
           />

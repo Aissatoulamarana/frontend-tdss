@@ -135,6 +135,12 @@ function DynamicRow({ row, headLabel }) {
     }
   };
 
+  const PAYMENT_METHOD = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Dépôts',
+  };
+
   const formatValue = (id, value) => {
     if (id === 'amount') return fGNF(value);
     if (id === 'createDate' || id === 'created_on') return fDateTime(value);
@@ -145,6 +151,7 @@ function DynamicRow({ row, headLabel }) {
         </Label>
       );
     }
+    if (id === 'payment_method') return PAYMENT_METHOD[value] || value || '—';
     if (id === 'nber_employees') return value || 0;
     return value || '—';
   };
