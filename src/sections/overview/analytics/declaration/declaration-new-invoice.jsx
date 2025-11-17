@@ -1,138 +1,183 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-
-import { RouterLink } from 'src/routes/components';
-import { paths } from 'src/routes/paths';
-
-import { fCurrency } from 'src/utils/format-number';
-
-import { usePopover, CustomPopover } from 'src/components/custom-popover';
-import { Iconify } from 'src/components/iconify';
-import { Label } from 'src/components/label';
+import { TablePaginationCustom, TableEmptyRows, TableNoData } from 'src/components/table';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
+import { Label } from 'src/components/label';
+import { fDateTime } from 'src/utils/format-time';
+import CircularProgress from '@mui/material/CircularProgress';
+import { fGNF } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
-export function DeclarationNew({ title, subheader, tableData, headLabel, ...other }) {
+export function DeclarationNew({
+  title,
+  subheader,
+  tableData,
+  headLabel,
+  loading,
+  table,
+  totalCount,
+  notFound,
+  ...other
+}) {
   return (
     <Card {...other}>
       <CardHeader title={title} subheader={subheader} sx={{ mb: 3 }} />
 
       <Scrollbar sx={{ minHeight: 402 }}>
-        <Table sx={{ minWidth: 680 }}>
-          <TableHeadCustom headLabel={headLabel} />
+        <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
+          <TableHeadCustom
+            headLabel={headLabel}
+            order={table.order}
+            orderBy={table.orderBy}
+            onSort={table.onSort}
+          />
+          {loading ? (
+            <TableBody>
+              <TableRow>
+                <TableCell colSpan={headLabel.length}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      py: 6,
+                    }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          ) : (
+            <TableBody>
+              {tableData.map((row, index) => (
+                <DynamicRow key={`${row.number}-${index}`} row={row} headLabel={headLabel} />
+              ))}
 
-          <TableBody>
-            {tableData.map((row) => (
-              <RowItem key={row.id} row={row} />
-            ))}
-          </TableBody>
+              <TableEmptyRows
+                height={table.dense ? 56 : 76}
+                emptyRows={Math.max(0, table.rowsPerPage - tableData.length)}
+              />
+
+              <TableNoData notFound={notFound} />
+            </TableBody>
+          )}
         </Table>
       </Scrollbar>
 
-      <Divider sx={{ borderStyle: 'dashed' }} />
+      <TablePaginationCustom
+        page={table.page}
+        dense={table.dense}
+        count={totalCount}
+        rowsPerPage={table.rowsPerPage}
+        onPageChange={table.onChangePage}
+        onChangeDense={table.onChangeDense}
+        onRowsPerPageChange={table.onChangeRowsPerPage}
+      />
 
-      <Box sx={{ p: 2, textAlign: 'right' }}>
-        <Button
-          component={RouterLink}
-          href={paths.dashboard.analytics.declaration}
-          size="small"
-          color="inherit"
-          endIcon={<Iconify icon="eva:arrow-ios-forward-fill" width={18} sx={{ ml: -0.5 }} />}
-        >
-          Voir plus
-        </Button>
-      </Box>
+      <Divider sx={{ borderStyle: 'dashed' }} />
     </Card>
   );
 }
 
-function RowItem({ row }) {
-  const popover = usePopover();
-
-  const handleDownload = () => {
-    popover.onClose();
-    console.info('DOWNLOAD', row.id);
+function DynamicRow({ row, headLabel }) {
+  const getLabelStatus = (status) => {
+    switch (status) {
+      case 'unsubmitted':
+        return 'Non Soumise';
+      case 'rejected':
+        return 'Rejetée';
+      case 'submitted':
+        return 'Soumise';
+      case 'validated':
+        return 'Validée';
+      case 'billed':
+        return 'Facturée';
+      case 'unpaid':
+        return 'Non Payée';
+      case 'paid':
+        return 'Payée';
+      case 'pending':
+        return 'En attente';
+      case 'processing':
+        return 'En traitement';
+      default:
+        return status || '—';
+    }
   };
 
-  const handlePrint = () => {
-    popover.onClose();
-    console.info('PRINT', row.id);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'unsubmitted':
+        return 'warning';
+      case 'rejected':
+        return 'error';
+      case 'submitted':
+        return 'primary';
+      case 'validated':
+        return 'success';
+      case 'billed':
+        return 'success';
+      case 'unpaid':
+        return 'warning';
+      case 'paid':
+        return 'success';
+      case 'pending':
+        return 'warning';
+      case 'processing':
+        return 'warning';
+      default:
+        return 'default';
+    }
   };
 
-  const handleShare = () => {
-    popover.onClose();
-    console.info('SHARE', row.id);
+  const PAYMENT_METHOD = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Dépôts',
   };
 
-  const handleDelete = () => {
-    popover.onClose();
-    console.info('DELETE', row.id);
+  const SEXE = {
+    male: 'Homme',
+    female: 'Femme',
+  };
+
+  const PERMIT = {
+    A: 'Permis A',
+    B: 'Permis B',
+    C: 'Permis C',
+  };
+
+  const formatValue = (id, value) => {
+    if (id === 'amount') return fGNF(value);
+    if (id === 'createDate' || id === 'created_on') return fDateTime(value);
+    if (id === 'status') {
+      return (
+        <Label variant="soft" color={getStatusColor(value)}>
+          {getLabelStatus(value)}
+        </Label>
+      );
+    }
+    if (id === 'sexe') return SEXE[value] || value || '—';
+    if (id === 'permit_type') return PERMIT[value] || value || '—';
+    if (id === 'payment_method') return PAYMENT_METHOD[value] || value || '—';
+    if (id === 'nber_employees') return value || 0;
+    return value || '—';
   };
 
   return (
-    <>
-      <TableRow>
-        <TableCell>{row.invoiceNumber}</TableCell>
-
-        <TableCell>{row.category}</TableCell>
-
-        <TableCell>{fCurrency(row.price)}</TableCell>
-
-        <TableCell>
-          <Label
-            variant="soft"
-            color={
-              (row.status === 'progress' && 'warning') ||
-              (row.status === 'out of date' && 'error') ||
-              'success'
-            }
-          >
-            {row.status}
-          </Label>
-        </TableCell>
-
-        <TableCell align="right" sx={{ pr: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </TableCell>
-      </TableRow>
-
-      <CustomPopover
-        open={popover.open}
-        anchorEl={popover.anchorEl}
-        onClose={popover.onClose}
-        slotProps={{ arrow: { placement: 'right-top' } }}
-      >
-        <MenuList>
-          <MenuItem onClick={handleDownload}>
-            <Iconify icon="eva:cloud-download-fill" />
-            Télécharger
-          </MenuItem>
-
-          <MenuItem onClick={handlePrint}>
-            <Iconify icon="solar:printer-minimalistic-bold" />
-            Imprimer
-          </MenuItem>
-
-          <MenuItem onClick={handleShare}>
-            <Iconify icon="solar:share-bold" />
-            Partager
-          </MenuItem>
-        </MenuList>
-      </CustomPopover>
-    </>
+    <TableRow hover>
+      {headLabel.map((col, i) => (
+        <TableCell key={i}>{formatValue(col.id, row[col.id])}</TableCell>
+      ))}
+    </TableRow>
   );
 }

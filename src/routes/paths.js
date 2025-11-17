@@ -53,6 +53,7 @@ export const paths = {
       facture: `${ROOTS.DASHBOARD}/analytics/facture`,
       paiement: `${ROOTS.DASHBOARD}/analytics/paiement`,
       permis: `${ROOTS.DASHBOARD}/analytics/permis`,
+      employee: `${ROOTS.DASHBOARD}/analytics/employee`,
     },
     declaration: {
       root: `${ROOTS.DASHBOARD}/declaration`,
