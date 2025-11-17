@@ -3,7 +3,14 @@ import Chip from '@mui/material/Chip';
 import { fDateRangeShortLabel } from 'src/utils/format-time';
 import { chipProps, FiltersBlock, FiltersResult } from 'src/components/filters-result';
 
-export function DeclarationreportFilters({ filters, totalResults, sx }) {
+export function DeclarationreportFilters({
+  isDeclaration,
+  isFacture,
+  isPaiement,
+  filters,
+  totalResults,
+  sx,
+}) {
   const handleRemoveFilter = useCallback(
     (key, value = '') => {
       filters.setState({ [key]: value });
@@ -20,11 +27,15 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
   }, [handleRemoveFilter]);
 
   const handleRemovePaymentMethod = useCallback(() => {
-    handleRemoveFilter('paymentMethod', 'all');
+    handleRemoveFilter('payment_method', 'all');
   }, [handleRemoveFilter]);
 
   const handleRemoveCompany = useCallback(() => {
     handleRemoveFilter('company', '');
+  }, [handleRemoveFilter]);
+
+  const handleRemoveClient = useCallback(() => {
+    handleRemoveFilter('client', '');
   }, [handleRemoveFilter]);
 
   const handleRemoveNumber = useCallback(() => {
@@ -53,11 +64,14 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
     <FiltersResult totalResults={totalResults} onReset={filters.onResetState} sx={sx}>
       <FiltersBlock
         label="Date:"
-        isShow={Boolean(filters.state.startDate && filters.state.endDate)}
+        isShow={Boolean(filters.state.created_on_before && filters.state.created_on_after)}
       >
         <Chip
           {...chipProps}
-          label={fDateRangeShortLabel(filters.state.startDate, filters.state.endDate)}
+          label={fDateRangeShortLabel(
+            filters.state.created_on_before,
+            filters.state.created_on_after
+          )}
           onDelete={handleRemoveDate}
         />
       </FiltersBlock>
@@ -71,21 +85,31 @@ export function DeclarationreportFilters({ filters, totalResults, sx }) {
         />
       </FiltersBlock>
 
-      <FiltersBlock
-        label="Méthode de paiement:"
-        isShow={PAYMENT_METHOD[filters.state.paymentMethod] !== 'all'}
-      >
-        <Chip
-          {...chipProps}
-          label={PAYMENT_METHOD[filters.state.paymentMethod] || filters.state.paymentMethod}
-          onDelete={handleRemovePaymentMethod}
-          sx={{ textTransform: 'capitalize' }}
-        />
-      </FiltersBlock>
+      {isPaiement && (
+        <FiltersBlock
+          label="Méthode de paiement:"
+          isShow={PAYMENT_METHOD[filters.state.payment_method] !== 'all'}
+        >
+          <Chip
+            {...chipProps}
+            label={PAYMENT_METHOD[filters.state.payment_method] || filters.state.paymentMethod}
+            onDelete={handleRemovePaymentMethod}
+            sx={{ textTransform: 'capitalize' }}
+          />
+        </FiltersBlock>
+      )}
 
-      <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
-        <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
-      </FiltersBlock>
+      {isDeclaration && (
+        <FiltersBlock label="Entreprise:" isShow={!!filters.state.company}>
+          <Chip {...chipProps} label={filters.state.company} onDelete={handleRemoveCompany} />
+        </FiltersBlock>
+      )}
+
+      {isFacture && (
+        <FiltersBlock label="Entreprise:" isShow={!!filters.state.client}>
+          <Chip {...chipProps} label={filters.state.client} onDelete={handleRemoveClient} />
+        </FiltersBlock>
+      )}
 
       <FiltersBlock label="Numéro:" isShow={!!filters.state.number}>
         <Chip {...chipProps} label={filters.state.number} onDelete={handleRemoveNumber} />

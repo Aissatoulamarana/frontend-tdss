@@ -1,29 +1,18 @@
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
-import MenuList from '@mui/material/MenuList';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import { TablePaginationCustom, TableEmptyRows, TableNoData } from 'src/components/table';
-
-import { RouterLink } from 'src/routes/components';
-import { paths } from 'src/routes/paths';
-
-import { fCurrency, fGNF } from 'src/utils/format-number';
-
-import { usePopover, CustomPopover } from 'src/components/custom-popover';
-import { Iconify } from 'src/components/iconify';
-import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { TableHeadCustom } from 'src/components/table';
+import { Label } from 'src/components/label';
 import { fDateTime } from 'src/utils/format-time';
 import CircularProgress from '@mui/material/CircularProgress';
+import { fGNF } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -44,11 +33,16 @@ export function DeclarationNew({
 
       <Scrollbar sx={{ minHeight: 402 }}>
         <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
-          <TableHeadCustom headLabel={headLabel} />
+          <TableHeadCustom
+            headLabel={headLabel}
+            order={table.order}
+            orderBy={table.orderBy}
+            onSort={table.onSort}
+          />
           {loading ? (
             <TableBody>
               <TableRow>
-                <TableCell colSpan={100}>
+                <TableCell colSpan={headLabel.length}>
                   <Box
                     sx={{
                       display: 'flex',
@@ -67,17 +61,18 @@ export function DeclarationNew({
               {tableData.map((row, index) => (
                 <DynamicRow key={`${row.number}-${index}`} row={row} headLabel={headLabel} />
               ))}
-              {tableData.length > 0 && tableData.length < table.rowsPerPage && (
-                <TableEmptyRows
-                  height={table.dense ? 56 : 76}
-                  emptyRows={table.rowsPerPage - tableData.length}
-                />
-              )}
+
+              <TableEmptyRows
+                height={table.dense ? 56 : 76}
+                emptyRows={Math.max(0, table.rowsPerPage - tableData.length)}
+              />
+
               <TableNoData notFound={notFound} />
             </TableBody>
           )}
         </Table>
       </Scrollbar>
+
       <TablePaginationCustom
         page={table.page}
         dense={table.dense}
@@ -140,20 +135,29 @@ function DynamicRow({ row, headLabel }) {
     }
   };
 
+  const PAYMENT_METHOD = {
+    transfer: 'Virement',
+    cheque: 'Chèque',
+    deposit: 'Dépôts',
+  };
+
   const formatValue = (id, value) => {
     if (id === 'amount') return fGNF(value);
     if (id === 'createDate' || id === 'created_on') return fDateTime(value);
-    if (id === 'status')
+    if (id === 'status') {
       return (
-        <Label variant="soft" color={getStatusColor(row.status)}>
-          {getLabelStatus(row.status)}
+        <Label variant="soft" color={getStatusColor(value)}>
+          {getLabelStatus(value)}
         </Label>
       );
+    }
+    if (id === 'payment_method') return PAYMENT_METHOD[value] || value || '—';
+    if (id === 'nber_employees') return value || 0;
     return value || '—';
   };
 
   return (
-    <TableRow>
+    <TableRow hover>
       {headLabel.map((col, i) => (
         <TableCell key={i}>{formatValue(col.id, row[col.id])}</TableCell>
       ))}
