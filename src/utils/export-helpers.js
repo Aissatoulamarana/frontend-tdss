@@ -19,6 +19,9 @@ export const exportToPDF = async (data, filename = 'rapport-declarations.pdf') =
     billed: 'Facturée',
     unsubmitted: 'Non soumise',
     processing: 'En traitement',
+    printed: 'Imprimée',
+    delivered: 'Delivrée',
+    pending: 'En attente',
   };
 
   // ✅ Créer le document

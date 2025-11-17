@@ -1,13 +1,10 @@
 import { CONFIG } from 'src/config-global';
 
-// ----------------------------------------------------------------------
-import { PermisAnalyticsView } from 'src/sections/overview/analytics/permis/view';
-
+import { ReportPermit } from 'src/sections/overview/rapports/permits';
 // ----------------------------------------------------------------------
 
-export const metadata = { title: `Analytics Permis - ${CONFIG.appName}` };
-
+export const metadata = { title: `Rapport Permits - ${CONFIG.appName}` };
 
 export default function Page() {
-  return <PermisAnalyticsView />;
+  return <ReportPermit />;
 }
