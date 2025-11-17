@@ -13,15 +13,25 @@ import API from 'src/utils/api';
 import { useSetState } from 'src/hooks/use-set-state';
 import { DeclarationreportFilters } from './components/declaration-filters';
 import { DecReportToolbar } from './components/declaration-table-toolbar';
-import { fIsBetween } from 'src/utils/format-time';
 import { ExportDialog } from './components/export-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
-import { fDate } from 'src/utils/format-time';
-import { label } from 'yet-another-react-lightbox';
-import { translate } from 'pdf-lib';
+
+const STATUS_TRANSLATIONS = {
+  processing: 'En traitement',
+  submitted: 'Soumis',
+  validated: 'Validé',
+  rejected: 'Rejeté',
+  printed: 'Imprimé',
+  delivered: 'Délivré',
+};
+
+const SEXE_TRANSLATIONS = {
+  male: 'Homme',
+  female: 'Femme',
+};
 
 export function ReportPermit() {
   const [permits, setPermits] = useState([]);
@@ -37,6 +47,20 @@ export function ReportPermit() {
   const exportDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
+
+  const filters = useSetState({
+    card_number: '',
+    reference: '',
+    company: '',
+    declaration_number: '',
+    passport_number: '',
+    status: 'all',
+    job: null,
+    name: '',
+    nationality: 'all',
+    sexe: 'all',
+    permit_type: 'all',
+  });
 
   const fecthPermisType = async () => {
     try {
@@ -66,28 +90,30 @@ export function ReportPermit() {
 
     async function fetchAllFonctions() {
       setLoadingOptions(true);
+
       // Vérifier si on a déjà le cache en session
-      // Étape 1 : lecture cache session
       const cachedSession = sessionStorage.getItem('fonctions');
       let optionsToUse = cachedSession ? JSON.parse(cachedSession) : null;
 
-      // Étape 2 : sinon, lecture cache localStorage
+      // Sinon, lecture cache localStorage
       if (!optionsToUse) {
         const cachedLocal = localStorage.getItem('fonctions');
         if (cachedLocal) {
           const parsedLocal = JSON.parse(cachedLocal);
           optionsToUse = parsedLocal.data;
-          // Copier en session pour la session courante
           sessionStorage.setItem('fonctions', JSON.stringify(optionsToUse));
         }
       }
 
-      // Afficher immédiatement ce qu’on a
+      // Afficher immédiatement ce qu'on a
       if (optionsToUse) {
-        setJobs(optionsToUse);
+        const uniqueClean = Array.from(
+          new Map(optionsToUse.map((item) => [item.value, item])).values()
+        );
+        setJobs(uniqueClean);
       }
 
-      // Étape 3 : Vérifier si on doit rafraîchir depuis l’API
+      // Vérifier si on doit rafraîchir depuis l'API
       const cachedLocal = localStorage.getItem('fonctions');
       let shouldFetch = true;
 
@@ -96,7 +122,7 @@ export function ReportPermit() {
         const lastFetch = parsedLocal.lastFetch || 0;
         const now = Date.now();
 
-        // ex : si le cache a moins de 24h → pas besoin de recharger
+        // Si le cache a moins de 24h → pas besoin de recharger
         if (now - lastFetch < 24 * 60 * 60 * 1000) {
           shouldFetch = false;
         }
@@ -108,20 +134,20 @@ export function ReportPermit() {
       }
 
       try {
-        // 1) Premier appel pour obtenir le count
+        // Premier appel pour obtenir le count
         const resp1 = await axios.get(API.listFonctionAgent(), {
           params: { offset: 0, limit: 1 },
         });
         const total = resp1.data.count;
 
-        // 2) Récupérer toutes les fonctions
+        // Récupérer toutes les fonctions
         const resp2 = await axios.get(API.listFonctionAgent(), {
           params: { offset: 0, limit: total },
         });
 
         if (!isMounted) return;
 
-        // Filtre pour n'avoir qu'un slug unique et créer les options pour l'Autocomplete
+        // Filtre pour n'avoir qu'un slug unique
         const uniqueBySlug = resp2.data.results
           .filter((f, idx, arr) => arr.findIndex((item) => item.slug === f.slug) === idx)
           .map((f) => ({ label: f.name, value: f.slug }));
@@ -150,19 +176,6 @@ export function ReportPermit() {
     };
   }, []);
 
-  const filters = useSetState({
-    card_number: '',
-    reference: '',
-    company: '',
-    declaration_number: '',
-    status: 'all',
-    job: '',
-    name: '',
-    nationality: '',
-    sexe: 'all',
-    permit_type: 'all',
-  });
-
   const buildParams = (page = 0, limit = table.rowsPerPage) => {
     const params = {
       limit,
@@ -171,14 +184,16 @@ export function ReportPermit() {
 
     // Ajouter les filtres seulement s'ils sont définis
     if (filters.state.card_number) {
-      params.number = filters.state.card_number;
+      params.card_number = filters.state.card_number;
     }
-
+    if (filters.state.passport_number) {
+      params.passport_number = filters.state.passport_number;
+    }
     if (filters.state.reference) {
       params.reference = filters.state.reference;
     }
     if (filters.state.company) {
-      params.client = filters.state.company;
+      params.company = filters.state.company;
     }
     if (filters.state.declaration_number) {
       params.declaration_number = filters.state.declaration_number;
@@ -187,21 +202,23 @@ export function ReportPermit() {
       params.status = filters.state.status;
     }
     if (filters.state.permit_type !== 'all') {
-      params.payment_method = filters.state.permit_type;
+      params.permit_type = filters.state.permit_type;
     }
-
     if (filters.state.name) {
       params.name = filters.state.name;
     }
     if (filters.state.job) {
-      params.job = filters.state.job;
+      // Si job est un objet avec value, utiliser value, sinon utiliser directement
+      params.job =
+        typeof filters.state.job === 'object' ? filters.state.job.value : filters.state.job;
     }
-    if (filters.state.nationality) {
+    if (filters.state.nationality !== 'all') {
       params.nationality = filters.state.nationality;
     }
     if (filters.state.sexe !== 'all') {
       params.sexe = filters.state.sexe;
     }
+
     return params;
   };
 
@@ -209,19 +226,19 @@ export function ReportPermit() {
     setLoading(true);
     try {
       const params = buildParams(table.page);
-      const resp = await axios.get(API.reportsPermits());
+      const resp = await axios.get(API.reportsPermits(), { params });
       const newData = resp?.data?.results || [];
 
-      if (newData.length < 100) {
+      if (newData.length < table.rowsPerPage) {
         setHasMore(false);
       }
       setPermits(newData);
       setCount(resp?.data?.count || 0);
     } catch (error) {
-      console.log(error);
+      console.error('Erreur lors de la récupération des données:', error);
       const errorMessage = error?.error || error?.details || error?.message || error?.detail;
       setError(errorMessage);
-      toast.error(errors);
+      toast.error(errorMessage || 'Erreur lors de la récupération des données');
     } finally {
       setLoading(false);
     }
@@ -233,6 +250,7 @@ export function ReportPermit() {
     table.page,
     table.rowsPerPage,
     filters.state.card_number,
+    filters.state.passport_number,
     filters.state.reference,
     filters.state.company,
     filters.state.declaration_number,
@@ -246,6 +264,7 @@ export function ReportPermit() {
 
   const canReset =
     !!filters.state.card_number ||
+    !!filters.state.passport_number ||
     !!filters.state.reference ||
     !!filters.state.company ||
     !!filters.state.declaration_number ||
@@ -253,24 +272,10 @@ export function ReportPermit() {
     filters.state.permit_type !== 'all' ||
     !!filters.state.name ||
     !!filters.state.job ||
-    !!filters.state.nationality ||
+    filters.state.nationality !== 'all' ||
     filters.state.sexe !== 'all';
 
   const notFound = !loading && permits.length === 0 && canReset;
-
-  const STATUS_TRANSLATIONS = {
-    processing: 'En traitement',
-    submitted: 'Soumis',
-    validated: 'Validé',
-    rejected: 'Rejeté',
-    printed: 'Imprimé',
-    delivered: 'Délivré',
-  };
-
-  const SEXE_TRANSLATIONS = {
-    male: 'Homme',
-    female: 'Femme',
-  };
 
   const columns = [
     { key: 'reference', label: 'Reference' },
@@ -290,7 +295,7 @@ export function ReportPermit() {
     try {
       const allData = [];
       let page = 0;
-      const limit = count; // Taille de page pour l'export
+      const limit = count;
       let hasMore = true;
 
       while (hasMore) {
@@ -300,7 +305,6 @@ export function ReportPermit() {
 
         allData.push(...data);
 
-        // Vérifier s'il y a encore des données
         if (data.length < limit || allData.length >= (resp?.data.count || 0)) {
           hasMore = false;
         } else {
@@ -322,22 +326,23 @@ export function ReportPermit() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDFM(exportData, columns, 'paiemnts.pdf');
+          await exportToPDFM(exportData, columns, 'rapport-permits.pdf');
           break;
         case 'csv':
-          exportToCSVM(exportData, columns, 'rapport-paiements.csv');
+          exportToCSVM(exportData, columns, 'rapport-permits.csv');
           break;
         case 'excel':
-          exportToExcelM(exportData, columns, 'rapport-paiements.xlsx');
+          exportToExcelM(exportData, columns, 'rapport-permits.xlsx');
           break;
         case 'zip':
-          await exportToZipM(exportData, columns, 'rapport-paiements.zip');
+          await exportToZipM(exportData, columns, 'rapport-permits.zip');
           break;
         default:
           console.error('Format non supporté');
       }
 
       exportDialog.onFalse();
+      toast.success('Export réussi !');
     } catch (error) {
       console.error("Erreur lors de l'export:", error);
       toast.error("Erreur lors de l'export. Vérifiez la console pour plus de détails.");
@@ -355,19 +360,10 @@ export function ReportPermit() {
     { value: 'delivered', label: STATUS_TRANSLATIONS['delivered'] },
   ];
 
-  // const statusOptions = Array.from(new Set(permits.map((d) => d?.status).filter(Boolean))).map(
-  //   (s) => ({ value: s, label: STATUS_TRANSLATIONS[s] || s })
-  // );
-
   const sexeOptions = [
     { value: 'male', label: SEXE_TRANSLATIONS['male'] },
     { value: 'female', label: SEXE_TRANSLATIONS['female'] },
   ];
-
-  // const sexeOptions = Array.from(new Set(permits.map((d) => d?.sexe).filter(Boolean))).map((s) => ({
-  //   value: s,
-  //   label: SEXE_TRANSLATIONS[s] || s,
-  // }));
 
   return (
     <DashboardContent maxWidth="xl">
@@ -394,6 +390,7 @@ export function ReportPermit() {
         countryOptions={countries}
         permitTypeOptions={permitTypes}
         isPermit={true}
+        loading={loadingOptions}
       />
 
       {canReset && (

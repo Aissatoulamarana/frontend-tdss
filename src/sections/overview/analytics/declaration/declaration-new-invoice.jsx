@@ -107,12 +107,6 @@ function DynamicRow({ row, headLabel }) {
         return 'Payée';
       case 'pending':
         return 'En attente';
-      case 'processing':
-        return ' En Traitement';
-      case 'printed':
-        return 'Imprimé';
-      case 'delivered':
-        return 'Delivré';
       default:
         return status || '—';
     }
@@ -136,26 +130,11 @@ function DynamicRow({ row, headLabel }) {
         return 'success';
       case 'pending':
         return 'warning';
-      case 'processing':
-        return 'warning';
-      case 'printed':
-        return 'success';
-      case 'delivered':
-        return 'success';
       default:
         return 'default';
     }
   };
 
-  const getLabelSexe = (sexe) => {
-    switch (sexe) {
-      case 'male':
-        return 'Homme';
-      case 'female':
-        return 'Femme';
-      default:
-        return sexe || '—';
-    }
   const PAYMENT_METHOD = {
     transfer: 'Virement',
     cheque: 'Chèque',
@@ -171,8 +150,6 @@ function DynamicRow({ row, headLabel }) {
           {getLabelStatus(value)}
         </Label>
       );
-
-    if (id === 'sexe') return getLabelSexe(row.sexe);
     }
     if (id === 'payment_method') return PAYMENT_METHOD[value] || value || '—';
     if (id === 'nber_employees') return value || 0;
