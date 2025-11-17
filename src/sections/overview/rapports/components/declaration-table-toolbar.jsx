@@ -21,24 +21,6 @@ import { CommonPersonFilters } from './common-filter';
 
 const DEBOUNCE_DELAY = 1000;
 
-const FILTER_PLACEHOLDERS = {
-  passport_number: 'Recherche par Numéro de passeport',
-  reference: 'Recherche par Référence',
-  declaration_number: 'Recherche par Numéro de déclaration',
-  card_number: 'Recherche par Numéro de carte',
-  name: 'Recherche par Nom',
-  company: "Rechercher par nom de l'entreprise",
-};
-
-const FILTER_OPTIONS = [
-  { key: 'name', label: 'Nom' },
-  { key: 'passport_number', label: 'Passport Number' },
-  { key: 'reference', label: 'Reference' },
-  { key: 'declaration_number', label: 'Numéro de déclaration' },
-  { key: 'card_number', label: 'Numéro de permis' },
-  { key: 'company', label: 'Entreprise' },
-];
-
 export function DecReportToolbar({
   isDeclaration,
   isFacture,
@@ -138,52 +120,6 @@ export function DecReportToolbar({
     [filters]
   );
 
-  const handleFilterSexe = useCallback(
-    (event) => {
-      filters.setState({ sexe: event.target.value });
-    },
-    [filters]
-  );
-
-  const handleFilterJob = useCallback(
-    (event, value) => {
-      filters.setState({ job: value });
-    },
-    [filters]
-  );
-
-  const handlefilterPermitType = useCallback(
-    (event) => {
-      filters.setState({ permit_type: event.target.value });
-    },
-    [filters]
-  );
-
-  const handleFilterCountry = useCallback(
-    (event) => {
-      filters.setState({ nationality: event.target.value });
-    },
-    [filters]
-  );
-
-  // Gestion du filtre multi-options (permit)
-  const handleSelectFilter = useCallback(
-    (filterType) => {
-      filters.setState({
-        card_number: '',
-        reference: '',
-        declaration_number: '',
-        passport_number: '',
-        name: '',
-        company: '',
-      });
-      setSelectedFilter(filterType);
-      setShowOptions(false);
-      setInputValue('');
-    },
-    [filters]
-  );
-
   // Fonction pour mapper le filtre sélectionné au champ de state correspondant
   const getFieldFromFilter = useCallback((filter) => {
     switch (filter) {
@@ -210,46 +146,6 @@ export function DecReportToolbar({
     const currentValue = filters.state[currentField] || '';
     setInputValue(currentValue);
   }, [selectedFilter, filters.state, getFieldFromFilter]);
-
-  const handleInputChange = useCallback(
-    (e) => {
-      const value = e.target.value;
-      setInputValue(value);
-
-      // Appliquer le debounce selon le filtre sélectionné
-      const field = getFieldFromFilter(selectedFilter);
-
-      if (debounceTimers.current[field]) {
-        clearTimeout(debounceTimers.current[field]);
-      }
-
-      debounceTimers.current[field] = setTimeout(() => {
-        filters.setState({ [field]: value });
-      }, DEBOUNCE_DELAY);
-    },
-    [selectedFilter, filters, getFieldFromFilter]
-  );
-
-  const handlePaste = useCallback(
-    (event) => {
-      event.preventDefault();
-      const pastedValue = event.clipboardData.getData('Text');
-      setInputValue(pastedValue);
-
-      // Mapper le filtre sélectionné au champ correspondant
-      const field = getFieldFromFilter(selectedFilter);
-
-      // Mettre à jour immédiatement sans debounce
-      filters.setState({ [field]: pastedValue });
-
-      // Annuler le timer de debounce en cours si existant
-      if (debounceTimers.current[field]) {
-        clearTimeout(debounceTimers.current[field]);
-        debounceTimers.current[field] = null;
-      }
-    },
-    [selectedFilter, filters, getFieldFromFilter]
-  );
 
   // Synchronisation avec les resets externes
   useEffect(() => {

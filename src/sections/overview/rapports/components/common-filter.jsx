@@ -35,7 +35,7 @@ export function CommonPersonFilters({
   const getFilterOptions = () => {
     const baseOptions = [
       { key: 'name', label: 'Nom' },
-      { key: 'passport_number', label: 'Numéro de passeport' },
+      { key: 'passport', label: 'Numéro de passeport' },
       { key: 'reference', label: 'Reference' },
       { key: 'declaration_number', label: 'Numéro de déclaration' },
       { key: 'company', label: 'Entreprise' },
@@ -51,7 +51,7 @@ export function CommonPersonFilters({
   const FILTER_OPTIONS = getFilterOptions();
 
   const FILTER_PLACEHOLDERS = {
-    passport_number: 'Recherche par Numéro de passeport',
+    passport: 'Recherche par Numéro de passeport',
     reference: 'Recherche par Référence',
     declaration_number: 'Recherche par Numéro de déclaration',
     card_number: 'Recherche par Numéro de carte',
@@ -63,7 +63,7 @@ export function CommonPersonFilters({
     (filter) => {
       const fieldMap = {
         name: 'name',
-        passport_number: isPermit ? 'passport_number' : 'passport',
+        passport: 'passport',
         reference: 'reference',
         declaration_number: 'declaration_number',
         card_number: 'card_number',
@@ -116,7 +116,6 @@ export function CommonPersonFilters({
         card_number: '',
         reference: '',
         declaration_number: '',
-        passport_number: '',
         passport: '',
         name: '',
         company: '',
@@ -192,7 +191,7 @@ export function CommonPersonFilters({
         >
           <MenuItem value="all">Tous</MenuItem>
           {permitTypeOptions?.map((option) => (
-            <MenuItem key={option.slug} value={option.name}>
+            <MenuItem key={option.slug} value={option.value}>
               {option.name}
             </MenuItem>
           ))}

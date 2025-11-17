@@ -133,7 +133,7 @@ function DynamicRow({ row, headLabel }) {
       case 'pending':
         return 'warning';
       case 'processing':
-        return 'info';
+        return 'warning';
       default:
         return 'default';
     }
@@ -150,6 +150,12 @@ function DynamicRow({ row, headLabel }) {
     female: 'Femme',
   };
 
+  const PERMIT = {
+    A: 'Permis A',
+    B: 'Permis B',
+    C: 'Permis C',
+  };
+
   const formatValue = (id, value) => {
     if (id === 'amount') return fGNF(value);
     if (id === 'createDate' || id === 'created_on') return fDateTime(value);
@@ -161,6 +167,7 @@ function DynamicRow({ row, headLabel }) {
       );
     }
     if (id === 'sexe') return SEXE[value] || value || '—';
+    if (id === 'permit_type') return PERMIT[value] || value || '—';
     if (id === 'payment_method') return PAYMENT_METHOD[value] || value || '—';
     if (id === 'nber_employees') return value || 0;
     return value || '—';

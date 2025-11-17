@@ -4,10 +4,11 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { Grid2 } from '@mui/material';
 import { DeclarationNew } from '../analytics/declaration/declaration-new-invoice';
 import { Button } from '@mui/material';
+import { Stack } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { paths } from 'src/routes/paths';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -18,6 +19,8 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
+import { ColumnSelectorDialog } from './components/colums-selected';
+import { useLocalStorage } from 'src/hooks/use-local-storage';
 
 const STATUS_TRANSLATIONS = {
   processing: 'En traitement',
@@ -42,18 +45,53 @@ export function ReportPermit() {
   const [count, setCount] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [countries, setCountries] = useState([]);
-  const [permitTypes, setPermitTypes] = useState([]);
+
   const [jobs, setJobs] = useState([]);
   const exportDialog = useBoolean();
+  const columnDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
+
+  const ALL_COLUMNS = useMemo(
+    () => [
+      { key: 'reference', label: 'Référence' },
+      { key: 'card_number', label: 'N° Carte' },
+      { key: 'passport_number', label: 'Passeport' },
+      { key: 'first', label: 'Prénom' },
+      { key: 'last', label: 'Nom' },
+      { key: 'nationality', label: 'Nationalité' },
+      { key: 'sexe', label: 'Sexe', translate: SEXE_TRANSLATIONS },
+      { key: 'company', label: 'Entreprise' },
+      { key: 'job', label: 'Fonction' },
+      { key: 'permit_type', label: 'Permis' },
+      { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
+      // { key: 'created_on', label: 'Date de création', isDate: true },
+    ],
+    []
+  );
+
+  const DEFAULT_COLUMNS = [
+    'reference',
+    'card_number',
+    'passport_number',
+    'first',
+    'last',
+    'nationality',
+    'sexe',
+    'company',
+    'job',
+    'permit_type',
+    'status',
+  ];
+
+  const [selectedColumns, setSelectedColumns] = useState(DEFAULT_COLUMNS);
 
   const filters = useSetState({
     card_number: '',
     reference: '',
     company: '',
     declaration_number: '',
-    passport_number: '',
+    passport: '',
     status: 'all',
     job: null,
     name: '',
@@ -61,15 +99,6 @@ export function ReportPermit() {
     sexe: 'all',
     permit_type: 'all',
   });
-
-  const fecthPermisType = async () => {
-    try {
-      const response = await axios.get(API.listPermits());
-      setPermitTypes(response.data?.results || []);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des types de permits:', error);
-    }
-  };
 
   const fectCountries = async () => {
     try {
@@ -80,9 +109,14 @@ export function ReportPermit() {
     }
   };
 
+  const permitTypes = [
+    { value: 'A', name: 'Permis A' },
+    { value: 'B', name: 'Permis B' },
+    { value: 'C', name: 'Permis C' },
+  ];
+
   useEffect(() => {
     fectCountries();
-    fecthPermisType();
   }, []);
 
   useEffect(() => {
@@ -186,8 +220,8 @@ export function ReportPermit() {
     if (filters.state.card_number) {
       params.card_number = filters.state.card_number;
     }
-    if (filters.state.passport_number) {
-      params.passport_number = filters.state.passport_number;
+    if (filters.state.passport) {
+      params.passport = filters.state.passport;
     }
     if (filters.state.reference) {
       params.reference = filters.state.reference;
@@ -249,8 +283,9 @@ export function ReportPermit() {
   }, [
     table.page,
     table.rowsPerPage,
+    selectedColumns,
     filters.state.card_number,
-    filters.state.passport_number,
+    filters.state.passport,
     filters.state.reference,
     filters.state.company,
     filters.state.declaration_number,
@@ -264,7 +299,7 @@ export function ReportPermit() {
 
   const canReset =
     !!filters.state.card_number ||
-    !!filters.state.passport_number ||
+    !!filters.state.passport ||
     !!filters.state.reference ||
     !!filters.state.company ||
     !!filters.state.declaration_number ||
@@ -276,6 +311,22 @@ export function ReportPermit() {
     filters.state.sexe !== 'all';
 
   const notFound = !loading && permits.length === 0 && canReset;
+  // Colonnes filtrées selon la sélection
+  const visibleColumns = useMemo(
+    () => ALL_COLUMNS.filter((col) => selectedColumns.includes(col.key)),
+    [ALL_COLUMNS, selectedColumns]
+  );
+
+  const tableHeaders = useMemo(
+    () => visibleColumns.map((col) => ({ id: col.key, label: col.label })),
+    [visibleColumns]
+  );
+
+  // Handler pour appliquer la sélection de colonnes
+  const handleApplyColumns = useCallback((columns) => {
+    setSelectedColumns(columns);
+    toast.success('Colonnes mises à jour avec succès');
+  }, []);
 
   const columns = [
     { key: 'reference', label: 'Reference' },
@@ -326,7 +377,7 @@ export function ReportPermit() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDFM(exportData, columns, 'rapport-permits.pdf');
+          await exportToPDFM(exportData, visibleColumns, 'rapport-permits.pdf');
           break;
         case 'csv':
           exportToCSVM(exportData, columns, 'rapport-permits.csv');
@@ -371,13 +422,22 @@ export function ReportPermit() {
         heading="Rapport des permits"
         links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Rapports' }]}
         action={
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:download-fill" />}
-            onClick={exportDialog.onTrue}
-          >
-            Exporter
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="eva:options-2-outline" />}
+              onClick={columnDialog.onTrue}
+            >
+              Colonnes ({selectedColumns.length})
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="eva:download-fill" />}
+              onClick={exportDialog.onTrue}
+            >
+              Exporter
+            </Button>
+          </Stack>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -410,21 +470,17 @@ export function ReportPermit() {
           loading={loading}
           table={table}
           notFound={notFound}
-          headLabel={[
-            { id: 'reference', label: 'Reference' },
-            { id: 'card_number', label: 'N Carte' },
-            { id: 'passport_number', label: 'Passeport' },
-            { id: 'first', label: 'Prénom' },
-            { id: 'last', label: 'Nom' },
-            { id: 'nationality', label: 'Nationalité' },
-            { id: 'sexe', label: 'Sexe' },
-            { id: 'company', label: 'Entreprise' },
-            { id: 'job', label: 'Fonction' },
-            { id: 'permit_type', label: 'Permis' },
-            { id: 'status', label: 'Statut' },
-          ]}
+          headLabel={tableHeaders}
         />
       </Grid2>
+
+      <ColumnSelectorDialog
+        open={columnDialog.value}
+        onClose={columnDialog.onFalse}
+        columns={ALL_COLUMNS}
+        selectedColumns={selectedColumns}
+        onApply={handleApplyColumns}
+      />
 
       <ExportDialog
         open={exportDialog.value}
