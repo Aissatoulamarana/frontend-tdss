@@ -10,20 +10,22 @@ import { fGNF } from './format-number';
 
 /**
  * Exporte les données en format PDF
+ *
+ *
  */
-export const exportToPDF = async (data, filename = 'rapport-declarations.pdf') => {
-  const STATUS_TRANSLATIONS = {
-    submitted: 'Soumise',
-    validated: 'Validée',
-    rejected: 'Rejetée',
-    billed: 'Facturée',
-    unsubmitted: 'Non soumise',
-    processing: 'En traitement',
-    printed: 'Imprimée',
-    delivered: 'Delivrée',
-    pending: 'En attente',
-  };
 
+const STATUS_TRANSLATIONS = {
+  submitted: 'Soumise',
+  validated: 'Validée',
+  rejected: 'Rejetée',
+  billed: 'Facturée',
+  unsubmitted: 'Non soumise',
+  processing: 'En traitement',
+  printed: 'Imprimée',
+  delivered: 'Delivrée',
+  pending: 'En attente',
+};
+export const exportToPDF = async (data, filename = 'rapport-declarations.pdf') => {
   // ✅ Créer le document
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -255,8 +257,6 @@ export const exportToPDFM = async (data, columns, filename) => {
   doc.save(filename);
 };
 
-/*************  ✨ Windsurf Command ⭐  *************/
-/*******  acee04eb-d6c0-4dd2-bf58-7ac7e85a3254  *******/
 export const exportToCSVM = (data, columns, filename = 'export.csv') => {
   const BOM = '\uFEFF';
   const csvContent =
