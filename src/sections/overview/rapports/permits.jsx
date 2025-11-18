@@ -380,13 +380,13 @@ export function ReportPermit() {
           await exportToPDFM(exportData, visibleColumns, 'rapport-permits.pdf');
           break;
         case 'csv':
-          exportToCSVM(exportData, columns, 'rapport-permits.csv');
+          exportToCSVM(exportData, visibleColumns, 'rapport-permits.csv');
           break;
         case 'excel':
-          exportToExcelM(exportData, columns, 'rapport-permits.xlsx');
+          exportToExcelM(exportData, visibleColumns, 'rapport-permits.xlsx');
           break;
         case 'zip':
-          await exportToZipM(exportData, columns, 'rapport-permits.zip');
+          await exportToZipM(exportData, visibleColumns, 'rapport-permits.zip');
           break;
         default:
           console.error('Format non supporté');
