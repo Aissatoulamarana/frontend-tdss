@@ -154,7 +154,7 @@ export function Reportfacture() {
     { key: 'amount', label: 'Montant', isCurrency: true },
     { key: 'created_on', label: 'Date de Création', isDate: true },
     { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
-    { key: 'paiement', label: 'Paiement' },
+    // { key: 'paiement', label: 'Paiement' },
   ]);
 
   const DEFAULT_COLUMNS = [
