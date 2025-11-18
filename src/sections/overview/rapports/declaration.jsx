@@ -3,11 +3,11 @@
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Grid2 } from '@mui/material';
 import { DeclarationNew } from '../analytics/declaration/declaration-new-invoice';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { paths } from 'src/routes/paths';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -16,11 +16,23 @@ import { DecReportToolbar } from './components/declaration-table-toolbar';
 import { fIsBetween } from 'src/utils/format-time';
 import { ExportDialog } from './components/export-dialog';
 import { useBoolean } from 'src/hooks/use-boolean';
-import { exportToPDF, exportToCSV, exportToExcel, exportToZip } from 'src/utils/export-helpers';
+import { exportToPDFM, exportToCSVM, exportToExcelM, exportToZipM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
-import { fDate } from 'src/utils/format-time';
+import { ColumnSelectorDialog } from './components/colums-selected';
 import dayjs from 'dayjs';
+
+const STATUS_TRANSLATIONS = {
+  submitted: 'Soumise',
+  validated: 'Validée',
+  rejected: 'Rejetée',
+  billed: 'Facturée',
+  unsubmitted: 'Non soumise',
+  processing: 'En traitement',
+  printed: 'Imprimée',
+  delivered: 'Delivrée',
+  pending: 'En attente',
+};
 
 export function RapportDeclaration() {
   const [declarations, setDeclarations] = useState([]);
@@ -30,8 +42,22 @@ export function RapportDeclaration() {
   const [count, setCount] = useState(0);
   const [isDeclaration, setIsDeclaration] = useState(true);
   const exportDialog = useBoolean();
+  const columnDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
+
+  const ALL_COLUMNS = useMemo(() => [
+    { key: 'number', label: 'Numéro' },
+    { key: 'company', label: 'Entreprise' },
+    { key: 'nber_employees', label: 'Employés' },
+    { key: 'created_on', label: 'Date de Création' },
+    { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
+    // { key: 'facture', label: 'Facture' },
+  ]);
+
+  const DEFAULT_COLUMNS = ['number', 'company', 'nber_employees', 'created_on', 'status'];
+
+  const [selectedColumns, setSelectedColumns] = useState(DEFAULT_COLUMNS);
 
   const filters = useSetState({
     number: '',
@@ -142,6 +168,21 @@ export function RapportDeclaration() {
 
   const notFound = !loading && declarations.length === 0 && canReset;
 
+  const visibleColumns = useMemo(
+    () => ALL_COLUMNS.filter((col) => selectedColumns.includes(col.key)),
+    [ALL_COLUMNS, selectedColumns]
+  );
+
+  const tableHeaders = useMemo(
+    () => visibleColumns.map((col) => ({ id: col.key, label: col.label })),
+    [visibleColumns]
+  );
+
+  const handleApplyColumns = useCallback((columns) => {
+    setSelectedColumns(columns);
+    toast.success('Colonnes mises à jour avec succès');
+  }, []);
+
   // Fonction pour exporter toutes les données avec les filtres
   const handleExport = async (format) => {
     setIsExporting(true);
@@ -156,16 +197,16 @@ export function RapportDeclaration() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDF(exportData, 'rapport-declarations.pdf');
+          await exportToPDFM(exportData, visibleColumns, 'rapport-declarations.pdf');
           break;
         case 'csv':
-          exportToCSV(exportData, 'rapport-declarations.csv');
+          exportToCSVM(exportData, visibleColumns, 'rapport-declarations.csv');
           break;
         case 'excel':
-          exportToExcel(exportData, 'rapport-declarations.xlsx');
+          exportToExcelM(exportData, visibleColumns, 'rapport-declarations.xlsx');
           break;
         case 'zip':
-          await exportToZip(exportData, 'rapport-declarations.zip');
+          await exportToZipM(exportData, visibleColumns, 'rapport-declarations.zip');
           break;
         default:
           console.error('Format non supporté');
@@ -197,14 +238,22 @@ export function RapportDeclaration() {
         heading="Rapport des déclarations"
         links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Rapports' }]}
         action={
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:download-fill" />}
-            onClick={exportDialog.onTrue}
-            disabled={count === 0}
-          >
-            Exporter
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="eva:options-2-outline" />}
+              onClick={columnDialog.onTrue}
+            >
+              Colonnes ({selectedColumns.length})
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="eva:download-fill" />}
+              onClick={exportDialog.onTrue}
+            >
+              Exporter
+            </Button>
+          </Stack>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -233,15 +282,17 @@ export function RapportDeclaration() {
           loading={loading}
           table={table}
           notFound={notFound}
-          headLabel={[
-            { id: 'number', label: 'Numéro' },
-            { id: 'company', label: 'Entreprise' },
-            { id: 'nber_employees', label: 'Employés' },
-            { id: 'created_on', label: 'Date de Création' },
-            { id: 'status', label: 'Statut' },
-          ]}
+          headLabel={tableHeaders}
         />
       </Grid2>
+
+      <ColumnSelectorDialog
+        open={columnDialog.value}
+        onClose={columnDialog.onFalse}
+        columns={ALL_COLUMNS}
+        selectedColumns={selectedColumns}
+        onApply={handleApplyColumns}
+      />
 
       <ExportDialog
         open={exportDialog.value}

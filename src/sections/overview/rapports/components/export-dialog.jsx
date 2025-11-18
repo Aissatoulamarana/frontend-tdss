@@ -16,7 +16,7 @@ import {
 import { Iconify } from 'src/components/iconify';
 
 const EXPORT_OPTIONS = [
-  { value: 'pdf', label: 'PDF Document', icon: 'vscode-icons:file-type-pdf2' },
+  // { value: 'pdf', label: 'PDF Document', icon: 'vscode-icons:file-type-pdf2' },
   { value: 'csv', label: 'CSV (Comma Separated)', icon: 'vscode-icons:file-type-csv' },
   { value: 'excel', label: 'Excel Spreadsheet', icon: 'vscode-icons:file-type-excel' },
   { value: 'zip', label: 'Archive ZIP', icon: 'vscode-icons:file-type-zip' },

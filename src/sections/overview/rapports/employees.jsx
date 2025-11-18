@@ -358,13 +358,13 @@ export function ReportEmployee() {
           await exportToPDFM(exportData, visibleColumns, 'rapport-employés.pdf');
           break;
         case 'csv':
-          exportToCSVM(exportData, columns, 'rapport-employés.csv');
+          exportToCSVM(exportData, visibleColumns, 'rapport-employés.csv');
           break;
         case 'excel':
-          exportToExcelM(exportData, columns, 'rapport-employés.xlsx');
+          exportToExcelM(exportData, visibleColumns, 'rapport-employés.xlsx');
           break;
         case 'zip':
-          await exportToZipM(exportData, columns, 'rapport-employés.zip');
+          await exportToZipM(exportData, visibleColumns, 'rapport-employés.zip');
           break;
         default:
           console.error('Format non supporté');

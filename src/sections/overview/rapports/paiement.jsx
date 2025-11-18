@@ -3,11 +3,11 @@
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Grid2 } from '@mui/material';
 import { DeclarationNew } from '../analytics/declaration/declaration-new-invoice';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { paths } from 'src/routes/paths';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -19,7 +19,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
-import { fDate } from 'src/utils/format-time';
+import { ColumnSelectorDialog } from './components/colums-selected';
 import dayjs from 'dayjs';
 
 export function ReportPaiement() {
@@ -31,6 +31,7 @@ export function ReportPaiement() {
   const [isPaiement, setIsPaiement] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const exportDialog = useBoolean();
+  const columnDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
@@ -127,7 +128,7 @@ export function ReportPaiement() {
     deposit: 'Dépôts',
   };
 
-  const columns = [
+  const ALL_COLUMNS = useMemo(() => [
     { key: 'number', label: 'Numéro' },
     { key: 'client', label: 'Entreprise' },
     { key: 'nber_factures', label: 'Factures' },
@@ -135,7 +136,34 @@ export function ReportPaiement() {
     { key: 'amount', label: 'Montant', isCurrency: true },
     { key: 'created_on', label: 'Date de Création', isDate: true },
     { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
+  ]);
+
+  const DEFAULT_COLUMNS = [
+    'number',
+    'client',
+    'nber_factures',
+    'payment_method',
+    'amount',
+    'created_on',
+    'status',
   ];
+
+  const [selectedColumns, setSelectedColumns] = useState(DEFAULT_COLUMNS);
+
+  const visibleColumns = useMemo(
+    () => ALL_COLUMNS.filter((col) => selectedColumns.includes(col.key)),
+    [ALL_COLUMNS, selectedColumns]
+  );
+
+  const tableHeaders = useMemo(
+    () => visibleColumns.map((col) => ({ id: col.key, label: col.label })),
+    [visibleColumns]
+  );
+
+  const handleApplyColumns = useCallback((columns) => {
+    setSelectedColumns(columns);
+    toast.success('Colonnes mises à jour avec succès');
+  }, []);
 
   const fetchAllDataForExport = async () => {
     try {
@@ -173,22 +201,23 @@ export function ReportPaiement() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDFM(exportData, columns, 'paiemnts.pdf');
+          await exportToPDFM(exportData, visibleColumns, 'paiemnts.pdf');
           break;
         case 'csv':
-          exportToCSVM(exportData, columns, 'rapport-paiements.csv');
+          exportToCSVM(exportData, visibleColumns, 'rapport-paiements.csv');
           break;
         case 'excel':
-          exportToExcelM(exportData, columns, 'rapport-paiements.xlsx');
+          exportToExcelM(exportData, visibleColumns, 'rapport-paiements.xlsx');
           break;
         case 'zip':
-          await exportToZipM(exportData, columns, 'rapport-paiements.zip');
+          await exportToZipM(exportData, visibleColumns, 'rapport-paiements.zip');
           break;
         default:
           console.error('Format non supporté');
       }
 
       exportDialog.onFalse();
+      toast.success(`Export réussi: ${exportData.length}  paiements exportés`);
     } catch (error) {
       console.error("Erreur lors de l'export:", error);
       toast.error("Erreur lors de l'export. Vérifiez la console pour plus de détails.");
@@ -221,13 +250,22 @@ export function ReportPaiement() {
         heading="Rapport des paiements"
         links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Rapports' }]}
         action={
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:download-fill" />}
-            onClick={exportDialog.onTrue}
-          >
-            Exporter
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="eva:options-2-outline" />}
+              onClick={columnDialog.onTrue}
+            >
+              Colonnes ({selectedColumns.length})
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="eva:download-fill" />}
+              onClick={exportDialog.onTrue}
+            >
+              Exporter
+            </Button>
+          </Stack>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -257,17 +295,17 @@ export function ReportPaiement() {
           loading={loading}
           table={table}
           notFound={notFound}
-          headLabel={[
-            { id: 'number', label: 'Numéro' },
-            { id: 'client', label: 'Entreprise' },
-            { id: 'nber_factures', label: 'Factures' },
-            { id: 'payment_method', label: 'Méthode de Paiement' },
-            { id: 'amount', label: 'Montant' },
-            { id: 'created_on', label: 'Date de Création' },
-            { id: 'status', label: 'Statut' },
-          ]}
+          headLabel={tableHeaders}
         />
       </Grid2>
+
+      <ColumnSelectorDialog
+        open={columnDialog.value}
+        onClose={columnDialog.onFalse}
+        columns={ALL_COLUMNS}
+        selectedColumns={selectedColumns}
+        onApply={handleApplyColumns}
+      />
 
       <ExportDialog
         open={exportDialog.value}

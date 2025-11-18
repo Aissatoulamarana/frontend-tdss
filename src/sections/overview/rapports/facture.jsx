@@ -3,11 +3,11 @@
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Grid2 } from '@mui/material';
 import { DeclarationNew } from '../analytics/declaration/declaration-new-invoice';
-import { Button } from '@mui/material';
+import { Button, Stack } from '@mui/material';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { paths } from 'src/routes/paths';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
 import { useSetState } from 'src/hooks/use-set-state';
@@ -19,7 +19,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { exportToCSVM, exportToExcelM, exportToZipM, exportToPDFM } from 'src/utils/export-helpers';
 import { toast } from 'src/components/snackbar';
 import { useTable } from 'src/components/table';
-import { fDate } from 'src/utils/format-time';
+import { ColumnSelectorDialog } from './components/colums-selected';
 import dayjs from 'dayjs';
 
 export function Reportfacture() {
@@ -31,6 +31,7 @@ export function Reportfacture() {
   const [isFacture, setIsFacture] = useState(true);
 
   const exportDialog = useBoolean();
+  const columnDialog = useBoolean();
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
@@ -146,14 +147,41 @@ export function Reportfacture() {
     paid: 'Payée',
   };
 
-  const columns = [
+  const ALL_COLUMNS = useMemo(() => [
     { key: 'number', label: 'Numéro' },
     { key: 'client', label: 'Entreprise' },
     { key: 'nber_declarations', label: 'Déclarations' },
     { key: 'amount', label: 'Montant', isCurrency: true },
     { key: 'created_on', label: 'Date de Création', isDate: true },
     { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
+    // { key: 'paiement', label: 'Paiement' },
+  ]);
+
+  const DEFAULT_COLUMNS = [
+    'number',
+    'client',
+    'nber_declarations',
+    'amount',
+    'created_on',
+    'status',
   ];
+
+  const [selectedColumns, setSelectedColumns] = useState(DEFAULT_COLUMNS);
+
+  const visibleColumns = useMemo(
+    () => ALL_COLUMNS.filter((col) => selectedColumns.includes(col.key)),
+    [ALL_COLUMNS, selectedColumns]
+  );
+
+  const tableHeaders = useMemo(
+    () => visibleColumns.map((col) => ({ id: col.key, label: col.label })),
+    [visibleColumns]
+  );
+
+  const handleApplyColumns = useCallback((columns) => {
+    setSelectedColumns(columns);
+    toast.success('Colonnes mises à jour avec succès');
+  }, []);
 
   const handleExport = async (format) => {
     setIsExporting(true);
@@ -166,16 +194,16 @@ export function Reportfacture() {
 
       switch (format) {
         case 'pdf':
-          await exportToPDFM(exportData, columns, 'factures.pdf');
+          await exportToPDFM(exportData, visibleColumns, 'factures.pdf');
           break;
         case 'csv':
-          exportToCSVM(exportData, columns, 'rapport-factures.csv');
+          exportToCSVM(exportData, visibleColumns, 'rapport-factures.csv');
           break;
         case 'excel':
-          exportToExcelM(exportData, columns, 'rapport-factures.xlsx');
+          exportToExcelM(exportData, visibleColumns, 'rapport-factures.xlsx');
           break;
         case 'zip':
-          await exportToZipM(exportData, columns, 'rapport-factures.zip');
+          await exportToZipM(exportData, visibleColumns, 'rapport-factures.zip');
           break;
         default:
           console.error('Format non supporté');
@@ -206,14 +234,22 @@ export function Reportfacture() {
         heading="Rapport des factures"
         links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Rapports' }]}
         action={
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:download-fill" />}
-            onClick={exportDialog.onTrue}
-            disabled={count === 0}
-          >
-            Exporter
-          </Button>
+          <Stack direction="row" spacing={1}>
+            <Button
+              variant="outlined"
+              startIcon={<Iconify icon="eva:options-2-outline" />}
+              onClick={columnDialog.onTrue}
+            >
+              Colonnes ({selectedColumns.length})
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="eva:download-fill" />}
+              onClick={exportDialog.onTrue}
+            >
+              Exporter
+            </Button>
+          </Stack>
         }
         sx={{ mb: { xs: 3, md: 5 } }}
       />
@@ -242,16 +278,17 @@ export function Reportfacture() {
           loading={loading}
           table={table}
           notFound={notFound}
-          headLabel={[
-            { id: 'number', label: 'Numéro' },
-            { id: 'client', label: 'Entreprise' },
-            { id: 'nber_declarations', label: 'Declarations' },
-            { id: 'amount', label: 'Montant' },
-            { id: 'created_on', label: 'Date de Création' },
-            { id: 'status', label: 'Statut' },
-          ]}
+          headLabel={tableHeaders}
         />
       </Grid2>
+
+      <ColumnSelectorDialog
+        open={columnDialog.value}
+        onClose={columnDialog.onFalse}
+        columns={ALL_COLUMNS}
+        selectedColumns={selectedColumns}
+        onApply={handleApplyColumns}
+      />
 
       <ExportDialog
         open={exportDialog.value}
