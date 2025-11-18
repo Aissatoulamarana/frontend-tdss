@@ -50,9 +50,9 @@ export function RapportDeclaration() {
     { key: 'number', label: 'Numéro' },
     { key: 'company', label: 'Entreprise' },
     { key: 'nber_employees', label: 'Employés' },
+    { key: 'facture_number', label: 'Facture' },
     { key: 'created_on', label: 'Date de Création' },
     { key: 'status', label: 'Statut', translate: STATUS_TRANSLATIONS },
-    // { key: 'facture', label: 'Facture' },
   ]);
 
   const DEFAULT_COLUMNS = ['number', 'company', 'nber_employees', 'created_on', 'status'];
