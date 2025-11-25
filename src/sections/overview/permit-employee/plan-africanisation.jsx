@@ -267,53 +267,6 @@ export function PlanAfricanisation({
   const typeConfig = getTypeConfig(info?.type);
 
   // Fonction pour déterminer quelles dates afficher selon le statut
-  const getRelevantDates = () => {
-    const dates = [];
-
-    if (info?.validated_at) {
-      dates.push({
-        icon: 'mdi:check-decagram',
-        label: 'Date de Validation',
-        value: formatDate(info.validated_at),
-      });
-    }
-
-    if (info?.printed_at) {
-      dates.push({
-        icon: 'mdi:printer-check',
-        label: "Date d'Impression",
-        value: formatDate(info.printed_at),
-      });
-    }
-
-    if (info?.delivered_at) {
-      dates.push({
-        icon: 'mdi:package-variant-closed-check',
-        label: 'Date de Livraison',
-        value: formatDate(info.delivered_at),
-      });
-    }
-
-    if (info?.card_issued_at) {
-      dates.push({
-        icon: 'mdi:card-account-details',
-        label: "Date d'Émission",
-        value: formatDate(info.card_issued_at),
-      });
-    }
-
-    if (info?.card_expires_at) {
-      dates.push({
-        icon: 'mdi:calendar-alert',
-        label: "Date d'Expiration",
-        value: formatDate(info.card_expires_at),
-      });
-    }
-
-    return dates;
-  };
-
-  const relevantDates = getRelevantDates();
 
   if (!isExpatriate) {
     return (
