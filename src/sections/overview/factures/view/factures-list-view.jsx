@@ -71,6 +71,7 @@ const TABLE_HEAD = [
   { id: 'numero', label: 'Déclaration' },
   { id: 'company', label: 'Entreprise' },
   { id: 'price', label: 'Montant' },
+  // {id: 'payment' , label: 'Paiement'},
   { id: 'createDate', label: 'Date ' },
   { id: 'statut', label: 'Statut' },
 
@@ -230,6 +231,13 @@ export function FactureListView() {
   const handleViewRow = useCallback(
     (slug) => {
       router.push(paths.dashboard.factures.details(slug));
+    },
+    [router]
+  );
+
+  const handleViewPayment = useCallback(
+    (slug) => {
+      router.push(paths.dashboard.paiements.details(slug));
     },
     [router]
   );
@@ -684,6 +692,7 @@ export function FactureListView() {
                         setOptions={setOptions}
                         selectedBanque={selectedBanque}
                         setSelectedBanque={setSelectedBanque}
+                        onViewPayment={() => handleViewPayment(row.payment_slug)}
                       />
                     ))}
 

@@ -40,6 +40,7 @@ export function FactureTableRow({
   onPaidRow,
   Options,
   setOptions,
+  onViewPayment,
   setSelectedBanque,
   selectedBanque,
 }) {
@@ -149,6 +150,19 @@ export function FactureTableRow({
             }}
           />
         </TableCell>
+
+        {/* <TableCell
+          onClick={(e) => {
+            e.stopPropagation(); // Empêche la propagation de l'événement de clic
+            onViewPayment();
+          }}
+          sx={{
+            cursor: 'pointer',
+            '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+          }}
+        >
+          {row.payment_number}
+        </TableCell> */}
 
         <TableCell>
           <ListItemText
