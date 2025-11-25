@@ -221,22 +221,22 @@ export function WorkPermitCard({ permit, onClose, open }) {
           <!-- Informations à droite de la photo -->
           <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
             <!-- NOM -->
-            ${createLabelValueHTML('NOM / SURNAME', permit?.last)}
+            ${createLabelValueHTML('NOM ', permit?.last)}
 
           
-            ${createLabelValueHTML('PRÉNOM(S) / GIVEN NAME(S)', permit?.first)}
-            ${createLabelValueHTML('N° INDENTITE / N° IDENTITY', permit?.passport_number)}
-            ${createLabelValueHTML('NÉ(E) LE / DATE OF BIRTH', formatDate(permit?.birthday))}
-            ${createLabelValueHTML('À / PLACE OF BIRTH', permit?.birth_place)}
-            ${createLabelValueHTML('NATIONALITÉ / NATIONALITY', permit?.nationality)}
-            ${createLabelValueHTML('SEXE / GENDER', permit?.sexe === 'male' ? 'M' : 'F')}
+            ${createLabelValueHTML('PRÉNOM(S) ', permit?.first)}
+            ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
+            ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
+            ${createLabelValueHTML('À ', permit?.birth_place)}
+            ${createLabelValueHTML('NATIONALITÉ ', permit?.nationality)}
+            ${createLabelValueHTML('SEXE ', permit?.sexe === 'male' ? 'M' : 'F')}
          
            
           </div>
 
           <!-- SIGNATURE en bas -->
           <div style="position: absolute; top: 49mm ; bottom: 2mm; left: 4mm; right: 5mm;">
-            <div style="font-size: 1.8mm; color: #000; font-weight: 400; margin-bottom: 0.5mm;">SIGNATURE DU TITULAIRE / HOLDER'S SIGNATURE</div>
+            <div style="font-size: 1.8mm; color: #000; font-weight: 400; margin-bottom: 0.5mm;">SIGNATURE DU TITULAIRE</div>
             <div style="height: 8mm; border-bottom: 0.2mm solid #666; display: flex; align-items: center;">
               ${
                 permit?.signature
@@ -264,23 +264,23 @@ export function WorkPermitCard({ permit, onClose, open }) {
           <!-- Section supérieure avec informations employeur -->
           <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
           <!-- EMPLOYEUR -->
-          ${createLabelValueHTML('EMPLOYEUR / EMPLOYER', permit?.company_name || 'N/A')}
+          ${createLabelValueHTML('EMPLOYEUR', permit?.company_name || 'N/A')}
 
             <!-- ADRESSE EMPLOYEUR -->
-            ${createLabelValueHTML('ADRESSE / ADDRESS', permit?.company_address || 'N/A')}
+            ${createLabelValueHTML('ADRESSE', permit?.company_address || 'N/A')}
 
             <!-- FONCTION -->
-           ${createLabelValueHTML('FONCTION / JOB', permit?.job?.name || 'N/A')}
+           ${createLabelValueHTML('FONCTION ', permit?.job?.name || 'N/A')}
             
             <!-- CATÉGORIE -->
-          ${createLabelValueHTML('CATÉGORIE / CATEGORY', 'TYPE ' + (getLabelPermit(permit?.category || permit?.job?.permit) || ''))}
+          ${createLabelValueHTML('CATÉGORIE ', 'TYPE ' + (getLabelPermit(permit?.category || permit?.job?.permit) || ''))}
             
 
             <!-- VALIDITÉ ET DURÉE -->
        
-             ${createLabelValueHTML('DURÉE / DURATION', calculateDuration(permit?.contract_starts_at, permit?.contract_duration))}
+             ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_starts_at, permit?.contract_duration))}
                
-               ${createLabelValueHTML('VALIDITÉ / VALIDITY', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
+               ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
 
        
           </div>
@@ -421,24 +421,18 @@ export function WorkPermitCard({ permit, onClose, open }) {
 
         {/* Informations */}
         <Box sx={{ position: 'absolute', top: '21mm', left: '30mm', right: '10mm', gap: 0 }}>
-          <LabelValue label="NOM / SURNAME" value={permit?.last?.toUpperCase()} />
+          <LabelValue label="NOM" value={permit?.last?.toUpperCase()} />
 
-          <LabelValue label=" PRÉNOM(S) / GIVEN NAME(S)" value={permit?.first?.toUpperCase()} />
-          <LabelValue label="N° IDENTIFIANT / ID NUMBER" value={permit?.passport_number || 'N/A'} />
+          <LabelValue label=" PRÉNOM(S) " value={permit?.first?.toUpperCase()} />
+          <LabelValue label="N° IDENTIFIANT " value={permit?.passport_number || 'N/A'} />
 
-          <LabelValue label="NÉ(E) LE / DATE OF BIRTH" value={formatDate(permit?.birthday)} />
+          <LabelValue label="NÉ(E) LE" value={formatDate(permit?.birthday)} />
 
-          <LabelValue
-            label="À / PLACE OF BIRTH"
-            value={permit?.birth_place?.toUpperCase() || 'N/A'}
-          />
+          <LabelValue label="À " value={permit?.birth_place?.toUpperCase() || 'N/A'} />
 
-          <LabelValue
-            label="NATIONALITE / NATIONALITY"
-            value={permit?.nationality?.toUpperCase() || 'N/A'}
-          />
+          <LabelValue label="NATIONALITE " value={permit?.nationality?.toUpperCase() || 'N/A'} />
 
-          <LabelValue label="SEXE / GENDER" value={permit?.sexe === 'male' ? 'M' : 'F'} />
+          <LabelValue label="SEXE " value={permit?.sexe === 'male' ? 'M' : 'F'} />
         </Box>
 
         {/* Signature */}
@@ -546,16 +540,16 @@ export function WorkPermitCard({ permit, onClose, open }) {
           <LabelValue label="EMPLOYEUR" value={permit?.company_name?.toUpperCase() || 'N/A'} />
 
           <LabelValue label="ADRESSE" value={permit?.company_address || 'N/A'} />
-          <LabelValue label="FONCTION/" value={permit?.job?.name?.toUpperCase() || 'N/A'} />
+          <LabelValue label="FONCTION" value={permit?.job?.name?.toUpperCase() || 'N/A'} />
           <LabelValue
-            label="CATEGORIE / CATEGORY"
+            label="CATEGORIE "
             value={`TYPE ${getLabelPermit(permit?.category || permit?.job?.permit) || ''}`}
           />
           <LabelValue
-            label="DUREE CONTRAT / CONTRACT DURATION "
+            label="DUREE CONTRAT "
             value={calculateDuration(permit?.contract_starts_at, permit?.contract_duration)}
           />
-          <LabelValue label="VALIDITE / VALIDITY" value={formatDate(permit?.card_expires_at)} />
+          <LabelValue label="VALIDITE " value={formatDate(permit?.card_expires_at)} />
         </Box>
 
         {/* QR Code */}
