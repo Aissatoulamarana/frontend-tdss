@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -16,26 +16,38 @@ import FormLabel from '@mui/material/FormLabel';
 
 import { Iconify } from 'src/components/iconify';
 
-// ----------------------------------------------------------------------
+// Images de fond (vous devrez les héberger sur votre serveur)
+const CARD_FRONT_BG = '/assets/images/permit/carte-recto.png';
+const CARD_BACK_BG = '/assets/images/permit/carte-verso.png';
 
 export function WorkPermitCard({ permit, onClose, open }) {
   const [flipped, setFlipped] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [openPrintDialog, setOpenPrintDialog] = useState(false);
-  const [printMode, setPrintMode] = useState('a4'); // 'a4' ou 'duplex'
+  const [printMode, setPrintMode] = useState('a4');
   const cardRef = useRef(null);
 
-  const handlePreview = async () => {
-    // Générer le QR code
-    try {
-      const qrData = encodeURIComponent(
-        `Permit N° ${permit?.card_number || permit?.reference || 'N/A'}`
-      );
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=100x100`;
-      setQrCodeUrl(qrUrl);
-    } catch (error) {
-      console.error('Erreur génération QR code:', error);
+  // Générer le QR code au montage
+  useEffect(() => {
+    const generateQRCode = async () => {
+      try {
+        const qrData = encodeURIComponent(
+          `Permit N° ${permit?.card_number || permit?.reference || 'N/A'}`
+        );
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200`;
+        setQrCodeUrl(qrUrl);
+      } catch (error) {
+        console.error('Erreur génération QR code:', error);
+      }
+    };
+
+    if (permit) {
+      generateQRCode();
     }
+  }, [permit]);
+
+  const handlePreview = async () => {
+    // Le QR code est déjà généré via useEffect
   };
 
   const handlePrintClick = () => {
@@ -55,7 +67,6 @@ export function WorkPermitCard({ permit, onClose, open }) {
           <head>
             <title>Carte de Permis - ${permit?.card_number || 'N/A'}</title>
             <style>
-              /* Reset complet */
               * {
                 margin: 0;
                 padding: 0;
@@ -64,7 +75,7 @@ export function WorkPermitCard({ permit, onClose, open }) {
               
               body {
                 margin: 0;
-                padding: 0;
+                padding: 20px;
                 background: white;
                 display: flex;
                 flex-direction: column;
@@ -76,75 +87,59 @@ export function WorkPermitCard({ permit, onClose, open }) {
               
               .print-container {
                 display: flex;
-                flex-direction: ${printMode === 'a4' ? 'column' : 'column'};
+                flex-direction: column;
                 gap: 20px;
                 align-items: center;
-                padding: 20px;
               }
               
               .card-face {
-                width: 85mm;
+                width: 86mm;
                 height: 54mm;
                 background: white;
-                border-radius: 3mm;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                position: relative;
+                overflow: hidden;
                 page-break-inside: avoid;
                 break-inside: avoid;
               }
               
-              /* Styles d'impression */
+              .card-background {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+              }
+              
+              .card-content {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+              }
+              
               @media print {
                 @page {
                   margin: 0;
-                  size: ${printMode === 'duplex' ? '85mm 54mm' : 'A4'};
+                  size: ${printMode === 'duplex' ? '86mm 54mm' : 'A4'};
                 }
                 
                 body {
                   margin: 0 !important;
-                  padding: 0 !important;
-                  background: white !important;
-                  display: flex !important;
-                  justify-content: center !important;
-                  align-items: center !important;
-                  min-height: 100vh !important;
+                  padding: ${printMode === 'a4' ? '15mm' : '0'} !important;
                 }
                 
                 .print-container {
-                  padding: 0 !important;
-                  margin: 0 !important;
-                  gap: 0 !important;
+                  gap: ${printMode === 'a4' ? '10mm' : '0'} !important;
                 }
                 
                 .card-face {
                   box-shadow: none !important;
-                  border: 0.5mm solid #ccc !important;
-                  margin: 0 !important;
+                  ${printMode === 'a4' ? 'border: 0.5mm solid #ccc;' : ''}
                 }
                 
-                /* Pour le mode duplex, chaque carte sur une page séparée */
-                ${
-                  printMode === 'duplex'
-                    ? `
-                  .card-front { 
-                    page-break-after: always; 
-                  }
-                `
-                    : ''
-                }
+                ${printMode === 'duplex' ? '.card-front { page-break-after: always; }' : ''}
                 
-                /* Pour le mode A4, afficher les deux cartes sur la même page */
-                ${
-                  printMode === 'a4'
-                    ? `
-                  .print-container {
-                    flex-direction: column !important;
-                    gap: 10mm !important;
-                  }
-                `
-                    : ''
-                }
-                
-                /* Force les couleurs à s'imprimer */
                 * {
                   -webkit-print-color-adjust: exact !important;
                   print-color-adjust: exact !important;
@@ -165,7 +160,7 @@ export function WorkPermitCard({ permit, onClose, open }) {
                   setTimeout(() => {
                     window.close();
                   }, 500);
-                }, 300);
+                }, 500);
               };
             </script>
           </body>
@@ -176,77 +171,84 @@ export function WorkPermitCard({ permit, onClose, open }) {
     }, 100);
   };
 
-  // Fonctions pour générer le HTML des cartes avec les BONS styles
+  function createLabelValueHTML(label, value, options = {}) {
+    const {
+      labelSize = 1.8, // taille du label en mm
+      valueSize = 2.5, // taille de la valeur en mm
+      labelWeight = 400, // épaisseur du texte du label
+      valueWeight = 700, // épaisseur du texte de la valeur
+      marginBottom = 1, // espace vertical entre lignes
+      uppercase = true, // mettre la valeur en majuscules
+    } = options;
+
+    const displayValue = (value && (uppercase ? String(value).toUpperCase() : value)) || 'N/A';
+
+    return `
+    <div style="
+      margin-bottom: ${marginBottom}mm;
+      color: #000;
+      font-size: ${labelSize}mm;
+    ">
+      <span style="font-weight: ${labelWeight};">
+        ${label} :
+      </span>
+      <span style="
+        font-size: ${valueSize}mm;
+        font-weight: ${valueWeight};
+        letter-spacing: 0.1mm;
+      ">
+        ${displayValue}
+      </span>
+    </div>
+  `;
+  }
+
   const getCardFrontHTML = () => {
     return `
       <div class="card-face card-front">
-        <div style="width: 100%; height: 100%; background: white; padding: 3mm; display: flex; flex-direction: column; position: relative; border-radius: 3mm; font-family: Arial, sans-serif;">
-          <!-- Numéro de carte -->
-          <div style="text-align: right; font-size: 2.4mm; font-weight: 600; margin-bottom: 1.5mm;">
-            N° ${permit?.card_number || permit?.reference || 'N/A'}
+        
+        <div class="card-content" style="padding: 8mm 5mm;">
+          
+          <!-- Photo - Position absolue en haut à gauche -->
+          <div style="position: absolute; top: 19mm; left: 4.5mm; width: 22mm; height: 28mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            ${
+              permit?.photo
+                ? `<img src="${permit.photo}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
+                : '<div style="color: #999; font-size: 2.5mm;">PHOTO</div>'
+            }
           </div>
 
-          <!-- Contenu principal -->
-          <div style="display: flex; gap: 2mm; flex: 1;">
-            <!-- Photo -->
-            <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
-              <div style="width: 25mm; height: 30mm; background: #f5f5f5; border-radius: 1mm; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 0.3mm solid #bdbdbd;">
-                ${
-                  permit?.photo
-                    ? `<img src="${permit.photo}" alt="${permit?.first || ''} ${permit?.last || ''}" style="width: 100%; height: 100%; object-fit: cover;" />`
-                    : '<div style="color: #9e9e9e; font-size: 3mm;">Photo</div>'
-                }
-              </div>
-              <div style="font-size: 2.4mm; font-weight: 600; margin-top: 1mm; text-align: center;">
-                PASSEPORT: ${permit?.passport_number || 'N/A'}
-              </div>
+          <!-- Informations à droite de la photo -->
+          <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
+            <!-- NOM -->
+            ${createLabelValueHTML('NOM / SURNAME', permit?.last)}
+
+          
+            ${createLabelValueHTML('PRÉNOM(S) / GIVEN NAME(S)', permit?.first)}
+            ${createLabelValueHTML('N° INDENTITE / N° IDENTITY', permit?.passport_number)}
+            ${createLabelValueHTML('NÉ(E) LE / DATE OF BIRTH', formatDate(permit?.birthday))}
+            ${createLabelValueHTML('À / PLACE OF BIRTH', permit?.birth_place)}
+            ${createLabelValueHTML('NATIONALITÉ / NATIONALITY', permit?.nationality)}
+            ${createLabelValueHTML('SEXE / GENDER', permit?.sexe === 'male' ? 'M' : 'F')}
+         
+           
+          </div>
+
+          <!-- SIGNATURE en bas -->
+          <div style="position: absolute; top: 49mm ; bottom: 2mm; left: 4mm; right: 5mm;">
+            <div style="font-size: 1.8mm; color: #000; font-weight: 400; margin-bottom: 0.5mm;">SIGNATURE DU TITULAIRE / HOLDER'S SIGNATURE</div>
+            <div style="height: 8mm; border-bottom: 0.2mm solid #666; display: flex; align-items: center;">
+              ${
+                permit?.signature
+                  ? `<img src="${permit.signature}" alt="signature" style="height: 100%; object-fit: contain;" />`
+                  : ''
+              }
             </div>
+          </div>
 
-            <!-- Informations -->
-            <div style="flex: 1;">
-              <div style="margin-bottom: 1.5mm;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400;">NOM</div>
-                <div style="font-weight: 700; font-size: 2.1mm; letter-spacing: 0.05mm;">${(permit?.last || 'N/A').toUpperCase()}</div>
-              </div>
-
-              <div style="margin-bottom: 1.5mm;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400;">PRÉNOMS</div>
-                <div style="font-weight: 600; font-size: 2.2mm;">${(permit?.first || 'N/A').toUpperCase()}</div>
-              </div>
-
-              <div style="margin-bottom: 1.5mm;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400;">DATE ET LIEU DE NAISSANCE</div>
-                <div style="font-weight: 600; font-size: 2.2mm;">
-                  ${formatDateLong(permit?.birthday)} ${permit?.birth_place || 'N/A'}
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 3mm; margin-bottom: 2mm;">
-                <div>
-                  <div style="font-size: 2.4mm; color: #666; font-weight: 400;">GENRE (SEXE)</div>
-                  <div style="font-weight: 700; font-size: 2.1mm;">
-                    ${permit?.sexe === 'male' ? 'M' : 'F'}
-                  </div>
-                </div>
-                <div>
-                  <div style="font-size: 2.4mm; color: #666; font-weight: 400;">NATIONALITÉ</div>
-                  <div style="font-weight: 600; font-size: 2.2mm;">
-                    ${(permit?.nationality || permit?.country || 'N/A').toUpperCase()}
-                  </div>
-                </div>
-              </div>
-
-              <div style="margin-top: auto;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400; margin-bottom: 0.5mm;">SIGNATURE DU TITULAIRE</div>
-                <div style="height: 8mm; border-bottom: 0.2mm solid #e0e0e0; display: flex; align-items: center;">
-                  ${
-                    permit?.signature
-                      ? `<img src="${permit.signature}" alt="signature" style="height: 100%; object-fit: contain;" />`
-                      : ''
-                  }
-                </div>
-              </div>
-            </div>
+          <!-- NUMÉRO DE CARTE en bas à droite -->
+          <div style="position: absolute; top: 14mm; right: 25mm; font-size: 3mm; font-weight: 700; color: #000;">
+            N° ${permit?.card_number || permit?.reference || 'N/A'}
           </div>
         </div>
       </div>
@@ -256,76 +258,57 @@ export function WorkPermitCard({ permit, onClose, open }) {
   const getCardBackHTML = () => {
     return `
       <div class="card-face card-back">
-        <div style="width: 100%; height: 100%; background: white; padding: 3mm; display: flex; flex-direction: column; position: relative; border-radius: 3mm; font-family: Arial, sans-serif;">
-          <!-- Header avec photo -->
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2mm;">
-            <div style="flex: 1;">
-              <div style="margin-bottom: 1.5mm;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400;">CATÉGORIE</div>
-                <div style="font-weight: 600; font-size: 2.2mm;">Type ${permit?.category || 'B'}</div>
-              </div>
+        
+        <div class="card-content" style="padding: 8mm 5mm;">
+          
+          <!-- Section supérieure avec informations employeur -->
+          <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
+          <!-- EMPLOYEUR -->
+          ${createLabelValueHTML('EMPLOYEUR / EMPLOYER', permit?.company_name || 'N/A')}
 
-              <div style="margin-bottom: 1.5mm;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400;">NOM DE L'EMPLOYEUR</div>
-                <div style="font-weight: 600; font-size: 2.2mm;">${permit?.company_name || 'N/A'}</div>
-              </div>
+            <!-- ADRESSE EMPLOYEUR -->
+            ${createLabelValueHTML('ADRESSE / ADDRESS', permit?.company_address || 'N/A')}
 
-              <div style="margin-bottom: 1.5mm;">
-                <div style="font-size: 2.4mm; color: #666; font-weight: 400;">ADRESSE DE L'EMPLOYEUR</div>
-                <div style="font-weight: 600; font-size: 2.2mm;">${permit?.company_address || permit?.address || 'N/A'}</div>
-              </div>
-            </div>
+            <!-- FONCTION -->
+           ${createLabelValueHTML('FONCTION / JOB', permit?.job?.name || 'N/A')}
+            
+            <!-- CATÉGORIE -->
+          ${createLabelValueHTML('CATÉGORIE / CATEGORY', 'TYPE ' + (getLabelPermit(permit?.category || permit?.job?.permit) || ''))}
+            
 
-            <!-- Photo miniature -->
-            <div style="width: 15mm; height: 20mm; background: #f5f5f5; border-radius: 1mm; overflow: hidden; flex-shrink: 0; margin-left: 2mm; border: 0.3mm solid #bdbdbd;">
-              ${
-                permit?.photo
-                  ? `<img src="${permit.photo}" alt="${permit?.first || ''} ${permit?.last || ''}" style="width: 100%; height: 100%; object-fit: cover;" />`
-                  : '<div style="color: #9e9e9e; font-size: 2mm; display: flex; align-items: center; justify-content: center; height: 100%;">Photo</div>'
-              }
-            </div>
+            <!-- VALIDITÉ ET DURÉE -->
+       
+             ${createLabelValueHTML('DURÉE / DURATION', calculateDuration(permit?.contract_starts_at, permit?.contract_duration))}
+               
+               ${createLabelValueHTML('VALIDITÉ / VALIDITY', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
+
+       
           </div>
 
-          <!-- Informations du contrat -->
-          <div style="display: flex; gap: 2mm; margin-bottom: 1mm;">
-            <div style="flex: 1;">
-              <div style="font-size: 2.4mm; color: #666; font-weight: 400;">VALIDITÉ</div>
-              <div style="font-weight: 600; font-size: 2.2mm;">
-                ${formatDate(permit?.card_expires_at || permit?.contract_starts_at)}
-              </div>
-            </div>
-
-            <div style="flex: 1;">
-              <div style="font-size: 2.4mm; color: #666; font-weight: 400;">FONCTION</div>
-              <div style="font-weight: 700; font-size: 2.2mm;">
-                ${permit?.job?.name || permit?.function || 'N/A'}
-              </div>
-            </div>
-
-            <div style="flex: 1;">
-              <div style="font-size: 2.4mm; color: #666; font-weight: 400;">DURÉE DU CONTRAT</div>
-              <div style="font-weight: 700; font-size: 2.2mm;">
-                ${calculateDuration(permit?.contract_starts_at, permit?.contract_duration)}
-              </div>
-            </div>
+          <!-- Photo miniature en haut à droite -->
+          <div style="position: absolute; top: 8mm; right: 28mm; width: 8mm; height: 12mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            ${
+              permit?.photo
+                ? `<img src="${permit.photo}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
+                : '<div style="color: #999; font-size: 2mm;">PHOTO</div>'
+            }
           </div>
 
-          <!-- QR Code et Numéro -->
-          <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 2mm; margin-top: auto; margin-bottom: 1mm;">
-            <!-- QR Code -->
-            <div style="width: 16mm; height: 16mm; background: white; border: 0.3mm solid #e0e0e0; border-radius: 1mm; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-              ${
-                qrCodeUrl
-                  ? `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%;" />`
-                  : '<div style="color: #e0e0e0; font-size: 2mm;">QR Code</div>'
-              }
-            </div>
-
-            <!-- Numéro de carte -->
-            <div style="font-size: 2.2mm; font-weight: 600; text-align: right;">
-              N° ${permit?.card_number || permit?.reference || 'N/A'}
-            </div>
+          <!-- QR Code en bas à gauche -->
+          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white; border: 0.3mm solid #ccc; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            ${
+              qrCodeUrl
+                ? `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%;" />`
+                : '<div style="color: #ccc; font-size: 2mm;">QR</div>'
+            }
           </div>
+
+          <!-- NUMÉRO DE CARTE en bas à droite -->
+          <div style="position: absolute; bottom: 4.5mm; left: 6mm; font-size: 2mm; font-weight: 700; color: #000;">
+            N° ${permit?.card_number || permit?.reference || 'N/A'}
+          </div>
+
+          
         </div>
       </div>
     `;
@@ -353,211 +336,76 @@ export function WorkPermitCard({ permit, onClose, open }) {
       .toUpperCase();
   };
 
-  const calculateDuration = (startDate, duration) => {
-    if (!startDate || !duration) return 'N/A';
-    return `${duration} mois`;
+  const LabelValue = ({ label, value }) => {
+    return (
+      <Typography sx={{ color: '#000', lineHeight: 1, mb: 0.3 }}>
+        <Box component="span" sx={{ fontSize: '0.6rem', mr: 0.5 }}>
+          {label} :
+        </Box>
+        <Box component="span" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>
+          {value || 'N/A'}
+        </Box>
+      </Typography>
+    );
   };
 
-  // Recto de la carte
+  const calculateDuration = (startDate, duration) => {
+    if (!startDate || !duration) return 'N/A';
+    return `${duration} MOIS`;
+  };
+
+  const getLabelPermit = (type) => {
+    const map = {
+      'Permis A': ' A',
+      'Permis B': 'B',
+      'Permis C': 'C',
+    };
+    return type ? map[type] || String(type) : 'N/A';
+  };
+
+  // Composants pour l'aperçu (avec fond d'image)
   const CardFront = () => (
     <Box
       sx={{
         width: '100%',
         height: '100%',
-        bgcolor: 'white',
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
         position: 'relative',
         borderRadius: 2,
+        overflow: 'hidden',
         boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
       }}
     >
-      {/* Numéro de carte */}
-      <Typography
+      {/* Image de fond */}
+      <Box
+        component="img"
+        src={CARD_FRONT_BG}
+        alt="Background"
         sx={{
-          textAlign: 'right',
-          fontSize: '0.875rem',
-          fontWeight: 400,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
         }}
-      >
-        N° {permit?.card_number || permit?.reference}
-      </Typography>
+      />
 
-      {/* Contenu principal */}
-      <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+      {/* Contenu par-dessus */}
+      <Box sx={{ position: 'relative', p: 2, height: '100%' }}>
         {/* Photo */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Box
-            sx={{
-              width: 120,
-              height: 140,
-              bgcolor: 'grey.200',
-              borderRadius: 1,
-              overflow: 'hidden',
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '2px solid',
-              borderColor: 'grey.400',
-            }}
-          >
-            {permit?.photo ? (
-              <img
-                src={permit.photo}
-                alt={`${permit?.first} ${permit?.last}`}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : (
-              <Iconify icon="mdi:account" width={60} sx={{ color: 'grey.500' }} />
-            )}
-          </Box>
-
-          <Typography
-            variant="caption"
-            sx={{
-              fontSize: '0.55rem',
-              fontWeight: 600,
-            }}
-          >
-            PASSEPORT: {permit?.passport_number || 'N/A'}
-          </Typography>
-        </Box>
-
-        {/* Informations */}
-        <Box sx={{ flex: 1 }}>
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-              NOM
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-              {permit?.last?.toUpperCase() || 'N/A'}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-              PRÉNOMS
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.60rem' }}>
-              {permit?.first || 'N/A'}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-              DATE ET LIEU DE NAISSANCE
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.60rem' }}>
-              {formatDateLong(permit?.birthday)} {permit?.birth_place || 'N/A'}
-            </Typography>
-          </Box>
-
-          <Box sx={{ display: 'flex', gap: 3 }}>
-            <Box>
-              <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-                GENRE (SEXE)
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-                {permit?.sexe === 'male' ? 'M' : 'F'}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-                NATIONALITÉ
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.60rem' }}>
-                {permit?.nationality || permit?.country || 'N/A'}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
-              SIGNATURE DU TITULAIRE
-            </Typography>
-            <Box
-              sx={{
-                height: 30,
-                borderBottom: '1px solid',
-                borderColor: 'grey.300',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              {permit?.signature && (
-                <img
-                  src={permit.signature}
-                  alt="signature"
-                  style={{ height: '100%', objectFit: 'contain' }}
-                />
-              )}
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
-  );
-
-  // Verso de la carte
-  const CardBack = () => (
-    <Box
-      sx={{
-        width: '100%',
-        height: '100%',
-        bgcolor: 'white',
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        borderRadius: 2,
-        boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-      }}
-    >
-      {/* Header avec photo */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Box sx={{ flex: 1 }}>
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-              CATÉGORIE
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-              Type {permit?.category || 'B'}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-              NOM DE L'EMPLOYEUR
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-              {permit?.company_name || 'N/A'}
-            </Typography>
-          </Box>
-
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-              ADRESSE DE L'EMPLOYEUR
-            </Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.60rem' }}>
-              {permit?.company_address || permit?.address || 'N/A'}
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Photo miniature */}
         <Box
           sx={{
-            width: 80,
-            height: 100,
-            bgcolor: 'grey.200',
-            borderRadius: 1,
+            position: 'absolute',
+            top: '23mm',
+            left: '6mm',
+            width: '22mm',
+            height: '28mm',
+            bgcolor: 'white',
+            border: '1px solid #999',
             overflow: 'hidden',
-            flexShrink: 0,
-            ml: 2,
-            border: '2px solid',
-            borderColor: 'grey.400',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           {permit?.photo ? (
@@ -567,73 +415,162 @@ export function WorkPermitCard({ permit, onClose, open }) {
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
           ) : (
+            <Iconify icon="mdi:account" width={60} sx={{ color: 'grey.500' }} />
+          )}
+        </Box>
+
+        {/* Informations */}
+        <Box sx={{ position: 'absolute', top: '21mm', left: '30mm', right: '10mm', gap: 0 }}>
+          <LabelValue label="NOM / SURNAME" value={permit?.last?.toUpperCase()} />
+
+          <LabelValue label=" PRÉNOM(S) / GIVEN NAME(S)" value={permit?.first?.toUpperCase()} />
+          <LabelValue label="N° IDENTIFIANT / ID NUMBER" value={permit?.passport_number || 'N/A'} />
+
+          <LabelValue label="NÉ(E) LE / DATE OF BIRTH" value={formatDate(permit?.birthday)} />
+
+          <LabelValue
+            label="À / PLACE OF BIRTH"
+            value={permit?.birth_place?.toUpperCase() || 'N/A'}
+          />
+
+          <LabelValue
+            label="NATIONALITE / NATIONALITY"
+            value={permit?.nationality?.toUpperCase() || 'N/A'}
+          />
+
+          <LabelValue label="SEXE / GENDER" value={permit?.sexe === 'male' ? 'M' : 'F'} />
+        </Box>
+
+        {/* Signature */}
+        <Box sx={{ position: 'absolute', top: '55mm', bottom: '2mm', left: '4mm', right: '10mm' }}>
+          <Typography sx={{ fontSize: '0.5rem', color: '#000', mb: 0.5 }}>
+            SIGNATURE TITULAIRE
+          </Typography>
+          <Box
+            sx={{
+              height: 30,
+              borderBottom: '1px solid #666',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {permit?.signature && (
+              <img
+                src={permit.signature}
+                alt="signature"
+                style={{ height: '100%', objectFit: 'contain' }}
+              />
+            )}
+          </Box>
+        </Box>
+
+        {/* Numéro */}
+        <Typography
+          sx={{
+            position: 'absolute',
+            top: '15.5mm',
+            right: '38mm',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+          }}
+        >
+          N° {permit?.card_number || permit?.reference}
+        </Typography>
+      </Box>
+    </Box>
+  );
+
+  const CardBack = () => (
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        borderRadius: 2,
+        overflow: 'hidden',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+      }}
+    >
+      {/* Image de fond */}
+      <Box
+        component="img"
+        src={CARD_BACK_BG}
+        alt="Background"
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+      />
+
+      {/* Contenu */}
+      <Box sx={{ position: 'relative', p: 2, height: '100%' }}>
+        {/* Photo miniature */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '9mm',
+            right: '33mm',
+            width: '10mm',
+            height: '15mm',
+            bgcolor: 'white',
+            border: '1px solid #999',
+            overflow: 'hidden',
+          }}
+        >
+          {permit?.photo ? (
+            <img
+              src={permit.photo}
+              alt="Photo"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
             <Box
               sx={{
-                width: '100%',
-                height: '100%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                height: '100%',
               }}
             >
-              <Iconify icon="mdi:account" width={40} sx={{ color: 'grey.500' }} />
+              <Iconify icon="mdi:account" width={35} sx={{ color: 'grey.500' }} />
             </Box>
           )}
         </Box>
-      </Box>
 
-      {/* Informations du contrat */}
-      <Box sx={{ display: 'flex', gap: 3 }}>
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-            VALIDITÉ
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-            {formatDate(permit?.card_expires_at || permit?.contract_starts_at)}
-          </Typography>
+        {/* Informations */}
+        <Box sx={{ position: 'absolute', top: '4mm', left: '6mm', right: '28mm' }}>
+          <LabelValue label="EMPLOYEUR" value={permit?.company_name?.toUpperCase() || 'N/A'} />
+
+          <LabelValue label="ADRESSE" value={permit?.company_address || 'N/A'} />
+          <LabelValue label="FONCTION/" value={permit?.job?.name?.toUpperCase() || 'N/A'} />
+          <LabelValue
+            label="CATEGORIE / CATEGORY"
+            value={`TYPE ${getLabelPermit(permit?.category || permit?.job?.permit) || ''}`}
+          />
+          <LabelValue
+            label="DUREE CONTRAT / CONTRACT DURATION "
+            value={calculateDuration(permit?.contract_starts_at, permit?.contract_duration)}
+          />
+          <LabelValue label="VALIDITE / VALIDITY" value={formatDate(permit?.card_expires_at)} />
         </Box>
 
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-            FONCTION
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-            {permit?.job?.name || permit?.function || 'N/A'}
-          </Typography>
-        </Box>
-
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
-            DURÉE DU CONTRAT
-          </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 700, fontSize: '0.55rem' }}>
-            {calculateDuration(permit?.contract_starts_at, permit?.contract_duration)}
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* QR Code et Numéro */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          gap: 2,
-        }}
-      >
         {/* QR Code */}
         <Box
           sx={{
-            width: 65,
-            height: 65,
+            position: 'absolute',
+            bottom: '10mm',
+            left: '8mm',
+            width: '20mm',
+            height: '20mm',
             bgcolor: 'white',
-            border: '2px solid',
-            borderColor: 'grey.300',
-            borderRadius: 1,
+            border: '1px solid #ccc',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            overflow: 'hidden',
           }}
         >
           {qrCodeUrl ? (
@@ -643,12 +580,15 @@ export function WorkPermitCard({ permit, onClose, open }) {
           )}
         </Box>
 
-        {/* Numéro de carte */}
+        {/* Numéro */}
         <Typography
           sx={{
-            fontSize: '0.55rem',
+            position: 'absolute',
+            bottom: '5mm',
+            left: '8mm',
+            fontSize: '0.75rem',
             fontWeight: 700,
-            textAlign: 'right',
+            color: '#000',
           }}
         >
           N° {permit?.card_number || permit?.reference}
@@ -739,7 +679,6 @@ export function WorkPermitCard({ permit, onClose, open }) {
                 transition: 'transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1)',
                 transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                 cursor: 'pointer',
-                backgroundColor: 'white',
               }}
               onClick={() => setFlipped(!flipped)}
             >
@@ -808,14 +747,19 @@ export function WorkPermitCard({ permit, onClose, open }) {
       </Dialog>
 
       {/* Dialog d'options d'impression */}
-      <Dialog open={openPrintDialog} onClose={() => setOpenPrintDialog(false)}>
-        <DialogContent sx={{ p: 3, minWidth: 400 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
+      <Dialog
+        open={openPrintDialog}
+        onClose={() => setOpenPrintDialog(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogContent sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
             Options d'impression de la carte
           </Typography>
 
           <FormControl component="fieldset" fullWidth>
-            <FormLabel component="legend" sx={{ mb: 2 }}>
+            <FormLabel component="legend" sx={{ mb: 2, fontWeight: 600 }}>
               Mode d'impression
             </FormLabel>
             <RadioGroup value={printMode} onChange={(e) => setPrintMode(e.target.value)}>
@@ -823,6 +767,7 @@ export function WorkPermitCard({ permit, onClose, open }) {
                 value="a4"
                 control={<Radio />}
                 label="Aperçu A4 (recto et verso sur la même page)"
+                sx={{ mb: 1 }}
               />
               <FormControlLabel
                 value="duplex"
@@ -832,29 +777,39 @@ export function WorkPermitCard({ permit, onClose, open }) {
             </RadioGroup>
           </FormControl>
 
-          <Box sx={{ mt: 2, p: 2, bgcolor: 'info.lighter', borderRadius: 1 }}>
+          <Box sx={{ mt: 3, p: 2, bgcolor: 'info.lighter', borderRadius: 1 }}>
             {printMode === 'a4' ? (
               <>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  Mode Aperçu A4 :
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <Iconify icon="mdi:information" width={20} sx={{ color: 'info.main' }} />
+                  Mode Aperçu A4
                 </Typography>
-                <Typography variant="body2" component="ul" sx={{ pl: 2, m: 0 }}>
+                <Box component="ul" sx={{ pl: 3, m: 0, '& li': { mb: 0.5 } }}>
                   <li>Le recto et le verso s'affichent l'un au-dessus de l'autre</li>
                   <li>Parfait pour visualiser le résultat avant impression finale</li>
                   <li>Utilisez du papier A4 standard</li>
-                </Typography>
+                  <li>Format carte: 86mm x 54mm</li>
+                </Box>
               </>
             ) : (
               <>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
-                  Mode Recto-Verso :
+                <Typography
+                  variant="subtitle2"
+                  sx={{ fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}
+                >
+                  <Iconify icon="mdi:printer" width={20} sx={{ color: 'info.main' }} />
+                  Mode Recto-Verso
                 </Typography>
-                <Typography variant="body2" component="ul" sx={{ pl: 2, m: 0 }}>
+                <Box component="ul" sx={{ pl: 3, m: 0, '& li': { mb: 0.5 } }}>
                   <li>Chaque face sera imprimée sur une page séparée</li>
                   <li>Activez l'impression recto-verso dans les paramètres de votre imprimante</li>
                   <li>Utilisez des cartes vierges au format 86mm x 54mm</li>
                   <li>Le verso sera automatiquement inversé pour l'alignement</li>
-                </Typography>
+                  <li>Les images de fond seront imprimées</li>
+                </Box>
               </>
             )}
           </Box>
@@ -865,33 +820,14 @@ export function WorkPermitCard({ permit, onClose, open }) {
           </Button>
           <Button
             variant="contained"
+            color="primary"
             startIcon={<Iconify icon="mdi:printer" />}
             onClick={handleConfirmPrint}
           >
-            Imprimer
+            Lancer l'impression
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Zone d'impression invisible (ne s'affiche qu'à l'impression) */}
-      {/* <Box ref={cardRef} sx={{ display: 'none' }}>
-        {printMode === 'a4' && (
-          <Box className="print-instructions print-only">
-            <Typography variant="h6">Carte de permis de travail - Recto et Verso</Typography>
-            <Typography variant="caption" sx={{ fontSize: '8pt', mt: 1, display: 'block' }}>
-              Pour impression finale, veuillez utiliser le mode "Impression recto-verso"
-            </Typography>
-          </Box>
-        )}
-
-        <Box className="card-face card-front" sx={{ width: '86mm', height: '54mm' }}>
-          <CardFront />
-        </Box>
-
-        <Box className="card-face card-back" sx={{ width: '86mm', height: '54mm' }}>
-          <CardBack />
-        </Box>
-      </Box> */}
     </>
   );
 }
