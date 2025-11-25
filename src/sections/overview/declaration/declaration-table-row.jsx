@@ -32,6 +32,7 @@ export function DeclarationTableRow({
   onRejetRow,
   onSubmitRow,
   onUnSubmitRow,
+  onViewFacture,
 }) {
   // Pour la suppression
   const deleteConfirm = useBoolean();
@@ -125,6 +126,14 @@ export function DeclarationTableRow({
         <TableCell>{row.title}</TableCell>
         <TableCell>{row.company}</TableCell>
         <TableCell>{row.nb_employees}</TableCell>
+        {/* <TableCell
+          onClick={(e) => {
+            e.stopPropagation(); // Empêche le clic de se propager au TableRow
+            onViewFacture(row?facture_slug);
+          }}
+        >
+          {row.nunber_facture}
+        </TableCell> */}
         <TableCell>
           <ListItemText
             primary={fDate(row.created_on)}

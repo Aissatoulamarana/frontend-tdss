@@ -731,6 +731,13 @@ export function DeclarationListView() {
     [router]
   );
 
+  const handleViewFacture = useCallback(
+    (slug) => {
+      router.push(paths.dashboard.factures.details(slug));
+    },
+    [router]
+  );
+
   const handleFilterStatus = useCallback(
     (event, newValue) => {
       table.onResetPage();
@@ -1098,6 +1105,7 @@ export function DeclarationListView() {
                         onValidateRow={() => handleValidateRow(row.slug)}
                         onFactureRow={() => handleFacturer(row.slug)}
                         onRejetRow={(rejectReason) => handleRejetter(row.slug, rejectReason)}
+                        onViewFacture={handleViewFacture}
                       />
                     ))}
 
