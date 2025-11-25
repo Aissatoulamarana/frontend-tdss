@@ -1,6 +1,6 @@
-const BASE_URL = 'http://192.168.1.152:8000/api'; // Adresse de votre backend
+// const BASE_URL = 'http://192.168.1.152:8000/api'; // Adresse de votre backend
 
-// const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
+const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
 
 const API = {
   nextjsPage: () => `${BASE_URL}/nextjs/page`, // Vue Next.js
