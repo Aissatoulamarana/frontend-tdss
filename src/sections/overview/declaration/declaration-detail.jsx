@@ -9,6 +9,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { fDate } from 'src/utils/format-time';
 
 import { usePopover } from 'src/components/custom-popover';
@@ -35,6 +36,7 @@ export function DeclarationDetails({ declaration, employees }) {
   const user = useMockedUser();
 
   const popover = usePopover();
+  const router = useRouter();
 
   const company = declaration?.company;
 
@@ -81,6 +83,13 @@ export function DeclarationDetails({ declaration, employees }) {
   const handleCloseDialog = () => {
     setOpenDialog(false);
   };
+
+  const handleViewFacture = useCallback(
+    (slug) => {
+      router.push(paths.dashboard.factures.details(slug));
+    },
+    [router]
+  );
 
   useEffect(() => {
     if (declaration?.status) {
@@ -185,6 +194,22 @@ export function DeclarationDetails({ declaration, employees }) {
             </Label>
 
             <Typography variant="h6"> {declaration?.number}</Typography>
+
+            {currentStatus === 'billed' && (
+              <Stack sx={{ typography: 'body2' }}>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    mb: 1,
+                    cursor: 'pointer',
+                    '&:hover': { color: 'primary.main', textDecoration: 'underline' },
+                  }}
+                  onClick={() => handleViewFacture(declaration?.facture_slug)}
+                >
+                  Facture : {declaration?.facture_number}
+                </Typography>
+              </Stack>
+            )}
           </Stack>
 
           <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-start' }}>
