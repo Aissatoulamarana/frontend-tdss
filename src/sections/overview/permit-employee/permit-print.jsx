@@ -210,7 +210,7 @@ export function WorkPermitCard({ permit, onClose, open }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Photo - Position absolue en haut à gauche -->
-          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 28mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.photo
                 ? `<img src="${permit.photo}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
@@ -222,8 +222,6 @@ export function WorkPermitCard({ permit, onClose, open }) {
           <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
             <!-- NOM -->
             ${createLabelValueHTML('NOM ', permit?.last)}
-
-          
             ${createLabelValueHTML('PRÉNOM(S) ', permit?.first)}
             ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
             ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
@@ -235,16 +233,30 @@ export function WorkPermitCard({ permit, onClose, open }) {
           </div>
 
           <!-- SIGNATURE en bas -->
-          <div style="position: absolute; top: 49mm ; bottom: 2mm; left: 4mm; right: 5mm; border: 0.3mm solid #999; width: 20mm; height: 6mm;">
-            <div style="font-size: 1.8mm; color: #000; font-weight: 400; margin-bottom: 0.5mm;">SIGNATURE DU TITULAIRE</div>
-            <div style="height: 8mm;  display: flex; align-items: center;">
-              ${
-                permit?.signature
-                  ? `<img src="${permit.signature}" alt="signature" style="height: 100%; object-fit: contain;" />`
-                  : ''
-              }
-            </div>
+         <div 
+            style="
+              position: absolute; 
+              top: 48mm; 
+              left: 4mm; 
+              width: 20mm; 
+              height: 6mm; 
+              border: 1px solid #999; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              overflow: hidden;
+            "
+          >
+            ${
+              permit?.signature
+                ? `<img src="${permit.signature}" alt="signature"
+                    style="max-height: 100%; max-width: 100%; object-fit: contain;" />`
+                : `<div style="font-size: 1.8mm; color: #000; font-weight: 400;">
+                    SIGNATURE DU TITULAIRE
+                  </div>`
+            }
           </div>
+
 
           <!-- NUMÉRO DE CARTE en bas à droite -->
           <div style="position: absolute; top: 14mm; right: 25mm; font-size: 3mm; font-weight: 700; color: #000;">
@@ -286,7 +298,7 @@ export function WorkPermitCard({ permit, onClose, open }) {
           </div>
 
           <!-- Photo miniature en haut à droite -->
-          <div style="position: absolute; top: 7mm; right: 25mm; width: 8mm; height: 12mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 7mm; right: 27.9mm; width: 8mm; height: 12mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.photo
                 ? `<img src="${permit.photo}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
