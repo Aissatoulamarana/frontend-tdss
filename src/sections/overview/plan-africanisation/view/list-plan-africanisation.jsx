@@ -214,15 +214,15 @@ export function ListPlanAfricanisationView() {
 
             { name: 'Plan de Panafricanisation' },
           ]}
-          action={
-            <Button
-              // component={RouterLink}
-              variant="contained"
-              startIcon={<Iconify icon="download" />}
-            >
-              Exporter
-            </Button>
-          }
+          // action={
+          //   <Button
+          //     // component={RouterLink}
+          //     variant="contained"
+          //     startIcon={<Iconify icon="download" />}
+          //   >
+          //     Exporter
+          //   </Button>
+          // }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
         <Card>

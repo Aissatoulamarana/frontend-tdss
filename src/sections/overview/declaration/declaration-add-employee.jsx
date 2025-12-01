@@ -697,7 +697,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         size="small"
                         type="number"
                         name={`employees[${index}].contract_duration`}
-                        label="Durée Contrat (an)"
+                        label="Durée Contrat (mois)"
                         InputLabelProps={{ shrink: true }}
                         disabled={values.employees[index]?.locked}
                         inputProps={{ min: 1, step: 1 }}
