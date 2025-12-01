@@ -47,14 +47,23 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 
-import { TableToolbar } from 'src/sections/composants/table-toolbar';
-import { TableFiltersResult } from 'src/sections/composants/table-filters-results';
+import { TableToolbar } from '../table-filter';
+import { TableFiltersResult } from '../table-filter-result';
 import { TableRowComPermit } from '../permit-employee-table-row';
 import { ca } from 'date-fns/locale';
+import { status } from 'nprogress';
 
 // ----------------------------------------------------------------------
 
-const STATUS_OPTIONS = [{ value: 'all', label: 'Tous' }];
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'Tous' },
+  { value: 'submitted', label: 'Soumis' },
+  { value: 'validated', label: 'Validé' },
+  { value: 'rejected', label: 'Rejeté' },
+  { value: 'processing', label: 'En traitement' },
+  { value: 'printed', label: 'Imprimée' },
+  { value: 'delivered', label: 'Livrée' },
+];
 
 const TABLE_HEAD = [
   //   { id: 'number', label: 'Numéro Carte' },
@@ -106,18 +115,24 @@ export function PermitListView() {
 
   const filters = useSetState({
     name: '',
-    job: [],
-    status: 'all',
+    declaration: '',
+    type: 'all',
     passport_number: '',
     reference: '',
+    status: 'all',
+    company: '',
+    number: '',
   });
 
   const canReset =
     !!filters.state.name ||
-    filters.state.job.length > 0 ||
+    !!filters.state.declaration ||
     filters.state.status !== 'all' ||
+    filters.state.type !== 'all' ||
     !!filters.state.passport_number ||
-    !!filters.state.reference;
+    !!filters.state.reference ||
+    !!filters.state.company ||
+    !!filters.state.number;
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -304,12 +319,11 @@ export function PermitListView() {
               : filters.state.name
                 ? { name: filters.state.name }
                 : {}),
-          ...(filters.state.job?.length > 0 && {
-            job:
-              typeof filters.state.job[0] === 'object'
-                ? filters.state.job[0].name // Envoyer le nom de la fonction
-                : filters.state.job[0], // Ou la valeur directe si c'est une chaîne
-          }),
+          ...(filters.state.type !== 'all' ? { type: filters.state.type } : {}),
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.declaration ? { declaration: filters.state.declaration } : {}),
+          ...(filters.state.company ? { company: filters.state.company } : {}),
+          ...(filters.state.number ? { number: filters.state.number } : {}),
         };
         const response = await axios.get(API.listPermitsEmployees(), { params });
         setTableData(response.data.results);
@@ -330,9 +344,13 @@ export function PermitListView() {
     table.page,
     table.rowsPerPage,
     filters.state.name,
-    filters.state.job,
+    filters.state.declaration,
     filters.state.passport_number,
     filters.state.reference,
+    filters.state.type,
+    filters.state.status,
+    filters.state.company,
+    filters.state.number,
   ]); // a chaque fois que la page, rowsPerPage, ou les filtres changent , on refetch
 
   if (loading) {
@@ -372,11 +390,11 @@ export function PermitListView() {
                 iconPosition="end"
                 value={tab.value}
                 label={tab.label}
-                icon={
-                  <Label variant="filled" color="main">
-                    {pagination.count}
-                  </Label>
-                }
+                // icon={
+                //   <Label variant="filled" color="main">
+                //     {pagination.count}
+                //   </Label>
+                // }
               />
             ))}
           </Tabs>

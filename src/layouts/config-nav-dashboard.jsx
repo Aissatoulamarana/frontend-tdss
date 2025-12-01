@@ -56,6 +56,7 @@ export function useNavData() {
   const { user } = useMockedUser();
 
   const type = user?.type_name?.toLowerCase().trim();
+  const type_code = user?.type_code?.toLowerCase().trim();
 
   const profil = user?.companies[0]?.type_name.toLowerCase().trim();
 
@@ -123,19 +124,26 @@ export function useNavData() {
             ]
           : []),
 
-        {
-          title: 'Rapports',
-          path: paths.dashboard.analytics.root,
-          icon: ICONS.analytics,
-          children: [
-            { title: 'Declaration', path: paths.dashboard.analytics.declaration },
-            { title: 'Facture', path: paths.dashboard.analytics.facture },
-            { title: 'Paiement', path: paths.dashboard.analytics.paiement },
-            // { title: 'Penalité', path: paths.dashboard.group.root },
-            { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
-            { title: 'Employés', path: paths.dashboard.analytics.employee },
-          ],
-        },
+        ...(type_code === 'admin' ||
+        type_code === 'accountant' ||
+        type_code === 'agent' ||
+        type_code === 'aguipe'
+          ? [
+              {
+                title: 'Rapports',
+                path: paths.dashboard.analytics.root,
+                icon: ICONS.analytics,
+                children: [
+                  { title: 'Declaration', path: paths.dashboard.analytics.declaration },
+                  { title: 'Facture', path: paths.dashboard.analytics.facture },
+                  { title: 'Paiement', path: paths.dashboard.analytics.paiement },
+                  // { title: 'Penalité', path: paths.dashboard.group.root },
+                  { title: 'Permis de travail', path: paths.dashboard.analytics.permis },
+                  { title: 'Employés', path: paths.dashboard.analytics.employee },
+                ],
+              },
+            ]
+          : []),
       ],
     },
     /**

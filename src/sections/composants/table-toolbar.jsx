@@ -86,11 +86,11 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
         />
 
         {/* Bouton à droite */}
-        <Tooltip title="Afficher / Masquer les colonnes">
+        {/* <Tooltip title="Afficher / Masquer les colonnes">
           <IconButton color="primary" onClick={onOpenColumnSelector}>
             <Iconify icon="solar:settings-bold" />
           </IconButton>
-        </Tooltip>
+        </Tooltip> */}
       </Stack>
     </Stack>
   );
