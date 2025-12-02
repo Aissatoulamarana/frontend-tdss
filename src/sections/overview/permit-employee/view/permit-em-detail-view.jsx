@@ -22,6 +22,7 @@ import { PermitJob } from '../permit-job';
 import { PermitInfo } from '../info-permit';
 import { PermitToolbar } from '../permit-toolbar';
 import { PlanAfricanisation } from '../plan-africanisation';
+import { BiometricData } from '../permit-biometrie';
 
 const TABS_PERMITS = [
   { value: 'info', label: 'Info Permit', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
@@ -108,6 +109,16 @@ export function PermitDetailView({ slug }) {
     }));
   };
 
+  const handleUpdate = (updatedData) => {
+    console.log('Données mises à jour:', updatedData);
+    setPermit((prev) => ({
+      ...prev,
+      picture: updatedData.picture,
+      signature: updatedData.signature,
+      fingerprints_picture: updatedData.fingerprints_picture,
+    }));
+  };
+
   return (
     <DashboardContent>
       <Box sx={{ mb: { xs: 1, md: 1 } }}>
@@ -189,6 +200,17 @@ export function PermitDetailView({ slug }) {
             permit?.country?.toLowerCase().trim() !== 'guinée'
           }
           onUpdate={handleUpdatePlan}
+        />
+      )}
+
+      {tabs?.value === 'biometrie' && (
+        <BiometricData
+          employeeSlug={permit?.slug}
+          declarationSlug={permit?.declaration_slug}
+          picture={permit?.picture}
+          signature={permit?.signature}
+          fingerprints_picture={permit?.fingerprints_picture}
+          onUpdate={handleUpdate}
         />
       )}
     </DashboardContent>
