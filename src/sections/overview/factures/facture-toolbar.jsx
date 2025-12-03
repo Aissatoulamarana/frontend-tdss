@@ -37,7 +37,7 @@ export function FactureToolbar({ facture, user, currentStatus, onChangeStatus, d
   const [loading, setLoading] = useState(false);
   const view = useBoolean();
 
-  const type = user?.type_name?.toLowerCase().trim();
+  const type = user?.type_code?.toLowerCase().trim();
   //  const profil = user?.companies?.[0]?.type_name?.toLowerCase().trim() ;
 
   const handlePreview = async () => {
@@ -162,7 +162,7 @@ export function FactureToolbar({ facture, user, currentStatus, onChangeStatus, d
               <Iconify icon="solar:printer-minimalistic-bold" />
             </IconButton>
           </Tooltip> */}
-          {(type === 'caissier' || type === 'comptable') && currentStatus === 'unpaid' && (
+          {(type === 'treasurer' || type === 'accountant') && currentStatus === 'unpaid' && (
             <Tooltip title="Payer la facture">
               <IconButton onClick={() => payeurForm.onTrue()}>
                 <Iconify icon="mdi:credit-card" />

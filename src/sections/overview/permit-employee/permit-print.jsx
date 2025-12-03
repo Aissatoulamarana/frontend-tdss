@@ -20,7 +20,7 @@ import { Iconify } from 'src/components/iconify';
 const CARD_FRONT_BG = '/assets/images/permit/carte-recto.png';
 const CARD_BACK_BG = '/assets/images/permit/carte-verso.png';
 
-export function WorkPermitCard({ permit, onClose, open }) {
+export function WorkPermitCard({ permit, onClose, open, onPrint }) {
   const [flipped, setFlipped] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [openPrintDialog, setOpenPrintDialog] = useState(false);
@@ -51,6 +51,7 @@ export function WorkPermitCard({ permit, onClose, open }) {
   };
 
   const handlePrintClick = () => {
+    onPrint();
     setOpenPrintDialog(true);
   };
 

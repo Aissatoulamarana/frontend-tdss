@@ -209,6 +209,7 @@ export function PermitDetailView({ slug }) {
           declarationSlug={permit?.declaration_slug}
           picture={permit?.picture}
           signature={permit?.signature}
+          slug={permit?.slug}
           fingerprints_picture={permit?.fingerprints_picture}
           onUpdate={handleUpdate}
         />

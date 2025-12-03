@@ -167,6 +167,7 @@ const API = {
   submitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/submit/`,
   unsubmitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/unsubmit/`,
   validatePermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/validate/`,
+  updateFile: (slug) => `${BASE_URL}/declarations/employees/${slug}/update-file/`,
   updatePermit: (declarationSlug, employeeSlug) =>
     `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`,
 

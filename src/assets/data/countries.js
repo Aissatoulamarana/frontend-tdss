@@ -245,7 +245,7 @@ export const countries = [
   { code: 'XK', label: 'Kosovo', phone: '383' },
   { code: 'YE', label: 'Yemen', phone: '967' },
   { code: 'YT', label: 'Mayotte', phone: '262' },
-  { code: 'ZA', label: 'Adrique du Sud', phone: '27' },
+  { code: 'ZA', label: 'Afrique du Sud', phone: '27' },
   { code: 'ZM', label: 'Zambie', phone: '260' },
   { code: 'ZW', label: 'Zimbabwe', phone: '263' },
 ];

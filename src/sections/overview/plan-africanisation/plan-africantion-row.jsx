@@ -19,46 +19,8 @@ import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
-export function PlanTableRow({
-  row,
-  user,
-  selected,
-  onSelectRow,
-  onViewRow,
-  onEditRow,
-  onDeleteRow,
-  onValidateRow,
-  onFactureRow,
-  onRejetRow,
-  onSubmitRow,
-  onUnSubmitRow,
-}) {
-  // Pour la suppression
-  const deleteConfirm = useBoolean();
-  // Pour la validation (exemple)
-  const validateConfirm = useBoolean();
-  // Pour la facturation (exemple)
-  const factureConfirm = useBoolean();
-  // Pour la soumission
-  const submitConfirm = useBoolean();
-
-  // Pour la non-soumission
-  const unsubmitConfirm = useBoolean();
-
-  // Pour le dialogue de rejet
-  const [openRejetDialog, setOpenRejetDialog] = useState(false);
-  const [motifRejet, setMotifRejet] = useState('');
-
-  const popover = usePopover();
-
-  const profil = user?.companies[0]?.type_name?.toLowerCase().trim();
-
+export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
   // Handler pour le rejet, après validation du motif
-  const handleConfirmRejet = () => {
-    onRejetRow(motifRejet); // On passe le motif en paramètre
-    setMotifRejet('');
-    setOpenRejetDialog(false);
-  };
 
   const statusLabels = {
     unsubmitted: 'Non soumise',
@@ -187,117 +149,7 @@ export function PlanTableRow({
             Voir
           </MenuItem>
 
-          {/* {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && ( */}
-          {(user?.type_code === 'agent' || user?.type_code === 'admin') &&
-            ['unsubmitted'].includes(row.status) && (
-              <MenuItem
-                onClick={() => {
-                  onEditRow();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="solar:pen-bold" />
-                Modifier
-              </MenuItem>
-            )}
-
-          {user?.type_code === 'agent' && ['rejected', 'submitted'].includes(row.status) && (
-            <MenuItem
-              key="unsubmit"
-              onClick={() => {
-                unsubmitConfirm.onTrue();
-                popover.onClose();
-              }}
-            >
-              <Iconify icon="solar:pen-bold" />
-              Mettre En Edition
-            </MenuItem>
-          )}
-
-          {user?.type_code === 'agent' &&
-            !['validated', 'billed', 'rejected', 'submitted'].includes(row.status) && (
-              <MenuItem
-                key="submit"
-                onClick={() => {
-                  submitConfirm.onTrue();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="mdi:check-bold" />
-                Soumettre
-              </MenuItem>
-            )}
-
-          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
-            profil === 'aguipe' &&
-            !['validated', 'billed', 'rejected', 'unsubmitted'].includes(row.status) && (
-              <MenuItem
-                key="validate"
-                onClick={() => {
-                  validateConfirm.onTrue();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="mdi:check-bold" />
-                Valider
-              </MenuItem>
-            )}
-
-          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
-            profil === 'aguipe' &&
-            !['rejected', 'billed', 'validated', 'unsubmitted'].includes(row.status) && (
-              <MenuItem
-                key="reject"
-                onClick={() => {
-                  setOpenRejetDialog(true);
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="material-symbols:cancel" />
-                Rejeter
-              </MenuItem>
-            )}
-
-          {/* {user?.type === 'Agent' &&
-            ['REJECTED'].includes(row.status) && (
-              <MenuItem
-                key="unsubmit"
-                onClick={() => {
-                  unsubmitConfirm.onTrue();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="solar:pen-bold" />
-                Mettre En Edition
-              </MenuItem>
-            )} */}
-
-          {user?.type_name === 'Comptable' &&
-            !['billed', 'rejected', 'unsublitted', 'submitted'].includes(row.status) && (
-              <MenuItem
-                key="facture"
-                onClick={() => {
-                  factureConfirm.onTrue();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="mdi:credit-card" />
-                Facturer
-              </MenuItem>
-            )}
-
           <Divider sx={{ borderStyle: 'dashed' }} />
-
-          {/* <MenuItem
-            onClick={() => {
-              deleteConfirm.onTrue();
-              popover.onClose();
-            }}
-            sx={{ color: 'error.main' }}
-          >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Supprimer
-          </MenuItem> */}
         </MenuList>
       </CustomPopover>
 

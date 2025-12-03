@@ -6,6 +6,7 @@ import { SvgColor } from 'src/components/svg-color';
 
 import { useMockedUser } from 'src/auth/hooks';
 
+import { Iconify } from 'src/components/iconify';
 // ----------------------------------------------------------------------
 
 const icon = (name) => <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />;
@@ -47,6 +48,7 @@ const ICONS = {
   permission: icon('ic-permission'),
   typeUser: icon('ic-type-user'),
   typeStruct: icon('ic-type-struct'),
+  plan: icon('ic-earth'),
   // sidebar icons
 };
 
@@ -55,8 +57,7 @@ const ICONS = {
 export function useNavData() {
   const { user } = useMockedUser();
 
-  const type = user?.type_name?.toLowerCase().trim();
-  const type_code = user?.type_code?.toLowerCase().trim();
+  const type = user?.type_code?.toLowerCase().trim();
 
   const profil = user?.companies[0]?.type_name.toLowerCase().trim();
 
@@ -68,16 +69,24 @@ export function useNavData() {
       subheader: "Vue d'ensemble",
       items: [
         ...(type === 'admin' ||
-        type === 'caissier' ||
-        type === 'comptable' ||
+        type === 'treasurer' ||
+        type === 'accountant' ||
         type === 'agent' ||
-        type === 'aguipe'
+        type === 'aguipe' ||
+        type === 'supervisor'
           ? [{ title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard }]
           : []),
 
-        ...(type === 'admin' || type === 'aguipe' || type === 'ministère' ? [] : []),
+        ...(type === 'admin' || type === 'aguipe' || type === 'supervisor' || type === 'ministère'
+          ? []
+          : []),
 
-        ...(type === 'comptable' || type === 'agent' || type === 'aguipe' || type === 'admin'
+        ...(type === 'accountant' ||
+        type === 'agent' ||
+        type === 'aguipe' ||
+        type === 'supervisor' ||
+        type === 'admin' ||
+        type === 'printer'
           ? [
               {
                 title: 'Déclarations',
@@ -92,11 +101,15 @@ export function useNavData() {
               {
                 title: "Plan d'Africanisation",
                 path: paths.dashboard.planAfricanisation.root,
-                icon: ICONS.permis,
+                icon: <Iconify icon="mdi:earth" width={24} />,
               },
             ]
           : []),
-        ...(type === 'comptable' || type === 'caissier' || type === 'admin' || type === 'aguipe'
+        ...(type === 'accountant' ||
+        type === 'treasurer' ||
+        type === 'admin' ||
+        type === 'aguipe' ||
+        type === 'supervisor'
           ? [
               {
                 title: 'Factures',
@@ -105,7 +118,11 @@ export function useNavData() {
               },
             ]
           : []),
-        ...(type === 'caissier' || type === 'admin' || type === 'aguipe' || type === 'comptable'
+        ...(type === 'treasurer' ||
+        type === 'admin' ||
+        type === 'aguipe' ||
+        type === 'accountant' ||
+        type === 'supervisor'
           ? [
               {
                 title: 'Paiements',
@@ -124,10 +141,11 @@ export function useNavData() {
             ]
           : []),
 
-        ...(type_code === 'admin' ||
-        type_code === 'accountant' ||
-        type_code === 'agent' ||
-        type_code === 'aguipe'
+        ...(type === 'admin' ||
+        type === 'accountant' ||
+        type === 'agent' ||
+        type === 'aguipe' ||
+        type === 'supervisor'
           ? [
               {
                 title: 'Rapports',

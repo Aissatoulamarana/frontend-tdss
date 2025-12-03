@@ -78,6 +78,8 @@ export function FactureTableRow({
   const payeurForm = useBoolean();
   const profil = user?.companies[0]?.type_code?.toLowerCase().trim();
 
+  const type = user?.type_code?.toLowerCase().trim();
+
   const handleViewDeclaration = (e) => {
     e.stopPropagation(); // Empêche la propagation de l'événement de clic
     const slug = row?.declaration?.slug || row?.declaration_slug; // Utilise le slug de la déclaration
@@ -220,20 +222,19 @@ export function FactureTableRow({
             Modifier
           </MenuItem> */}
 
-          {(user?.type_name === 'Caissier' || user?.type_name === 'Comptable') &&
-            row.status === 'unpaid' && (
-              <MenuItem
-                color={payeurForm.value ? 'inherit' : 'default'}
-                onClick={() => {
-                  // confirm.onTrue();
-                  popover.onClose();
-                  payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
-                }}
-              >
-                <Iconify icon="mdi:credit-card" />
-                Payer
-              </MenuItem>
-            )}
+          {(type === 'treasurer' || type === 'accountant') && row.status === 'unpaid' && (
+            <MenuItem
+              color={payeurForm.value ? 'inherit' : 'default'}
+              onClick={() => {
+                // confirm.onTrue();
+                popover.onClose();
+                payeurForm.onTrue(); // Ouvre la boîte de dialogue de paiement
+              }}
+            >
+              <Iconify icon="mdi:credit-card" />
+              Payer
+            </MenuItem>
+          )}
         </MenuList>
       </CustomPopover>
 
