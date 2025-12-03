@@ -17,6 +17,7 @@ import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
 export function TableRowComPermit({
+  type,
   row,
   selected,
   onEditRow,
@@ -167,7 +168,7 @@ export function TableRowComPermit({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
-          {row.status === 'processing' && (
+          {type === 'agent' && row.status === 'processing' && (
             <MenuItem
               onClick={() => {
                 submitConfirm.onTrue();
@@ -180,7 +181,7 @@ export function TableRowComPermit({
             </MenuItem>
           )}
 
-          {row.status === 'submitted' && (
+          {(type === 'supervisor' || type === 'aguipe') && row.status === 'submitted' && (
             <>
               <MenuItem
                 onClick={() => {
@@ -205,41 +206,45 @@ export function TableRowComPermit({
             </>
           )}
 
-          {row.status === 'validated' && (
+          {type === 'printer' && (
             <>
-              <MenuItem
-                onClick={() => {
-                  printConfirm.onTrue();
-                  popover.onClose();
-                }}
-                sx={{ color: 'success.main' }}
-              >
-                <Iconify icon="mdi:truck-delivery" />
-                imprimer le permis
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  deliverConfirm.onTrue();
-                  popover.onClose();
-                }}
-                sx={{ color: 'success.main' }}
-              >
-                <Iconify icon="mdi:truck-delivery" />
-                délivrer le permis
-              </MenuItem>
+              {row.status === 'validated' && (
+                <MenuItem
+                  onClick={() => {
+                    printConfirm.onTrue();
+                    popover.onClose();
+                  }}
+                  sx={{ color: 'success.main' }}
+                >
+                  <Iconify icon="mdi:truck-delivery" />
+                  imprimer le permis
+                </MenuItem>
+              )}
+              {row.status === 'printed' && (
+                <MenuItem
+                  onClick={() => {
+                    deliverConfirm.onTrue();
+                    popover.onClose();
+                  }}
+                  sx={{ color: 'success.main' }}
+                >
+                  <Iconify icon="mdi:truck-delivery" />
+                  délivrer le permis
+                </MenuItem>
+              )}
             </>
           )}
 
-          {/* <MenuItem
+          <MenuItem
             onClick={() => {
-              confirm.onTrue();
               popover.onClose();
+              onViewRow();
             }}
-            sx={{ color: 'error.main' }}
+            sx={{ color: 'info.main' }}
           >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Supprimer
-          </MenuItem> */}
+            <Iconify icon="solar:eye-bold" />
+            Voir
+          </MenuItem>
         </MenuList>
       </CustomPopover>
 

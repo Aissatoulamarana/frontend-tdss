@@ -87,6 +87,8 @@ export function DeclarationTableRow({
     }
   };
 
+  const type = user?.type_code.toLowerCase().trim();
+
   return (
     <>
       <TableRow
@@ -180,21 +182,19 @@ export function DeclarationTableRow({
             Voir
           </MenuItem>
 
-          {/* {user?.type_name === 'Admin' && ['unsubmitted'].includes(row.status) && ( */}
-          {(user?.type_code === 'agent' || user?.type_code === 'admin') &&
-            ['unsubmitted'].includes(row.status) && (
-              <MenuItem
-                onClick={() => {
-                  onEditRow();
-                  popover.onClose();
-                }}
-              >
-                <Iconify icon="solar:pen-bold" />
-                Modifier
-              </MenuItem>
-            )}
+          {(type === 'agent' || type === 'admin') && ['unsubmitted'].includes(row.status) && (
+            <MenuItem
+              onClick={() => {
+                onEditRow();
+                popover.onClose();
+              }}
+            >
+              <Iconify icon="solar:pen-bold" />
+              Modifier
+            </MenuItem>
+          )}
 
-          {user?.type_code === 'agent' && ['rejected', 'submitted'].includes(row.status) && (
+          {type === 'agent' && ['rejected', 'submitted'].includes(row.status) && (
             <MenuItem
               key="unsubmit"
               onClick={() => {
@@ -207,7 +207,7 @@ export function DeclarationTableRow({
             </MenuItem>
           )}
 
-          {user?.type_code === 'agent' &&
+          {type === 'agent' &&
             !['validated', 'billed', 'rejected', 'submitted'].includes(row.status) && (
               <MenuItem
                 key="submit"
@@ -221,7 +221,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
+          {(type === 'aguipe' || type === 'accountant' || type === 'supervisor') &&
             profil === 'aguipe' &&
             !['validated', 'billed', 'rejected', 'unsubmitted'].includes(row.status) && (
               <MenuItem
@@ -236,7 +236,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )}
 
-          {(user?.type_name === 'Aguipe' || user?.type_name === 'Comptable') &&
+          {(type === 'aguipe' || type === 'accountant') &&
             profil === 'aguipe' &&
             !['rejected', 'billed', 'validated', 'unsubmitted'].includes(row.status) && (
               <MenuItem
@@ -265,7 +265,7 @@ export function DeclarationTableRow({
               </MenuItem>
             )} */}
 
-          {user?.type_name === 'Comptable' &&
+          {type === 'accountant' &&
             !['billed', 'rejected', 'unsublitted', 'submitted'].includes(row.status) && (
               <MenuItem
                 key="facture"

@@ -182,7 +182,11 @@ export function PermitEmployeeDoc({ documents = [], employee, onDocumentUploaded
       handleCloseDialog();
     } catch (error) {
       console.error('Erreur upload:', error);
-      toast.error(error.response?.data?.message || "Erreur lors de l'opération sur le document");
+      const errorMessage =
+        error?.error || error?.details || error?.message || error?.detail || error?.error?.[0];
+      console.error('Erreur réseau ou serveur:', error?.error?.[0]);
+      toast.error(errorMessage);
+      console.error('Erreur réseau ou serveur:', errorMessage);
     } finally {
       setUploading(false);
     }

@@ -50,8 +50,7 @@ import {
 import { TableToolbar } from '../table-filter';
 import { TableFiltersResult } from '../table-filter-result';
 import { TableRowComPermit } from '../permit-employee-table-row';
-import { ca } from 'date-fns/locale';
-import { status } from 'nprogress';
+import { useMockedUser } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -86,6 +85,9 @@ const TABLE_HEAD = [
 
 export function PermitListView() {
   const table = useTable();
+
+  const { user } = useMockedUser();
+  const type = user?.type_code?.toLowerCase().trim();
 
   const router = useRouter();
 
@@ -474,6 +476,7 @@ export function PermitListView() {
                     {/* slug, name, sign, value */}
                     {tableData.map((row) => (
                       <TableRowComPermit
+                        type={type}
                         key={row.slug}
                         row={row}
                         visibleColumns={visibleColumns}

@@ -288,13 +288,6 @@ export function ListPlanAfricanisationView() {
                         selected={table.selected.includes(row.slug)}
                         onSelectRow={() => table.onSelectRow(row.slug)}
                         onViewRow={() => handleViewRow(row.slug)}
-                        // onEditRow={() => handleEditRow(row.slug)}
-                        // onSubmitRow={() => handleSubmitRow(row.slug)}
-                        // onUnSubmitRow={() => handleUnSubmitRow(row.slug)}
-                        // onDeleteRow={() => handleDeleteRow(row.slug)}
-                        // onValidateRow={() => handleValidateRow(row.slug)}
-                        // onFactureRow={() => handleFacturer(row.slug)}
-                        // onRejetRow={(rejectReason) => handleRejetter(row.slug, rejectReason)}
                       />
                     ))}
 
