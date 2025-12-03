@@ -13,7 +13,6 @@ import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid2';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
-import Avatar from '@mui/material/Avatar';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 
@@ -24,93 +23,94 @@ import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
-export function BiometricData({
-  declarationSlug,
-  employeeSlug,
-  picture,
-  signature,
-  fingerprints_picture,
-  onUpdate,
-}) {
-  const [openEdit, setOpenEdit] = useState(false);
+export function BiometricData({ slug, picture, signature, fingerprints_picture, onUpdate }) {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewData, setPreviewData] = useState({ type: '', url: '' });
-  const [loading, setLoading] = useState(false);
-  const [uploadData, setUploadData] = useState({
-    picture: null,
-    signature: null,
-    fingerprints_picture: null,
-  });
-  const [previewUrls, setPreviewUrls] = useState({
-    picture: picture || '',
-    signature: signature || '',
-    fingerprints_picture: fingerprints_picture || '',
-  });
+
+  // États séparés pour chaque type de donnée biométrique
+  const [pictureDialog, setPictureDialog] = useState(false);
+  const [signatureDialog, setSignatureDialog] = useState(false);
+  const [fingerprintsDialog, setFingerprintsDialog] = useState(false);
+
+  const [pictureFile, setPictureFile] = useState(null);
+  const [signatureFile, setSignatureFile] = useState(null);
+  const [fingerprintsFile, setFingerprintsFile] = useState(null);
+
+  const [picturePreview, setPicturePreview] = useState(picture || '');
+  const [signaturePreview, setSignaturePreview] = useState(signature || '');
+  const [fingerprintsPreview, setFingerprintsPreview] = useState(fingerprints_picture || '');
+
+  const [loadingPicture, setLoadingPicture] = useState(false);
+  const [loadingSignature, setLoadingSignature] = useState(false);
+  const [loadingFingerprints, setLoadingFingerprints] = useState(false);
 
   const handleOpenPreview = (type, url) => {
     setPreviewData({ type, url });
     setOpenPreview(true);
   };
 
-  const handleFileChange = (type, file) => {
+  // Fonction générique pour gérer le changement de fichier
+  const handleFileChange = (type, file, setFile, setPreview) => {
     if (file) {
-      setUploadData((prev) => ({ ...prev, [type]: file }));
-      // Créer une URL de prévisualisation
+      setFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewUrls((prev) => ({ ...prev, [type]: reader.result }));
+        setPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSave = useCallback(async () => {
-    setLoading(true);
-    try {
-      const formData = new FormData();
-
-      if (uploadData.picture) {
-        formData.append('picture', uploadData.picture);
-      }
-      if (uploadData.signature) {
-        formData.append('signature', uploadData.signature);
-      }
-      if (uploadData.fingerprints_picture) {
-        formData.append('fingerprints_picture', uploadData.fingerprints_picture);
+  // Fonction générique pour sauvegarder un fichier
+  const handleSaveFile = useCallback(
+    async (fieldName, file, setLoading, setDialog, originalValue) => {
+      if (!file) {
+        toast.warning('Aucun fichier sélectionné');
+        return;
       }
 
-      const response = await axios.patch(
-        API.updatePermit(declarationSlug, employeeSlug),
-        formData,
-        {
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append(fieldName, file);
+
+        const response = await axios.patch(API.updateFile(slug), formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+        });
+
+        toast.success(
+          `${fieldName === 'picture' ? 'Photo' : fieldName === 'signature' ? 'Signature' : 'Empreintes digitales'} mise à jour avec succès`
+        );
+
+        if (onUpdate) {
+          onUpdate(response.data);
         }
-      );
 
-      toast.success('Données biométriques mises à jour avec succès');
-      if (onUpdate) {
-        onUpdate(response.data);
+        setDialog(false);
+
+        // Réinitialiser le fichier après succès
+        if (fieldName === 'picture') setPictureFile(null);
+        if (fieldName === 'signature') setSignatureFile(null);
+        if (fieldName === 'fingerprints_picture') setFingerprintsFile(null);
+      } catch (error) {
+        const errorMessage =
+          error?.response?.data?.message || error?.message || 'Erreur lors de la mise à jour';
+        toast.error(errorMessage);
+
+        // Restaurer l'aperçu original en cas d'erreur
+        if (fieldName === 'picture') setPicturePreview(originalValue);
+        if (fieldName === 'signature') setSignaturePreview(originalValue);
+        if (fieldName === 'fingerprints_picture') setFingerprintsPreview(originalValue);
+      } finally {
+        setLoading(false);
       }
-      setOpenEdit(false);
-      setUploadData({
-        picture: null,
-        signature: null,
-        fingerprints_picture: null,
-      });
-    } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
-        'Erreur lors de la mise à jour des données biométriques';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [declarationSlug, employeeSlug, uploadData, onUpdate]);
+    },
+    [slug, onUpdate]
+  );
 
-  const BiometricCard = ({ type, label, icon, url, color = 'primary' }) => {
+  const BiometricCard = ({ type, label, icon, url, color = 'primary', onEdit }) => {
     const hasData = !!url;
 
     return (
@@ -211,129 +211,188 @@ export function BiometricData({
           )}
 
           {/* Actions */}
-          <Box sx={{ mt: 'auto', width: '100%' }}>
+          <Stack direction="row" spacing={1} sx={{ mt: 'auto', width: '100%' }}>
+            {hasData && (
+              <Button
+                variant="outlined"
+                color={color}
+                fullWidth
+                startIcon={<Iconify icon="mdi:eye" />}
+                onClick={() => handleOpenPreview(label, url)}
+                sx={{ fontWeight: 600 }}
+              >
+                Voir
+              </Button>
+            )}
             <Button
               variant={hasData ? 'outlined' : 'contained'}
               color={color}
               fullWidth
-              startIcon={<Iconify icon={hasData ? 'mdi:eye' : 'mdi:upload'} />}
-              onClick={() => (hasData ? handleOpenPreview(label, url) : setOpenEdit(true))}
+              startIcon={<Iconify icon={hasData ? 'mdi:pencil' : 'mdi:upload'} />}
+              onClick={onEdit}
               sx={{ fontWeight: 600 }}
             >
-              {hasData ? 'Voir' : 'Ajouter'}
+              {hasData ? 'Modifier' : 'Ajouter'}
             </Button>
-          </Box>
+          </Stack>
         </Box>
       </Card>
     );
   };
 
-  const FileUploadBox = ({ type, label, icon, accept = 'image/*' }) => {
-    const currentUrl = previewUrls[type];
-    const hasFile = !!uploadData[type] || !!currentUrl;
+  // Dialog générique pour upload
+  const UploadDialog = ({
+    open,
+    onClose,
+    title,
+    icon,
+    file,
+    preview,
+    originalValue,
+    loading,
+    onFileChange,
+    onSave,
+    onClear,
+  }) => (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography
+            variant="h6"
+            sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}
+          >
+            <Iconify icon={icon} width={24} />
+            {title}
+          </Typography>
+          <IconButton onClick={onClose}>
+            <Iconify icon="mdi:close" />
+          </IconButton>
+        </Box>
+      </DialogTitle>
 
-    return (
-      <Box sx={{ width: '100%' }}>
-        <Typography
-          variant="subtitle2"
-          sx={{
-            fontWeight: 700,
-            mb: 1.5,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
-          <Iconify icon={icon} width={20} />
-          {label}
-        </Typography>
+      <DialogContent dividers>
+        <Stack spacing={3}>
+          <Alert severity="info" icon={<Iconify icon="mdi:information" />}>
+            Formats acceptés: JPG, PNG. Taille maximale: 5MB.
+          </Alert>
 
-        <Box
-          sx={{
-            border: '2px dashed',
-            borderColor: hasFile ? 'primary.main' : 'divider',
-            borderRadius: 2,
-            p: 2,
-            textAlign: 'center',
-            bgcolor: hasFile ? 'primary.lighter' : 'background.neutral',
-            transition: 'all 0.2s',
-            '&:hover': {
-              borderColor: 'primary.main',
-              bgcolor: 'primary.lighter',
-            },
-          }}
-        >
-          {currentUrl ? (
-            <Box sx={{ position: 'relative' }}>
-              <Box
+          <Box
+            sx={{
+              border: '2px dashed',
+              borderColor: preview ? 'primary.main' : 'divider',
+              borderRadius: 2,
+              p: 3,
+              textAlign: 'center',
+              bgcolor: preview ? 'primary.lighter' : 'background.neutral',
+              transition: 'all 0.2s',
+              '&:hover': {
+                borderColor: 'primary.main',
+                bgcolor: 'primary.lighter',
+              },
+            }}
+          >
+            {preview ? (
+              <Box>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: 300,
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    mb: 2,
+                    bgcolor: 'white',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                  }}
+                >
+                  <img
+                    src={preview}
+                    alt={title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain',
+                    }}
+                  />
+                </Box>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<Iconify icon="mdi:image-edit" />}
+                  >
+                    Changer le fichier
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => onFileChange(e.target.files[0])}
+                    />
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    startIcon={<Iconify icon="mdi:delete" />}
+                    onClick={onClear}
+                  >
+                    Supprimer
+                  </Button>
+                </Stack>
+              </Box>
+            ) : (
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<Iconify icon="mdi:cloud-upload" />}
                 sx={{
                   width: '100%',
-                  height: 200,
-                  borderRadius: 1,
-                  overflow: 'hidden',
-                  mb: 2,
-                  bgcolor: 'white',
+                  py: 8,
+                  flexDirection: 'column',
+                  gap: 2,
                 }}
               >
-                <img
-                  src={currentUrl}
-                  alt={label}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                  }}
+                <Iconify icon="mdi:cloud-upload" width={48} sx={{ color: 'text.secondary' }} />
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    Cliquez pour télécharger
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    ou glissez-déposez votre fichier ici
+                  </Typography>
+                </Box>
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => onFileChange(e.target.files[0])}
                 />
-              </Box>
-              <Stack direction="row" spacing={1} justifyContent="center">
-                <Button
-                  variant="outlined"
-                  size="small"
-                  component="label"
-                  startIcon={<Iconify icon="mdi:image-edit" />}
-                >
-                  Changer
-                  <input
-                    type="file"
-                    hidden
-                    accept={accept}
-                    onChange={(e) => handleFileChange(type, e.target.files[0])}
-                  />
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="error"
-                  startIcon={<Iconify icon="mdi:delete" />}
-                  onClick={() => {
-                    setUploadData((prev) => ({ ...prev, [type]: null }));
-                    setPreviewUrls((prev) => ({ ...prev, [type]: '' }));
-                  }}
-                >
-                  Supprimer
-                </Button>
-              </Stack>
-            </Box>
-          ) : (
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<Iconify icon="mdi:cloud-upload" />}
-              sx={{ width: '100%', py: 3 }}
-            >
-              Télécharger {label}
-              <input
-                type="file"
-                hidden
-                accept={accept}
-                onChange={(e) => handleFileChange(type, e.target.files[0])}
-              />
-            </Button>
-          )}
-        </Box>
-      </Box>
-    );
-  };
+              </Button>
+            )}
+          </Box>
+        </Stack>
+      </DialogContent>
+
+      <DialogActions sx={{ p: 3 }}>
+        <Button
+          onClick={() => {
+            onClear();
+            onClose();
+          }}
+          color="inherit"
+        >
+          Annuler
+        </Button>
+        <Button
+          variant="contained"
+          onClick={onSave}
+          disabled={loading || !file}
+          startIcon={loading ? <CircularProgress size={20} /> : <Iconify icon="mdi:content-save" />}
+        >
+          {loading ? 'Enregistrement...' : 'Enregistrer'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 
   return (
     <>
@@ -367,16 +426,6 @@ export function BiometricData({
             <Iconify icon="mdi:fingerprint" width={{ xs: 24, sm: 28 }} />
             Données Biométriques
           </Typography>
-
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Iconify icon="mdi:pencil" />}
-            onClick={() => setOpenEdit(true)}
-            sx={{ fontWeight: 600 }}
-          >
-            Modifier
-          </Button>
         </Box>
 
         <Divider sx={{ mb: 3 }} />
@@ -387,8 +436,9 @@ export function BiometricData({
               type="picture"
               label="Photo"
               icon="mdi:camera"
-              url={picture}
+              url={picturePreview}
               color="primary"
+              onEdit={() => setPictureDialog(true)}
             />
           </Grid>
 
@@ -397,8 +447,9 @@ export function BiometricData({
               type="signature"
               label="Signature"
               icon="mdi:draw"
-              url={signature}
+              url={signaturePreview}
               color="secondary"
+              onEdit={() => setSignatureDialog(true)}
             />
           </Grid>
 
@@ -407,93 +458,105 @@ export function BiometricData({
               type="fingerprints_picture"
               label="Empreintes Digitales"
               icon="mdi:fingerprint"
-              url={fingerprints_picture}
+              url={fingerprintsPreview}
               color="info"
+              onEdit={() => setFingerprintsDialog(true)}
             />
           </Grid>
         </Grid>
 
-        {!picture && !signature && !fingerprints_picture && (
+        {!picturePreview && !signaturePreview && !fingerprintsPreview && (
           <Alert severity="info" sx={{ mt: 3 }}>
             <Typography variant="body2">
-              Aucune donnée biométrique n'a été enregistrée. Cliquez sur "Modifier" pour ajouter les
-              informations.
+              Aucune donnée biométrique n'a été enregistrée. Cliquez sur "Ajouter" pour télécharger
+              les fichiers.
             </Typography>
           </Alert>
         )}
       </Card>
 
-      {/* Dialog de modification */}
-      <Dialog open={openEdit} onClose={() => setOpenEdit(false)} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Modifier les Données Biométriques
-            </Typography>
-            <IconButton onClick={() => setOpenEdit(false)}>
-              <Iconify icon="mdi:close" />
-            </IconButton>
-          </Box>
-        </DialogTitle>
+      {/* Dialog pour Photo */}
+      <UploadDialog
+        open={pictureDialog}
+        onClose={() => setPictureDialog(false)}
+        title="Photo d'Identité"
+        icon="mdi:camera"
+        file={pictureFile}
+        preview={picturePreview}
+        originalValue={picture}
+        loading={loadingPicture}
+        onFileChange={(file) =>
+          handleFileChange('picture', file, setPictureFile, setPicturePreview)
+        }
+        onSave={() =>
+          handleSaveFile('picture', pictureFile, setLoadingPicture, setPictureDialog, picture)
+        }
+        onClear={() => {
+          setPictureFile(null);
+          setPicturePreview(picture || '');
+        }}
+      />
 
-        <DialogContent dividers>
-          <Stack spacing={3}>
-            <Alert severity="info" icon={<Iconify icon="mdi:information" />}>
-              Formats acceptés: JPG, PNG, PDF. Taille maximale: 5MB par fichier.
-            </Alert>
+      {/* Dialog pour Signature */}
+      <UploadDialog
+        open={signatureDialog}
+        onClose={() => setSignatureDialog(false)}
+        title="Signature"
+        icon="mdi:draw"
+        file={signatureFile}
+        preview={signaturePreview}
+        originalValue={signature}
+        loading={loadingSignature}
+        onFileChange={(file) =>
+          handleFileChange('signature', file, setSignatureFile, setSignaturePreview)
+        }
+        onSave={() =>
+          handleSaveFile(
+            'signature',
+            signatureFile,
+            setLoadingSignature,
+            setSignatureDialog,
+            signature
+          )
+        }
+        onClear={() => {
+          setSignatureFile(null);
+          setSignaturePreview(signature || '');
+        }}
+      />
 
-            <FileUploadBox
-              type="picture"
-              label="Photo d'Identité"
-              icon="mdi:camera"
-              accept="image/*"
-            />
-
-            <FileUploadBox type="signature" label="Signature" icon="mdi:draw" accept="image/*" />
-
-            <FileUploadBox
-              type="fingerprints_picture"
-              label="Empreintes Digitales"
-              icon="mdi:fingerprint"
-              accept="image/*"
-            />
-          </Stack>
-        </DialogContent>
-
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            onClick={() => {
-              setOpenEdit(false);
-              setUploadData({
-                picture: null,
-                signature: null,
-                fingerprints_picture: null,
-              });
-              setPreviewUrls({
-                picture: picture || '',
-                signature: signature || '',
-                fingerprints_picture: fingerprints_picture || '',
-              });
-            }}
-            color="inherit"
-          >
-            Annuler
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            disabled={
-              loading ||
-              (!uploadData.picture && !uploadData.signature && !uploadData.fingerprints_picture)
-            }
-            startIcon={
-              loading ? <CircularProgress size={20} /> : <Iconify icon="mdi:content-save" />
-            }
-          >
-            {loading ? 'Enregistrement...' : 'Enregistrer'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Dialog pour Empreintes */}
+      <UploadDialog
+        open={fingerprintsDialog}
+        onClose={() => setFingerprintsDialog(false)}
+        title="Empreintes Digitales"
+        icon="mdi:fingerprint"
+        file={fingerprintsFile}
+        preview={fingerprintsPreview}
+        originalValue={fingerprints_picture}
+        loading={loadingFingerprints}
+        onFileChange={(file) =>
+          handleFileChange(
+            'fingerprints_picture',
+            file,
+            setFingerprintsFile,
+            setFingerprintsPreview
+          )
+        }
+        onSave={() =>
+          handleSaveFile(
+            'fingerprints_picture',
+            fingerprintsFile,
+            setLoadingFingerprints,
+            setFingerprintsDialog,
+            fingerprints_picture
+          )
+        }
+        onClear={() => {
+          setFingerprintsFile(null);
+          setFingerprintsPreview(fingerprints_picture || '');
+        }}
+      />
 
       {/* Dialog de prévisualisation */}
       <Dialog open={openPreview} onClose={() => setOpenPreview(false)} maxWidth="md" fullWidth>

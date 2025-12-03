@@ -280,7 +280,7 @@ export function DeclarationToolbar({
             </Tooltip>
           )}
 
-          {(type === 'aguipe' || type === 'comptable') && currentStatus === 'submitted' && (
+          {(type === 'aguipe' || type === 'accountant') && currentStatus === 'submitted' && (
             <>
               <Tooltip title="Valider">
                 <IconButton onClick={() => validateConfirm.onTrue()}>
@@ -296,7 +296,7 @@ export function DeclarationToolbar({
             </>
           )}
 
-          {type === 'comptable' && currentStatus === 'validated' && (
+          {type === 'accountant' && currentStatus === 'validated' && (
             <Tooltip title="Facturer">
               <IconButton onClick={() => factureConfirm.onTrue()}>
                 <Iconify icon="mdi:credit-card" />

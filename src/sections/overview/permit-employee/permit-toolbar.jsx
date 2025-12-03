@@ -62,7 +62,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
 
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
   const [motifRejet, setMotifRejet] = useState('');
-  const [error, setError] = useState(null);
+  const [errors, setError] = useState(null);
 
   const componentRef = useRef(null);
 
@@ -194,8 +194,10 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         toast.error('Une erreur est survenue lors de la communication avec le serveur.');
       }
     } catch (error) {
-      toast.error('Une erreur est survenue lors de la communication avec le serveur.');
-      console.error(error);
+      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      setError(errorMessage);
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error(errorMessage);
     }
   }, [permit?.slug]);
 
@@ -217,12 +219,21 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
               onPrint={handlePrintPermis}
             />
           </Box>
+          {(type === 'printer' || type === 'admin') && (
+            <Tooltip title="Imprimer">
+              <IconButton onClick={handlePrint}>
+                <Iconify icon="solar:printer-minimalistic-bold" />
+              </IconButton>
+            </Tooltip>
+          )}
 
-          <Tooltip title="Imprimer">
-            <IconButton onClick={handlePrint}>
-              <Iconify icon="solar:printer-minimalistic-bold" />
-            </IconButton>
-          </Tooltip>
+          {type === 'printer' && currentStatus === 'printed' && (
+            <Tooltip title="Delivrer">
+              <IconButton onClick={() => deliverConfirm.onTrue()}>
+                <Iconify icon="solar:send-square-bold" />
+              </IconButton>
+            </Tooltip>
+          )}
 
           {type === 'agent' && (currentStatus === 'rejected' || currentStatus === 'submitted') && (
             <Tooltip title="Mettre en edition">
@@ -240,7 +251,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
             </Tooltip>
           )}
 
-          {(type === 'aguipe' || type === 'comptable') && currentStatus === 'submitted' && (
+          {(type === 'aguipe' || type === 'supervisor') && currentStatus === 'submitted' && (
             <>
               <Tooltip title="Valider">
                 <IconButton onClick={() => validateConfirm.onTrue()}>
@@ -255,14 +266,6 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
               </Tooltip>
             </>
           )}
-
-          {currentStatus === 'validated' && (
-            <Tooltip title="Facturer">
-              <IconButton onClick={() => factureConfirm.onTrue()}>
-                <Iconify icon="mdi:credit-card" />
-              </IconButton>
-            </Tooltip>
-          )}
         </Stack>
       </Stack>
 
@@ -271,7 +274,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         open={submitConfirm.value}
         onClose={submitConfirm.onFalse}
         title="Soumission "
-        content="Voulez-vous vraiment soumettre cette déclaration ?"
+        content="Voulez-vous vraiment soumettre cet permis ?"
         action={
           <Button
             variant="contained"
@@ -310,7 +313,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         open={validateConfirm.value}
         onClose={validateConfirm.onFalse}
         title="Validation"
-        content="Voulez-vous vraiment valider cette déclaration ?"
+        content="Voulez-vous vraiment valider cet permis ?"
         action={
           <Button
             variant="contained"

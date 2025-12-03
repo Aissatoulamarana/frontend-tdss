@@ -42,7 +42,7 @@ const fixedCategories = [
   { label: 'Ouvrier', value: 'Ouvrier' },
 ];
 
-const FilteredTable = ({ declaration, printMode = false }) => {
+const FilteredTable = ({ declaration, printMode = false, user }) => {
   const [selected, setSelected] = useState([]);
   const [filter, setFilter] = useState('All');
   const [dense, setDense] = useState(false);
@@ -100,7 +100,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
     setPage(0);
   };
 
- const handleViewDetailsEmploye = (employee) => {
+  const handleViewDetailsEmploye = (employee) => {
     const employeeSlug = employee?.employee_slug || employee?.slug;
 
     if (!employeeSlug) {
@@ -126,8 +126,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           .filter((d) => d.reference !== declaration?.reference)
           .map((declaration) => ({
             value: declaration?.reference,
-           label: `${declaration?.number ?? ''} - ${declaration?.company ?? ''} `,
-
+            label: `${declaration?.number ?? ''} - ${declaration?.company ?? ''} `,
           }));
         setOptions(declarations);
       } catch (error) {
@@ -387,7 +386,7 @@ const FilteredTable = ({ declaration, printMode = false }) => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                {declaration?.status === 'unsubmitted' && (
+                {user?.type_code === 'admin' && declaration?.status === 'unsubmitted' && (
                   <Checkbox
                     indeterminate={selected?.length > 0 && selected?.length < rows?.length}
                     checked={rows?.length > 0 && selected.length === rows?.length}
@@ -407,8 +406,13 @@ const FilteredTable = ({ declaration, printMode = false }) => {
               // ?.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <React.Fragment key={`${row?.id}-${row?.slug}`}>
-                  <TableRow hover selected={isSelected(row?.slug)} onClick={() =>handleViewDetailsEmploye(row)} style={{ cursor: 'pointer' }}>
-                    <TableCell padding="checkbox" >
+                  <TableRow
+                    hover
+                    selected={isSelected(row?.slug)}
+                    onClick={() => handleViewDetailsEmploye(row)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <TableCell padding="checkbox">
                       {declaration?.status === 'unsubmitted' && (
                         <Checkbox
                           color="primary"

@@ -85,7 +85,7 @@ export function DeclarationListView() {
 
   const { user } = useMockedUser();
 
-  const type_user = user?.type_name?.toLowerCase().trim();
+  const type_user = user?.type_code?.toLowerCase().trim();
 
   // console.log('type_user:', type_user);
 
@@ -231,7 +231,7 @@ export function DeclarationListView() {
     admin: ['all', 'submitted', 'validated', 'billed', 'unsubmitted', 'rejected'],
     agent: ['all', 'submitted', 'validated', 'unsubmitted', 'rejected'],
     aguipe: ['all', 'submitted', 'rejected'],
-    comptable: ['all', 'billed', 'validated'],
+    accountant: ['all', 'billed', 'validated'],
     default: ['all'],
   };
 
@@ -239,7 +239,7 @@ export function DeclarationListView() {
     admin: ['all', 'submitted', 'validated', 'billed'],
     agent: ['all', 'submitted', 'validated', 'unsubmitted'],
     aguipe: ['all', 'submitted', 'rejected'],
-    comptable: ['all', 'billed', 'validated'],
+    accountant: ['all', 'billed', 'validated'],
     default: ['all'],
   };
 
@@ -983,7 +983,7 @@ export function DeclarationListView() {
               action={
                 <Stack direction="row">
                   {/* telecharger toutes les declarations en un seul fichier */}
-                  {type_user === 'comptable' && (
+                  {type_user === 'accountant' && (
                     <Tooltip title="Facturer">
                       <IconButton
                         color="primary"
