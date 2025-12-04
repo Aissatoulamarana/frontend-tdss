@@ -512,7 +512,7 @@ export function DeclarationNewEditDetails({ formData }) {
                 size="small"
                 type="number"
                 name={`employees[${index}].contract_duration`}
-                label="Durée Contrat (année)"
+                label="Durée Contrat (mois)"
                 inputlabelprops={{ shrink: true }}
                 disabled={values.employees[index].locked}
                 sx={{ flex: 1 }}

@@ -622,7 +622,7 @@ export function AfricanizationPlanDetails({ slug }) {
                   label="Durée du Contrat"
                   value={
                     plan.expatriate_info.contract_duration
-                      ? `${plan.expatriate_info.contract_duration} an${plan.expatriate_info.contract_duration > 1 ? 's' : ''}`
+                      ? `${plan.expatriate_info.contract_duration} mois `
                       : 'N/A'
                   }
                 />

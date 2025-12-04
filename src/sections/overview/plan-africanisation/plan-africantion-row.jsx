@@ -21,6 +21,10 @@ import { Label } from 'src/components/label';
 
 export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
   // Handler pour le rejet, après validation du motif
+  const popover = usePopover();
+
+  const deleteConfirm = useBoolean();
+  const [motifRejet, setMotifRejet] = useState('');
 
   const statusLabels = {
     unsubmitted: 'Non soumise',
@@ -154,7 +158,7 @@ export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
       </CustomPopover>
 
       {/* Boîte de dialogue de confirmation pour la suppression */}
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={deleteConfirm.value}
         onClose={deleteConfirm.onFalse}
         title="Supprimer"
@@ -171,10 +175,10 @@ export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
             Supprimer
           </Button>
         }
-      />
+      /> */}
 
       {/* Exemple de boîte de dialogue de confirmation pour la non-soumission */}
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={unsubmitConfirm.value}
         onClose={unsubmitConfirm.onFalse}
         title="Remettre le statut à non-soumise"
@@ -191,10 +195,10 @@ export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
             Oui
           </Button>
         }
-      />
+      /> */}
 
       {/* Exemple de boîte de dialogue de confirmation pour la soumission */}
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={submitConfirm.value}
         onClose={submitConfirm.onFalse}
         title="Soumission"
@@ -211,9 +215,9 @@ export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
             Soumettre
           </Button>
         }
-      />
+      /> */}
       {/* Exemple de boîte de dialogue de confirmation pour la soumission */}
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={unsubmitConfirm.value}
         onClose={unsubmitConfirm.onFalse}
         title="Mettre en édition"
@@ -230,10 +234,10 @@ export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
             Oui
           </Button>
         }
-      />
+      /> */}
 
       {/* Exemple de boîte de dialogue de confirmation pour la validation */}
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={validateConfirm.value}
         onClose={validateConfirm.onFalse}
         title="Valider"
@@ -250,57 +254,8 @@ export function PlanTableRow({ row, user, selected, onSelectRow, onViewRow }) {
             Valider
           </Button>
         }
-      />
+      /> */}
       {/* Exemple de boîte de dialogue de confirmation pour la facturation */}
-      <ConfirmDialog
-        open={factureConfirm.value}
-        onClose={factureConfirm.onFalse}
-        title="Facturer"
-        content="Voulez-vous vraiment facturer cette déclaration ?"
-        action={
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              factureConfirm.onFalse();
-              onFactureRow();
-            }}
-          >
-            Facturer
-          </Button>
-        }
-      />
-      {/* Dialogue personnalisé pour le rejet avec motif */}
-      <ConfirmDialog
-        open={openRejetDialog}
-        onClose={() => setOpenRejetDialog(false)}
-        title="Rejeter"
-        content={
-          <TextField
-            fullWidth
-            label="Motif du rejet"
-            multiline
-            rows={3}
-            value={motifRejet}
-            onChange={(e) => setMotifRejet(e.target.value)}
-          />
-        }
-        action={
-          <Button
-            variant="contained"
-            color="error"
-            disabled={!motifRejet.trim()}
-            onClick={() => {
-              // On passe le motif au parent via onRejetRow
-              onRejetRow(motifRejet);
-              setMotifRejet('');
-              setOpenRejetDialog(false);
-            }}
-          >
-            Rejeter
-          </Button>
-        }
-      />
     </>
   );
 }
