@@ -20,6 +20,16 @@ import { Iconify } from 'src/components/iconify';
 const CARD_FRONT_BG = '/assets/images/permit/carte-recto.png';
 const CARD_BACK_BG = '/assets/images/permit/carte-verso.png';
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function WorkPermitCard({ permit, onClose, open, onPrint }) {
   const [flipped, setFlipped] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -50,9 +60,20 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
     // Le QR code est déjà généré via useEffect
   };
 
-  const handlePrintClick = () => {
-    onPrint();
-    setOpenPrintDialog(true);
+  const handlePrintClick = async () => {
+    try {
+      const ok = await onPrint?.();
+
+      if (ok) {
+        onClose?.();
+        setOpenPrintDialog(true);
+      } else {
+        onClose?.();
+      }
+    } catch (error) {
+      console.error('Erreur lors du print click:', err);
+      onClose?.();
+    }
   };
 
   const handleConfirmPrint = () => {
@@ -174,15 +195,28 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   function createLabelValueHTML(label, value, options = {}) {
     const {
-      labelSize = 1.8, // taille du label en mm
-      valueSize = 2.5, // taille de la valeur en mm
-      labelWeight = 400, // épaisseur du texte du label
-      valueWeight = 700, // épaisseur du texte de la valeur
-      marginBottom = 1, // espace vertical entre lignes
-      uppercase = true, // mettre la valeur en majuscules
+      labelSize = 1.8,
+      valueSize = 2.5,
+      labelWeight = 400,
+      valueWeight = 700,
+      marginBottom = 1,
+      uppercase = true,
     } = options;
 
     const displayValue = (value && (uppercase ? String(value).toUpperCase() : value)) || 'N/A';
+
+    // On applique le style max-width SEULEMENT pour FONCTION et ADRESSE
+    const shouldLimit =
+      label.trim().toUpperCase() === 'FONCTION' || label.trim().toUpperCase() === 'ADRESSE';
+
+    const limitedStyle = shouldLimit
+      ? `
+        max-width: 30mm;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      `
+      : ''; // pas de limitation pour les autres
 
     return `
     <div style="
@@ -197,6 +231,9 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         font-size: ${valueSize}mm;
         font-weight: ${valueWeight};
         letter-spacing: 0.1mm;
+        vertical-align: middle;
+        display: inline-block;
+        ${limitedStyle}
       ">
         ${displayValue}
       </span>
@@ -213,8 +250,8 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           <!-- Photo - Position absolue en haut à gauche -->
           <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
-              permit?.photo
-                ? `<img src="${permit.photo}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
+              permit?.picture
+                ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
                 : '<div style="color: #999; font-size: 2.5mm;">PHOTO</div>'
             }
           </div>
@@ -280,7 +317,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           ${createLabelValueHTML('EMPLOYEUR', permit?.company_name || 'N/A')}
 
             <!-- ADRESSE EMPLOYEUR -->
-            ${createLabelValueHTML('ADRESSE', permit?.company_address || 'N/A')}
+            ${createLabelValueHTML('ADRESSE', permit?.company_address || 'Camayenne, Commune de Dixin')}
 
             <!-- FONCTION -->
            ${createLabelValueHTML('FONCTION ', permit?.job?.name || 'N/A')}
@@ -301,8 +338,8 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           <!-- Photo miniature en haut à droite -->
           <div style="position: absolute; top: 7mm; right: 27.5mm; width: 8mm; height: 12mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
-              permit?.photo
-                ? `<img src="${permit.photo}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
+              permit?.picture
+                ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
                 : '<div style="color: #999; font-size: 2mm;">PHOTO</div>'
             }
           </div>
@@ -351,11 +388,24 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   const LabelValue = ({ label, value }) => {
     return (
-      <Typography sx={{ color: '#000', lineHeight: 1, mb: 0.3 }}>
+      <Typography sx={{ color: '#000', lineHeight: 1, mb: 0.3, width: '100%' }}>
         <Box component="span" sx={{ fontSize: '0.6rem', mr: 0.5 }}>
           {label} :
         </Box>
-        <Box component="span" sx={{ fontSize: '0.7rem', fontWeight: 700 }}>
+        <Box
+          component="span"
+          sx={{
+            fontSize: '0.7rem',
+            fontWeight: 700,
+            display: 'inline-block',
+            maxWidth: 'calc(100% - 120px)', // ajuste selon l'espace disponible
+            verticalAlign: 'middle',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+          title={value}
+        >
           {value || 'N/A'}
         </Box>
       </Typography>
@@ -421,9 +471,9 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             justifyContent: 'center',
           }}
         >
-          {permit?.photo ? (
+          {permit?.picture ? (
             <img
-              src={permit.photo}
+              src={permit.picture}
               alt={`${permit?.first} ${permit?.last}`}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
@@ -454,30 +504,32 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             position: 'absolute',
             top: '52mm',
             bottom: '4mm',
-            left: '4mm',
+            left: '5mm',
             right: '10mm',
             border: '1px solid #999',
             width: '24mm',
             height: '8mm',
           }}
         >
-          <Typography sx={{ fontSize: '0.5rem', color: '#000', mb: 0.5 }}>
-            SIGNATURE TITULAIRE
-          </Typography>
           <Box
             sx={{
               height: 30,
               // border: '1px solid #999',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
-            {permit?.signature && (
+            {permit?.signature ? (
               <img
                 src={permit.signature}
                 alt="signature"
-                style={{ height: '100%', objectFit: 'contain' }}
+                style={{ height: '100%', objectFit: 'contain', alignSelf: 'center' }}
               />
+            ) : (
+              <Typography sx={{ fontSize: '0.5rem', color: '#000', mb: 0.5 }}>
+                SIGNATURE TITULAIRE
+              </Typography>
             )}
           </Box>
         </Box>
@@ -539,9 +591,9 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             overflow: 'hidden',
           }}
         >
-          {permit?.photo ? (
+          {permit?.picture ? (
             <img
-              src={permit.photo}
+              src={permit.picture}
               alt="Photo"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
@@ -755,7 +807,6 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             variant="contained"
             startIcon={<Iconify icon="mdi:printer" />}
             onClick={() => {
-              onClose();
               handlePrintClick();
             }}
           >
