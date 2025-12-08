@@ -93,6 +93,15 @@ export function useNavData() {
                 path: paths.dashboard.declaration.list,
                 icon: ICONS.declaration,
               },
+            ]
+          : []),
+
+        ...(type === 'agent' ||
+        type === 'admin' ||
+        type === 'aguipe' ||
+        type === 'supervisor' ||
+        type === 'printer'
+          ? [
               {
                 title: 'Permits',
                 path: paths.dashboard.permit.root,
@@ -105,6 +114,7 @@ export function useNavData() {
               },
             ]
           : []),
+
         ...(type === 'accountant' ||
         type === 'treasurer' ||
         type === 'admin' ||
