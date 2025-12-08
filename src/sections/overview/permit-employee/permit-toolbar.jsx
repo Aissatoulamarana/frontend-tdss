@@ -188,13 +188,20 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
 
       const response = await axios.post(API.printPermis(), payload);
 
-      if (response.data) {
-        toast.success('Permis imprimé avec succès');
+      if (response.data || response?.status === 201 || response?.status === 200) {
+        toast.success('Permis imprimé avec succès ');
+        return true;
       } else {
         toast.error('Une erreur est survenue lors de la communication avec le serveur.');
+        return false;
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        'Une erreur est survenue lors de la communication avec le serveur.';
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
