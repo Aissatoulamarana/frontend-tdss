@@ -143,7 +143,7 @@ export function ClientNewEditForm({ currentClient }) {
       const formData = new FormData();
 
       // Ajout des champs du profil
-      ['name', 'description', 'type', 'email', 'contact', 'adresse', 'location', 'picture'].forEach(
+      ['name', 'sigle', 'description', 'type', 'email', 'contact', 'adresse', 'location', 'picture'].forEach(
         (key) => {
           if (profileData[key]) {
             formData.append(key, profileData[key]);
