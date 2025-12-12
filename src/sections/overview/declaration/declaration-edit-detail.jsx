@@ -66,6 +66,7 @@ export function DeclarationNewEditDetails({ formData }) {
       address: '',
       sexe: '',
       birthday: '',
+      birth_place: '',
       contract_starts_at: '',
       contract_duration: '',
       locked: false,
@@ -251,6 +252,7 @@ export function DeclarationNewEditDetails({ formData }) {
         email: row?.Email || '',
         sexe: row?.Sexe || '',
         birthday: row?.Date_Naissance || '',
+        birth_place: row?.Lieu_Naissance || '',
         contract_duration: row?.Duree_Contrat || '',
         contract_starts_at: row?.Date_Debut_Contrat || '',
       };
@@ -274,6 +276,7 @@ export function DeclarationNewEditDetails({ formData }) {
         Email: row?.Email || '',
         Sexe: row?.Sexe || '',
         Date_Naissance: row?.Date_Naissance || '',
+        Lieu_Naissance: row?.Lieu_Naissance || '',
         Duree_Contrat: row?.Duree_Contrat || '',
         Date_Debut_Contrat: row?.Date_Debut_Contrat || '',
       }));
@@ -460,6 +463,16 @@ export function DeclarationNewEditDetails({ formData }) {
                       fullWidth: true,
                     },
                   }}
+                />
+              </Box>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Field.Text
+                  size="small"
+                  name={`employees[${index}].birth_place`}
+                  label="Lieu de Naissance"
+                  inputlabelprops={{ shrink: true }}
+                  disabled={values.employees[index]?.locked}
+                  sx={{ flex: 1 }}
                 />
               </Box>
             </Stack>

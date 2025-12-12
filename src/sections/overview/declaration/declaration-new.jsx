@@ -41,6 +41,7 @@ export const NewInvoiceSchema = zod.object({
 
       sexe: zod.string().optional(),
       birthday: zod.union([zod.string().length(0), zod.string().date()]).optional(),
+      birth_place: zod.string().optional(),
 
       contract_starts_at: zod.union([zod.string().length(0), zod.string().date()]).optional(),
       contract_duration: zod
@@ -80,6 +81,7 @@ export function DeclarationNew({ declaration, type, formData }) {
                 email: '',
                 identifier: '',
                 birthday: '',
+                birth_place: '',
                 contract_starts_at: '',
                 contract_duration: 0,
                 country: '',
@@ -127,6 +129,7 @@ export function DeclarationNew({ declaration, type, formData }) {
         toast.success('Mise à jour réussie!');
       } else {
         // Créer une nouvelle déclaration
+        // console.log('DATA', data);
         response = await axios.post(API.createDeclaration(), data, {
           headers: { 'Content-Type': 'application/json' },
         });
