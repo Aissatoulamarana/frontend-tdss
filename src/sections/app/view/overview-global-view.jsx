@@ -17,9 +17,7 @@ import Loading from 'src/app/dashboard/loading';
 export function OverviewGlobalView() {
   const { user } = useMockedUser();
 
-  const type = user?.type_name.toLowerCase().trim();
-
-
+  const type = user?.type_code.toLowerCase().trim();
 
   // Rendu conditionnel basé sur le type d'utilisateur
   const renderView = () => {
@@ -28,11 +26,11 @@ export function OverviewGlobalView() {
         return <OverviewAppView />;
       case 'agent':
         return <AgentAppView />;
-      case 'superviseur':
+      case 'supervisor':
         return <SuperviserAppView />;
-      case 'comptable':
+      case 'accountant':
         return <ComptableAppView />;
-      case 'caissier':
+      case 'treasurer':
         return <CaissierAppView />;
       case 'aguipe':
         return <AguipeAppView />;
@@ -41,9 +39,5 @@ export function OverviewGlobalView() {
     }
   };
 
-  return (
-    <DashboardContent maxWidth="xl">
-      {renderView()}
-    </DashboardContent>
-  );
+  return <DashboardContent maxWidth="xl">{renderView()}</DashboardContent>;
 }

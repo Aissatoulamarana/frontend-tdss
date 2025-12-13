@@ -12,6 +12,7 @@ import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
 import Tabs from '@mui/material/Tabs';
+import { useMockedUser } from 'src/auth/hooks';
 
 import { EmployeeCover } from '../../employee/employee-cover';
 
@@ -53,7 +54,8 @@ const TABS_PERMITS = [
 
 export function PermitDetailView({ slug }) {
   const tabs = useTabs('info');
-
+  const { user } = useMockedUser();
+  const type = user?.type_code?.toLowerCase().trim();
   const [loading, setLoading] = useState(true);
 
   const [permit, setPermit] = useState();
@@ -191,6 +193,7 @@ export function PermitDetailView({ slug }) {
         <PlanAfricanisation
           info={permit?.africanization_plan}
           employeeId={permit?.slug}
+          type={type}
           employeeName={`${permit?.first} ${permit?.last}`}
           isExpatriate={
             permit &&

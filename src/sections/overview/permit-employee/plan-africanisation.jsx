@@ -30,6 +30,7 @@ export function PlanAfricanisation({
   isExpatriate,
   permitExpiryDate,
   onUpdate,
+  type,
 }) {
   const fileRef = useRef(null);
   const router = useRouter();
@@ -299,13 +300,15 @@ export function PlanAfricanisation({
               title="Plan d’Africanisation"
               subheader={`Gestion des assistants guinéens pour ${employeeName}`}
               action={
-                <Button
-                  variant="contained"
-                  startIcon={<Iconify icon="eva:plus-fill" />}
-                  onClick={handleOpenCreate}
-                >
-                  Ajouter un plan
-                </Button>
+                (type === 'aguipe' || type === 'agent') && (
+                  <Button
+                    variant="contained"
+                    startIcon={<Iconify icon="eva:plus-fill" />}
+                    onClick={handleOpenCreate}
+                  >
+                    Ajouter un plan
+                  </Button>
+                )
               }
             />
             <CardContent>
@@ -374,10 +377,13 @@ export function PlanAfricanisation({
                     },
                   }}
                 />
-                <Button variant="contained" onClick={handleOpenEdit}>
-                  <Iconify icon="mdi:edit" width={20} sx={{ mr: 0.5 }} />
-                  Modifier
-                </Button>
+                {type === 'aguipe' ||
+                  (type === 'agent' && (
+                    <Button variant="contained" onClick={handleOpenEdit}>
+                      <Iconify icon="mdi:edit" width={20} sx={{ mr: 0.5 }} />
+                      Modifier
+                    </Button>
+                  ))}
               </Stack>
             </Box>
 
