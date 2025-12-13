@@ -181,7 +181,7 @@ export function TableRowComPermit({
             </MenuItem>
           )}
 
-          {(type === 'supervisor' || type === 'aguipe') && row.status === 'submitted' && (
+          {type === 'supervisor' && row.status === 'submitted' && (
             <>
               <MenuItem
                 onClick={() => {

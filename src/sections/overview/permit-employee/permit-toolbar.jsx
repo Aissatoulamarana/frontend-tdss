@@ -258,7 +258,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
             </Tooltip>
           )}
 
-          {(type === 'aguipe' || type === 'supervisor') && currentStatus === 'submitted' && (
+          {type === 'supervisor' && currentStatus === 'submitted' && (
             <>
               <Tooltip title="Valider">
                 <IconButton onClick={() => validateConfirm.onTrue()}>
