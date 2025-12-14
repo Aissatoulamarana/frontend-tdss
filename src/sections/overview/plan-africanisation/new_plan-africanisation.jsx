@@ -49,19 +49,17 @@ const documentSchema = (isEdit = false) =>
       : z.string().min(1, 'Le nom du plan est requis'),
     file: isEdit ? z.any().optional() : schemaHelper.file(),
     description: z.string().optional(),
-    expiry_date: isEdit
-      ? z.string().optional()
-      : z.string().date({ required_error: 'La date d’expiration est requise' }),
+    expiry_date: isEdit ? z.string().optional() : z.string().date().optional(),
 
     first_name: z.string().min(1, 'Le prénom est requis'),
     last_name: z.string().min(1, 'Le nom de famille est requis'),
     birth_date: z.union([z.string().length(0), z.string().date()]),
 
-    birth_place: z.string().min(1, 'Le lieu de naissance est requis'),
-    residence: z.string().min(1, 'La résidence est requise'),
+    birth_place: z.string().optional(),
+    residence: z.string().optional(),
     phone_number: schemaHelper.phoneNumber({ isValidPhoneNumber }),
     email: z.string().email('Adresse e-mail invalide'),
-    identity_card_number: z.string().min(1, "Le numéro de carte d'identité est requis"),
+    identity_card_number: z.string().optional(),
     identity_card_scan: isEdit ? z.any().optional() : schemaHelper.file(),
     hire_date: z.union([z.string().length(0), z.string().date()]),
     contract_scan: isEdit ? z.any().optional() : schemaHelper.file(),
