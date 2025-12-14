@@ -386,13 +386,14 @@ const FilteredTable = ({ declaration, printMode = false, user }) => {
           <TableHead>
             <TableRow>
               <TableCell padding="checkbox">
-                {user?.type_code === 'admin' && declaration?.status === 'unsubmitted' && (
-                  <Checkbox
-                    indeterminate={selected?.length > 0 && selected?.length < rows?.length}
-                    checked={rows?.length > 0 && selected.length === rows?.length}
-                    onChange={handleSelectAllClick}
-                  />
-                )}
+                {(user?.type_code === 'admin' || user?.type_code === 'agent') &&
+                  declaration?.status === 'unsubmitted' && (
+                    <Checkbox
+                      indeterminate={selected?.length > 0 && selected?.length < rows?.length}
+                      checked={rows?.length > 0 && selected.length === rows?.length}
+                      onChange={handleSelectAllClick}
+                    />
+                  )}
               </TableCell>
               <TableCell>Numéro du passeport</TableCell>
               <TableCell>Nom & Prénom</TableCell>

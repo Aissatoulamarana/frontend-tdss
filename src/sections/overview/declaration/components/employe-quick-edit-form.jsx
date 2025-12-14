@@ -22,6 +22,7 @@ import API from 'src/utils/api';
 import axios from 'src/utils/axios';
 
 import { useMockedUser } from 'src/auth/hooks';
+import { set } from 'nprogress';
 
 // ----------------------------------------------------------------------
 
@@ -110,9 +111,23 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
           const resp2 = await axios.get(API.listCountry(), {
             params: { offset: 0, limit: total },
           });
-          if (isMounted) setCountries(resp2.data.results);
+          if (isMounted) {
+            const results = resp2.data.results;
+            const Options = results.map((country) => ({
+              label: country.name,
+              value: country.slug,
+            }));
+            setCountries(Options);
+          }
         } else {
-          if (isMounted) setCountries(resp1.data.results);
+          if (isMounted) {
+            const results = resp1.data.results;
+            const Options = results.map((country) => ({
+              label: country.name,
+              value: country.slug,
+            }));
+            setCountries(Options);
+          }
         }
       } catch (error) {
         console.error('Erreur lors du chargement des pays :', error);
@@ -346,7 +361,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
   const currentJobOption = options.find((option) => option.value === currentJobValue);
 
   const currentCountrySlug = watch('country');
-  const currentCountryOption = countries.find((c) => c.slug === currentCountrySlug) || null;
+  const currentCountryOption = countries.find((c) => c.value === currentCountrySlug) || null;
 
   return (
     <Dialog
@@ -369,7 +384,7 @@ export function EmployeeQuickEditForm({ currentEmployee, open, onClose, onUpdate
           >
             <Autocomplete
               options={countries}
-              getOptionLabel={(option) => option.name}
+              getOptionLabel={(option) => option.label}
               value={currentCountryOption || null}
               filterOptions={(opts, state) =>
                 opts.filter((o) =>
