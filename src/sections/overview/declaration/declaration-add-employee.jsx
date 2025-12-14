@@ -311,6 +311,14 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
     renewalModal.onTrue(); // Ouvre la modale
   };
 
+  const mapCountryNameToSlug = (countryName) => {
+    if (!countryName) return '';
+
+    const foundByName = countries.find((c) => c.name?.toLowerCase() === countryName.toLowerCase());
+
+    return foundByName?.slug || '';
+  };
+
   const handleConfirmRenew = async () => {
     try {
       const response = await axios.get(API.searchPassport(passportInput));
@@ -329,7 +337,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         type: 'renewal',
         reference: data.reference,
         job: data.job.slug, // champ libre
-        country: data?.country,
+        country: mapCountryNameToSlug(data?.country),
         sexe: data?.sexe,
         email: data?.email,
         birthday: data?.birthday,
@@ -422,8 +430,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
       })();
 
       const countrySlug = (() => {
-        const findByValue = countries.find((c) => c.slug === row.Nationalite);
-        const findByLabel = countries.find((c) => c.name === row.Nationalite);
+        const findByValue = countries.find((c) => c.slug === row.country);
+        const findByLabel = countries.find((c) => c.name === row.country);
         return findByValue?.slug || findByLabel?.slug || '';
       })();
 
