@@ -659,7 +659,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         name={`employees[${index}].email`}
                         label="Adresse Email"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                       />
                     </Box>
 
@@ -670,7 +670,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         label="Numéro de Téléphone"
                         placeholder="Votre numéro de téléphone"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                       />
                     </Box>
 
@@ -680,7 +680,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         name={`employees[${index}].address`}
                         label="Adresse"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                       />
                     </Box>
 
@@ -690,7 +690,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         name={`employees[${index}].contract_starts_at`}
                         label="Date début contrat"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                         slotProps={{
                           textField: {
                             size: 'small',
@@ -707,7 +707,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         name={`employees[${index}].contract_duration`}
                         label="Durée Contrat (mois)"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                         inputProps={{ min: 1, step: 1 }}
                       />
                     </Box>
@@ -720,7 +720,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         loading={loadingOptions}
                         fullWidth
                         value={getJobOption(values.employees[index]?.job)}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                         filterOptions={(opts, state) =>
                           opts.filter((o) =>
                             o.label.toLowerCase().includes(state.inputValue.trim().toLowerCase())
