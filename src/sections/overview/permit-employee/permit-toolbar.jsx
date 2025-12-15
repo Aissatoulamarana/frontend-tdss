@@ -250,7 +250,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
             </Tooltip>
           )}
 
-          {type === 'agent' && currentStatus === 'unsubmitted' && (
+          {type === 'agent' && currentStatus === 'processing' && (
             <Tooltip title="Soumettre">
               <IconButton onClick={() => submitConfirm.onTrue()}>
                 <Iconify icon="mdi:check-bold" />
