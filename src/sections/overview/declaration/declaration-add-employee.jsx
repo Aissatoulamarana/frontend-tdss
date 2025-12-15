@@ -624,7 +624,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         name={`employees[${index}].sexe`}
                         label="Genre"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                       >
                         {genders?.map((gender) => (
                           <MenuItem key={gender.value} value={String(gender?.value)}>
@@ -640,7 +640,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         name={`employees[${index}].birthday`}
                         label="Date Naissance"
                         InputLabelProps={{ shrink: true }}
-                        disabled={values.employees[index]?.locked}
+                        // disabled={values.employees[index]?.locked}
                         slotProps={{
                           textField: {
                             size: 'small',
