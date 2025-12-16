@@ -335,7 +335,7 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         first: data.first,
         phone: data.phone,
         type: 'renewal',
-        reference: data.reference,
+        reference: data?.employee_reference,
         job: data.job.slug, // champ libre
         country: mapCountryNameToSlug(data?.country),
         sexe: data?.sexe,
