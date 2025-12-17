@@ -73,7 +73,7 @@ const TABLE_HEAD = [
   //   { id: 'sexe', label: 'Genre' },
   //   { id: 'country', label: 'Nationalité' },
   { id: 'function', label: 'Fonction' },
-  //   { id: 'entreprise', label: 'Entreprise' },
+  { id: 'entreprise', label: 'Entreprise' },
   { id: 'type', label: ' Permis ' },
   { id: 'typedec', label: 'Type Déclaration ' },
   { id: 'statut', label: 'Status' },

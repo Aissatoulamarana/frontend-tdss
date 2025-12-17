@@ -133,7 +133,7 @@ export function TableRowComPermit({
 
         {visibleColumns.includes('function') && <TableCell>{row.job?.name}</TableCell>}
 
-        {/* {visibleColumns.includes('entreprise') && <TableCell>{row.company}</TableCell>} */}
+        {visibleColumns.includes('entreprise') && <TableCell>{row.company_name}</TableCell>}
 
         {visibleColumns.includes('type') && <TableCell>{row.job?.permit}</TableCell>}
 
