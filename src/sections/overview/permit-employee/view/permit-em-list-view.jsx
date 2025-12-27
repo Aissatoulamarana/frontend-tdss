@@ -191,9 +191,14 @@ export function PermitListView() {
         toast.error('Échec de la soumission du permit.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
-      console.error('Erreur réseau ou serveur:', error);
+      console.error('Erreur réseau ou serveur:', error?.non_field_errors?.[0]);
       toast.error(errorMessage);
     }
   }, []);
@@ -211,7 +216,12 @@ export function PermitListView() {
         toast.error('Échec du retrait de la soumission du permit.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -232,7 +242,12 @@ export function PermitListView() {
         toast.error('Une erreur est survenue lors de la validation du permit');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -254,7 +269,12 @@ export function PermitListView() {
         toast.error('Une erreur est survenue lors du rejet du permit');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -274,7 +294,12 @@ export function PermitListView() {
         toast.error('Une erreur est survenue lors de la livraison du permit');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -290,7 +315,12 @@ export function PermitListView() {
       const url = URL.createObjectURL(blob);
       window.open(url, '_blank');
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
