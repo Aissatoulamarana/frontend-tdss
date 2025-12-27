@@ -86,7 +86,12 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -108,7 +113,12 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -130,7 +140,12 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -152,7 +167,12 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -173,7 +193,12 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         toast.error('Une erreur est survenue.');
       }
     } catch (error) {
-      const errorMessage = error?.error || error?.details || error?.message || error?.detail;
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
@@ -201,6 +226,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         error?.details ||
         error?.message ||
         error?.detail ||
+        error?.non_field_errors?.[0] ||
         'Une erreur est survenue lors de la communication avec le serveur.';
       setError(errorMessage);
       console.error('Erreur réseau ou serveur:', error);
@@ -226,13 +252,13 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
               onPrint={handlePrintPermis}
             />
           </Box>
-          {type === 'printer' && currentStatus === 'validated' && (
-            <Tooltip title="Imprimer">
-              <IconButton onClick={handlePrint}>
-                <Iconify icon="solar:printer-minimalistic-bold" />
-              </IconButton>
-            </Tooltip>
-          )}
+          {/* {type === 'printer' && currentStatus === 'validated' && ( */}
+          <Tooltip title="Imprimer">
+            <IconButton onClick={handlePrint}>
+              <Iconify icon="solar:printer-minimalistic-bold" />
+            </IconButton>
+          </Tooltip>
+          {/* )} */}
 
           {type === 'printer' && currentStatus === 'printed' && (
             <Tooltip title="Delivrer">
