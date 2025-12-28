@@ -297,8 +297,8 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
 
           <!-- NUMÉRO DE CARTE en bas à droite -->
-          <div style="position: absolute; top: 14mm; right: 25mm; font-size: 3mm; font-weight: 700; color: #000;">
-            N° ${permit?.card_number || permit?.reference || 'N/A'}
+          <div style="position: absolute; top: 14mm; left: 55mm; font-size: 3mm; font-weight: 700; color: #000;">
+            N° ${permit?.card_number || 'N/A'}
           </div>
         </div>
       </div>
@@ -537,8 +537,8 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           sx={{
             position: 'absolute',
             top: '15.5mm',
-            right: '38mm',
-            fontSize: '0.95rem',
+            left: '59mm',
+            fontSize: '0.99rem',
             fontWeight: 700,
           }}
         >
