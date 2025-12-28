@@ -252,13 +252,13 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
               onPrint={handlePrintPermis}
             />
           </Box>
-          {/* {type === 'printer' && currentStatus === 'validated' && ( */}
-          <Tooltip title="Imprimer">
-            <IconButton onClick={handlePrint}>
-              <Iconify icon="solar:printer-minimalistic-bold" />
-            </IconButton>
-          </Tooltip>
-          {/* )} */}
+          {type === 'printer' && currentStatus === 'validated' && (
+            <Tooltip title="Imprimer">
+              <IconButton onClick={handlePrint}>
+                <Iconify icon="solar:printer-minimalistic-bold" />
+              </IconButton>
+            </Tooltip>
+          )}
 
           {type === 'printer' && currentStatus === 'printed' && (
             <Tooltip title="Delivrer">
