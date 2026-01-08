@@ -62,14 +62,14 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   const handlePrintClick = async () => {
     try {
-      const ok = await onPrint?.();
+      // const ok = await onPrint?.();
 
-      if (ok) {
-        onClose?.();
-        setOpenPrintDialog(true);
-      } else {
-        onClose?.();
-      }
+      // if (ok) {
+      //   onClose?.();
+      setOpenPrintDialog(true);
+      // } else {
+      //   onClose?.();
+      // }
     } catch (error) {
       console.error('Erreur lors du print click:', err);
       onClose?.();
@@ -241,6 +241,44 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
   `;
   }
 
+  function createEmployerHTML(label, value) {
+    const text = (value || 'N/A').toUpperCase();
+    const length = text.length;
+
+    // Taille adaptative TRÈS LARGE
+    let fontSize = 2.5; // mm (normal)
+
+    if (length > 55) fontSize = 1.6;
+    else if (length > 45) fontSize = 1.8;
+    else if (length > 35) fontSize = 2.0;
+    else if (length > 28) fontSize = 2.2;
+
+    return `
+    <div style="
+      margin-bottom: 1mm;
+      color: #000;
+      font-size: 1.8mm;
+      line-height: 1;
+    ">
+      <span style="font-weight: 400;">
+        ${label} :
+      </span>
+      <span style="
+        font-size: ${fontSize}mm;
+        font-weight: 700;
+        letter-spacing: 0.03mm;
+        display: inline-block;
+        max-width: 38mm;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: middle;
+      ">
+        ${text}
+      </span>
+    </div>
+  `;
+  }
+
   const getCardFrontHTML = () => {
     return `
       <div class="card-face card-front">
@@ -314,10 +352,11 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           <!-- Section supérieure avec informations employeur -->
           <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
           <!-- EMPLOYEUR -->
-          ${createLabelValueHTML('EMPLOYEUR', permit?.company_name || 'N/A')}
+          ${createEmployerHTML('EMPLOYEUR', permit?.company_sigle)}
+
 
             <!-- ADRESSE EMPLOYEUR -->
-            ${createLabelValueHTML('ADRESSE', permit?.company_address || 'Camayenne, Commune de Dixin')}
+            ${createLabelValueHTML('ADRESSE', permit?.company_address || 'N/A')}
 
             <!-- FONCTION -->
            ${createLabelValueHTML('FONCTION ', permit?.job?.name || 'N/A')}
@@ -611,7 +650,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
         {/* Informations */}
         <Box sx={{ position: 'absolute', top: '4mm', left: '6mm', right: '28mm' }}>
-          <LabelValue label="EMPLOYEUR" value={permit?.company_name?.toUpperCase() || 'N/A'} />
+          <LabelValue label="EMPLOYEUR" value={permit?.company_sigle?.toUpperCase() || 'N/A'} />
 
           <LabelValue label="ADRESSE" value={permit?.company_address || 'N/A'} />
           <LabelValue label="FONCTION" value={permit?.job?.name?.toUpperCase() || 'N/A'} />
