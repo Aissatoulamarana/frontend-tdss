@@ -42,6 +42,10 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
       printed: { color: 'info', label: 'Imprimé', icon: 'mdi:printer' },
       delivered: { color: 'primary', label: 'Délivré', icon: 'mdi:package-variant-closed' },
       submitted: { color: 'success', label: 'Soumis', icon: 'mdi:check-circle' },
+      billed: { color: 'info', label: 'Facturé', icon: 'mdi:receipt' },
+      paid: { color: 'success', label: 'Payé', icon: 'mdi:check-circle' },
+      correction: { color: 'error', label: 'En correction', icon: 'mdi:pen' },
+      expired: { color: 'error', label: 'Expiré', icon: 'mdi:calendar-alert' },
     };
     return configs[status] || { color: 'default', label: status, icon: 'mdi:information' };
   };
@@ -194,7 +198,38 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
     return dates;
   };
 
+  const getResponsibles = () => {
+    const responsibles = [];
+
+    if (permit?.submitted_by) {
+      responsibles.push({
+        icon: 'mdi:account-arrow-up',
+        label: 'Soumis par',
+        value: submitted_by,
+      });
+    }
+
+    if (permit?.validated_by) {
+      responsibles.push({
+        icon: 'mdi:account-check',
+        label: 'Validé par',
+        value: validated_by,
+      });
+    }
+
+    if (permit?.rejected_by) {
+      responsibles.push({
+        icon: 'mdi:account-cancel',
+        label: 'Rejeté par',
+        value: rejected_by,
+      });
+    }
+
+    return responsibles;
+  };
+
   const relevantDates = getRelevantDates();
+  const responsibles = getResponsibles();
 
   const renderAbout = (
     <Card
@@ -257,7 +292,7 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
         {/* ================== Informations ================== */}
         <Box
           sx={{
-            mb: relevantDates.length > 0 ? 3 : 0,
+            mb: relevantDates.length > 0 || responsibles.length > 0 ? 3 : 0,
           }}
         >
           <SectionTitle title="informations" />
@@ -280,6 +315,20 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                 {relevantDates.map((date, index) => (
                   <InfoItem key={index} icon={date.icon} label={date.label} value={date.value} />
+                ))}
+              </Box>
+            </Box>
+          </>
+        )}
+        {/* ================== Section Responsables ================== */}
+        {responsibles.length > 0 && (
+          <>
+            <Divider sx={{ my: 3 }} />
+            <Box>
+              <SectionTitle title="Responsables" />
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                {responsibles.map((item, index) => (
+                  <InfoItem key={index} icon={item.icon} label={item.label} value={item.value} />
                 ))}
               </Box>
             </Box>

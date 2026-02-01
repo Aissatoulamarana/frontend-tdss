@@ -13,12 +13,17 @@ import Button from '@mui/material/Button';
 import { Iconify } from 'src/components/iconify';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
+import { useBoolean } from 'src/hooks/use-boolean';
+
+import { EmployeeQuickEditForm } from '../declaration/components/employe-quick-edit-form';
 
 // ----------------------------------------------------------------------
 
-export function PermitEmloyeeInfo({ info, posts }) {
+export function PermitEmloyeeInfo({ info, type }) {
   const fileRef = useRef(null);
   const router = useRouter();
+
+  const editOpen = useBoolean();
 
   const handleAttach = () => {
     if (fileRef.current) {
@@ -306,6 +311,25 @@ export function PermitEmloyeeInfo({ info, posts }) {
                   },
                 }}
               />
+              {info?.status === 'correction' && (type === 'agent' || type === 'admin') && (
+                <Chip
+                  icon={<Iconify icon="mdi:pen" width={18} />}
+                  label="Modifier"
+                  color="default"
+                  onClick={editOpen.onTrue}
+                  size="small"
+                  sx={{
+                    fontWeight: 600,
+                    px: 1,
+                    height: { xs: 28, sm: 32 },
+                    '& .MuiChip-icon': { ml: 0.5 },
+                    '& .MuiChip-label': {
+                      px: 1,
+                      fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                    },
+                  }}
+                />
+              )}
             </Stack>
           </Box>
 
@@ -384,11 +408,7 @@ export function PermitEmloyeeInfo({ info, posts }) {
               <InfoItem
                 icon="mdi:calendar-clock"
                 label="Durée"
-                value={
-                  info?.contract_duration
-                    ? `${info?.contract_duration} an${info?.contract_duration > 1 ? 's' : ''}`
-                    : 'N/A'
-                }
+                value={info?.contract_duration ? `${info?.contract_duration} mois` : 'N/A'}
               />
               {info?.motif_rejet && (
                 <InfoItem
@@ -425,6 +445,14 @@ export function PermitEmloyeeInfo({ info, posts }) {
               </Box>
             </>
           )} */}
+
+          <EmployeeQuickEditForm
+            currentEmployee={info}
+            open={editOpen.value}
+            onClose={editOpen.onFalse}
+            isPermit={true}
+            dec_slug={info?.declaration_slug}
+          />
         </Box>
       </Card>
     </Grid>
