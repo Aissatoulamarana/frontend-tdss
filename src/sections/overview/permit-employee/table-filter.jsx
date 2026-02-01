@@ -13,13 +13,16 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
 const DEBOUNCE_DELAY = 2000;
 
-export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelector }) {
+export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelector, dateError }) {
   const [showOptions, setShowOptions] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('name');
   const [inputValue, setInputValue] = useState('');
@@ -42,6 +45,7 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
     { key: 'pending', label: 'En attente' },
     { key: 'printed', label: 'Imprimée' },
     { key: 'delivered', label: 'Livrée' },
+    { key: 'expired', label: 'Expiré' },
   ];
 
   const FILTER_OPTIONS = [
@@ -127,6 +131,20 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
     [filters?.setState]
   );
 
+  const handleFilterStartDate = useCallback(
+    (newValue) => {
+      filters?.setState({ created_on_after: newValue });
+    },
+    [filters?.setState]
+  );
+
+  const handleFilterEndDate = useCallback(
+    (newValue) => {
+      filters?.setState({ created_on_before: newValue });
+    },
+    [filters?.setState]
+  );
+
   const handleFilterPermitStatus = useCallback(
     (event) => {
       filters?.setState({ status: event.target.value });
@@ -166,8 +184,21 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
       direction={{ xs: 'column', md: 'row' }}
       sx={{ p: 2.5, pr: { xs: 2.5, md: 1 } }}
     >
+      {/* Select Not Printed or not */}
+
+      <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 150 } }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+          <Checkbox
+            checked={filters?.state?.not_printed || false}
+            onChange={(event) =>
+              filters?.setState({ not_printed: event.target.checked ? true : false })
+            }
+          />
+          <Box> Non imprimés</Box>
+        </Box>
+      </FormControl>
       {/* Select Type Permis */}
-      <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 200 } }}>
+      <FormControl sx={{ flexShrink: 0, width: { xs: 1, md: 150 } }}>
         <InputLabel>Type Permis</InputLabel>
         <Select
           value={filters?.state?.type || ''}
@@ -183,6 +214,45 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
       </FormControl>
 
       {/* Select Statut Permis */}
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="Date debut"
+          value={filters.state.created_on_after}
+          onChange={handleFilterStartDate}
+          format="DD/MM/YYYY"
+          slotProps={{
+            textField: {
+              size: 'medium',
+              sx: {
+                width: 300,
+                bgcolor: 'background.paper',
+                '& .MuiOutlinedInput-root:hover': { boxShadow: 1 },
+              },
+            },
+          }}
+        />
+      </LocalizationProvider>
+
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="Date fin"
+          value={filters.state.created_on_before}
+          onChange={handleFilterEndDate}
+          format="DD/MM/YYYY"
+          slotProps={{
+            textField: {
+              size: 'medium',
+              error: dateError,
+              helperText: dateError ? 'Date invalide' : null,
+              sx: {
+                width: 300,
+                bgcolor: 'background.paper',
+                '& .MuiOutlinedInput-root:hover': { boxShadow: 1 },
+              },
+            },
+          }}
+        />
+      </LocalizationProvider>
 
       {/* Input + options */}
       <Stack

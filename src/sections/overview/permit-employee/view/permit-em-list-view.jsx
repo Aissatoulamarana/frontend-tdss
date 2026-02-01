@@ -56,8 +56,8 @@ import { TableToolbar } from '../table-filter';
 import { TableFiltersResult } from '../table-filter-result';
 import { TableRowComPermit } from '../permit-employee-table-row';
 import { useMockedUser } from 'src/auth/hooks';
-import { ta } from 'date-fns/locale';
-import { set } from 'nprogress';
+import dayjs, { fIsBetween } from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
+dayjs.locale('fr'); // Set the default locale to French
 
 // ----------------------------------------------------------------------
 
@@ -101,6 +101,8 @@ export function PermitListView() {
   const { user } = useMockedUser();
   const type = user?.type_code?.toLowerCase().trim();
 
+  const isPrinter = type === 'printer';
+
   const router = useRouter();
 
   const confirm = useBoolean();
@@ -139,7 +141,12 @@ export function PermitListView() {
     status: 'all',
     company: '',
     number: '',
+    created_on_before: null,
+    created_on_after: null,
+    not_printed: false,
   });
+
+  const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
   const canReset =
     !!filters.state.name ||
@@ -149,7 +156,9 @@ export function PermitListView() {
     !!filters.state.passport_number ||
     !!filters.state.reference ||
     !!filters.state.company ||
-    !!filters.state.number;
+    !!filters.state.number ||
+    !!filters.state.not_printed ||
+    (!!filters.state.created_on_before && !!filters.state.created_on_after);
 
   const notFound = pagination.count === 0 && canReset;
 
@@ -362,16 +371,17 @@ export function PermitListView() {
       const paylaod = {
         declaration_employee_slugs: table.selected,
       };
-      // const response = await axios.post(API.printPermis(), paylaod);
+      const response = await axios.post(API.printPermis(), paylaod);
 
-      // if (response?.data || response?.status === 200 || response?.status === 201) {
-      //   toast.success(`${table.selected.length} permits marqués comme imprimés`);
+      if (response?.data || response?.status === 200 || response?.status === 201) {
+        toast.success(`${table.selected.length} permits marqués comme imprimés`);
 
-      //   setTableData((prevData) =>
-      //     prevData.map((item) =>
-      //       table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
-      //     )
-      //   );
+        setTableData((prevData) =>
+          prevData.map((item) =>
+            table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
+          )
+        );
+      }
 
       generateBulkPrint(selectedForPrint, printMode);
 
@@ -527,8 +537,8 @@ export function PermitListView() {
       });
     };
 
-    const calculateDuration = (startDate, duration) => {
-      if (!startDate || !duration) return 'N/A';
+    const calculateDuration = (duration) => {
+      if (!duration) return 'N/A';
       return `${duration} MOIS`;
     };
 
@@ -624,7 +634,7 @@ export function PermitListView() {
             ${createLabelValueHTML('ADRESSE', permit?.company_address || 'N/A')}
             ${createLabelValueHTML('FONCTION ', permit?.job?.name || 'N/A')}
             ${createLabelValueHTML('CATÉGORIE ', 'TYPE ' + (getLabelPermit(permit?.category || permit?.job?.permit) || ''))}
-            ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_starts_at, permit?.contract_duration))}
+            ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_duration))}
             ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
           </div>
 
@@ -670,8 +680,18 @@ export function PermitListView() {
           ...(filters.state.declaration ? { declaration: filters.state.declaration } : {}),
           ...(filters.state.company ? { company: filters.state.company } : {}),
           ...(filters.state.number ? { number: filters.state.number } : {}),
+          ...(filters.state.not_printed ? { not_printed: filters.state.not_printed } : {}),
+          ...(filters.state.created_on_before && !dateError
+            ? { created_on_before: dayjs(filters.state.created_on_before).format('YYYY-MM-DD') }
+            : {}),
+          ...(filters.state.created_on_after && !dateError
+            ? { created_on_after: dayjs(filters.state.created_on_after).format('YYYY-MM-DD') }
+            : {}),
         };
-        const response = await axios.get(API.listPermitsEmployees(), { params });
+
+        const apiRoute = isPrinter ? API.listPendingPermitsEmployees() : API.listPermitsEmployees();
+
+        const response = await axios.get(apiRoute, { params });
         setTableData(response.data.results);
         setPagination({
           count: response.data.count,
@@ -687,6 +707,7 @@ export function PermitListView() {
 
     fetchPermits();
   }, [
+    isPrinter,
     table.page,
     table.rowsPerPage,
     filters.state.name,
@@ -697,6 +718,9 @@ export function PermitListView() {
     filters.state.status,
     filters.state.company,
     filters.state.number,
+    filters.state.created_on_before,
+    filters.state.created_on_after,
+    filters.state.not_printed,
   ]); // a chaque fois que la page, rowsPerPage, ou les filtres changent , on refetch
 
   if (loading) {
@@ -748,6 +772,7 @@ export function PermitListView() {
           <TableToolbar
             filters={filters}
             onResetPage={table.onResetPage}
+            dateError={dateError}
             options={{ profil: _roles }}
             onOpenColumnSelector={columnSelector.onTrue}
           />
@@ -762,33 +787,33 @@ export function PermitListView() {
           )}
 
           <Box sx={{ position: 'relative' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={pagination.count.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  tableData.map((row) => row.slug)
-                )
-              }
-              action={
-                <Stack direction="row" spacing={1}>
-                  {type === 'printer' && (
+            {isPrinter && (
+              <TableSelectedAction
+                dense={table.dense}
+                numSelected={table.selected.length}
+                rowCount={pagination.count}
+                onSelectAllRows={(checked) =>
+                  table.onSelectAllRows(
+                    checked,
+                    tableData.map((row) => row.slug)
+                  )
+                }
+                action={
+                  <Stack direction="row" spacing={1}>
                     <Tooltip title="Imprimer la sélection">
                       <IconButton color="primary" onClick={handleBulkPrint}>
                         <Iconify icon="solar:printer-minimalistic-bold" />
                       </IconButton>
                     </Tooltip>
-                  )}
-                  <Tooltip title="Supprimer">
-                    <IconButton color="primary" onClick={confirm.onTrue}>
-                      <Iconify icon="solar:trash-bin-trash-bold" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-              }
-            />
+                    <Tooltip title="Supprimer">
+                      <IconButton color="primary" onClick={confirm.onTrue}>
+                        <Iconify icon="solar:trash-bin-trash-bold" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                }
+              />
+            )}
 
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
@@ -799,11 +824,14 @@ export function PermitListView() {
                   rowCount={pagination.count}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.slug)
-                    )
+                  onSelectAllRows={
+                    isPrinter
+                      ? (checked) =>
+                          table.onSelectAllRows(
+                            checked,
+                            tableData.map((row) => row.slug)
+                          )
+                      : undefined
                   }
                 />
 
@@ -834,7 +862,7 @@ export function PermitListView() {
                         row={row}
                         visibleColumns={visibleColumns}
                         selected={table.selected.includes(row.slug)}
-                        onSelectRow={() => table.onSelectRow(row.slug)}
+                        onSelectRow={isPrinter ? () => table.onSelectRow(row.slug) : undefined}
                         onDeleteRow={() => handleDeleteRow(row.slug)}
                         onEditRow={() => handleEditRow(row.slug)}
                         onViewRow={() => handleViewRow(row.slug)}

@@ -17,6 +17,7 @@ import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
+import { fDate } from 'src/utils/format-time';
 export function TableRowComPermit({
   type,
   row,
@@ -146,7 +147,7 @@ export function TableRowComPermit({
         {visibleColumns.includes('type') && <TableCell>{row.job?.permit}</TableCell>}
 
         {visibleColumns.includes('typedec') && <TableCell>{row.type_display}</TableCell>}
-        {visibleColumns.includes('created_on') && <TableCell>{row.created_on}</TableCell>}
+        {visibleColumns.includes('created_on') && <TableCell>{fDate(row.created_on)}</TableCell>}
 
         {visibleColumns.includes('statut') && (
           <TableCell>
