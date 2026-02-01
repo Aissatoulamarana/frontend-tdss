@@ -12,6 +12,11 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
 import { CustomPopover } from 'src/components/custom-popover';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
@@ -51,6 +56,8 @@ import { TableToolbar } from '../table-filter';
 import { TableFiltersResult } from '../table-filter-result';
 import { TableRowComPermit } from '../permit-employee-table-row';
 import { useMockedUser } from 'src/auth/hooks';
+import { ta } from 'date-fns/locale';
+import { set } from 'nprogress';
 
 // ----------------------------------------------------------------------
 
@@ -58,10 +65,14 @@ const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous' },
   { value: 'submitted', label: 'Soumis' },
   { value: 'validated', label: 'Validé' },
-  { value: 'rejected', label: 'Rejeté' },
+  // { value: 'rejected', label: 'Rejeté' },
   { value: 'processing', label: 'En traitement' },
-  { value: 'printed', label: 'Imprimée' },
-  { value: 'delivered', label: 'Livrée' },
+  { value: 'printed', label: 'Imprimé' },
+  { value: 'delivered', label: 'Livré' },
+  { value: 'expired', label: 'Expiré' },
+  { value: 'billed', label: 'Facturé' },
+  { value: 'paid', label: 'Payé' },
+  { value: 'correction', label: 'En correction' },
 ];
 
 const TABLE_HEAD = [
@@ -76,6 +87,7 @@ const TABLE_HEAD = [
   { id: 'entreprise', label: 'Entreprise' },
   { id: 'type', label: ' Permis ' },
   { id: 'typedec', label: 'Type Déclaration ' },
+  { id: 'created_on', label: 'Date de création' },
   { id: 'statut', label: 'Status' },
 
   { id: '', width: 88 },
@@ -96,6 +108,9 @@ export function PermitListView() {
   const allColumns = TABLE_HEAD.map((column) => column.id).filter((id) => id);
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
   const columnSelector = useBoolean();
+
+  const [selectedForPrint, setSelectedForPrint] = useState([]);
+  const [openBulkPrint, setOpenBulkPrint] = useState(false);
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -256,12 +271,16 @@ export function PermitListView() {
 
   const handleRejetRow = useCallback(async (slug, rejectReason) => {
     try {
-      const response = await axios.post(API.rejectPermit(slug), { motif_rejet: rejectReason });
+      const response = await axios.post(API.rejectPermit(slug), {
+        reject_reason_name: rejectReason,
+      });
       if (response.data || response.status === 200) {
         toast.success('Permit rejeté avec succès!');
         setTableData((prevData) =>
           prevData.map((item) =>
-            item.slug === slug ? { ...item, status: 'rejected', motif_rejet: rejectReason } : item
+            item.slug === slug
+              ? { ...item, status: 'rejected', reject_reason_name: rejectReason }
+              : item
           )
         );
       } else {
@@ -326,6 +345,301 @@ export function PermitListView() {
       toast.error(errorMessage);
     }
   });
+
+  const handleBulkPrint = useCallback(async () => {
+    if (table.selected.length === 0) {
+      toast.error("Aucun permit sélectionné pour l'impression.");
+      return;
+    }
+
+    const selectedPermits = tableData?.filter((row) => table.selected.includes(row.slug));
+    setSelectedForPrint(selectedPermits);
+    setOpenBulkPrint(true);
+  }, [tableData, table.selected]);
+
+  const handleMultiplePrintConfirm = async (printMode) => {
+    try {
+      const paylaod = {
+        declaration_employee_slugs: table.selected,
+      };
+      // const response = await axios.post(API.printPermis(), paylaod);
+
+      // if (response?.data || response?.status === 200 || response?.status === 201) {
+      //   toast.success(`${table.selected.length} permits marqués comme imprimés`);
+
+      //   setTableData((prevData) =>
+      //     prevData.map((item) =>
+      //       table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
+      //     )
+      //   );
+
+      generateBulkPrint(selectedForPrint, printMode);
+
+      setOpenBulkPrint(false);
+      table.setSelected([]);
+      // }
+    } catch (error) {
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
+      setError(errorMessage);
+      console.error('Erreur réseau ou serveur:', error);
+      toast.error(errorMessage);
+    }
+  };
+
+  // Fonction pour générer l'impression
+  const generateBulkPrint = (permits, printMode) => {
+    const printWindow = window.open('', '_blank');
+    const printDocument = printWindow.document;
+
+    let cardsHTML = '';
+
+    permits.forEach((permit, index) => {
+      const qrData = encodeURIComponent(
+        `Permit N° ${permit?.card_number || permit?.reference || 'N/A'}`
+      );
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200`;
+
+      cardsHTML += generateCardHTML(permit, qrUrl, index, printMode);
+    });
+
+    printDocument.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Impression Multiple - ${permits.length} Permits</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            margin: 0;
+            padding: 20px;
+            background: white;
+            font-family: Arial, sans-serif;
+          }
+          
+          .print-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+          }
+          
+          .permit-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            page-break-after: ${printMode === 'duplex' ? 'always' : 'auto'};
+          }
+          
+          .card-face {
+            width: 86mm;
+            height: 54mm;
+            background: white;
+            position: relative;
+            overflow: hidden;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          
+          .card-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          
+          .card-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+          }
+          
+          @media print {
+            @page {
+              margin: 0;
+              size: ${printMode === 'duplex' ? '86mm 54mm' : 'A4'};
+            }
+            
+            body {
+              margin: 0 !important;
+              padding: ${printMode === 'a4' ? '15mm' : '0'} !important;
+            }
+            
+            .print-container {
+              gap: ${printMode === 'a4' ? '10mm' : '0'} !important;
+            }
+            
+            .card-face {
+              box-shadow: none !important;
+              ${printMode === 'a4' ? 'border: 0.5mm solid #ccc;' : ''}
+            }
+            
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              color-adjust: exact !important;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="print-container">
+          ${cardsHTML}
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(() => {
+              window.print();
+              setTimeout(() => {
+                window.close();
+              }, 500);
+            }, 1000);
+          };
+        </script>
+      </body>
+    </html>
+  `);
+
+    printDocument.close();
+  };
+
+  // Fonction helper pour générer le HTML d'une carte
+  const generateCardHTML = (permit, qrUrl, index, printMode) => {
+    const formatDate = (dateString) => {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+    };
+
+    const calculateDuration = (startDate, duration) => {
+      if (!startDate || !duration) return 'N/A';
+      return `${duration} MOIS`;
+    };
+
+    const getLabelPermit = (type) => {
+      const map = {
+        'Permis A': ' A',
+        'Permis B': 'B',
+        'Permis C': 'C',
+      };
+      return type ? map[type] || String(type) : 'N/A';
+    };
+
+    const createLabelValueHTML = (label, value, options = {}) => {
+      const {
+        labelSize = 1.8,
+        valueSize = 2.5,
+        labelWeight = 400,
+        valueWeight = 700,
+        marginBottom = 1,
+        uppercase = true,
+      } = options;
+
+      const displayValue = (value && (uppercase ? String(value).toUpperCase() : value)) || 'N/A';
+      const shouldLimit =
+        label.trim().toUpperCase() === 'FONCTION' || label.trim().toUpperCase() === 'ADRESSE';
+
+      const limitedStyle = shouldLimit
+        ? `max-width: 30mm; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;`
+        : '';
+
+      return `
+    <div style="margin-bottom: ${marginBottom}mm; color: #000; font-size: ${labelSize}mm;">
+      <span style="font-weight: ${labelWeight};">${label} :</span>
+      <span style="font-size: ${valueSize}mm; font-weight: ${valueWeight}; letter-spacing: 0.1mm; vertical-align: middle; display: inline-block; ${limitedStyle}">
+        ${displayValue}
+      </span>
+    </div>`;
+    };
+
+    const createEmployerHTML = (label, value) => {
+      const text = (value || 'N/A').toUpperCase();
+      const length = text.length;
+
+      let fontSize = 2.5;
+      if (length > 55) fontSize = 1.6;
+      else if (length > 45) fontSize = 1.8;
+      else if (length > 35) fontSize = 2.0;
+      else if (length > 28) fontSize = 2.2;
+
+      return `
+    <div style="margin-bottom: 1mm; color: #000; font-size: 1.8mm; line-height: 1;">
+      <span style="font-weight: 400;">${label} :</span>
+      <span style="font-size: ${fontSize}mm; font-weight: 700; letter-spacing: 0.03mm; display: inline-block; max-width: 38mm; white-space: nowrap; overflow: hidden; vertical-align: middle;">
+        ${text}
+      </span>
+    </div>`;
+    };
+
+    return `
+    <div class="permit-group">
+      <!-- RECTO -->
+      <div class="card-face card-front">
+        <div class="card-content" style="padding: 8mm 5mm;">
+          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            ${permit?.picture ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />` : '<div style="color: #999; font-size: 2.5mm;">PHOTO</div>'}
+          </div>
+
+          <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
+            ${createLabelValueHTML('NOM ', permit?.last)}
+            ${createLabelValueHTML('PRÉNOM(S) ', permit?.first)}
+            ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
+            ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
+            ${createLabelValueHTML('À ', permit?.birth_place)}
+            ${createLabelValueHTML('NATIONALITÉ ', permit?.nationality)}
+            ${createLabelValueHTML('SEXE ', permit?.sexe === 'male' ? 'M' : 'F')}
+          </div>
+
+          <div style="position: absolute; top: 48mm; left: 4mm; width: 20mm; height: 6mm; border: 1px solid #999; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            ${permit?.signature ? `<img src="${permit.signature}" alt="signature" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : '<div style="font-size: 1.8mm; color: #000; font-weight: 400;">SIGNATURE DU TITULAIRE</div>'}
+          </div>
+
+          <div style="position: absolute; top: 14mm; left: 55mm; font-size: 3mm; font-weight: 700; color: #000;">
+            N° ${permit?.card_number}
+          </div>
+        </div>
+      </div>
+
+      <!-- VERSO -->
+      <div class="card-face card-back">
+        <div class="card-content" style="padding: 8mm 5mm;">
+          <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
+            ${createEmployerHTML('EMPLOYEUR', permit?.company_sigle)}
+            ${createLabelValueHTML('ADRESSE', permit?.company_address || 'N/A')}
+            ${createLabelValueHTML('FONCTION ', permit?.job?.name || 'N/A')}
+            ${createLabelValueHTML('CATÉGORIE ', 'TYPE ' + (getLabelPermit(permit?.category || permit?.job?.permit) || ''))}
+            ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_starts_at, permit?.contract_duration))}
+            ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
+          </div>
+
+          <div style="position: absolute; top: 7mm; right: 27.5mm; width: 8mm; height: 12mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+            ${permit?.picture ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />` : '<div style="color: #999; font-size: 2mm;">PHOTO</div>'}
+          </div>
+
+          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white; border: 0.3mm solid #ccc; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            ${qrUrl ? `<img src="${qrUrl}" alt="QR Code" style="width: 100%; height: 100%;" />` : '<div style="color: #ccc; font-size: 2mm;">QR</div>'}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  };
 
   const handleFilterStatus = useCallback(
     (event, newValue) => {
@@ -455,15 +769,24 @@ export function PermitListView() {
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id)
+                  tableData.map((row) => row.slug)
                 )
               }
               action={
-                <Tooltip title="Supprimer">
-                  <IconButton color="primary" onClick={confirm.onTrue}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
-                  </IconButton>
-                </Tooltip>
+                <Stack direction="row" spacing={1}>
+                  {type === 'printer' && (
+                    <Tooltip title="Imprimer la sélection">
+                      <IconButton color="primary" onClick={handleBulkPrint}>
+                        <Iconify icon="solar:printer-minimalistic-bold" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  <Tooltip title="Supprimer">
+                    <IconButton color="primary" onClick={confirm.onTrue}>
+                      <Iconify icon="solar:trash-bin-trash-bold" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
               }
             />
 
@@ -569,7 +892,6 @@ export function PermitListView() {
           </MenuList>
         </CustomPopover>
       </DashboardContent>
-
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
@@ -593,6 +915,61 @@ export function PermitListView() {
           </Button>
         }
       />
+
+      <Dialog open={openBulkPrint} onClose={() => setOpenBulkPrint(false)} maxWidth="sm" fullWidth>
+        <DialogContent sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>
+            Impression multiple de {table.selected.length} permit(s)
+          </Typography>
+
+          <Box sx={{ mb: 3, p: 2, bgcolor: 'info.lighter', borderRadius: 1 }}>
+            <Typography variant="body2" color="info.dark">
+              Vous êtes sur le point d'imprimer {table.selected.length} carte(s) de permis.
+              Choisissez le mode d'impression ci-dessous.
+            </Typography>
+          </Box>
+
+          <Stack spacing={2}>
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => handleMultiplePrintConfirm('a4')}
+              sx={{ justifyContent: 'flex-start', p: 2 }}
+            >
+              <Stack spacing={1} alignItems="flex-start" sx={{ width: '100%' }}>
+                <Typography variant="subtitle2" fontWeight={700}>
+                  Mode Aperçu A4
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Toutes les cartes sur papier A4 (recto et verso visibles)
+                </Typography>
+              </Stack>
+            </Button>
+
+            <Button
+              variant="outlined"
+              fullWidth
+              onClick={() => handleMultiplePrintConfirm('duplex')}
+              sx={{ justifyContent: 'flex-start', p: 2 }}
+            >
+              <Stack spacing={1} alignItems="flex-start" sx={{ width: '100%' }}>
+                <Typography variant="subtitle2" fontWeight={700}>
+                  Mode Recto-Verso
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Impression professionnelle sur cartes 86mm x 54mm
+                </Typography>
+              </Stack>
+            </Button>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3, pt: 0 }}>
+          <Button onClick={() => setOpenBulkPrint(false)} color="inherit">
+            Annuler
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

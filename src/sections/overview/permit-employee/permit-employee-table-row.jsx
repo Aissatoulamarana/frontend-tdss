@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import Checkbox from '@mui/material/Checkbox';
 import { useBoolean } from 'src/hooks/use-boolean';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -98,7 +99,14 @@ export function TableRowComPermit({
         }}
       >
         <TableCell padding="checkbox">
-          {/* <Checkbox id={row.slug} checked={selected} onClick={onSelectRow} /> */}
+          <Checkbox
+            id={row.slug}
+            checked={selected}
+            onClick={(e) => {
+              e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
+              onSelectRow(e);
+            }}
+          />
         </TableCell>
 
         {/* {visibleColumns.includes('number') && (
@@ -138,6 +146,7 @@ export function TableRowComPermit({
         {visibleColumns.includes('type') && <TableCell>{row.job?.permit}</TableCell>}
 
         {visibleColumns.includes('typedec') && <TableCell>{row.type_display}</TableCell>}
+        {visibleColumns.includes('created_on') && <TableCell>{row.created_on}</TableCell>}
 
         {visibleColumns.includes('statut') && (
           <TableCell>

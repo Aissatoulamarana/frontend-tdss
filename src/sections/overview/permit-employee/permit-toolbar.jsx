@@ -183,7 +183,7 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
     try {
       // Appel à l'API backend pour rejeter la déclaration
       const response = await axios.post(API.rejectPermit(permit?.slug), {
-        motif_rejet: motifRejet,
+        reject_reason_name: motifRejet,
       });
       if (response) {
         toast.success('Permit rejetée avec succès !');
