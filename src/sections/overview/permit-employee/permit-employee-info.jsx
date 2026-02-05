@@ -499,7 +499,7 @@ export function PermitEmloyeeInfo({ info, type }) {
             dec_slug={info?.declaration_slug}
           />
 
-          {/* <ConfirmDialog
+          <ConfirmDialog
             open={syncOpen.value}
             onClose={syncOpen.onFalse}
             title="Confirmer la Synchronisation"
@@ -515,7 +515,7 @@ export function PermitEmloyeeInfo({ info, type }) {
                 Synchroniser
               </Button>
             }
-          /> */}
+          />
         </Box>
       </Card>
     </Grid>
