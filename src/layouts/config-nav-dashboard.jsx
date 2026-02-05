@@ -85,9 +85,9 @@ export function useNavData() {
         type === 'agent' ||
         type === 'aguipe' ||
         type === 'supervisor' ||
-        type === 'admin' ||
-        type === 'printer'
-          ? [
+        type === 'admin'
+          ? // type === 'printer'
+            [
               {
                 title: 'Déclarations',
                 path: paths.dashboard.declaration.list,
@@ -153,8 +153,8 @@ export function useNavData() {
 
         ...(type === 'admin' ||
         type === 'accountant' ||
-        type === 'agent' ||
-        type === 'aguipe' ||
+        // type === 'agent' ||
+        type === 'treasurer' ||
         type === 'supervisor'
           ? [
               {
