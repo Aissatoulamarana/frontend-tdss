@@ -85,21 +85,6 @@ export function PermitDetailView({ slug }) {
     }
   }, [slug]);
 
-  const fecthAbis = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(API.getEmployeeFromABIS(permit?.employee_slug));
-      setAbis(response.data);
-    } catch (error) {
-      const errorMessage =
-        error.data || error.details || error.message || error.detail || error.errors?.[0];
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [permit?.employee_slug]);
-
   useEffect(() => {
     fecthPermit();
   }, [fecthPermit]);
@@ -109,12 +94,6 @@ export function PermitDetailView({ slug }) {
       setStatus(permit.status);
     }
   }, [permit]);
-
-  useEffect(() => {
-    if (tabs.value === 'biometrie' && permit?.employee_slug) {
-      fecthAbis();
-    }
-  }, [tabs.value, permit?.employee_slug, fecthAbis]);
 
   const handleDocumentUploaded = () => {
     fecthPermit();
@@ -236,6 +215,7 @@ export function PermitDetailView({ slug }) {
           picture={permit?.picture}
           signature={permit?.signature}
           slug={permit?.slug}
+          employee_slug={permit?.employee_slug}
           fingerprints_picture={permit?.fingerprints_picture}
           onUpdate={handleUpdate}
         />

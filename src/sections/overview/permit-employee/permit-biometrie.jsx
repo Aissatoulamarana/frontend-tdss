@@ -23,7 +23,14 @@ import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
-export function BiometricData({ slug, picture, signature, fingerprints_picture, onUpdate }) {
+export function BiometricData({
+  slug,
+  picture,
+  signature,
+  fingerprints_picture,
+  onUpdate,
+  employee_slug,
+}) {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewData, setPreviewData] = useState({ type: '', url: '' });
 
@@ -60,6 +67,23 @@ export function BiometricData({ slug, picture, signature, fingerprints_picture, 
       reader.readAsDataURL(file);
     }
   };
+
+  const handleFetchABIS = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(API.getEmployeeFromABIS(employee_slug));
+      if (response.success) {
+        toast.success('Données biométriques récupérées avec succès');
+      }
+    } catch (error) {
+      const errorMessage =
+        error.data || error.details || error.message || error.detail || error.errors?.[0];
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [employee_slug]);
 
   // Fonction générique pour sauvegarder un fichier
   const handleSaveFile = useCallback(
@@ -426,6 +450,23 @@ export function BiometricData({ slug, picture, signature, fingerprints_picture, 
             <Iconify icon="mdi:fingerprint" width={{ xs: 24, sm: 28 }} />
             Données Biométriques
           </Typography>
+          <Chip
+            icon={<Iconify icon="solar:refresh-bold" width={18} />}
+            label="Récupérer les données"
+            color="default"
+            onClick={handleFetchABIS}
+            size="small"
+            sx={{
+              fontWeight: 600,
+              px: 1,
+              height: { xs: 28, sm: 32 },
+              '& .MuiChip-icon': { ml: 0.5 },
+              '& .MuiChip-label': {
+                px: 1,
+                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+              },
+            }}
+          />
         </Box>
 
         <Divider sx={{ mb: 3 }} />
