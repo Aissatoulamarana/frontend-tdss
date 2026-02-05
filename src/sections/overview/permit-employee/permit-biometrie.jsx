@@ -69,7 +69,7 @@ export function BiometricData({
   };
 
   const handleFetchABIS = useCallback(async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await axios.get(API.getEmployeeFromABIS(employee_slug));
       if (response.success) {
@@ -80,8 +80,6 @@ export function BiometricData({
         error.data || error.details || error.message || error.detail || error.errors?.[0];
       setError(errorMessage);
       toast.error(errorMessage);
-    } finally {
-      setLoading(false);
     }
   }, [employee_slug]);
 
@@ -509,8 +507,8 @@ export function BiometricData({
         {!picturePreview && !signaturePreview && !fingerprintsPreview && (
           <Alert severity="info" sx={{ mt: 3 }}>
             <Typography variant="body2">
-              Aucune donnée biométrique n'a été enregistrée. Cliquez sur "Ajouter" pour télécharger
-              les fichiers.
+              Aucune donnée biométrique n'a été enregistrée. Cliquez sur "Récupérer les données"
+              pour obetnir les fichiers.
             </Typography>
           </Alert>
         )}
