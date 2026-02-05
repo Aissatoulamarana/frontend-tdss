@@ -78,7 +78,7 @@ export function BiometricData({
     } catch (error) {
       const errorMessage =
         error.data || error.details || error.message || error.detail || error.errors?.[0];
-      setError(errorMessage);
+      // setError(errorMessage);
       toast.error(errorMessage);
     }
   }, [employee_slug]);
