@@ -62,14 +62,14 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   const handlePrintClick = async () => {
     try {
-      // const ok = await onPrint?.();
+      const ok = await onPrint?.();
 
-      // if (ok) {
-      //   onClose?.();
-      setOpenPrintDialog(true);
-      // } else {
-      //   onClose?.();
-      // }
+      if (ok) {
+        onClose?.();
+        setOpenPrintDialog(true);
+      } else {
+        onClose?.();
+      }
     } catch (error) {
       console.error('Erreur lors du print click:', err);
       onClose?.();
