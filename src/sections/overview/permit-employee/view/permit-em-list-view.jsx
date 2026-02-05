@@ -63,16 +63,18 @@ dayjs.locale('fr'); // Set the default locale to French
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tous' },
+  { value: 'processing', label: 'En traitement' },
+  { value: 'billed', label: 'Facturé' },
+  { value: 'paid', label: 'Payé' },
+
   { value: 'submitted', label: 'Soumis' },
   { value: 'validated', label: 'Validé' },
+  { value: 'correction', label: 'En correction' },
   // { value: 'rejected', label: 'Rejeté' },
-  { value: 'processing', label: 'En traitement' },
+
   { value: 'printed', label: 'Imprimé' },
   { value: 'delivered', label: 'Livré' },
   { value: 'expired', label: 'Expiré' },
-  { value: 'billed', label: 'Facturé' },
-  { value: 'paid', label: 'Payé' },
-  { value: 'correction', label: 'En correction' },
 ];
 
 const TABLE_HEAD = [
