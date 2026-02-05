@@ -17,6 +17,12 @@ import { useBoolean } from 'src/hooks/use-boolean';
 
 import { EmployeeQuickEditForm } from '../declaration/components/employe-quick-edit-form';
 
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { toast } from 'src/components/snackbar';
+
+import API from 'src/utils/api';
+import axios from 'src/utils/axios';
+
 // ----------------------------------------------------------------------
 
 export function PermitEmloyeeInfo({ info, type }) {
@@ -24,6 +30,8 @@ export function PermitEmloyeeInfo({ info, type }) {
   const router = useRouter();
 
   const editOpen = useBoolean();
+
+  const syncOpen = useBoolean();
 
   const handleAttach = () => {
     if (fileRef.current) {
@@ -44,6 +52,23 @@ export function PermitEmloyeeInfo({ info, type }) {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleSync = async () => {
+    try {
+      const response = await axios.post(API.saveEmployeeToABIS(info?.employee_slug));
+      if (response.status === 200 || response.status === 201 || response.data) {
+        toast.success('Synchronisation réussie avec ABIS');
+      }
+    } catch (error) {
+      const errorMessage =
+        error?.error ||
+        error?.details ||
+        error?.message ||
+        error?.detail ||
+        error?.non_field_errors?.[0];
+      toast.error(`Échec de la synchronisation avec ABIS: ${errorMessage}`);
+    }
   };
 
   const getStatusConfig = (status) => {
@@ -311,6 +336,26 @@ export function PermitEmloyeeInfo({ info, type }) {
                   },
                 }}
               />
+              {type === 'agent' && (
+                <Chip
+                  icon={<Iconify icon="solar:refresh-bold" width={18} />}
+                  label="Synchroniser"
+                  color="default"
+                  onClick={syncOpen.onTrue}
+                  size="small"
+                  sx={{
+                    fontWeight: 600,
+                    px: 1,
+                    height: { xs: 28, sm: 32 },
+                    '& .MuiChip-icon': { ml: 0.5 },
+                    '& .MuiChip-label': {
+                      px: 1,
+                      fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                    },
+                  }}
+                />
+              )}
+
               {info?.status === 'correction' && (type === 'agent' || type === 'admin') && (
                 <Chip
                   icon={<Iconify icon="mdi:pen" width={18} />}
@@ -452,6 +497,24 @@ export function PermitEmloyeeInfo({ info, type }) {
             onClose={editOpen.onFalse}
             isPermit={true}
             dec_slug={info?.declaration_slug}
+          />
+
+          <ConfirmDialog
+            open={syncOpen.value}
+            onClose={syncOpen.onFalse}
+            title="Confirmer la Synchronisation"
+            content="Êtes-vous sûr de vouloir synchroniser les informations de cet employé avec ABIS ?"
+            action={
+              <Button
+                variant="contained"
+                onClick={async () => {
+                  await handleSync();
+                  syncOpen.onFalse();
+                }}
+              >
+                Synchroniser
+              </Button>
+            }
           />
         </Box>
       </Card>

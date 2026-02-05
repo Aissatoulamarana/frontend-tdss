@@ -224,7 +224,7 @@ export function BiometricData({ slug, picture, signature, fingerprints_picture, 
                 Voir
               </Button>
             )}
-            <Button
+            {/* <Button
               variant={hasData ? 'outlined' : 'contained'}
               color={color}
               fullWidth
@@ -233,7 +233,7 @@ export function BiometricData({ slug, picture, signature, fingerprints_picture, 
               sx={{ fontWeight: 600 }}
             >
               {hasData ? 'Modifier' : 'Ajouter'}
-            </Button>
+            </Button> */}
           </Stack>
         </Box>
       </Card>

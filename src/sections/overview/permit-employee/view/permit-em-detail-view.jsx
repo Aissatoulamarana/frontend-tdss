@@ -59,6 +59,7 @@ export function PermitDetailView({ slug }) {
   const [loading, setLoading] = useState(true);
 
   const [permit, setPermit] = useState();
+  const [abis, setAbis] = useState();
   const [documents, setDocuments] = useState([]);
   const [status, setStatus] = useState();
   const [job, setJob] = useState();
@@ -84,6 +85,21 @@ export function PermitDetailView({ slug }) {
     }
   }, [slug]);
 
+  const fecthAbis = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(API.getEmployeeFromABIS(permit?.employee_slug));
+      setAbis(response.data);
+    } catch (error) {
+      const errorMessage =
+        error.data || error.details || error.message || error.detail || error.errors?.[0];
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [permit]);
+
   useEffect(() => {
     fecthPermit();
   }, [fecthPermit]);
@@ -93,6 +109,12 @@ export function PermitDetailView({ slug }) {
       setStatus(permit.status);
     }
   }, [permit]);
+
+  useEffect(() => {
+    if (tabs.value === 'biometrie' && permit?.employee_slug) {
+      fecthAbis();
+    }
+  }, [tabs.value, permit?.employee_slug]);
 
   const handleDocumentUploaded = () => {
     fecthPermit();
@@ -187,6 +209,7 @@ export function PermitDetailView({ slug }) {
           created_at={permit?.created_on}
           expired_at={permit?.card_expires_at}
           status={status}
+          dateRes={permit}
         />
       )}
       {tabs.value === 'plan' && (

@@ -1,5 +1,8 @@
 // const BASE_URL = 'http://192.168.1.152:8000/api'; // Adresse de votre backend
 
+import { Save } from '@mui/icons-material';
+import { get } from 'react-hook-form';
+
 const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
 
 const API = {
@@ -221,6 +224,11 @@ const API = {
   reportsPaiement: () => `${BASE_URL}/reports/payments/`,
   reportsPermits: () => `${BASE_URL}/reports/permits/`,
   reportsEmployees: () => `${BASE_URL}/reports/employees/`,
+
+  // Endpoint ABIS
+  saveEmployeeToABIS: (slug) => `${BASE_URL}/abis/employees/${slug}/enroll/`,
+  getEmployeeFromABIS: (slug) => `${BASE_URL}/abis/employees/${slug}`,
+  updateABISEmployee: (slug) => `${BASE_URL}/abis/employees/${slug}/update/`,
 };
 
 export default API;
