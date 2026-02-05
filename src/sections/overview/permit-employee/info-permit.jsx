@@ -11,10 +11,11 @@ import Chip from '@mui/material/Chip';
 import { Iconify } from 'src/components/iconify';
 
 import { fDate } from 'src/utils/format-time';
+import { da } from 'date-fns/locale';
 
 // ----------------------------------------------------------------------
 
-export function PermitInfo({ created_at, permit, expired_at, status }) {
+export function PermitInfo({ created_at, permit, expired_at, status, dateRes }) {
   const fileRef = useRef(null);
 
   const handleAttach = () => {
@@ -155,43 +156,35 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
   const getRelevantDates = () => {
     const dates = [];
 
-    if (permit?.validated_at) {
+    if (dateRes?.validated_at) {
       dates.push({
         icon: 'mdi:check-decagram',
         label: 'Date de Validation',
-        value: formatDate(permit.validated_at),
+        value: formatDate(dateRes.validated_at),
       });
     }
 
-    if (permit?.printed_at) {
+    if (dateRes?.printed_at) {
       dates.push({
         icon: 'mdi:printer-check',
         label: "Date d'Impression",
-        value: formatDate(permit.printed_at),
+        value: formatDate(dateRes.printed_at),
       });
     }
 
-    if (permit?.delivered_at) {
+    if (dateRes?.delivered_at) {
       dates.push({
         icon: 'mdi:package-variant-closed-check',
         label: 'Date de Livraison',
-        value: formatDate(permit.delivered_at),
+        value: formatDate(dateRes.delivered_at),
       });
     }
 
-    if (permit?.card_issued_at) {
+    if (dateRes?.card_issued_at) {
       dates.push({
         icon: 'mdi:card-account-details',
         label: "Date d'Émission",
-        value: formatDate(permit.card_issued_at),
-      });
-    }
-
-    if (permit?.card_expires_at) {
-      dates.push({
-        icon: 'mdi:calendar-alert',
-        label: "Date d'Expiration",
-        value: formatDate(permit.card_expires_at),
+        value: formatDate(dateRes.card_issued_at),
       });
     }
 
@@ -201,27 +194,35 @@ export function PermitInfo({ created_at, permit, expired_at, status }) {
   const getResponsibles = () => {
     const responsibles = [];
 
-    if (permit?.submitted_by) {
+    if (dateRes?.created_by) {
+      responsibles.push({
+        icon: 'mdi:account-plus',
+        label: 'Créé par',
+        value: dateRes.created_by,
+      });
+    }
+
+    if (dateRes?.submitted_by) {
       responsibles.push({
         icon: 'mdi:account-arrow-up',
         label: 'Soumis par',
-        value: submitted_by,
+        value: dateRes.submitted_by,
       });
     }
 
-    if (permit?.validated_by) {
+    if (dateRes?.validated_by) {
       responsibles.push({
         icon: 'mdi:account-check',
         label: 'Validé par',
-        value: validated_by,
+        value: dateRes.validated_by,
       });
     }
 
-    if (permit?.rejected_by) {
+    if (dateRes?.rejected_by) {
       responsibles.push({
         icon: 'mdi:account-cancel',
         label: 'Rejeté par',
-        value: rejected_by,
+        value: dateRes.rejected_by,
       });
     }
 
