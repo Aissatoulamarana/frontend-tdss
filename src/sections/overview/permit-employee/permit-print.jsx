@@ -195,8 +195,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   function createLabelValueHTML(label, value, options = {}) {
     const {
-      labelSize = 1.8,
-      valueSize = 2.5,
+      fontSize = 2.5,
       labelWeight = 400,
       valueWeight = 700,
       marginBottom = 1,
@@ -205,34 +204,34 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
     const displayValue = (value && (uppercase ? String(value).toUpperCase() : value)) || 'N/A';
 
-    // On applique le style max-width SEULEMENT pour FONCTION et ADRESSE
     const shouldLimit =
       label.trim().toUpperCase() === 'FONCTION' || label.trim().toUpperCase() === 'ADRESSE';
 
     const limitedStyle = shouldLimit
       ? `
-        max-width: 30mm;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      `
-      : ''; // pas de limitation pour les autres
+      max-width: 30mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    `
+      : '';
 
     return `
     <div style="
       margin-bottom: ${marginBottom}mm;
       color: #000;
-      font-size: ${labelSize}mm;
+      font-size: ${fontSize}mm;
+      display: flex;
+      align-items: baseline;
+      line-height: 1;
     ">
       <span style="font-weight: ${labelWeight};">
         ${label} :
       </span>
       <span style="
-        font-size: ${valueSize}mm;
         font-weight: ${valueWeight};
         letter-spacing: 0.1mm;
-        vertical-align: middle;
-        display: inline-block;
+        margin-left: 1mm;
         ${limitedStyle}
       ">
         ${displayValue}
@@ -286,7 +285,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Photo - Position absolue en haut à gauche -->
-          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.picture
                 ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
@@ -303,7 +302,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
             ${createLabelValueHTML('À ', permit?.birth_place)}
             ${createLabelValueHTML('NATIONALITÉ ', permit?.nationality)}
-            ${createLabelValueHTML('SEXE ', permit?.sexe === 'male' ? 'M' : 'F')}
+            ${createLabelValueHTML('SEXE ', permit?.sexe === 'male' ? 'HOMME' : 'FEMME')}
          
            
           </div>
@@ -352,7 +351,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           <!-- Section supérieure avec informations employeur -->
           <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
           <!-- EMPLOYEUR -->
-          ${createEmployerHTML('EMPLOYEUR', permit?.company_sigle)}
+          ${createLabelValueHTML('EMPLOYEUR', permit?.company_sigle)}
 
 
             <!-- ADRESSE EMPLOYEUR -->
@@ -384,7 +383,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           </div>
 
           <!-- QR Code en bas à gauche -->
-          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white; border: 0.3mm solid #ccc; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white;  display: flex; align-items: center; justify-content: center; overflow: hidden;">
             ${
               qrCodeUrl
                 ? `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%;" />`
