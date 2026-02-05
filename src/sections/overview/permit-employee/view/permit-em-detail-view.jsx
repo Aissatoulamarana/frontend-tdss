@@ -98,7 +98,7 @@ export function PermitDetailView({ slug }) {
     } finally {
       setLoading(false);
     }
-  }, [permit]);
+  }, [permit?.employee_slug]);
 
   useEffect(() => {
     fecthPermit();
@@ -114,7 +114,7 @@ export function PermitDetailView({ slug }) {
     if (tabs.value === 'biometrie' && permit?.employee_slug) {
       fecthAbis();
     }
-  }, [tabs.value, permit?.employee_slug]);
+  }, [tabs.value, permit?.employee_slug, fecthAbis]);
 
   const handleDocumentUploaded = () => {
     fecthPermit();
