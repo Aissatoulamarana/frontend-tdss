@@ -78,20 +78,17 @@ const STATUS_OPTIONS = [
 ];
 
 const BASE_TABLE_HEAD = [
-  { id: 'check', width: 88 },
+  // { id: 'check', width: 88 },
   { id: 'reference', label: 'Reference' },
   { id: 'passport', label: 'Numéro Passeport' },
   { id: 'name', label: 'Nom Complet' },
   { id: 'phone', label: 'Téléphone' },
-  //   { id: 'sexe', label: 'Genre' },
-  //   { id: 'country', label: 'Nationalité' },
   { id: 'function', label: 'Fonction' },
   { id: 'entreprise', label: 'Entreprise' },
   { id: 'type', label: ' Permis ' },
   { id: 'typedec', label: 'Type Déclaration ' },
   { id: 'created_on', label: 'Date de création' },
   { id: 'statut', label: 'Status' },
-
   { id: '', width: 88 },
 ];
 
