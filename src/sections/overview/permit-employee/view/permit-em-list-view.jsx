@@ -78,7 +78,7 @@ const STATUS_OPTIONS = [
 ];
 
 const BASE_TABLE_HEAD = [
-  { id: '', width: 88 },
+  { id: 'check', width: 88 },
   { id: 'reference', label: 'Reference' },
   { id: 'passport', label: 'Numéro Passeport' },
   { id: 'name', label: 'Nom Complet' },
@@ -379,20 +379,20 @@ export function PermitListView() {
       };
       const response = await axios.post(API.printPermis(), paylaod);
 
-      if (response?.data || response?.status === 200 || response?.status === 201) {
-        toast.success(`${table.selected.length} permits marqués comme imprimés`);
+      // if (response?.data || response?.status === 200 || response?.status === 201) {
+      //   toast.success(`${table.selected.length} permits marqués comme imprimés`);
 
-        setTableData((prevData) =>
-          prevData.map((item) =>
-            table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
-          )
-        );
-      }
-
+      //   setTableData((prevData) =>
+      //     prevData.map((item) =>
+      //       table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
+      //     )
+      //   );
       generateBulkPrint(selectedForPrint, printMode);
 
       setOpenBulkPrint(false);
       table.setSelected([]);
+      // } else {
+      //   toast.error("Echec lors de l'impression des permits sélectionnés");
       // }
     } catch (error) {
       const errorMessage =
@@ -420,7 +420,7 @@ export function PermitListView() {
       );
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200`;
 
-      cardsHTML += generateCardHTML(permit, qrUrl, index, printMode);
+      cardsHTML += generateCardHTML(permit, qrUrl, index, printMode, permits?.length);
     });
 
     printDocument.write(`
@@ -437,7 +437,7 @@ export function PermitListView() {
           
           body {
             margin: 0;
-            padding: 20px;
+            padding: ${printMode === 'a4' ? '20px' : '0'};
             background: white;
             font-family: Arial, sans-serif;
           }
@@ -445,17 +445,22 @@ export function PermitListView() {
           .print-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: ${printMode === 'a4' ? '20px' : '0'};
             align-items: center;
           }
           
           .permit-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: ${printMode === 'a4' ? '15px' : '0'};
+            align-items: center;
+            width: 100%;
             page-break-after: ${printMode === 'duplex' ? 'always' : 'auto'};
           }
-          
+            .permit-group: last-child {
+              page-break-after: auto;
+            }   
+
           .card-face {
             width: 86mm;
             height: 54mm;
@@ -464,6 +469,11 @@ export function PermitListView() {
             overflow: hidden;
             page-break-inside: avoid;
             break-inside: avoid;
+            ${printMode === 'duplex' ? 'page-break-after: always;' : ''}
+          }
+
+          .card-back {
+          ${printMode === 'duplex' ? 'page-break-after: always;' : ''}
           }
           
           .card-background {
@@ -485,7 +495,7 @@ export function PermitListView() {
           @media print {
             @page {
               margin: 0;
-              size: ${printMode === 'duplex' ? '86mm 54mm' : 'A4'};
+              size: ${printMode === 'duplex' ? '86mm 54mm' : 'A4 '};
             }
             
             body {
@@ -514,14 +524,53 @@ export function PermitListView() {
         <div class="print-container">
           ${cardsHTML}
         </div>
-        <script>
+       <script>
           window.onload = function() {
-            setTimeout(() => {
-              window.print();
+            // Attendre que toutes les images soient chargées
+            const images = document.querySelectorAll('img');
+            let loadedCount = 0;
+            const totalImages = images.length;
+            
+            if (totalImages === 0) {
+              // Pas d'images, lancer l'impression directement
               setTimeout(() => {
-                window.close();
+                window.print();
+                setTimeout(() => window.close(), 500);
               }, 500);
-            }, 1000);
+            } else {
+              images.forEach(img => {
+                if (img.complete) {
+                  loadedCount++;
+                } else {
+                  img.onload = () => {
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                      setTimeout(() => {
+                        window.print();
+                        setTimeout(() => window.close(), 500);
+                      }, 500);
+                    }
+                  };
+                  img.onerror = () => {
+                    loadedCount++;
+                    if (loadedCount === totalImages) {
+                      setTimeout(() => {
+                        window.print();
+                        setTimeout(() => window.close(), 500);
+                      }, 500);
+                    }
+                  };
+                }
+              });
+              
+              // Si toutes les images sont déjà chargées
+              if (loadedCount === totalImages) {
+                setTimeout(() => {
+                  window.print();
+                  setTimeout(() => window.close(), 500);
+                }, 500);
+              }
+            }
           };
         </script>
       </body>
@@ -532,7 +581,7 @@ export function PermitListView() {
   };
 
   // Fonction helper pour générer le HTML d'une carte
-  const generateCardHTML = (permit, qrUrl, index, printMode) => {
+  const generateCardHTML = (permit, qrUrl, index, printMode, totalPermits) => {
     const formatDate = (dateString) => {
       if (!dateString) return 'N/A';
       const date = new Date(dateString);
@@ -559,8 +608,7 @@ export function PermitListView() {
 
     const createLabelValueHTML = (label, value, options = {}) => {
       const {
-        labelSize = 1.8,
-        valueSize = 2.5,
+        fontSize = 2.5,
         labelWeight = 400,
         valueWeight = 700,
         marginBottom = 1,
@@ -576,9 +624,23 @@ export function PermitListView() {
         : '';
 
       return `
-    <div style="margin-bottom: ${marginBottom}mm; color: #000; font-size: ${labelSize}mm;">
-      <span style="font-weight: ${labelWeight};">${label} :</span>
-      <span style="font-size: ${valueSize}mm; font-weight: ${valueWeight}; letter-spacing: 0.1mm; vertical-align: middle; display: inline-block; ${limitedStyle}">
+    <div style="
+      margin-bottom: ${marginBottom}mm;
+      color: #000;
+      font-size: ${fontSize}mm;
+      display: flex;
+      align-items: baseline;
+      line-height: 1;
+    ">
+      <span style="font-weight: ${labelWeight};">
+        ${label} :
+      </span>     
+        <span style="
+        font-weight: ${valueWeight};
+        letter-spacing: 0.1mm;
+        margin-left: 1mm;
+        ${limitedStyle}
+      ">
         ${displayValue}
       </span>
     </div>`;
@@ -595,20 +657,40 @@ export function PermitListView() {
       else if (length > 28) fontSize = 2.2;
 
       return `
-    <div style="margin-bottom: 1mm; color: #000; font-size: 1.8mm; line-height: 1;">
-      <span style="font-weight: 400;">${label} :</span>
-      <span style="font-size: ${fontSize}mm; font-weight: 700; letter-spacing: 0.03mm; display: inline-block; max-width: 38mm; white-space: nowrap; overflow: hidden; vertical-align: middle;">
+    <div style="
+      margin-bottom: 1mm;
+      color: #000;
+      font-size: 1.8mm;
+      line-height: 1;
+    ">      
+     <span style="font-weight: 400;">
+        ${label} :
+      </span>
+      <span style="
+        font-size: ${fontSize}mm;
+        font-weight: 700;
+        letter-spacing: 0.03mm;
+        display: inline-block;
+        max-width: 38mm;
+        white-space: nowrap;
+        overflow: hidden;
+        vertical-align: middle;
+      ">
         ${text}
       </span>
     </div>`;
     };
 
+    // Déterminer si c'est la dernière carte pour éviter le saut de page
+    const isLastCard = index === totalPermits - 1;
+    const groupBreak = printMode === 'a4' && !isLastCard ? 'page-break-after: always;' : '';
+
     return `
-    <div class="permit-group">
+    <div class="permit-group" style="${groupBreak}">
       <!-- RECTO -->
       <div class="card-face card-front">
         <div class="card-content" style="padding: 8mm 5mm;">
-          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${permit?.picture ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />` : '<div style="color: #999; font-size: 2.5mm;">PHOTO</div>'}
           </div>
 
@@ -619,10 +701,10 @@ export function PermitListView() {
             ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
             ${createLabelValueHTML('À ', permit?.birth_place)}
             ${createLabelValueHTML('NATIONALITÉ ', permit?.nationality)}
-            ${createLabelValueHTML('SEXE ', permit?.sexe === 'male' ? 'M' : 'F')}
+            ${createLabelValueHTML('SEXE ', permit?.sexe === 'male' ? 'HOMME' : 'FEMME')}
           </div>
 
-          <div style="position: absolute; top: 48mm; left: 4mm; width: 20mm; height: 6mm; border: 1px solid #999; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <div style="position: absolute; top: 48mm; left: 4mm; width: 20mm; height: 6mm;  display: flex; align-items: center; justify-content: center; overflow: hidden;">
             ${permit?.signature ? `<img src="${permit.signature}" alt="signature" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : '<div style="font-size: 1.8mm; color: #000; font-weight: 400;">SIGNATURE DU TITULAIRE</div>'}
           </div>
 
@@ -644,7 +726,7 @@ export function PermitListView() {
             ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
           </div>
 
-          <div style="position: absolute; top: 7mm; right: 27.5mm; width: 8mm; height: 12mm; background: white; border: 0.3mm solid #999; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 7mm; right: 27.5mm; width: 8mm; height: 12mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${permit?.picture ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />` : '<div style="color: #999; font-size: 2mm;">PHOTO</div>'}
           </div>
 
