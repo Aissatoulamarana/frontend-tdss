@@ -77,8 +77,8 @@ const STATUS_OPTIONS = [
   { value: 'expired', label: 'Expiré' },
 ];
 
-const TABLE_HEAD = [
-  //   { id: 'number', label: 'Numéro Carte' },
+const BASE_TABLE_HEAD = [
+  { id: '', width: 88 },
   { id: 'reference', label: 'Reference' },
   { id: 'passport', label: 'Numéro Passeport' },
   { id: 'name', label: 'Nom Complet' },
@@ -108,6 +108,10 @@ export function PermitListView() {
   const router = useRouter();
 
   const confirm = useBoolean();
+
+  const TABLE_HEAD = isPrinter
+    ? BASE_TABLE_HEAD
+    : BASE_TABLE_HEAD.filter((col, index) => index !== 0);
 
   const allColumns = TABLE_HEAD.map((column) => column.id).filter((id) => id);
   const [visibleColumns, setVisibleColumns] = useState(allColumns);

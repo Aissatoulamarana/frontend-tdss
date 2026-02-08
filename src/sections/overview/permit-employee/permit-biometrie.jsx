@@ -30,6 +30,8 @@ export function BiometricData({
   fingerprints_picture,
   onUpdate,
   employee_slug,
+  type,
+  status,
 }) {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewData, setPreviewData] = useState({ type: '', url: '' });
@@ -69,16 +71,36 @@ export function BiometricData({
   };
 
   const handleFetchABIS = useCallback(async () => {
-    // setLoading(true);
     try {
       const response = await axios.get(API.getEmployeeFromABIS(employee_slug));
-      if (response.success) {
-        toast.success('Données biométriques récupérées avec succès');
+      const data = response.data; // 👈 très important
+
+      if (data.success) {
+        toast.success(data.message || 'Données biométriques récupérées avec succès');
+
+        // Exemple : afficher infos utiles
+        if (!data.biometrics_status.is_complete) {
+          toast.warning(
+            `Biométrie incomplète : 
+           Face: ${data.biometrics_status.has_face ? '✔' : '❌'}, 
+           Signature: ${data.biometrics_status.has_signature ? '✔' : '❌'}, 
+           Empreintes: ${data.biometrics_status.fingerprints_count}`
+          );
+        }
+
+        if (!data.is_enrolled) {
+          toast.info('Employé non encore enrôlé ');
+        }
+      } else {
+        toast.error(data.message || 'Échec de récupération des données biométriques');
       }
     } catch (error) {
       const errorMessage =
-        error.data || error.details || error.message || error.detail || error.errors?.[0];
-      // setError(errorMessage);
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        error?.message ||
+        'Erreur inconnue';
+
       toast.error(errorMessage);
     }
   }, [employee_slug]);
@@ -448,23 +470,28 @@ export function BiometricData({
             <Iconify icon="mdi:fingerprint" width={{ xs: 24, sm: 28 }} />
             Données Biométriques
           </Typography>
-          <Chip
-            icon={<Iconify icon="solar:refresh-bold" width={18} />}
-            label="Récupérer les données"
-            color="default"
-            onClick={handleFetchABIS}
-            size="small"
-            sx={{
-              fontWeight: 600,
-              px: 1,
-              height: { xs: 28, sm: 32 },
-              '& .MuiChip-icon': { ml: 0.5 },
-              '& .MuiChip-label': {
-                px: 1,
-                fontSize: { xs: '0.75rem', sm: '0.8125rem' },
-              },
-            }}
-          />
+          {type === 'agent' &&
+            status !== 'printed' &&
+            status !== 'delivered' &&
+            status !== 'enrolled' && (
+              <Chip
+                icon={<Iconify icon="solar:refresh-bold" width={18} />}
+                label="Récupérer les données"
+                color="default"
+                onClick={handleFetchABIS}
+                size="small"
+                sx={{
+                  fontWeight: 600,
+                  px: 1,
+                  height: { xs: 28, sm: 32 },
+                  '& .MuiChip-icon': { ml: 0.5 },
+                  '& .MuiChip-label': {
+                    px: 1,
+                    fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                  },
+                }}
+              />
+            )}
         </Box>
 
         <Divider sx={{ mb: 3 }} />
