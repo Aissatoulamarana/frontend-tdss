@@ -99,16 +99,18 @@ export function TableRowComPermit({
           },
         }}
       >
-        <TableCell padding="checkbox">
-          <Checkbox
-            id={row.slug}
-            checked={selected}
-            onClick={(e) => {
-              e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
-              onSelectRow(e);
-            }}
-          />
-        </TableCell>
+        {type === 'printer' && (
+          <TableCell padding="checkbox">
+            <Checkbox
+              id={row.slug}
+              checked={selected}
+              onClick={(e) => {
+                e.stopPropagation(); // Empêche le clic sur la checkbox de se propager au TableRow
+                onSelectRow(e);
+              }}
+            />
+          </TableCell>
+        )}
 
         {/* {visibleColumns.includes('number') && (
           <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.number}</TableCell>

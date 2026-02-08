@@ -218,6 +218,8 @@ export function PermitDetailView({ slug }) {
           employee_slug={permit?.employee_slug}
           fingerprints_picture={permit?.fingerprints_picture}
           onUpdate={handleUpdate}
+          type={type}
+          status={permit?.status}
         />
       )}
     </DashboardContent>

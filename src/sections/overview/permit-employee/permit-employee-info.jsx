@@ -81,6 +81,10 @@ export function PermitEmloyeeInfo({ info, type }) {
       printed: { color: 'info', label: 'Imprimé', icon: 'mdi:printer' },
       delivered: { color: 'primary', label: 'Délivré', icon: 'mdi:package-variant-closed' },
       submitted: { color: 'success', label: 'Soumis', icon: 'mdi:check-circle' },
+      correction: { color: 'error', label: 'Correction', icon: 'mdi:alert-circle' },
+      expired: { color: 'error', label: 'Expiré', icon: 'mdi:calendar-alert' },
+      billed: { color: 'info', label: 'Facturé', icon: 'mdi:receipt' },
+      paid: { color: 'success', label: 'Payé', icon: 'mdi:check-circle' },
     };
     return configs[status] || { color: 'default', label: status, icon: 'mdi:information' };
   };
@@ -336,25 +340,28 @@ export function PermitEmloyeeInfo({ info, type }) {
                   },
                 }}
               />
-              {type === 'agent' && (
-                <Chip
-                  icon={<Iconify icon="solar:refresh-bold" width={18} />}
-                  label="Envoyer à l'enrollement"
-                  color="default"
-                  onClick={syncOpen.onTrue}
-                  size="small"
-                  sx={{
-                    fontWeight: 600,
-                    px: 1,
-                    height: { xs: 28, sm: 32 },
-                    '& .MuiChip-icon': { ml: 0.5 },
-                    '& .MuiChip-label': {
+              {type === 'agent' &&
+                info?.status !== 'printed' &&
+                info?.status !== 'delivered' &&
+                info?.status !== 'enrolled' && (
+                  <Chip
+                    icon={<Iconify icon="solar:refresh-bold" width={18} />}
+                    label="Envoyer à l'enrollement"
+                    color="default"
+                    onClick={syncOpen.onTrue}
+                    size="small"
+                    sx={{
+                      fontWeight: 600,
                       px: 1,
-                      fontSize: { xs: '0.75rem', sm: '0.8125rem' },
-                    },
-                  }}
-                />
-              )}
+                      height: { xs: 28, sm: 32 },
+                      '& .MuiChip-icon': { ml: 0.5 },
+                      '& .MuiChip-label': {
+                        px: 1,
+                        fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                      },
+                    }}
+                  />
+                )}
 
               {info?.status === 'correction' && (type === 'agent' || type === 'admin') && (
                 <Chip
@@ -502,8 +509,8 @@ export function PermitEmloyeeInfo({ info, type }) {
           <ConfirmDialog
             open={syncOpen.value}
             onClose={syncOpen.onFalse}
-            title="Confirmer la Synchronisation"
-            content="Êtes-vous sûr de vouloir synchroniser les informations de cet employé avec ABIS ?"
+            title="Confirmer l'envoie à l'enrollement"
+            content="Êtes-vous sûr de vouloir envoyer les informations de cet employé à l'enrollement ?"
             action={
               <Button
                 variant="contained"
@@ -512,7 +519,7 @@ export function PermitEmloyeeInfo({ info, type }) {
                   syncOpen.onFalse();
                 }}
               >
-                Synchroniser
+                Envoyer à l'enrollement
               </Button>
             }
           />
