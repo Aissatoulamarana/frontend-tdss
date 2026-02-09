@@ -107,8 +107,8 @@ export function PermitListView() {
   const confirm = useBoolean();
 
   const TABLE_HEAD = isPrinter
-    ? BASE_TABLE_HEAD
-    : BASE_TABLE_HEAD.filter((col, index) => index !== 0);
+    ? BASE_TABLE_HEAD.filter((col) => col.id !== 'typedec')
+    : BASE_TABLE_HEAD;
 
   const allColumns = TABLE_HEAD.map((column) => column.id).filter((id) => id);
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
