@@ -315,7 +315,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
               left: 4mm; 
               width: 20mm; 
               height: 6mm; 
-              border: 1px solid #999; 
+              
               display: flex; 
               align-items: center; 
               justify-content: center; 
