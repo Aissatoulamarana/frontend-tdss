@@ -78,20 +78,17 @@ const STATUS_OPTIONS = [
 ];
 
 const BASE_TABLE_HEAD = [
-  { id: 'check', width: 88 },
+  // { id: 'check', width: 88 },
   { id: 'reference', label: 'Reference' },
   { id: 'passport', label: 'Numéro Passeport' },
   { id: 'name', label: 'Nom Complet' },
   { id: 'phone', label: 'Téléphone' },
-  //   { id: 'sexe', label: 'Genre' },
-  //   { id: 'country', label: 'Nationalité' },
   { id: 'function', label: 'Fonction' },
   { id: 'entreprise', label: 'Entreprise' },
   { id: 'type', label: ' Permis ' },
   { id: 'typedec', label: 'Type Déclaration ' },
   { id: 'created_on', label: 'Date de création' },
   { id: 'statut', label: 'Status' },
-
   { id: '', width: 88 },
 ];
 
@@ -110,8 +107,8 @@ export function PermitListView() {
   const confirm = useBoolean();
 
   const TABLE_HEAD = isPrinter
-    ? BASE_TABLE_HEAD
-    : BASE_TABLE_HEAD.filter((col, index) => index !== 0);
+    ? BASE_TABLE_HEAD.filter((col) => col.id !== 'typedec')
+    : BASE_TABLE_HEAD;
 
   const allColumns = TABLE_HEAD.map((column) => column.id).filter((id) => id);
   const [visibleColumns, setVisibleColumns] = useState(allColumns);
