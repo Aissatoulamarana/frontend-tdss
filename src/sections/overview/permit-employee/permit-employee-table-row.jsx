@@ -79,6 +79,15 @@ export function TableRowComPermit({
         return 'success';
       case 'processing':
         return 'warning';
+      case 'billed':
+        return 'info';
+      case 'paid':
+        return 'success';
+      case 'correction':
+        return 'warning';
+      case 'expired':
+        return 'error';
+
       default:
         return 'default';
     }
@@ -180,20 +189,23 @@ export function TableRowComPermit({
         slotProps={{ arrow: { placement: 'right-top' } }}
       >
         <MenuList>
-          {type === 'agent' && row.status === 'processing' && (
-            <MenuItem
-              onClick={() => {
-                submitConfirm.onTrue();
-                popover.onClose();
-              }}
-              sx={{ color: 'success.main' }}
-            >
-              <Iconify icon="mdi:check-bold" />
-              Soumettre
-            </MenuItem>
-          )}
+          {type === 'agent' &&
+            (row.status === 'processing' ||
+              row.status === 'paid' ||
+              row.status === 'correction') && (
+              <MenuItem
+                onClick={() => {
+                  submitConfirm.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ color: 'success.main' }}
+              >
+                <Iconify icon="mdi:check-bold" />
+                Soumettre
+              </MenuItem>
+            )}
 
-          {type === 'supervisor' && row.status === 'submitted' && (
+          {(type === 'supervisor' || type === 'aguipe') && row.status === 'submitted' && (
             <>
               <MenuItem
                 onClick={() => {
