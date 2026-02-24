@@ -276,15 +276,18 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
             </Tooltip>
           )}
 
-          {type === 'agent' && currentStatus === 'processing' && (
-            <Tooltip title="Soumettre">
-              <IconButton onClick={() => submitConfirm.onTrue()}>
-                <Iconify icon="mdi:check-bold" />
-              </IconButton>
-            </Tooltip>
-          )}
+          {type === 'agent' &&
+            (currentStatus === 'processing' ||
+              currentStatus === 'paid' ||
+              currentStatus === 'correction') && (
+              <Tooltip title="Soumettre">
+                <IconButton onClick={() => submitConfirm.onTrue()}>
+                  <Iconify icon="mdi:check-bold" />
+                </IconButton>
+              </Tooltip>
+            )}
 
-          {type === 'supervisor' && currentStatus === 'submitted' && (
+          {(type === 'supervisor' || type === 'aguipe') && currentStatus === 'submitted' && (
             <>
               <Tooltip title="Valider">
                 <IconButton onClick={() => validateConfirm.onTrue()}>
