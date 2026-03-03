@@ -340,6 +340,51 @@ export function PermitEmloyeeInfo({ info, type }) {
                   },
                 }}
               />
+              <Chip
+                icon={
+                  <Iconify
+                    icon={info?.is_registered_in_abis ? 'mdi:check-circle' : 'mdi:close-circle'}
+                    width={16}
+                  />
+                }
+                label={
+                  info?.is_registered_in_abis
+                    ? "Envoyé à l'enrollement"
+                    : "Non envoyé à l'enrollement"
+                }
+                color={info?.is_registered_in_abis ? 'success' : 'error'}
+                size="small"
+                sx={{
+                  fontWeight: 600,
+                  px: 1,
+                  height: { xs: 28, sm: 32 },
+                  '& .MuiChip-icon': { ml: 0.5 },
+                  '& .MuiChip-label': {
+                    px: 1,
+                    fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                  },
+                }}
+              />
+
+              {info?.abis_last_sync_at && (
+                <Chip
+                  icon={<Iconify icon="solar:refresh-bold" width={14} />}
+                  label={`Envoyé à l'enrollement le : ${new Date(info.abis_last_sync_at).toLocaleString('fr-FR')}`}
+                  size="small"
+                  color="default"
+                  variant="outlined"
+                  sx={{
+                    fontWeight: 600,
+                    px: 1,
+                    height: { xs: 28, sm: 32 },
+                    '& .MuiChip-icon': { ml: 0.5 },
+                    '& .MuiChip-label': {
+                      px: 1,
+                      fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                    },
+                  }}
+                />
+              )}
               {type === 'agent' &&
                 info?.status !== 'printed' &&
                 info?.status !== 'delivered' &&
