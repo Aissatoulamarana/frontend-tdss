@@ -15,7 +15,7 @@ import { da } from 'date-fns/locale';
 
 // ----------------------------------------------------------------------
 
-export function PermitInfo({ created_at, permit, expired_at, status, dateRes }) {
+export function PermitInfo({ created_at, permit, expired_at, status, permits }) {
   const fileRef = useRef(null);
 
   const handleAttach = () => {
@@ -156,35 +156,35 @@ export function PermitInfo({ created_at, permit, expired_at, status, dateRes }) 
   const getRelevantDates = () => {
     const dates = [];
 
-    if (dateRes?.validated_at) {
+    if (permits?.validated_at) {
       dates.push({
         icon: 'mdi:check-decagram',
         label: 'Date de Validation',
-        value: formatDate(dateRes.validated_at),
+        value: formatDate(permits.validated_at),
       });
     }
 
-    if (dateRes?.printed_at) {
+    if (permits?.printed_at) {
       dates.push({
         icon: 'mdi:printer-check',
         label: "Date d'Impression",
-        value: formatDate(dateRes.printed_at),
+        value: formatDate(permits.printed_at),
       });
     }
 
-    if (dateRes?.delivered_at) {
+    if (permits?.delivered_at) {
       dates.push({
         icon: 'mdi:package-variant-closed-check',
         label: 'Date de Livraison',
-        value: formatDate(dateRes.delivered_at),
+        value: formatDate(permits.delivered_at),
       });
     }
 
-    if (dateRes?.card_issued_at) {
+    if (permits?.card_issued_at) {
       dates.push({
         icon: 'mdi:card-account-details',
         label: "Date d'Émission",
-        value: formatDate(dateRes.card_issued_at),
+        value: formatDate(permits.card_issued_at),
       });
     }
 
@@ -194,35 +194,35 @@ export function PermitInfo({ created_at, permit, expired_at, status, dateRes }) 
   const getResponsibles = () => {
     const responsibles = [];
 
-    if (dateRes?.created_by) {
+    if (permits?.created_by) {
       responsibles.push({
         icon: 'mdi:account-plus',
         label: 'Créé par',
-        value: dateRes.created_by,
+        value: permits.created_by,
       });
     }
 
-    if (dateRes?.submitted_by) {
+    if (permits?.submitted_by) {
       responsibles.push({
         icon: 'mdi:account-arrow-up',
         label: 'Soumis par',
-        value: dateRes.submitted_by,
+        value: permits.submitted_by,
       });
     }
 
-    if (dateRes?.validated_by) {
+    if (permits?.validated_by) {
       responsibles.push({
         icon: 'mdi:account-check',
         label: 'Validé par',
-        value: dateRes.validated_by,
+        value: permits.validated_by,
       });
     }
 
-    if (dateRes?.rejected_by) {
+    if (permits?.rejected_by) {
       responsibles.push({
         icon: 'mdi:account-cancel',
         label: 'Rejeté par',
-        value: dateRes.rejected_by,
+        value: permits.rejected_by,
       });
     }
 
@@ -285,7 +285,57 @@ export function PermitInfo({ created_at, permit, expired_at, status, dateRes }) 
                 },
               }}
             />
+            <Chip
+              icon={
+                <Iconify
+                  icon={permits?.is_registered_in_abis ? 'mdi:check-circle' : 'mdi:close-circle'}
+                  width={16}
+                />
+              }
+              label={
+                permits?.is_registered_in_abis
+                  ? "Envoyé à l'enrollement"
+                  : "Non envoyé à l'enrollement"
+              }
+              color={permits?.is_registered_in_abis ? 'success' : 'error'}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                px: 1,
+                height: { xs: 28, sm: 32 },
+                '& .MuiChip-icon': { ml: 0.5 },
+                '& .MuiChip-label': {
+                  px: 1,
+                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                },
+              }}
+            />
           </Stack>
+        </Box>
+
+        {/* ================== Section ABIS ================== */}
+        <Divider sx={{ my: 3 }} />
+        <Box>
+          <SectionTitle title="Statut Enrollement" />
+          <Box
+            sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', mb: 2 }}
+          ></Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {permits?.abis_last_sync_at && (
+              <InfoItem
+                icon="solar:refresh-bold"
+                label="Dernière envoie à l'enrollement"
+                value={new Date(permits?.abis_last_sync_at).toLocaleString('fr-FR')}
+              />
+            )}
+            {permits?.abis_last_retrieved_at && (
+              <InfoItem
+                icon="mdi:download-circle"
+                label="Dernière récupération"
+                value={new Date(permits?.abis_last_retrieved_at).toLocaleString('fr-FR')}
+              />
+            )}
+          </Box>
         </Box>
 
         <Divider sx={{ mb: 3 }} />

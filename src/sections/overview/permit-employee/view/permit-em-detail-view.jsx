@@ -188,7 +188,7 @@ export function PermitDetailView({ slug }) {
           created_at={permit?.created_on}
           expired_at={permit?.card_expires_at}
           status={status}
-          dateRes={permit}
+          permits={permit}
         />
       )}
       {tabs.value === 'plan' && (
@@ -220,6 +220,7 @@ export function PermitDetailView({ slug }) {
           onUpdate={handleUpdate}
           type={type}
           status={permit?.status}
+          abisLastRetrievedAt={permit?.abis_last_retrieved_at}
         />
       )}
     </DashboardContent>

@@ -32,6 +32,7 @@ export function BiometricData({
   employee_slug,
   type,
   status,
+  abisLastRetrievedAt,
 }) {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewData, setPreviewData] = useState({ type: '', url: '' });
@@ -492,6 +493,26 @@ export function BiometricData({
                 }}
               />
             )}
+
+          {abisLastRetrievedAt && (
+            <Chip
+              icon={<Iconify icon="solar:refresh-bold" width={14} />}
+              label={`Récupéré le : ${new Date(abisLastRetrievedAt).toLocaleString('fr-FR')}`}
+              size="small"
+              color="default"
+              variant="outlined"
+              sx={{
+                fontWeight: 600,
+                px: 1,
+                height: { xs: 28, sm: 32 },
+                '& .MuiChip-icon': { ml: 0.5 },
+                '& .MuiChip-label': {
+                  px: 1,
+                  fontSize: { xs: '0.75rem', sm: '0.8125rem' },
+                },
+              }}
+            />
+          )}
         </Box>
 
         <Divider sx={{ mb: 3 }} />
