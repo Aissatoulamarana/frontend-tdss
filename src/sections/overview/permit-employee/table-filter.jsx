@@ -90,11 +90,22 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
 
   const handlePaste = useCallback(
     (event) => {
-      const pastedData = event.clipboardData.getData('Text');
-      setInputValue(pastedData);
+      // Prevent native paste, otherwise we set the value and the browser pastes again.
+      event.preventDefault();
 
+      const pastedData = event.clipboardData.getData('text');
       const field = getFieldFromFilter(selectedFilter);
-      filters?.setState({ [field]: pastedData });
+      const input = event.currentTarget;
+
+      const currentValue = input?.value || '';
+      const start = input?.selectionStart ?? currentValue.length;
+      const end = input?.selectionEnd ?? currentValue.length;
+
+      const newValue = `${currentValue.slice(0, start)}${pastedData}${currentValue.slice(end)}`;
+
+      setInputValue(newValue);
+
+      filters?.setState({ [field]: newValue });
 
       if (debounceTimers.current[field]) {
         clearTimeout(debounceTimers.current[field]);

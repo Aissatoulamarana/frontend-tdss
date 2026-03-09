@@ -149,7 +149,7 @@ export function PaiementListView() {
     payment_method: [],
     facture_number: '',
     number: '',
-  });
+  }, { persistByPath: true });
 
   const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
 
@@ -508,3 +508,4 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   return inputData;
 }
+

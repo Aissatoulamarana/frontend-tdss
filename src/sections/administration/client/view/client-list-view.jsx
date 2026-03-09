@@ -88,7 +88,7 @@ export function ClientListView() {
         previous: null,
     });
 
-    const filters = useSetState({ name: '', type: [], location:'', status: 'all' });
+    const filters = useSetState({ name: '', type: [], location:'', status: 'all' }, { persistByPath: true });
 
     const dataFiltered = applyFilter({
         inputData: tableData,

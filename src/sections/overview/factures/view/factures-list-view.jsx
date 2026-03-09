@@ -135,7 +135,7 @@ export function FactureListView() {
     status: 'all',
     date_before: null,
     date_after: null,
-  });
+  }, { persistByPath: true });
 
   const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
 
@@ -921,3 +921,4 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   return inputData;
 }
+

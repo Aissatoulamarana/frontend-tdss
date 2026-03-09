@@ -85,7 +85,7 @@ export function UserListView() {
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
 
-  const filters = useSetState({ name: '', type: '', status: 'all' });
+  const filters = useSetState({ name: '', type: '', status: 'all' }, { persistByPath: true });
 
   const [pagination, setPagination] = useState({
     count: 0,

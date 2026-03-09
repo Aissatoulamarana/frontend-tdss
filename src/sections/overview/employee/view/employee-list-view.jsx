@@ -84,7 +84,7 @@ export function EmployeeListView() {
     status: 'all',
     passport_number: '',
     reference: '',
-  });
+  }, { persistByPath: true });
 
   // Comme le filtrage est effectué côté backend,
 
@@ -348,3 +348,4 @@ function applyFilter({ inputData, comparator, filters }) {
 
   return inputData;
 }
+
