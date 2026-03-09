@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 const iconMap = {
   Passeport: 'mdi:passport',
   'Registre de commerce': 'mdi:file-document-outline',
-  'NIF': 'mdi:file-certificate-outline',
+  NIF: 'mdi:file-certificate-outline',
   Statuts: 'mdi:file-sign',
   'Attestation fiscale': 'mdi:file-check-outline',
   'Attestation CNSS': 'mdi:shield-check-outline',
@@ -85,7 +85,7 @@ export function ClientDocuments({ profileSlug, profileName }) {
 
   const fetchDocumentTypes = useCallback(async () => {
     try {
-      const response = await axios.get(API.documents());
+      const response = await axios.get(API.typesCompanyDocuments());
       setDocumentTypes(getResponseList(response.data));
     } catch (error) {
       console.error('Erreur lors du chargement des types de documents:', error);
@@ -289,7 +289,7 @@ export function ClientDocuments({ profileSlug, profileName }) {
     }
 
     if (!profileSlug && !isEditMode) {
-      toast.error("Profil entreprise introuvable");
+      toast.error('Profil entreprise introuvable');
       return;
     }
 
@@ -363,7 +363,8 @@ export function ClientDocuments({ profileSlug, profileName }) {
               <Chip
                 label={`${documents.length}/${displayDocumentTypes.length || documents.length} documents`}
                 color={
-                  displayDocumentTypes.length > 0 && documents.length === displayDocumentTypes.length
+                  displayDocumentTypes.length > 0 &&
+                  documents.length === displayDocumentTypes.length
                     ? 'success'
                     : 'warning'
                 }
@@ -420,7 +421,8 @@ export function ClientDocuments({ profileSlug, profileName }) {
                             />
                             {hasDocument && existingDoc.expiry_date && (
                               <Typography variant="caption" color="text.secondary" display="block">
-                                Expire le {new Date(existingDoc.expiry_date).toLocaleDateString('fr-FR')}
+                                Expire le{' '}
+                                {new Date(existingDoc.expiry_date).toLocaleDateString('fr-FR')}
                               </Typography>
                             )}
                           </Box>
@@ -485,7 +487,9 @@ export function ClientDocuments({ profileSlug, profileName }) {
 
       <Dialog open={openUploadDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {isEditMode ? `Modifier - ${selectedDocType?.name || ''}` : `Ajouter - ${selectedDocType?.name || ''}`}
+          {isEditMode
+            ? `Modifier - ${selectedDocType?.name || ''}`
+            : `Ajouter - ${selectedDocType?.name || ''}`}
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
@@ -493,7 +497,8 @@ export function ClientDocuments({ profileSlug, profileName }) {
               sx={{
                 p: 2,
                 border: '2px dashed',
-                borderColor: filePreview || (isEditMode && existingDocument) ? 'primary.main' : 'divider',
+                borderColor:
+                  filePreview || (isEditMode && existingDocument) ? 'primary.main' : 'divider',
                 borderRadius: 2,
                 textAlign: 'center',
                 cursor: 'pointer',

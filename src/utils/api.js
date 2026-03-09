@@ -191,6 +191,7 @@ const API = {
 
   // Listes des api pour les documents des entreprises
   listCompanyDocuments: () => `${BASE_URL}/profiles/documents/`,
+  typesCompanyDocuments: () => `${BASE_URL}/profiles/documents/types/`,
   addCompanyDocument: () => `${BASE_URL}/profiles/documents/`,
   updateCompanyDocument: (slug) => `${BASE_URL}/profiles/documents/${slug}/`,
 
