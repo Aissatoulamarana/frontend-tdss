@@ -14,8 +14,22 @@ import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
+const formatTodayDigits = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = `${now.getMonth() + 1}`.padStart(2, '0');
+  const day = `${now.getDate()}`.padStart(2, '0');
+
+  return `${year}${month}${day}`;
+};
+
+const buildDeclarationTitle = (sigle) => {
+  if (!sigle) return '';
+  return `${sigle}${formatTodayDigits()}`;
+};
+
 export function DeclarationEditStatusDate({ type }) {
-  const { watch, setValue, control } = useFormContext();
+  const { setValue, control } = useFormContext();
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -25,8 +39,6 @@ export function DeclarationEditStatusDate({ type }) {
   const { user } = useMockedUser();
   const company =
     user?.companies?.length === 1 ? user.companies[0].type_code.toLowerCase().trim() : null;
-
-  const values = watch();
 
   // Charger les entreprises initiales au chargement du composant (API réelle)
   useEffect(() => {
@@ -50,11 +62,16 @@ export function DeclarationEditStatusDate({ type }) {
           value: company.slug,
           label: company.name,
           slug: company.slug,
+          sigle: company.sigle,
         }));
-        if (company === 'entreprise') {
+        if (company === 'entreprise' && initialCompanies.length > 0) {
           const userCompany = initialCompanies[0];
           setValue('company', userCompany.value);
           setSelectedCompany(userCompany);
+          const generatedTitle = buildDeclarationTitle(userCompany?.sigle);
+          if (generatedTitle) {
+            setValue('title', generatedTitle, { shouldValidate: true });
+          }
         } else {
           setCompanies(initialCompanies);
         }
@@ -80,6 +97,10 @@ export function DeclarationEditStatusDate({ type }) {
     // Mettre à jour la valeur dans le formulaire
     if (newValue) {
       setValue('company', newValue.value);
+      const generatedTitle = buildDeclarationTitle(newValue.sigle);
+      if (generatedTitle) {
+        setValue('title', generatedTitle, { shouldDirty: true, shouldValidate: true });
+      }
     } else {
       setValue('company', '');
     }
