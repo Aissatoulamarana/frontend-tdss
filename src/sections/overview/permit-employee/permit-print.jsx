@@ -296,9 +296,9 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           <!-- Informations à droite de la photo -->
           <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
             <!-- NOM -->
+            ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
             ${createLabelValueHTML('NOM ', permit?.last)}
             ${createLabelValueHTML('PRÉNOM(S) ', permit?.first)}
-            ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
             ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
             ${createLabelValueHTML('À ', permit?.birth_place)}
             ${createLabelValueHTML('NATIONALITÉ ', permit?.nationality)}
