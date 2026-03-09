@@ -369,7 +369,7 @@ export function PermitEmloyeeInfo({ info, type }) {
               {info?.abis_last_sync_at && (
                 <Chip
                   icon={<Iconify icon="solar:refresh-bold" width={14} />}
-                  label={`Envoyé à l'enrollement le : ${new Date(info.abis_last_sync_at).toLocaleString('fr-FR')}`}
+                  label={`le : ${new Date(info.abis_last_sync_at).toLocaleString('fr-FR')}`}
                   size="small"
                   color="default"
                   variant="outlined"
