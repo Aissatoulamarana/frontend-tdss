@@ -189,6 +189,11 @@ const API = {
   documents: () => `${BASE_URL}/documents/types/`,
   updateDocument: (slug) => `${BASE_URL}/documents/${slug}/`,
 
+  // Listes des api pour les documents des entreprises
+  listCompanyDocuments: () => `${BASE_URL}/profiles/documents/`,
+  addCompanyDocument: () => `${BASE_URL}/profiles/documents/`,
+  updateCompanyDocument: (slug) => `${BASE_URL}/profiles/documents/${slug}/`,
+
   // Tableau de bord comptable
   getDeclarationsToInvoice: (month = null) => {
     const url = `${BASE_URL}/declarations/to-invoice/`;
