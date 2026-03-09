@@ -147,7 +147,7 @@ export function PermitListView() {
     created_on_before: null,
     created_on_after: null,
     not_printed: false,
-  });
+  }, { persistByPath: true });
 
   const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
@@ -1116,3 +1116,4 @@ function applyFilter({ inputData, comparator, filters }) {
 
   return inputData;
 }
+

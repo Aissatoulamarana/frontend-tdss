@@ -90,7 +90,7 @@ export function ReportEmployee() {
     nationality: 'all',
     sexe: 'all',
     permit_type: 'all',
-  });
+  }, { persistByPath: true });
 
   const fectCountries = async () => {
     try {
@@ -475,3 +475,4 @@ export function ReportEmployee() {
     </DashboardContent>
   );
 }
+

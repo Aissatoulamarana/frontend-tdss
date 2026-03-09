@@ -104,7 +104,7 @@ export function ReportPermit() {
     permit_type: 'all',
     created_on_before: null,
     created_on_after: null,
-  });
+  }, { persistByPath: true });
 
   const fectCountries = async () => {
     try {
@@ -507,3 +507,4 @@ export function ReportPermit() {
     </DashboardContent>
   );
 }
+

@@ -134,7 +134,7 @@ export function DeclarationListView() {
     status: 'all',
     starts_at: null,
     ends_at: null,
-  });
+  }, { persistByPath: true });
 
   const dateError = fIsBetween(filters.state.starts_at, filters.state.ends_at);
 
@@ -1301,3 +1301,4 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   return inputData;
 }
+

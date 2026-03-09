@@ -100,7 +100,7 @@ export function ListPlanAfricanisationView() {
     hire_date_to: null,
     first_name: '',
     last_name: '',
-  });
+  }, { persistByPath: true });
 
   const dateError = fIsBetween(filters.state.hire_date_from, filters.state.hire_date_to);
 
@@ -318,3 +318,4 @@ export function ListPlanAfricanisationView() {
     </>
   );
 }
+
