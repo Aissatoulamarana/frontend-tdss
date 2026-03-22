@@ -1,8 +1,8 @@
-import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { useMemo, useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 
 import dayjs from 'src/utils/format-time';
 import { isEqual } from 'src/utils/helper';
-import { usePathname } from 'src/routes/hooks';
+import { usePathname, useRouter, useSearchParams } from 'src/routes/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -61,12 +61,101 @@ function decodeState(rawValue) {
   return restored;
 }
 
+function isDateLikeValue(value, key) {
+  if (!DATE_KEY_PATTERN.test(key)) return false;
+  if (value === null || value === undefined || value === '') return false;
+  return dayjs(value).isValid();
+}
+
+function isPrimitive(value) {
+  return value === null || ['string', 'number', 'boolean'].includes(typeof value);
+}
+
+function isSerializableArray(value) {
+  return Array.isArray(value) && value.every((item) => isPrimitive(item));
+}
+
+function isComplexObject(value, key) {
+  if (value === null || value === undefined) return false;
+  if (Array.isArray(value)) return !isSerializableArray(value);
+  if (isDateLikeValue(value, key)) return false;
+  return typeof value === 'object';
+}
+
+function toDateComparable(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null;
+}
+
+function hasMeaningfulChange(nextValue, initialValue, key) {
+  if (Array.isArray(nextValue)) {
+    return !isEqual(nextValue, initialValue);
+  }
+
+  if (isDateLikeValue(nextValue, key) || isDateLikeValue(initialValue, key)) {
+    return toDateComparable(nextValue) !== toDateComparable(initialValue);
+  }
+
+  return !isEqual(nextValue, initialValue);
+}
+
+function serializeQueryValue(value, key) {
+  if (Array.isArray(value)) {
+    return value.join(',');
+  }
+
+  if (typeof value === 'boolean' || typeof value === 'number') {
+    return String(value);
+  }
+
+  if (isDateLikeValue(value, key)) {
+    return dayjs(value).format('YYYY-MM-DD');
+  }
+
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return String(value);
+}
+
+function parseQueryValue(rawValue, initialValue, key) {
+  if (Array.isArray(initialValue)) {
+    if (!rawValue) return [];
+    return rawValue
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof initialValue === 'boolean') {
+    return rawValue === 'true';
+  }
+
+  if (typeof initialValue === 'number') {
+    const parsed = Number(rawValue);
+    return Number.isNaN(parsed) ? initialValue : parsed;
+  }
+
+  if (isDateLikeValue(initialValue, key) || (initialValue === null && DATE_KEY_PATTERN.test(key))) {
+    const parsedDate = dayjs(rawValue);
+    return parsedDate.isValid() ? parsedDate : null;
+  }
+
+  return rawValue;
+}
+
 export function useSetState(initialState, options = {}) {
-  const { persistByPath = false, storageKey } = options;
+  const { persistByPath = false, storageKey, syncWithUrl = persistByPath } = options;
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const initialStateRef = useRef(initialState);
+  const managedKeysRef = useRef(Object.keys(initialStateRef.current || {}));
   const [state, set] = useState(initialStateRef.current);
   const [isHydrated, setIsHydrated] = useState(false);
+  const searchParamsString = searchParams.toString();
 
   const persistKey = useMemo(
     () =>
@@ -78,7 +167,7 @@ export function useSetState(initialState, options = {}) {
     [storageKey, persistByPath, pathname]
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!persistKey) {
       setIsHydrated(true);
       return;
@@ -114,6 +203,66 @@ export function useSetState(initialState, options = {}) {
       console.error('Error while persisting state:', error);
     }
   }, [persistKey, state, isHydrated]);
+
+  useLayoutEffect(() => {
+    if (!syncWithUrl || !isHydrated) return;
+
+    const managedKeys = managedKeysRef.current;
+    const params = new URLSearchParams(searchParamsString);
+    const hasManagedParam = managedKeys.some((key) => params.has(key));
+
+    if (!hasManagedParam) return;
+
+    set((prevValue) => {
+      const nextState = {};
+
+      managedKeys.forEach((key) => {
+        const initialValue = initialStateRef.current[key];
+        const currentValue = prevValue[key];
+        if (isComplexObject(initialValue, key) || isComplexObject(currentValue, key)) return;
+
+        const parsedValue = params.has(key)
+          ? parseQueryValue(params.get(key), initialValue, key)
+          : initialValue;
+
+        if (hasMeaningfulChange(parsedValue, currentValue, key)) {
+          nextState[key] = parsedValue;
+        }
+      });
+
+      return Object.keys(nextState).length > 0 ? { ...prevValue, ...nextState } : prevValue;
+    });
+  }, [syncWithUrl, isHydrated, searchParamsString]);
+
+  useEffect(() => {
+    if (!syncWithUrl || !isHydrated) return;
+
+    const managedKeys = managedKeysRef.current;
+    const nextParams = new URLSearchParams(searchParamsString);
+
+    managedKeys.forEach((key) => nextParams.delete(key));
+
+    managedKeys.forEach((key) => {
+      const initialValue = initialStateRef.current[key];
+      const currentValue = state[key];
+      if (isComplexObject(initialValue, key) || isComplexObject(currentValue, key)) return;
+
+      if (!hasMeaningfulChange(currentValue, initialValue, key)) {
+        return;
+      }
+
+      const serializedValue = serializeQueryValue(currentValue, key);
+      if (serializedValue !== '') {
+        nextParams.set(key, serializedValue);
+      }
+    });
+
+    const nextQuery = nextParams.toString();
+
+    if (nextQuery !== searchParamsString) {
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    }
+  }, [syncWithUrl, isHydrated, searchParamsString, state, pathname, router]);
 
   const canReset = !isEqual(state, initialStateRef.current);
 
@@ -158,8 +307,9 @@ export function useSetState(initialState, options = {}) {
       setField,
       onResetState,
       canReset,
+      isHydrated,
     }),
-    [canReset, onResetState, setField, setState, state]
+    [canReset, isHydrated, onResetState, setField, setState, state]
   );
 
   return memoizedValue;

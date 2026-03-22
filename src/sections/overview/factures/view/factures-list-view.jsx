@@ -30,7 +30,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 import TextField from '@mui/material/TextField';
 import API from 'src/utils/api';
-import { fIsAfter, fIsBetween } from 'src/utils/format-time';
+import { fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
 import { PDFDocument } from 'pdf-lib';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
@@ -137,7 +137,7 @@ export function FactureListView() {
     date_after: null,
   }, { persistByPath: true });
 
-  const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
+  const dateError = fIsBetween(filters.state.date_before, filters.state.date_after);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -291,15 +291,7 @@ export function FactureListView() {
         const params = {
           limit: table.rowsPerPage,
           offset: offset,
-          ...(filters.state.number
-            ? { number: filters.state.number }
-            : filters.state.declaration_number
-              ? { declaration_number: filters.state.declaration_number }
-              : filters.state.company
-                ? { company: filters.state.company }
-                : {}),
           ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-
           ...(filters.state.number ? { number: filters.state.number } : {}),
           ...(filters.state.company ? { company: filters.state.company } : {}),
           ...(filters.state.declaration_number
@@ -883,7 +875,7 @@ export function FactureListView() {
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, status, service, startDate, endDate } = filters;
+  const { name, status, service, date_before, date_after } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -914,8 +906,10 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   }
 
   if (!dateError) {
-    if (startDate && endDate) {
-      inputData = inputData.filter((facture) => fIsBetween(facture.created_at, startDate, endDate));
+    if (date_before && date_after) {
+      inputData = inputData.filter((facture) =>
+        fIsBetween(facture.created_at, date_before, date_after)
+      );
     }
   }
 

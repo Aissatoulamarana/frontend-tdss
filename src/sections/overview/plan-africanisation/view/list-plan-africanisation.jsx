@@ -17,7 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import { Label } from 'src/components/label';
@@ -33,6 +33,7 @@ import { useSetState } from 'src/hooks/use-set-state';
 
 import API from 'src/utils/api';
 import { fIsBetween } from 'src/utils/format-time';
+import dayjs from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
 import { PDFDocument } from 'pdf-lib';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
@@ -127,30 +128,24 @@ export function ListPlanAfricanisationView() {
         const params = {
           limit: table.rowsPerPage,
           offset: offset,
-          ...(filters.state.company
-            ? { company: filters.state.company }
-            : filters.state.expatriate_name
-              ? { expatriate_name: filters.state.expatriate_name }
-              : filters.state.declaration_employee
-                ? { declaration_employee: filters.state.declaration_employee }
-                : filters.state.reference
-                  ? { reference: filters.state.reference }
-                  : filters.state.status !== 'all'
-                    ? { status: filters.state.status }
-                    : filters.state.expatriate_passport
-                      ? { expatriate_passport: filters.state.expatriate_passport }
-                      : {}),
+          ...(filters.state.company ? { company: filters.state.company } : {}),
+          ...(filters.state.expatriate_name ? { expatriate_name: filters.state.expatriate_name } : {}),
+          ...(filters.state.declaration_employee
+            ? { declaration_employee: filters.state.declaration_employee }
+            : {}),
+          ...(filters.state.reference ? { reference: filters.state.reference } : {}),
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.expatriate_passport
+            ? { expatriate_passport: filters.state.expatriate_passport }
+            : {}),
           ...(filters.state.hire_date_from && filters.state.hire_date_to && !dateError
             ? {
-                hire_date_from: filters.state.hire_date_from,
-                hire_date_to: filters.state.hire_date_to,
+                hire_date_from: dayjs(filters.state.hire_date_from).format('YYYY-MM-DD'),
+                hire_date_to: dayjs(filters.state.hire_date_to).format('YYYY-MM-DD'),
               }
             : {}),
-          ...(filters.state.first_name
-            ? { first_name: filters.state.first_name }
-            : filters.state.last_name
-              ? { last_name: filters.state.last_name }
-              : {}),
+          ...(filters.state.first_name ? { first_name: filters.state.first_name } : {}),
+          ...(filters.state.last_name ? { last_name: filters.state.last_name } : {}),
         };
         const response = await axios.get(API.listAfricanizationPlan(), { params });
         setPlans(response.data.results);
