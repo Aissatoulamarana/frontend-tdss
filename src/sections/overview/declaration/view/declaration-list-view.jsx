@@ -17,7 +17,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 import { Label } from 'src/components/label';
@@ -90,6 +90,7 @@ export function DeclarationListView() {
   // console.log('type_user:', type_user);
 
   const router = useRouter();
+  const fetchRequestIdRef = useRef(0);
 
   const table = useTable({ defaultOrderBy: 'created_on' });
 
@@ -747,6 +748,11 @@ export function DeclarationListView() {
   );
 
   useEffect(() => {
+    if (!filters.isHydrated) return;
+
+    const requestId = fetchRequestIdRef.current + 1;
+    fetchRequestIdRef.current = requestId;
+
     // Fonction pour récupérer les données paginées en fonction des filtres et la page courante
     const fetchDeclarations = async () => {
       setLoading(true);
@@ -783,6 +789,8 @@ export function DeclarationListView() {
         // console.log('Fetching declarations with params:', params);
         const response = await axios.get(API.listDeclarations(), { params });
 
+        if (requestId !== fetchRequestIdRef.current) return;
+
         setTableData(response.data.results);
         setCount(response.data.count);
         setPagination({
@@ -791,12 +799,16 @@ export function DeclarationListView() {
           previous: response.data.previous,
         });
       } catch (err) {
+        if (requestId !== fetchRequestIdRef.current) return;
+
         console.error('Error fetching declarations:', err);
         setError(err.message || 'Erreur lors du chargement des données.');
         const errormessage =
           err?.response?.data?.detail || err?.message || 'Une erreur est survenue';
         toast.error(errormessage);
       } finally {
+        if (requestId !== fetchRequestIdRef.current) return;
+
         setLoading(false);
       }
     };
@@ -805,6 +817,7 @@ export function DeclarationListView() {
 
     fetchDeclarations();
   }, [
+    filters.isHydrated,
     table.page,
     table.rowsPerPage,
     filters.state.number,

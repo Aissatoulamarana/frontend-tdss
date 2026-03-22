@@ -24,7 +24,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
 
 import API from 'src/utils/api';
-import { fIsAfter, fIsBetween } from 'src/utils/format-time';
+import { fIsBetween } from 'src/utils/format-time';
 import { sumBy } from 'src/utils/helper';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
@@ -151,7 +151,7 @@ export function PaiementListView() {
     number: '',
   }, { persistByPath: true });
 
-  const dateError = fIsAfter(filters.state.date_before, filters.state.date_after);
+  const dateError = fIsBetween(filters.state.date_before, filters.state.date_after);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -163,7 +163,6 @@ export function PaiementListView() {
   const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
 
   const canReset =
-    !!filters.state.name ||
     !!filters.state.name ||
     filters?.state?.payment_method?.length > 0 ||
     (!!filters.state.date_before && !!filters.state.date_after) ||
@@ -255,8 +254,8 @@ export function PaiementListView() {
           limit,
           ...(filters.state.date_before && filters.state.date_after && !dateError
             ? {
-                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD '),
-                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD '),
+                date_before: dayjs(filters.state.date_before).format('YYYY-MM-DD'),
+                date_after: dayjs(filters.state.date_after).format('YYYY-MM-DD'),
               }
             : {}),
           ...(filters.state.payment_method.length > 0 && {
@@ -477,7 +476,7 @@ export function PaiementListView() {
 }
 
 function applyFilter({ inputData, comparator, filters, dateError }) {
-  const { name, startDate, endDate } = filters;
+  const { name, date_before, date_after } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index]);
 
@@ -499,9 +498,9 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
   }
 
   if (!dateError) {
-    if (startDate && endDate) {
+    if (date_before && date_after) {
       inputData = inputData.filter((paiement) =>
-        fIsBetween(paiement.date_paiement, startDate, endDate)
+        fIsBetween(paiement.date_paiement, date_before, date_after)
       );
     }
   }

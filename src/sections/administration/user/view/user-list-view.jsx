@@ -186,6 +186,7 @@ export function UserListView() {
         offset: offset,
         ...(filters.state.name && { name: filters.state.name }),
         ...(filters.state.type && { type: filters.state.type }),
+        ...(filters.state.status !== 'all' && { status: filters.state.status }),
       };
       const response = await axios.get(url, { params });
       setTableData(response.data.results);
@@ -209,7 +210,7 @@ export function UserListView() {
   // Chargement initial
   useEffect(() => {
     fetchUtilisateurs();
-  }, [table.page, table.rowsPerPage , filters.state.name, filters.state.type]);
+  }, [table.page, table.rowsPerPage, filters.state.name, filters.state.type, filters.state.status]);
 
   if (loading) {
     console.info('Loading utilisateurs...');
@@ -219,9 +220,9 @@ export function UserListView() {
     console.error(`Error: ${error}`);
   }
 
-useEffect(() => {
-  getUserTypes().then(data => setRoles(data));
-})
+  useEffect(() => {
+    getUserTypes().then((data) => setRoles(data));
+  }, []);
 
 
   return (

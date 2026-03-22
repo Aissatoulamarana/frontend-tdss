@@ -132,6 +132,7 @@ export function EmployeeListView() {
               : filters.state.name
                 ? { name: filters.state.name }
                 : {}),
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
           ...(filters.state.job?.length > 0 && {
             job:
               typeof filters.state.job[0] === 'object'
@@ -166,6 +167,7 @@ export function EmployeeListView() {
     filters.state.job,
     filters.state.passport_number,
     filters.state.reference,
+    filters.state.status,
   ]);
 
   if (loading) {

@@ -124,6 +124,23 @@ export function fToNow(date) {
 /** output: boolean
  */
 export function fIsBetween(inputDate, startDate, endDate) {
+  // Backward compatibility: some screens pass only 2 dates to validate a range.
+  // In that case, return `true` only when the range is invalid (start > end).
+  if (arguments.length === 2) {
+    if (!inputDate || !startDate) {
+      return false;
+    }
+
+    const rangeStart = fTimestamp(inputDate);
+    const rangeEnd = fTimestamp(startDate);
+
+    if (typeof rangeStart === 'number' && typeof rangeEnd === 'number') {
+      return rangeStart > rangeEnd;
+    }
+
+    return false;
+  }
+
   if (!inputDate || !startDate || !endDate) {
     return false;
   }
