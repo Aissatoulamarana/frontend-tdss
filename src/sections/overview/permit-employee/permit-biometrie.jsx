@@ -54,8 +54,7 @@ export function BiometricData({
   const [loadingSignature, setLoadingSignature] = useState(false);
   const [loadingFingerprints, setLoadingFingerprints] = useState(false);
   const [loadingABIS, setLoadingABIS] = useState(false);
-  const hasRetrievedABIS = Boolean(abisLastRetrievedAt);
-  const abisActionLabel = hasRetrievedABIS ? 'Mise à jour des données' : 'Récupérer les données';
+  const abisActionLabel = 'Récupérer les données';
 
   const handleOpenPreview = (type, url) => {
     setPreviewData({ type, url });
@@ -77,18 +76,11 @@ export function BiometricData({
   const handleFetchABIS = useCallback(async () => {
     setLoadingABIS(true);
     try {
-      const response = hasRetrievedABIS
-        ? await axios.put(API.updateABISEmployee(employee_slug))
-        : await axios.get(API.getEmployeeFromABIS(employee_slug));
+      const response = await axios.get(API.getEmployeeFromABIS(employee_slug));
       const data = response.data; // 👈 très important
 
       if (data.success) {
-        toast.success(
-          data.message ||
-            (hasRetrievedABIS
-              ? 'Données biométriques mises à jour avec succès'
-              : 'Données biométriques récupérées avec succès')
-        );
+        toast.success(data.message || 'Données biométriques récupérées avec succès');
 
         // Exemple : afficher infos utiles
         if (data?.biometrics_status && !data.biometrics_status.is_complete) {
@@ -106,12 +98,7 @@ export function BiometricData({
 
         window.location.reload();
       } else {
-        toast.error(
-          data.message ||
-            (hasRetrievedABIS
-              ? 'Échec de mise à jour des données biométriques'
-              : 'Échec de récupération des données biométriques')
-        );
+        toast.error(data.message || 'Échec de récupération des données biométriques');
       }
     } catch (error) {
       const errorMessage =
@@ -124,7 +111,7 @@ export function BiometricData({
     } finally {
       setLoadingABIS(false);
     }
-  }, [employee_slug, hasRetrievedABIS]);
+  }, [employee_slug]);
 
   // Fonction générique pour sauvegarder un fichier
   const handleSaveFile = useCallback(

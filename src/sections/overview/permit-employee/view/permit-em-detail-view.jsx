@@ -163,7 +163,9 @@ export function PermitDetailView({ slug }) {
           </Tabs>
         </Box>
       </Card>
-      {tabs.value === 'details' && <PermitEmloyeeInfo info={permit} type={type} />}
+      {tabs.value === 'details' && (
+        <PermitEmloyeeInfo info={permit} type={type} onSyncSuccess={fecthPermit} />
+      )}
 
       {tabs.value === 'doc' && (
         <PermitEmployeeDoc

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
@@ -25,13 +25,30 @@ import axios from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
 
-export function PermitEmloyeeInfo({ info, type }) {
+export function PermitEmloyeeInfo({ info, type, onSyncSuccess }) {
   const fileRef = useRef(null);
   const router = useRouter();
 
   const editOpen = useBoolean();
 
   const syncOpen = useBoolean();
+  const [syncing, setSyncing] = useState(false);
+
+  const hasRetrievedABIS = Boolean(info?.abis_last_retrieved_at || info?.is_registered_in_abis);
+  const canSendToABIS = !hasRetrievedABIS;
+  const abisActionLabel = "Envoyer à l'enrollement";
+  const abisActionTitle = "Envoyer les données à l'enrollement";
+  const abisActionContent =
+    "Êtes-vous sûr de vouloir envoyer les données de cet employé à l'enrollement ?";
+
+  // TEMP: update flow disabled until backend issue is fixed.
+  // const abisActionLabel = hasRetrievedABIS ? 'Mise à jour des données' : "Envoyer à l'enrollement";
+  // const abisActionTitle = hasRetrievedABIS
+  //   ? 'Mettre à jour les données de l’employé'
+  //   : "Envoyer les données à l'enrollement";
+  // const abisActionContent = hasRetrievedABIS
+  //   ? "Êtes-vous sûr de vouloir mettre à jour les données de cet employé dans l'enrollement ?"
+  //   : "Êtes-vous sûr de vouloir envoyer les données de cet employé à l'enrollement ?";
 
   const handleAttach = () => {
     if (fileRef.current) {
@@ -55,19 +72,50 @@ export function PermitEmloyeeInfo({ info, type }) {
   };
 
   const handleSync = async () => {
+    const employeeSlug = info?.employee_slug;
+
+    if (!employeeSlug) {
+      toast.error('Impossible de synchroniser: employé introuvable.');
+      return false;
+    }
+
+    if (!canSendToABIS) {
+      toast.info("Mise à jour ABIS temporairement désactivée.");
+      return false;
+    }
+
+    setSyncing(true);
     try {
-      const response = await axios.post(API.saveEmployeeToABIS(info?.employee_slug));
-      if (response.status === 200 || response.status === 201 || response.data) {
+      // TEMP: backend issue on ABIS update endpoint.
+      // const response = await axios.put(API.updateABISEmployee(employeeSlug));
+      const response = await axios.post(API.saveEmployeeToABIS(employeeSlug));
+
+      const isSuccess =
+        response?.status === 200 || response?.status === 201 || response?.data?.success;
+
+      if (isSuccess) {
         toast.success('Synchronisation réussie avec ABIS');
+        if (onSyncSuccess) {
+          await onSyncSuccess();
+        }
+        return true;
       }
+
+      toast.error(response?.data?.message || 'Échec de la synchronisation avec ABIS');
+      return false;
     } catch (error) {
       const errorMessage =
-        error?.error ||
-        error?.details ||
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        error?.response?.data?.error ||
+        error?.response?.data?.details ||
+        error?.response?.data?.non_field_errors?.[0] ||
         error?.message ||
-        error?.detail ||
-        error?.non_field_errors?.[0];
+        'Erreur inconnue';
       toast.error(`Échec de la synchronisation avec ABIS: ${errorMessage}`);
+      return false;
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -366,32 +414,14 @@ export function PermitEmloyeeInfo({ info, type }) {
                 }}
               />
 
-              {info?.abis_last_sync_at && (
-                <Chip
-                  icon={<Iconify icon="solar:refresh-bold" width={14} />}
-                  label={`le : ${new Date(info.abis_last_sync_at).toLocaleString('fr-FR')}`}
-                  size="small"
-                  color="default"
-                  variant="outlined"
-                  sx={{
-                    fontWeight: 600,
-                    px: 1,
-                    height: { xs: 28, sm: 32 },
-                    '& .MuiChip-icon': { ml: 0.5 },
-                    '& .MuiChip-label': {
-                      px: 1,
-                      fontSize: { xs: '0.75rem', sm: '0.8125rem' },
-                    },
-                  }}
-                />
-              )}
               {type === 'agent' &&
                 info?.status !== 'printed' &&
                 info?.status !== 'delivered' &&
-                info?.status !== 'enrolled' && (
+                info?.status !== 'enrolled' &&
+                canSendToABIS && (
                   <Chip
                     icon={<Iconify icon="solar:refresh-bold" width={18} />}
-                    label="Envoyer à l'enrollement"
+                    label={abisActionLabel}
                     color="default"
                     onClick={syncOpen.onTrue}
                     size="small"
@@ -554,17 +584,20 @@ export function PermitEmloyeeInfo({ info, type }) {
           <ConfirmDialog
             open={syncOpen.value}
             onClose={syncOpen.onFalse}
-            title="Confirmer l'envoie à l'enrollement"
-            content="Êtes-vous sûr de vouloir envoyer les informations de cet employé à l'enrollement ?"
+            title={abisActionTitle}
+            content={abisActionContent}
             action={
               <Button
                 variant="contained"
+                disabled={syncing}
                 onClick={async () => {
-                  await handleSync();
-                  syncOpen.onFalse();
+                  const isSynced = await handleSync();
+                  if (isSynced) {
+                    syncOpen.onFalse();
+                  }
                 }}
               >
-                Envoyer à l'enrollement
+                {syncing ? 'Synchronisation...' : abisActionLabel}
               </Button>
             }
           />
