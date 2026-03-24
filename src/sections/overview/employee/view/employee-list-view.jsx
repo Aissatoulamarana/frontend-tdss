@@ -3,14 +3,16 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 
+import { useCallback, useEffect, useState } from 'react';
+
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback } from 'react';
+import API from 'src/utils/api';
+
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
 
@@ -19,14 +21,13 @@ import { paths } from 'src/routes/paths';
 
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useSetState } from 'src/hooks/use-set-state';
-
-import API from 'src/utils/api';
+import { useMockedUser } from 'src/auth/hooks';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-
 import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
+import { Iconify } from 'src/components/iconify';
 
 import {
   useTable,
@@ -39,38 +40,40 @@ import {
 import { EmployeeTableFiltersResult } from '../employee-filter-results';
 import { EmployeeTableRow } from '../employee-table-row';
 import { EmployeeTableToolbar } from '../employee-table-toolbar';
+import { EmployeeCreateDialog } from '../employee-create-dialog';
+
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [{ value: 'all', label: 'Tous' }];
 
 const TABLE_HEAD = [
   { id: 'reference', label: 'Reference ' },
-  { id: 'numero', label: 'N° Passeport  ' },
+  { id: 'numero', label: 'N° Passeport' },
   { id: 'name', label: 'Nom Complet' },
   { id: 'email', label: 'Email' },
-  { id: 'phoneNumber', label: 'Téléphone' },
-  { id: 'declaration', label: ' Déclaration.s' },
-
+  { id: 'phoneNumber', label: 'Telephone' },
+  { id: 'declaration', label: 'Declaration.s' },
   { id: 'job', label: 'Fonction' },
   { id: 'status', label: 'Statut' },
-
-  // { id: 'status', label: 'Status' },
-  // { id: '', width: 88 },
 ];
 
 // ----------------------------------------------------------------------
 
 export function EmployeeListView() {
   const table = useTable();
-
   const router = useRouter();
 
   const confirm = useBoolean();
+  const createDialog = useBoolean();
+
+  const { user } = useMockedUser();
+  const type_user = user?.type_code?.toLowerCase().trim();
 
   const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(true); // État pour indiquer le chargement
-  const [error, setError] = useState(null); // État pour gérer les erreurs
-  const [selectedFilter, setSelectedFilter] = useState('name'); // filtre selectionné
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState('name');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -78,17 +81,17 @@ export function EmployeeListView() {
     previous: null,
   });
 
-  const filters = useSetState({
-    name: '',
-    job: [],
-    status: 'all',
-    passport_number: '',
-    reference: '',
-  }, { persistByPath: true });
+  const filters = useSetState(
+    {
+      name: '',
+      job: [],
+      status: 'all',
+      passport_number: '',
+      reference: '',
+    },
+    { persistByPath: true }
+  );
 
-  // Comme le filtrage est effectué côté backend,
-
-  // On affichera directement tableData.
   const canReset =
     !!filters.state.name ||
     filters.state.job.length > 0 ||
@@ -96,7 +99,6 @@ export function EmployeeListView() {
     !!filters.state.passport_number ||
     !!filters.state.reference;
 
-  // Pour indiquer l'absence de données, on vérifie le total
   const notFound = pagination.count === 0 && canReset;
 
   const handleViewRow = useCallback(
@@ -114,52 +116,45 @@ export function EmployeeListView() {
     [filters, table]
   );
 
-  useEffect(() => {
-    const fetchEmployee = async () => {
-      setLoading(true);
-      try {
-        const offset = table.page * table.rowsPerPage;
-        const url = API.listEmployee();
-        // Construction des params avec des filtres
+  const fetchEmployees = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-        const params = {
-          limit: table.rowsPerPage,
-          offset: offset,
-          ...(filters.state.passport_number
-            ? { passport_number: filters.state.passport_number }
-            : filters.state.reference
-              ? { reference: filters.state.reference }
-              : filters.state.name
-                ? { name: filters.state.name }
-                : {}),
-          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-          ...(filters.state.job?.length > 0 && {
-            job:
-              typeof filters.state.job[0] === 'object'
-                ? filters.state.job[0].name // Envoyer le nom de la fonction
-                : filters.state.job[0], // Ou la valeur directe si c'est une chaîne
-          }),
-        };
+    try {
+      const offset = table.page * table.rowsPerPage;
+      const params = {
+        limit: table.rowsPerPage,
+        offset,
+        ...(filters.state.passport_number
+          ? { passport_number: filters.state.passport_number }
+          : filters.state.reference
+            ? { reference: filters.state.reference }
+            : filters.state.name
+              ? { name: filters.state.name }
+              : {}),
+        ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+        ...(filters.state.job?.length > 0 && {
+          job:
+            typeof filters.state.job[0] === 'object'
+              ? filters.state.job[0].name
+              : filters.state.job[0],
+        }),
+      };
 
-        console.log('Paramètres de la requête:', params);
-        const response = await axios.get(url, { params });
-        console.log("Réponse de l'API:", response.data);
+      const response = await axios.get(API.listEmployee(), { params });
 
-        setTableData(response.data.results);
-        setPagination({
-          count: response.data.count,
-          next: response.data.next,
-          previous: response.data.previous,
-        });
-      } catch (err) {
-        console.error('Erreur lors du chargement des employés:', err);
-        setError(err.message || 'Erreur lors du chargement des données.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEmployee();
+      setTableData(response.data.results || []);
+      setPagination({
+        count: response.data.count || 0,
+        next: response.data.next,
+        previous: response.data.previous,
+      });
+    } catch (err) {
+      setError(err.message || 'Erreur lors du chargement des donnees.');
+      console.error('Erreur lors du chargement des employes:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [
     table.page,
     table.rowsPerPage,
@@ -170,6 +165,20 @@ export function EmployeeListView() {
     filters.state.status,
   ]);
 
+  const handleEmployeeCreated = useCallback(() => {
+    table.onResetPage();
+    setRefreshKey((prev) => prev + 1);
+  }, [table]);
+
+  const handleDeleteRows = useCallback(() => {
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.slug));
+    setTableData(deleteRows);
+  }, [table.selected, tableData]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [fetchEmployees, refreshKey]);
+
   if (loading) {
     console.info('Loading ...');
   }
@@ -177,16 +186,28 @@ export function EmployeeListView() {
   if (error) {
     console.error(`Error: ${error}`);
   }
+
   return (
     <>
       <DashboardContent maxWidth="xl">
         <CustomBreadcrumbs
-          heading="Listes des Employés"
+          heading="Listes des Employes"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Employés', href: paths.dashboard.employee.list },
-            { name: 'Listes des employés' },
+            { name: 'Employes', href: paths.dashboard.employee.list },
+            { name: 'Listes des employes' },
           ]}
+          action={
+            (type_user === 'admin' || type_user === 'agent') && (
+              <Button
+                variant="contained"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                onClick={createDialog.onTrue}
+              >
+                Ajouter
+              </Button>
+            )
+          }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
@@ -217,12 +238,11 @@ export function EmployeeListView() {
 
           <EmployeeTableToolbar
             filters={filters}
-            onResetPage={table.onResetPage} // ou votre fonction de réinitialisation
-            // onFilterChange={handleFilterChange}
+            onResetPage={table.onResetPage}
             selectedFilter={selectedFilter}
             setSelectedFilter={setSelectedFilter}
             options={{
-              roles: [...new Set(tableData.map((row) => row.job.trim()))],
+              roles: [...new Set(tableData.map((row) => row.job?.trim()).filter(Boolean))],
             }}
           />
 
@@ -289,13 +309,19 @@ export function EmployeeListView() {
         </Card>
       </DashboardContent>
 
+      <EmployeeCreateDialog
+        open={createDialog.value}
+        onClose={createDialog.onFalse}
+        onCreated={handleEmployeeCreated}
+      />
+
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
         title="Supprimer"
         content={
           <>
-            Etes vous sûr de vouloir supprimer <strong> {table.selected.length} </strong> items?
+            Etes vous sur de vouloir supprimer <strong>{table.selected.length}</strong> items?
           </>
         }
         action={
@@ -350,4 +376,3 @@ function applyFilter({ inputData, comparator, filters }) {
 
   return inputData;
 }
-
