@@ -63,6 +63,7 @@ const API = {
   },
 
   Employe: (slug) => `${BASE_URL}/declarations/employees/?declaration=${slug}`, // Liste des employés d'une declaration
+  CreateEmployee: `${BASE_URL}/employees/create/`, // Ajouter un employé
   UpdateEmploye: (declarationSlug, employeeSlug) =>
     `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`, // Modifier un employé d'une déclaration
   DeleteEmploye: (slug) => `${BASE_URL}/declarations/${slug}/delete-employees/`, // Supprimer un ou plusieurs employés d'une déclaration
