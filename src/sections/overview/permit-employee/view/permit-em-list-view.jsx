@@ -21,7 +21,7 @@ import { CustomPopover } from 'src/components/custom-popover';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback, use } from 'react';
+import { useState, useEffect, useCallback, useRef, use } from 'react';
 import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
@@ -134,6 +134,7 @@ export function PermitListView() {
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // État pour indiquer le chargement
   const [error, setError] = useState(null); // État pour gérer les erreurs
+  const fetchRequestIdRef = useRef(0);
 
   const filters = useSetState({
     name: '',
@@ -745,6 +746,11 @@ export function PermitListView() {
   );
 
   useEffect(() => {
+    if (!filters.isHydrated) return;
+
+    const requestId = fetchRequestIdRef.current + 1;
+    fetchRequestIdRef.current = requestId;
+
     // Fonction pour récupérer les permits
     const fetchPermits = async () => {
       setLoading(true);
@@ -777,6 +783,9 @@ export function PermitListView() {
         const apiRoute = isPrinter ? API.listPendingPermitsEmployees() : API.listPermitsEmployees();
 
         const response = await axios.get(apiRoute, { params });
+
+        if (requestId !== fetchRequestIdRef.current) return;
+
         setTableData(response.data.results);
         setPagination({
           count: response.data.count,
@@ -784,14 +793,17 @@ export function PermitListView() {
           previous: response.data.previous,
         });
       } catch (err) {
+        if (requestId !== fetchRequestIdRef.current) return;
         setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
+        if (requestId !== fetchRequestIdRef.current) return;
         setLoading(false);
       }
     };
 
     fetchPermits();
   }, [
+    filters.isHydrated,
     isPrinter,
     table.page,
     table.rowsPerPage,

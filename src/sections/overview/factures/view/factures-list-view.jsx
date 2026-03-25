@@ -16,7 +16,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import axios from 'src/utils/axios';
 import { CircularProgress } from '@mui/material';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { pdf } from '@react-pdf/renderer';
@@ -122,6 +122,7 @@ export function FactureListView() {
     next: null,
     previous: null,
   });
+  const fetchRequestIdRef = useRef(0);
 
   /** @type {[Summary, Function]} */
   const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
@@ -283,6 +284,11 @@ export function FactureListView() {
   };
 
   useEffect(() => {
+    if (!filters.isHydrated) return;
+
+    const requestId = fetchRequestIdRef.current + 1;
+    fetchRequestIdRef.current = requestId;
+
     // Fonction pour récupérer les données
     const fetchFactures = async () => {
       setLoading(true);
@@ -307,6 +313,9 @@ export function FactureListView() {
         };
 
         const response = await axios.get(API.listFactures(), { params });
+
+        if (requestId !== fetchRequestIdRef.current) return;
+
         setTableData(response.data.results);
         setPagination({
           count: response.data.count,
@@ -314,14 +323,17 @@ export function FactureListView() {
           previous: response.data.previous,
         });
       } catch (err) {
+        if (requestId !== fetchRequestIdRef.current) return;
         setError(err.message || 'Erreur lors du chargement des données.');
       } finally {
+        if (requestId !== fetchRequestIdRef.current) return;
         setLoading(false);
       }
     };
 
     fetchFactures();
   }, [
+    filters.isHydrated,
     table.page,
     table.rowsPerPage,
     filters.state.status,
