@@ -12,7 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import { CircularProgress } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
@@ -90,6 +90,7 @@ export function PaiementListView() {
     next: null,
     previous: null,
   });
+  const fetchRequestIdRef = useRef(0);
 
   const [summary, setSummary] = useState({
     totalCount: 0,
@@ -243,6 +244,11 @@ export function PaiementListView() {
   }, []);
 
   useEffect(() => {
+    if (!filters.isHydrated) return;
+
+    const requestId = fetchRequestIdRef.current + 1;
+    fetchRequestIdRef.current = requestId;
+
     // Fonction pour récupérer les données
     const fetchPaiements = async () => {
       setLoading(true);
@@ -266,6 +272,9 @@ export function PaiementListView() {
           ...(filters.state.number && { number: filters.state.number }),
         };
         const response = await axios.get(API.listPaiments(), { params }); // Remplacez l'URL par celle de votre backend
+
+        if (requestId !== fetchRequestIdRef.current) return;
+
         setTableData(response.data.results);
         setPagination({
           count: response.data.count,
@@ -273,17 +282,21 @@ export function PaiementListView() {
           previous: response.data.previous,
         });
       } catch (err) {
+        if (requestId !== fetchRequestIdRef.current) return;
+
         setError(
           err.message || err.details || err.error || 'Erreur lors du chargement des données.'
         );
         toast.error(error);
       } finally {
+        if (requestId !== fetchRequestIdRef.current) return;
         setLoading(false);
       }
     };
 
     fetchPaiements();
   }, [
+    filters.isHydrated,
     table.page,
     table.rowsPerPage,
     filters.state.date_before,

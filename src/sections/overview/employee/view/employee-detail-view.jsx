@@ -6,25 +6,25 @@ import Box from '@mui/material/Box';
 import Tab from '@mui/material/Tab';
 import Card from '@mui/material/Card';
 import Tabs from '@mui/material/Tabs';
-import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { useTabs } from 'src/hooks/use-tabs';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { useMockedUser } from 'src/auth/hooks';
 import { EmployeeCover } from '../employee-cover';
 import { EmployeeInfo } from '../employee-info';
 import { EmployeeDeclarations } from '../employee-declaration';
 import { EmployeeJob } from '../employee-job';
 import { EmployeeDoc } from '../employee-doc';
-import { AfricanizationPlanTab } from '../plan-africanisation';
+import { BiometricData } from '../../permit-employee/permit-biometrie';
 
 const TABS_ENTREPRISE = [
   { value: 'profile', label: 'Infos', icon: <Iconify icon="solar:user-id-bold" width={24} /> },
   { value: 'fonction', label: 'Fonction', icon: <Iconify icon="mdi:briefcase" width={24} /> },
   {
     value: 'declaration',
-    label: 'Déclarations',
+    label: 'Declarations',
     icon: <Iconify icon="solar:document-add-bold" width={24} />,
   },
   {
@@ -32,21 +32,26 @@ const TABS_ENTREPRISE = [
     label: 'Documents',
     icon: <Iconify icon="mdi:file" width={24} />,
   },
+  {
+    value: 'biometrie',
+    label: 'Biometrie',
+    icon: <Iconify icon="mdi:fingerprint" width={24} />,
+  },
 ];
 
 export function EmployeeDetailsView({ slug }) {
+  const { user } = useMockedUser();
+  const type = user?.type_code?.toLowerCase().trim();
   const [employee, setEmployee] = useState();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [declarations, setDeclarations] = useState([]);
   const [job, setJob] = useState([]);
   const [documents, setDocuments] = useState([]);
-  const [quickEditOpen, setQuickEditOpen] = useState(false);
 
-  const router = useRouter();
   const tabs = useTabs('profile');
 
-  // Récupération des données du profil
+  // Recuperation des donnees du profil
 
   const fetchEmployee = useCallback(async () => {
     setLoading(true);
@@ -61,7 +66,7 @@ export function EmployeeDetailsView({ slug }) {
 
       setDeclarations(Array.isArray(employeeDeclarations) ? employeeDeclarations : []);
     } catch (err) {
-      setError(err.message || 'Erreur lors du chargement des données.');
+      setError(err.message || 'Erreur lors du chargement des donnees.');
     } finally {
       setLoading(false);
     }
@@ -84,10 +89,10 @@ export function EmployeeDetailsView({ slug }) {
     <DashboardContent>
       <Box sx={{ mb: { xs: 3, md: 5 } }}>
         <CustomBreadcrumbs
-          heading="Details Employé"
+          heading="Details Employe"
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
-            { name: 'Employés', href: paths.dashboard.employee.list },
+            { name: 'Employes', href: paths.dashboard.employee.list },
             { name: employee?.first },
           ]}
         />
@@ -120,7 +125,9 @@ export function EmployeeDetailsView({ slug }) {
         </Box>
       </Card>
 
-      {tabs.value === 'profile' && <EmployeeInfo info={employee} />}
+      {tabs.value === 'profile' && (
+        <EmployeeInfo info={employee} type={type} onSyncSuccess={fetchEmployee} />
+      )}
       {tabs.value === 'declaration' && (
         <EmployeeDeclarations declarations={declarations} loading={loading} employee={employee} />
       )}
@@ -132,6 +139,19 @@ export function EmployeeDetailsView({ slug }) {
           onDocumentUploaded={handleDocumentUploaded}
         />
       )}
+      {tabs.value === 'biometrie' && (
+        <BiometricData
+          slug={employee?.slug}
+          picture={employee?.picture}
+          signature={employee?.signature}
+          fingerprints_picture={employee?.fingerprints_picture}
+          employee_slug={employee?.slug}
+          type={type}
+          status={employee?.status}
+          abisLastRetrievedAt={employee?.abis_last_retrieved_at}
+        />
+      )}
     </DashboardContent>
   );
 }
+

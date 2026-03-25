@@ -8,7 +8,7 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import Tabs from '@mui/material/Tabs';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import axios from 'src/utils/axios';
 import API from 'src/utils/api';
@@ -74,6 +74,7 @@ export function EmployeeListView() {
   const [error, setError] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState('name');
   const [refreshKey, setRefreshKey] = useState(0);
+  const fetchRequestIdRef = useRef(0);
 
   const [pagination, setPagination] = useState({
     count: 0,
@@ -116,7 +117,7 @@ export function EmployeeListView() {
     [filters, table]
   );
 
-  const fetchEmployees = useCallback(async () => {
+  const fetchEmployees = useCallback(async (requestId) => {
     setLoading(true);
     setError(null);
 
@@ -143,6 +144,8 @@ export function EmployeeListView() {
 
       const response = await axios.get(API.listEmployee(), { params });
 
+      if (requestId !== fetchRequestIdRef.current) return;
+
       setTableData(response.data.results || []);
       setPagination({
         count: response.data.count || 0,
@@ -150,9 +153,12 @@ export function EmployeeListView() {
         previous: response.data.previous,
       });
     } catch (err) {
+      if (requestId !== fetchRequestIdRef.current) return;
+
       setError(err.message || 'Erreur lors du chargement des donnees.');
       console.error('Erreur lors du chargement des employes:', err);
     } finally {
+      if (requestId !== fetchRequestIdRef.current) return;
       setLoading(false);
     }
   }, [
@@ -176,8 +182,13 @@ export function EmployeeListView() {
   }, [table.selected, tableData]);
 
   useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees, refreshKey]);
+    if (!filters.isHydrated) return;
+
+    const requestId = fetchRequestIdRef.current + 1;
+    fetchRequestIdRef.current = requestId;
+
+    fetchEmployees(requestId);
+  }, [fetchEmployees, refreshKey, filters.isHydrated]);
 
   if (loading) {
     console.info('Loading ...');

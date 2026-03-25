@@ -118,10 +118,11 @@ export function TableToolbar({ filters, options, onResetPage, onOpenColumnSelect
   const handleSelectFilter = useCallback(
     (filterType) => {
       const reset = {
+        name: '',
         passport_number: '',
         reference: '',
         declaration: '',
-        type: '',
+        type: 'all',
         company: '',
         number: '',
       };
