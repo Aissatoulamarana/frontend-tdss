@@ -1,6 +1,7 @@
 // const BASE_URL = 'http://192.168.1.152:8000/api'; // Adresse de votre backend
 
 import { Save } from '@mui/icons-material';
+import { create } from '@mui/material/styles/createTransitions';
 import { get } from 'react-hook-form';
 
 const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
@@ -175,6 +176,13 @@ const API = {
   updateFile: (slug) => `${BASE_URL}/declarations/employees/${slug}/update-file/`,
   updatePermit: (declarationSlug, employeeSlug) =>
     `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`,
+
+  // Listes des api pour les penalités
+  listPenalties: () => `${BASE_URL}/penalties/`,
+  createPenalty: () => `${BASE_URL}/penalties/`,
+  detailsPenalty: (slug) => `${BASE_URL}/penalties/${slug}/`,
+  billPenalty: (slug) => `${BASE_URL}/penalties/${slug}/bill/`,
+  cancelPenalty: (slug) => `${BASE_URL}/penalties/${slug}/cancel/`,
 
   // Listes des api pour le plan de panafricanisation
 

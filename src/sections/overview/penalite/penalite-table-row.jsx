@@ -1,8 +1,6 @@
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
-import Link from '@mui/material/Link';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
@@ -11,29 +9,45 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
-import { useBoolean } from 'src/hooks/use-boolean';
-
-import { fCurrency } from 'src/utils/format-number';
+import { fNumber } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
-export function PenaliteTableRow({
-  row,
-  selected,
-  onSelectRow,
-  onViewRow,
-  onEditRow,
-  onDeleteRow,
-}) {
-  const confirm = useBoolean();
+const STATUS_COLOR = {
+  OPEN: 'warning',
+  BILLED: 'success',
+  PAID: 'success',
+  CANCELLED: 'error',
+  CANCELED: 'error',
+  CLOSED: 'default',
+};
 
+function formatPenaltyAmount(amount, currencySign) {
+  if (amount === null || amount === undefined || amount === '') {
+    return '-';
+  }
+
+  const parsedAmount = Number(amount);
+
+  if (Number.isNaN(parsedAmount)) {
+    return [amount, currencySign].filter(Boolean).join(' ');
+  }
+
+  return [fNumber(parsedAmount), currencySign].filter(Boolean).join(' ');
+}
+
+export function PenaliteTableRow({ row, selected, onSelectRow, onBillRow, onCancelRow }) {
   const popover = usePopover();
+
+  const displayName = row.company || row.employee_name || row.reference || 'P';
+  const status = row.status?.toUpperCase() || '';
+  const isOpen = status === 'OPEN';
+  const isCancelled = ['CANCELLED', 'CANCELED'].includes(status);
 
   return (
     <>
@@ -42,60 +56,62 @@ export function PenaliteTableRow({
           <Checkbox
             checked={selected}
             onClick={onSelectRow}
-            inputProps={{ id: `row-checkbox-${row.id}`, 'aria-label': `Row checkbox` }}
+            inputProps={{ id: `row-checkbox-${row.slug}`, 'aria-label': 'Row checkbox' }}
           />
         </TableCell>
 
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
-            <Avatar alt={row.invoiceTo.name}>{row.invoiceTo.name.charAt(0).toUpperCase()}</Avatar>
+            <Avatar alt={displayName}>{displayName.charAt(0).toUpperCase()}</Avatar>
 
             <ListItemText
               disableTypography
               primary={
                 <Typography variant="body2" noWrap>
-                  {row.invoiceTo.name}
+                  {row.reference || '-'}
                 </Typography>
               }
               secondary={
-                <Link
-                  noWrap
-                  variant="body2"
-                  onClick={onViewRow}
-                  sx={{ color: 'text.disabled', cursor: 'pointer' }}
-                >
-                  {row.invoiceNumber}
-                </Link>
+                <Typography variant="caption" sx={{ color: 'text.disabled' }} noWrap>
+                  {row.slug || '-'}
+                </Typography>
               }
             />
           </Stack>
         </TableCell>
 
-        <TableCell>{row.invoiceNumber}</TableCell>
-        <TableCell>{fCurrency(row.totalAmount)}</TableCell>
-        <TableCell>{row.invoiceTo.name}</TableCell>
+        <TableCell>{row.type || '-'}</TableCell>
+        <TableCell>{row.company || '-'}</TableCell>
+        <TableCell>{row.employee_name || '-'}</TableCell>
+        <TableCell>{formatPenaltyAmount(row.amount, row.currency_sign)}</TableCell>
+        <TableCell>{row.currency_sign || '-'}</TableCell>
 
         <TableCell>
-          <Label
-            variant="soft"
-            color={
-              (row.status === 'paid' && 'success') ||
-              (row.status === 'pending' && 'warning') ||
-              (row.status === 'overdue' && 'error') ||
-              'default'
-            }
-          >
-            {row.status}
+          <Label variant="soft" color={STATUS_COLOR[status] || 'default'}>
+            {row.status || '-'}
           </Label>
         </TableCell>
+
         <TableCell>
           <ListItemText
-            primary={fDate(row.createDate)}
-            secondary={fTime(row.createDate)}
+            primary={fDate(row.created_on) || '-'}
+            secondary={fTime(row.created_on) || '-'}
             slotProps={{
               primary: { typography: 'body2', noWrap: true },
-              secondary: { mt: 0.5, component: 'span', typography: 'caption' }
-            }} />
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
+        </TableCell>
+
+        <TableCell>
+          <ListItemText
+            primary={fDate(row.infraction_date) || '-'}
+            secondary={fTime(row.infraction_date) || '-'}
+            slotProps={{
+              primary: { typography: 'body2', noWrap: true },
+              secondary: { mt: 0.5, component: 'span', typography: 'caption' },
+            }}
+          />
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>
@@ -104,6 +120,7 @@ export function PenaliteTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
+
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
@@ -112,58 +129,29 @@ export function PenaliteTableRow({
       >
         <MenuList>
           <MenuItem
+            disabled={!onBillRow || !isOpen}
             onClick={() => {
-              onViewRow();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="solar:eye-bold" />
-            Voir
-          </MenuItem>
-
-          <MenuItem
-            onClick={() => {
-              onEditRow();
-              popover.onClose();
-            }}
-          >
-            <Iconify icon="solar:pen-bold" />
-            Modifier
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              onEditRow();
+              onBillRow?.();
               popover.onClose();
             }}
           >
             <Iconify icon="mdi:credit-card" />
-            Payer
+            Facturer
           </MenuItem>
 
-          {/* <MenuItem
+          <MenuItem
+            disabled={!onCancelRow || isCancelled}
             onClick={() => {
-              confirm.onTrue();
+              onCancelRow?.();
               popover.onClose();
             }}
-            sx={{ color: 'error.main' }}
+            sx={{ color: isCancelled ? 'text.disabled' : 'error.main' }}
           >
-            <Iconify icon="solar:trash-bin-trash-bold" />
-            Supprimer
+            <Iconify icon="solar:close-circle-bold" />
+            Annuler
           </MenuItem>
-           */}
         </MenuList>
       </CustomPopover>
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title="Payer"
-        content="Are you sure want to delete?"
-        action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
-            Payer
-          </Button>
-        }
-      />
     </>
   );
 }
