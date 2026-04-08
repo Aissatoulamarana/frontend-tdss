@@ -1,4 +1,6 @@
 import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
@@ -8,9 +10,12 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 
+import { useBoolean } from 'src/hooks/use-boolean';
+
 import { fNumber } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
@@ -42,13 +47,17 @@ function formatPenaltyAmount(amount, currencySign) {
   return [fNumber(parsedAmount), currencySign].filter(Boolean).join(' ');
 }
 
-export function PenaliteTableRow({ row, onBillRow, onCancelRow }) {
+export function PenaliteTableRow({ row, onBillRow, onCancelRow, loading = false }) {
+  const billConfirm = useBoolean();
+  const cancelConfirm = useBoolean();
   const popover = usePopover();
 
   const displayName = row.company || row.employee_name || row.reference || 'P';
   const status = row.status?.toUpperCase() || '';
   const isOpen = status === 'OPEN';
   const isCancelled = ['CANCELLED', 'CANCELED'].includes(status);
+  const isBilled = status === 'BILLED';
+  const isCancelDisabled = !onCancelRow || isCancelled || isBilled;
 
   return (
     <>
@@ -122,9 +131,9 @@ export function PenaliteTableRow({ row, onBillRow, onCancelRow }) {
       >
         <MenuList>
           <MenuItem
-            disabled={!onBillRow || !isOpen}
+            disabled={!onBillRow || !isOpen || loading}
             onClick={() => {
-              onBillRow?.();
+              billConfirm.onTrue();
               popover.onClose();
             }}
           >
@@ -133,18 +142,57 @@ export function PenaliteTableRow({ row, onBillRow, onCancelRow }) {
           </MenuItem>
 
           <MenuItem
-            disabled={!onCancelRow || isCancelled}
+            disabled={isCancelDisabled || loading}
             onClick={() => {
-              onCancelRow?.();
+              cancelConfirm.onTrue();
               popover.onClose();
             }}
-            sx={{ color: isCancelled ? 'text.disabled' : 'error.main' }}
+            sx={{ color: isCancelDisabled ? 'text.disabled' : 'error.main' }}
           >
             <Iconify icon="solar:close-circle-bold" />
             Annuler
           </MenuItem>
         </MenuList>
       </CustomPopover>
+
+      <ConfirmDialog
+        open={billConfirm.value}
+        onClose={billConfirm.onFalse}
+        title="Facturer"
+        content="Voulez-vous vraiment facturer cette penalite ?"
+        action={
+          <Button
+            variant="contained"
+            onClick={async () => {
+              await onBillRow?.();
+              billConfirm.onFalse();
+            }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress color="inherit" size={20} /> : 'Facturer'}
+          </Button>
+        }
+      />
+
+      <ConfirmDialog
+        open={cancelConfirm.value}
+        onClose={cancelConfirm.onFalse}
+        title="Annuler"
+        content="Voulez-vous vraiment annuler cette penalite ?"
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              await onCancelRow?.();
+              cancelConfirm.onFalse();
+            }}
+            disabled={loading || isCancelDisabled}
+          >
+            {loading ? <CircularProgress color="inherit" size={20} /> : 'Annuler'}
+          </Button>
+        }
+      />
     </>
   );
 }

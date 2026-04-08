@@ -443,6 +443,7 @@ export function PenaliteListView() {
                         row={row}
                         onBillRow={() => handleBillRow(row.slug)}
                         onCancelRow={() => handleCancelRow(row.slug)}
+                        loading={actionLoading}
                       />
                     ))}
 
