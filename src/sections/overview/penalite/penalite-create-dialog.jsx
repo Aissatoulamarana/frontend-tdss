@@ -26,6 +26,7 @@ import { Field, Form } from 'src/components/hook-form';
 import { PENALITE_TYPE_OPTIONS } from './penalite-filter-options';
 
 const PENALITE_CREATE_TYPE_OPTIONS = PENALITE_TYPE_OPTIONS.filter((option) => !!option.value);
+const EMPLOYEE_LOOKUP_DEFAULT_HELPER = "Saisissez l'email de l'employe pour le rechercher.";
 
 const PenaliteCreateSchema = zod
   .object({
@@ -131,9 +132,7 @@ export function PenaliteCreateDialog({
   const [permits, setPermits] = useState([]);
   const [loadingPermits, setLoadingPermits] = useState(false);
   const [loadingEmployeeLookup, setLoadingEmployeeLookup] = useState(false);
-  const [employeeLookupHelper, setEmployeeLookupHelper] = useState(
-    "Saisissez le mail de l'employe."
-  );
+  const [employeeLookupHelper, setEmployeeLookupHelper] = useState(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
 
   const methods = useForm({
     mode: 'all',
@@ -146,20 +145,24 @@ export function PenaliteCreateDialog({
     reset,
     setValue,
     watch,
+    clearErrors,
+    trigger,
     formState: { isSubmitting, errors },
   } = methods;
 
   useEffect(() => {
     if (!open) return;
     reset(getDefaultValues());
+    clearErrors(['employee_email', 'employee']);
     setLoadingEmployeeLookup(false);
-    setEmployeeLookupHelper("Saisissez le mail de l'employe.");
-  }, [open, reset]);
+    setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
+  }, [clearErrors, open, reset]);
 
   const handleClose = () => {
     if (isSubmitting) return;
     reset(getDefaultValues());
-    setEmployeeLookupHelper("Saisissez le mail de l'employe.");
+    clearErrors(['employee_email', 'employee']);
+    setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
     onClose();
   };
 
@@ -173,7 +176,8 @@ export function PenaliteCreateDialog({
 
       toast.success('Penalite creee avec succes.');
       reset(getDefaultValues());
-      setEmployeeLookupHelper("Saisissez le mail de l'employe.");
+      clearErrors(['employee_email', 'employee']);
+      setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
       onClose();
       onCreated?.();
     } catch (error) {
@@ -196,9 +200,10 @@ export function PenaliteCreateDialog({
       setValue('employee_email', '', { shouldValidate: true });
       setValue('employee', '', { shouldValidate: true });
       setLoadingEmployeeLookup(false);
-      setEmployeeLookupHelper("Saisissez le mail de l'employe.");
+      setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
+      clearErrors(['employee_email', 'employee']);
     }
-  }, [open, selectedType, setValue]);
+  }, [clearErrors, open, selectedType, setValue]);
 
   useEffect(() => {
     let isMounted = true;
@@ -210,16 +215,18 @@ export function PenaliteCreateDialog({
       const isValidEmail = zod.string().email().safeParse(trimmedEmail).success;
 
       if (!trimmedEmail) {
-        setValue('employee', '', { shouldValidate: true });
+        setValue('employee', '', { shouldValidate: false });
+        clearErrors(['employee_email', 'employee']);
         setLoadingEmployeeLookup(false);
-        setEmployeeLookupHelper("Saisissez le mail de l'employe.");
+        setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
         return;
       }
 
       if (!isValidEmail) {
-        setValue('employee', '', { shouldValidate: true });
+        setValue('employee', '', { shouldValidate: false });
+        clearErrors(['employee_email', 'employee']);
         setLoadingEmployeeLookup(false);
-        setEmployeeLookupHelper("Saisissez le mail de l'employe.");
+        setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
         return;
       }
 
@@ -227,6 +234,7 @@ export function PenaliteCreateDialog({
       employeeLookupRequestIdRef.current = requestId;
 
       setLoadingEmployeeLookup(true);
+      clearErrors(['employee_email', 'employee']);
       setEmployeeLookupHelper("Recherche de l'employe...");
 
       try {
@@ -243,20 +251,22 @@ export function PenaliteCreateDialog({
         const employee = response?.data?.results?.[0];
 
         if (!employee?.slug) {
-          setValue('employee', '', { shouldValidate: true });
+          setValue('employee', '', { shouldValidate: false });
+          clearErrors(['employee_email', 'employee']);
           setEmployeeLookupHelper("Aucun employe n'a ete trouve pour cet email.");
           return;
         }
 
-        setValue('employee', employee.slug, { shouldValidate: true });
-        setEmployeeLookupHelper(
-          ['Employe trouve :', employee.first, employee.last].filter(Boolean).join(' ')
-        );
+        setValue('employee', employee.slug, { shouldValidate: false });
+        clearErrors(['employee_email', 'employee']);
+        await trigger(['employee_email', 'employee']);
+        setEmployeeLookupHelper(formatEmployeeLookupHelper(employee));
       } catch (error) {
         if (!isMounted || requestId !== employeeLookupRequestIdRef.current) return;
 
         console.error("Erreur lors de la recherche de l'employe:", error);
-        setValue('employee', '', { shouldValidate: true });
+        setValue('employee', '', { shouldValidate: false });
+        clearErrors(['employee_email', 'employee']);
         setEmployeeLookupHelper("Impossible de verifier cet email pour l'instant.");
       } finally {
         if (isMounted && requestId === employeeLookupRequestIdRef.current) {
@@ -270,7 +280,7 @@ export function PenaliteCreateDialog({
     return () => {
       isMounted = false;
     };
-  }, [employeeEmail, open, selectedType, setValue]);
+  }, [clearErrors, employeeEmail, open, selectedType, setValue, trigger]);
 
   useEffect(() => {
     let isMounted = true;
@@ -430,11 +440,12 @@ export function PenaliteCreateDialog({
               }
               onChange={(event, option) => {
                 setValue('company', option?.value || '', { shouldValidate: true });
-                setValue('employee_email', '', { shouldValidate: true });
-                setValue('employee', '', { shouldValidate: true });
+                setValue('employee_email', '', { shouldValidate: false });
+                setValue('employee', '', { shouldValidate: false });
                 setValue('permit', '', { shouldValidate: true });
                 setValue('source_invoice', '', { shouldValidate: true });
-                setEmployeeLookupHelper("Saisissez le mail de l'employe.");
+                clearErrors(['employee_email', 'employee']);
+                setEmployeeLookupHelper(EMPLOYEE_LOOKUP_DEFAULT_HELPER);
               }}
               renderOption={(props, option, { index }) => (
                 <li {...props} key={`${option.value}-${index}`}>
@@ -475,12 +486,13 @@ export function PenaliteCreateDialog({
               <TextField
                 fullWidth
                 name="employee_email"
-                label="Employe"
+                label="Email de l'employe"
                 type="email"
                 value={employeeEmail}
                 onChange={(event) => {
-                  setValue('employee_email', event.target.value, { shouldValidate: true });
-                  setValue('employee', '', { shouldValidate: true });
+                  setValue('employee_email', event.target.value, { shouldValidate: false });
+                  setValue('employee', '', { shouldValidate: false });
+                  clearErrors(['employee_email', 'employee']);
                 }}
                 placeholder="exemple@entreprise.com"
                 error={!!errors.employee_email}
@@ -629,4 +641,16 @@ function mapPermitOptions(items) {
       .join(' - '),
     slug: permit.slug,
   }));
+}
+
+function formatEmployeeLookupHelper(employee) {
+  const fullName = [employee?.first, employee?.last].filter(Boolean).join(' ').trim();
+
+  return [
+    fullName ? `Employe trouve : ${fullName}` : null,
+    employee?.passport_number ? `Passeport: ${employee.passport_number}` : null,
+    employee?.job ? `Fonction: ${employee.job}` : null,
+  ]
+    .filter(Boolean)
+    .join(' | ');
 }
