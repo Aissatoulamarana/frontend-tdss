@@ -81,6 +81,7 @@ export const paths = {
     penalite: {
       root: `${ROOTS.DASHBOARD}/penalite`,
       list: `${ROOTS.DASHBOARD}/penalite/list`,
+      details: (slug) => `${ROOTS.DASHBOARD}/penalite/${slug}`,
     },
 
     planAfricanisation: {

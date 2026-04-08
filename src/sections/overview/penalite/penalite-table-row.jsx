@@ -15,6 +15,9 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { fNumber } from 'src/utils/format-number';
 import { fDate, fTime } from 'src/utils/format-time';
 
+import { RouterLink } from 'src/routes/components';
+import { paths } from 'src/routes/paths';
+
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
@@ -52,7 +55,14 @@ export function PenaliteTableRow({ row, onBillRow, onCancelRow, loading = false 
   const cancelConfirm = useBoolean();
   const popover = usePopover();
 
-  const displayName = row.company || row.employee_name || row.reference || 'P';
+  const companyName = row.company || row.company_name || '-';
+  const employeeName =
+    row.employee_name || [row.employee?.first, row.employee?.last].filter(Boolean).join(' ') || '-';
+  const displayName =
+    (companyName !== '-' && companyName) ||
+    (employeeName !== '-' && employeeName) ||
+    row.reference ||
+    'P';
   const status = row.status?.toUpperCase() || '';
   const isOpen = status === 'OPEN';
   const isCancelled = ['CANCELLED', 'CANCELED'].includes(status);
@@ -76,17 +86,41 @@ export function PenaliteTableRow({ row, onBillRow, onCancelRow, loading = false 
           <Stack spacing={2} direction="row" alignItems="center">
             <Avatar alt={displayName}>{displayName.charAt(0).toUpperCase()}</Avatar>
 
-            <Typography variant="body2" noWrap>
-              {row.reference || '-'}
-            </Typography>
+            {row.slug ? (
+              <Typography
+                component={RouterLink}
+                href={paths.dashboard.penalite.details(row.slug)}
+                variant="body2"
+                noWrap
+                sx={{
+                  display: 'block',
+                  maxWidth: 240,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontWeight: 600,
+                  color: 'text.primary',
+                  textDecoration: 'none',
+                  '&:hover': {
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                {row.reference || '-'}
+              </Typography>
+            ) : (
+              <Typography variant="body2" noWrap>
+                {row.reference || '-'}
+              </Typography>
+            )}
           </Stack>
         </TableCell>
 
         <TableCell>{getPenaltyTypeLabel(row.type) || '-'}</TableCell>
-        <TableCell>{row.company || '-'}</TableCell>
-        <TableCell>{row.employee_name || '-'}</TableCell>
-        <TableCell>{formatPenaltyAmount(row.amount, row.currency_sign)}</TableCell>
-        <TableCell>{row.currency_sign || '-'}</TableCell>
+        <TableCell>{companyName}</TableCell>
+        <TableCell>{employeeName}</TableCell>
+        <TableCell>{formatPenaltyAmount(row.amount, row.currency_sign || row.currency)}</TableCell>
+        <TableCell>{row.currency_sign || row.currency || '-'}</TableCell>
 
         <TableCell>
           <Label variant="soft" color={STATUS_COLOR[status] || 'default'}>
