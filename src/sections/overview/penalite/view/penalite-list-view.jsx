@@ -4,15 +4,12 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Tabs from '@mui/material/Tabs';
-import Tooltip from '@mui/material/Tooltip';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 
@@ -30,7 +27,6 @@ import API from 'src/utils/api';
 import dayjs, { fIsBetween } from 'src/utils/format-time';
 
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { toast } from 'src/components/snackbar';
@@ -40,10 +36,10 @@ import {
   getComparator,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
   TablePaginationCustom,
 } from 'src/components/table';
 
+import { PenaliteCreateDialog } from '../penalite-create-dialog';
 import { PenaliteTableFiltersResult } from '../penalite-table-filters-result';
 import { PENALITE_STATUS_OPTIONS } from '../penalite-filter-options';
 import { PenaliteTableRow } from '../penalite-table-row';
@@ -71,13 +67,14 @@ export function PenaliteListView() {
   const table = useTable({ defaultOrderBy: 'created_on' });
   const fetchRequestIdRef = useRef(0);
 
-  const billConfirm = useBoolean();
-  const cancelConfirm = useBoolean();
+  const createDialog = useBoolean();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [companies, setCompanies] = useState([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
   const [pagination, setPagination] = useState({
     count: 0,
     next: null,
@@ -102,6 +99,53 @@ export function PenaliteListView() {
       filters.setState({ status: 'all' });
     }
   }, [filters.isHydrated, filters.setState, filters.state.status]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCompanies = async () => {
+      setLoadingCompanies(true);
+
+      try {
+        const firstResponse = await axios.get(API.listEntreprises(), {
+          params: { offset: 0, limit: 100 },
+        });
+
+        if (!isMounted) return;
+
+        const total = firstResponse?.data?.count || 0;
+        const initialResults = firstResponse?.data?.results || [];
+
+        if (total > initialResults.length) {
+          const fullResponse = await axios.get(API.listEntreprises(), {
+            params: { offset: 0, limit: total },
+          });
+
+          if (!isMounted) return;
+
+          setCompanies(mapCompanyOptions(fullResponse?.data?.results || []));
+          return;
+        }
+
+        setCompanies(mapCompanyOptions(initialResults));
+      } catch (err) {
+        if (!isMounted) return;
+
+        console.error('Erreur lors du chargement des entreprises:', err);
+        toast.error('Impossible de charger la liste des entreprises.');
+      } finally {
+        if (isMounted) {
+          setLoadingCompanies(false);
+        }
+      }
+    };
+
+    loadCompanies();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const sortedData = sortPenalties({
     inputData: tableData,
@@ -255,23 +299,16 @@ export function PenaliteListView() {
     [runPenaltyAction]
   );
 
-  const handleBillSelected = useCallback(async () => {
-    await runPenaltyAction({
-      slugs: table.selected,
-      requestFactory: (itemSlug) => axios.post(API.billPenalty(itemSlug), {}),
-      successLabel: 'Pénalité facturée avec succès.',
-    });
-    billConfirm.onFalse();
-  }, [billConfirm, runPenaltyAction, table.selected]);
+  const handlePenaltyCreated = useCallback(() => {
+    table.setSelected([]);
 
-  const handleCancelSelected = useCallback(async () => {
-    await runPenaltyAction({
-      slugs: table.selected,
-      requestFactory: (itemSlug) => axios.post(API.cancelPenalty(itemSlug), {}),
-      successLabel: 'Pénalité annulée avec succès.',
-    });
-    cancelConfirm.onFalse();
-  }, [cancelConfirm, runPenaltyAction, table.selected]);
+    if (table.page === 0) {
+      loadPenalties();
+      return;
+    }
+
+    table.onResetPage();
+  }, [loadPenalties, table]);
 
   if (error) {
     console.error(`Error: ${error}`);
@@ -287,6 +324,15 @@ export function PenaliteListView() {
             { name: 'Pénalités', href: paths.dashboard.penalite.list },
             { name: 'Liste' },
           ]}
+          action={
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+              onClick={createDialog.onTrue}
+            >
+              Ajouter
+            </Button>
+          }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
@@ -308,6 +354,8 @@ export function PenaliteListView() {
             filters={filters}
             dateError={dateError}
             onResetPage={table.onResetPage}
+            companies={companies}
+            loadingCompanies={loadingCompanies}
           />
 
           {canReset && (
@@ -320,6 +368,7 @@ export function PenaliteListView() {
           )}
 
           <Box sx={{ position: 'relative' }}>
+            {/* Selection multiple desactivee pour l'instant, faute d'API bulk.
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
@@ -358,6 +407,7 @@ export function PenaliteListView() {
                 </Stack>
               }
             />
+            */}
 
             <Scrollbar sx={{ minHeight: 444, minWidth: 1000 }}>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 1000 }}>
@@ -365,15 +415,7 @@ export function PenaliteListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={pagination.count}
-                  numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      sortedData.map((row) => row.slug)
-                    )
-                  }
                 />
 
                 {loading ? (
@@ -399,8 +441,6 @@ export function PenaliteListView() {
                       <PenaliteTableRow
                         key={row.slug}
                         row={row}
-                        selected={table.selected.includes(row.slug)}
-                        onSelectRow={() => table.onSelectRow(row.slug)}
                         onBillRow={() => handleBillRow(row.slug)}
                         onCancelRow={() => handleCancelRow(row.slug)}
                       />
@@ -432,41 +472,12 @@ export function PenaliteListView() {
         </Card>
       </DashboardContent>
 
-      <ConfirmDialog
-        open={billConfirm.value}
-        onClose={billConfirm.onFalse}
-        title="Facturer"
-        content={
-          <>
-            Êtes-vous sûr de vouloir facturer <strong>{table.selected.length}</strong> pénalités ?
-          </>
-        }
-        action={
-          <Button variant="contained" onClick={handleBillSelected} disabled={actionLoading}>
-            {actionLoading ? <CircularProgress color="inherit" size={20} /> : 'Facturer'}
-          </Button>
-        }
-      />
-
-      <ConfirmDialog
-        open={cancelConfirm.value}
-        onClose={cancelConfirm.onFalse}
-        title="Annuler"
-        content={
-          <>
-            Êtes-vous sûr de vouloir annuler <strong>{table.selected.length}</strong> pénalités ?
-          </>
-        }
-        action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleCancelSelected}
-            disabled={actionLoading}
-          >
-            {actionLoading ? <CircularProgress color="inherit" size={20} /> : 'Annuler'}
-          </Button>
-        }
+      <PenaliteCreateDialog
+        open={createDialog.value}
+        onClose={createDialog.onFalse}
+        onCreated={handlePenaltyCreated}
+        companies={companies}
+        loadingCompanies={loadingCompanies}
       />
     </>
   );
@@ -486,6 +497,14 @@ function sortPenalties({ inputData, comparator }) {
   });
 
   return stabilizedThis.map((el) => el[0]);
+}
+
+function mapCompanyOptions(items) {
+  return items.map((company) => ({
+    value: company.slug,
+    label: company.name,
+    slug: company.slug,
+  }));
 }
 
 function extractErrorMessage(error) {

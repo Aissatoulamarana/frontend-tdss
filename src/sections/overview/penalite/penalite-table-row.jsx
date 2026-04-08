@@ -1,5 +1,4 @@
 import Avatar from '@mui/material/Avatar';
-import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
@@ -15,6 +14,8 @@ import { fDate, fTime } from 'src/utils/format-time';
 import { usePopover, CustomPopover } from 'src/components/custom-popover';
 import { Iconify } from 'src/components/iconify';
 import { Label } from 'src/components/label';
+
+import { getPenaltyStatusLabel, getPenaltyTypeLabel } from './penalite-filter-options';
 
 // ----------------------------------------------------------------------
 
@@ -41,7 +42,7 @@ function formatPenaltyAmount(amount, currencySign) {
   return [fNumber(parsedAmount), currencySign].filter(Boolean).join(' ');
 }
 
-export function PenaliteTableRow({ row, selected, onSelectRow, onBillRow, onCancelRow }) {
+export function PenaliteTableRow({ row, onBillRow, onCancelRow }) {
   const popover = usePopover();
 
   const displayName = row.company || row.employee_name || row.reference || 'P';
@@ -51,7 +52,8 @@ export function PenaliteTableRow({ row, selected, onSelectRow, onBillRow, onCanc
 
   return (
     <>
-      <TableRow hover selected={selected}>
+      <TableRow hover>
+        {/* Selection multiple desactivee pour l'instant, faute d'API bulk.
         <TableCell padding="checkbox">
           <Checkbox
             checked={selected}
@@ -59,28 +61,19 @@ export function PenaliteTableRow({ row, selected, onSelectRow, onBillRow, onCanc
             inputProps={{ id: `row-checkbox-${row.slug}`, 'aria-label': 'Row checkbox' }}
           />
         </TableCell>
+        */}
 
         <TableCell>
           <Stack spacing={2} direction="row" alignItems="center">
             <Avatar alt={displayName}>{displayName.charAt(0).toUpperCase()}</Avatar>
 
-            <ListItemText
-              disableTypography
-              primary={
-                <Typography variant="body2" noWrap>
-                  {row.reference || '-'}
-                </Typography>
-              }
-              secondary={
-                <Typography variant="caption" sx={{ color: 'text.disabled' }} noWrap>
-                  {row.slug || '-'}
-                </Typography>
-              }
-            />
+            <Typography variant="body2" noWrap>
+              {row.reference || '-'}
+            </Typography>
           </Stack>
         </TableCell>
 
-        <TableCell>{row.type || '-'}</TableCell>
+        <TableCell>{getPenaltyTypeLabel(row.type) || '-'}</TableCell>
         <TableCell>{row.company || '-'}</TableCell>
         <TableCell>{row.employee_name || '-'}</TableCell>
         <TableCell>{formatPenaltyAmount(row.amount, row.currency_sign)}</TableCell>
@@ -88,7 +81,7 @@ export function PenaliteTableRow({ row, selected, onSelectRow, onBillRow, onCanc
 
         <TableCell>
           <Label variant="soft" color={STATUS_COLOR[status] || 'default'}>
-            {row.status || '-'}
+            {getPenaltyStatusLabel(status) || '-'}
           </Label>
         </TableCell>
 
