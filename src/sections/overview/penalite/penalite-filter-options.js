@@ -19,5 +19,9 @@ export function getPenaltyTypeLabel(value) {
 }
 
 export function getPenaltyStatusLabel(value) {
-  return PENALITE_STATUS_OPTIONS.find((option) => option.value === value)?.label || value;
+  const normalizedValue = value === 'CANCELED' ? 'CANCELLED' : value;
+  return (
+    PENALITE_STATUS_OPTIONS.find((option) => option.value === normalizedValue)?.label ||
+    normalizedValue
+  );
 }

@@ -12,68 +12,20 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useCallback, useEffect, useState } from 'react';
 
-import axios from 'src/utils/axios';
-import API from 'src/utils/api';
-
 import { Iconify } from 'src/components/iconify';
 
 import { PENALITE_TYPE_OPTIONS } from './penalite-filter-options';
 
 // ----------------------------------------------------------------------
 
-export function PenaliteTableToolbar({ filters, dateError, onResetPage }) {
-  const [companies, setCompanies] = useState([]);
-  const [loadingCompanies, setLoadingCompanies] = useState(false);
+export function PenaliteTableToolbar({
+  filters,
+  dateError,
+  onResetPage,
+  companies = [],
+  loadingCompanies = false,
+}) {
   const [companyInputValue, setCompanyInputValue] = useState(filters.state.company || '');
-
-  useEffect(() => {
-    let isMounted = true;
-    setLoadingCompanies(true);
-
-    async function fetchCompanies() {
-      try {
-        const countResponse = await axios.get(API.listEntreprises(), {
-          params: { offset: 0, limit: 1 },
-        });
-
-        const total = countResponse.data?.count || 0;
-
-        if (!total) {
-          if (isMounted) {
-            setCompanies([]);
-          }
-          return;
-        }
-
-        const response = await axios.get(API.listEntreprises(), {
-          params: { offset: 0, limit: total },
-        });
-
-        if (!isMounted) return;
-
-        setCompanies(
-          (response.data?.results || []).map((company) => ({
-            value: company.slug,
-            label: company.name,
-            slug: company.slug,
-          }))
-        );
-      } catch (error) {
-        if (!isMounted) return;
-        console.error('Erreur lors du chargement des entreprises:', error);
-      } finally {
-        if (isMounted) {
-          setLoadingCompanies(false);
-        }
-      }
-    }
-
-    fetchCompanies();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     setCompanyInputValue(filters.state.company || '');
