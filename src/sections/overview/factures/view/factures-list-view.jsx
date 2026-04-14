@@ -55,7 +55,7 @@ import { FactureTableFilters } from '../factures-table-filters';
 import { FactureTableRow } from '../factures-table-row';
 import { FactureTableToolbar } from '../factures-table-toolbar';
 import { PayeurForm } from '../form-factures';
-import { generateFacturePDF } from '../facture-pdf';
+import { generateFactureDocument } from '../facture-pdf-service';
 
 import { useMockedUser } from 'src/auth/hooks';
 
@@ -128,15 +128,18 @@ export function FactureListView() {
   const [summary, setSummary] = useState({ totalCount: 0, countByStatus: {} });
   // …
 
-  const filters = useSetState({
-    number: '',
-    declaration_number: '',
-    company: '',
-    service: [],
-    status: 'all',
-    date_before: null,
-    date_after: null,
-  }, { persistByPath: true });
+  const filters = useSetState(
+    {
+      number: '',
+      declaration_number: '',
+      company: '',
+      service: [],
+      status: 'all',
+      date_before: null,
+      date_after: null,
+    },
+    { persistByPath: true }
+  );
 
   const dateError = fIsBetween(filters.state.date_before, filters.state.date_after);
 
@@ -362,7 +365,7 @@ export function FactureListView() {
       const factures = await fetchFactures(slugs);
 
       for (const facture of factures) {
-        await generateFacturePDF(facture, facture.devise, { download: true });
+        await generateFactureDocument(facture, facture.devise, { download: true });
       }
 
       table.onSelectAllRows(false, []);
@@ -390,7 +393,7 @@ export function FactureListView() {
       const zip = new JSZip();
 
       for (const facture of factures) {
-        const blob = await generateFacturePDF(facture, facture.devise, {
+        const blob = await generateFactureDocument(facture, facture.devise, {
           download: false, // Ne pas télécharger individuellement
         });
 
@@ -428,7 +431,7 @@ export function FactureListView() {
 
       for (const facture of factures) {
         // 2. Génération du PDF de cette facture (sous forme de bytes)
-        const singlePdfBytes = await generateFacturePDF(facture, facture.devise, {
+        const singlePdfBytes = await generateFactureDocument(facture, facture.devise, {
           download: false,
         });
 
@@ -927,4 +930,3 @@ function applyFilter({ inputData, comparator, filters, dateError }) {
 
   return inputData;
 }
-
