@@ -13,6 +13,7 @@ import { paths } from 'src/routes/paths';
 import { Label } from 'src/components/label';
 
 import { getPenaltyStatusLabel, getPenaltyTypeLabel } from './penalite-filter-options';
+import { PenaliteToolbar } from './penalite-toolbar';
 
 const STATUS_COLOR = {
   OPEN: 'warning',
@@ -121,7 +122,7 @@ function DetailSection({ title, children, fullWidth = false }) {
   );
 }
 
-export function PenaliteDetails({ penalite }) {
+export function PenaliteDetails({ penalite, onBill, onCancel, actionLoading = false }) {
   const status = penalite?.status?.toUpperCase() || '';
   const companyName = penalite?.company_name || penalite?.company || '-';
   const employeeName = [penalite?.employee?.first, penalite?.employee?.last]
@@ -183,124 +184,133 @@ export function PenaliteDetails({ penalite }) {
     ) : null;
 
   return (
-    <Card sx={{ pt: 5, px: 5 }}>
-      <Box
-        rowGap={5}
-        display="grid"
-        alignItems="center"
-        gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
-      >
+    <>
+      <PenaliteToolbar
+        penalite={penalite}
+        onBill={onBill}
+        onCancel={onCancel}
+        actionLoading={actionLoading}
+      />
+
+      <Card sx={{ pt: 5, px: 5 }}>
         <Box
-          component="img"
-          alt="logo"
-          src="/logo/logo-single.png"
-          sx={{ width: 48, height: 48 }}
-        />
+          rowGap={5}
+          display="grid"
+          alignItems="center"
+          gridTemplateColumns={{ xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)' }}
+        >
+          <Box
+            component="img"
+            alt="logo"
+            src="/logo/logo-single.png"
+            sx={{ width: 48, height: 48 }}
+          />
 
-        <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
-          <Label variant="soft" color={STATUS_COLOR[status] || 'default'}>
-            {getPenaltyStatusLabel(status) || '-'}
-          </Label>
+          <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
+            <Label variant="soft" color={STATUS_COLOR[status] || 'default'}>
+              {getPenaltyStatusLabel(status) || '-'}
+            </Label>
 
-          <Typography variant="h6">{penalite?.reference || '-'}</Typography>
+            <Typography variant="h6">{penalite?.reference || '-'}</Typography>
 
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Date de creation : {fDate(penalite?.created_on) || '-'}
-          </Typography>
-        </Stack>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Date de creation : {fDate(penalite?.created_on) || '-'}
+            </Typography>
+          </Stack>
 
-        <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-start' }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            <strong>
-              <u>ENTREPRISE :</u>
-            </strong>
-            <br />
-            {companyName}
-          </Typography>
+          <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-start' }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              <strong>
+                <u>ENTREPRISE :</u>
+              </strong>
+              <br />
+              {companyName}
+            </Typography>
 
-          <Typography variant="body2">
-            <strong>Type :</strong> {getPenaltyTypeLabel(penalite?.type) || '-'}
-          </Typography>
+            <Typography variant="body2">
+              <strong>Type :</strong> {getPenaltyTypeLabel(penalite?.type) || '-'}
+            </Typography>
 
-          <Typography variant="body2">
-            <strong>Date de l&apos;infraction :</strong> {fDate(penalite?.infraction_date) || '-'}
-          </Typography>
-        </Stack>
+            <Typography variant="body2">
+              <strong>Date de l&apos;infraction :</strong> {fDate(penalite?.infraction_date) || '-'}
+            </Typography>
+          </Stack>
 
-        <Stack
+          <Stack
+            sx={{
+              typography: 'body2',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <Box sx={{ width: 90, height: 90 }} component="img" alt="qrCode" src={qrUrl} />
+          </Stack>
+
+          <Box
+            gridColumn={{ xs: '1', sm: 'span 2' }}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mt={3}
+            flexWrap="wrap"
+            gap={3}
+          >
+            <Stack sx={{ typography: 'body2' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Montant
+              </Typography>
+              {formatPenaltyAmount(penalite?.amount, penalite?.currency_sign || penalite?.currency)}
+            </Stack>
+
+            <Stack sx={{ typography: 'body2' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Devise
+              </Typography>
+              {currencyDisplay}
+            </Stack>
+
+            <Stack sx={{ typography: 'body2' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Cree le
+              </Typography>
+              {fDateTime(penalite?.created_on) || '-'}
+            </Stack>
+          </Box>
+        </Box>
+
+        <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={6} />
+
+        <Box
           sx={{
-            typography: 'body2',
-            display: 'flex',
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end',
+            display: 'grid',
+            gap: 4,
+            mt: 3,
+            gridTemplateColumns: {
+              xs: '1fr',
+              md: relatedSection ? 'repeat(2, minmax(0, 1fr))' : '1fr',
+            },
           }}
         >
-          <Box sx={{ width: 90, height: 90 }} component="img" alt="qrCode" src={qrUrl} />
-        </Stack>
+          <DetailSection title="Informations de la penalite">
+            <DetailLine label="Reference" value={penalite?.reference} />
+            <DetailLine label="Type" value={getPenaltyTypeLabel(penalite?.type) || '-'} />
+            <DetailLine label="Statut" value={getPenaltyStatusLabel(status) || '-'} />
+            <DetailLine label="Description" value={penalite?.description} />
+            {penalite?.invoice_slug && (
+              <DetailLine
+                label="Facture generee"
+                value="Voir la facture"
+                href={paths.dashboard.factures.details(penalite.invoice_slug)}
+              />
+            )}
+          </DetailSection>
 
-        <Box
-          gridColumn={{ xs: '1', sm: 'span 2' }}
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mt={3}
-          flexWrap="wrap"
-          gap={3}
-        >
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Montant
-            </Typography>
-            {formatPenaltyAmount(penalite?.amount, penalite?.currency_sign || penalite?.currency)}
-          </Stack>
-
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Devise
-            </Typography>
-            {currencyDisplay}
-          </Stack>
-
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Cree le
-            </Typography>
-            {fDateTime(penalite?.created_on) || '-'}
-          </Stack>
+          {relatedSection}
         </Box>
-      </Box>
 
-      <Divider sx={{ mt: 5, borderStyle: 'dashed' }} mb={6} />
-
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 4,
-          mt: 3,
-          gridTemplateColumns: {
-            xs: '1fr',
-            md: relatedSection ? 'repeat(2, minmax(0, 1fr))' : '1fr',
-          },
-        }}
-      >
-        <DetailSection title="Informations de la penalite">
-          <DetailLine label="Reference" value={penalite?.reference} />
-          <DetailLine label="Type" value={getPenaltyTypeLabel(penalite?.type) || '-'} />
-          <DetailLine label="Statut" value={getPenaltyStatusLabel(status) || '-'} />
-          <DetailLine label="Description" value={penalite?.description} />
-          {penalite?.invoice_slug && (
-            <DetailLine
-              label="Facture generee"
-              value="Voir la facture"
-              href={paths.dashboard.factures.details(penalite.invoice_slug)}
-            />
-          )}
-        </DetailSection>
-
-        {relatedSection}
-      </Box>
-
-      <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
-    </Card>
+        <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
+      </Card>
+    </>
   );
 }

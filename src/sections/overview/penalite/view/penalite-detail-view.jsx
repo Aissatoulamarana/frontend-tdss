@@ -46,6 +46,7 @@ export function PenaliteDetailsView({ slug }) {
   const [penalite, setPenalite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchPenalite = useCallback(async () => {
     setLoading(true);
@@ -66,6 +67,38 @@ export function PenaliteDetailsView({ slug }) {
   useEffect(() => {
     fetchPenalite();
   }, [fetchPenalite]);
+
+  const runPenaltyAction = useCallback(
+    async ({ requestFactory, successMessage }) => {
+      setActionLoading(true);
+
+      try {
+        await requestFactory();
+        toast.success(successMessage);
+        await fetchPenalite();
+      } catch (err) {
+        const message = extractErrorMessage(err);
+        toast.error(message);
+      } finally {
+        setActionLoading(false);
+      }
+    },
+    [fetchPenalite]
+  );
+
+  const handleBillPenalty = useCallback(async () => {
+    await runPenaltyAction({
+      requestFactory: () => axios.post(API.billPenalty(slug), {}),
+      successMessage: 'Penalite facturee avec succes.',
+    });
+  }, [runPenaltyAction, slug]);
+
+  const handleCancelPenalty = useCallback(async () => {
+    await runPenaltyAction({
+      requestFactory: () => axios.post(API.cancelPenalty(slug), {}),
+      successMessage: 'Penalite annulee avec succes.',
+    });
+  }, [runPenaltyAction, slug]);
 
   const heading = penalite?.reference ? `Penalite ${penalite.reference}` : 'Details penalite';
 
@@ -97,7 +130,12 @@ export function PenaliteDetailsView({ slug }) {
           />
         </Card>
       ) : (
-        <PenaliteDetails penalite={penalite} />
+        <PenaliteDetails
+          penalite={penalite}
+          onBill={handleBillPenalty}
+          onCancel={handleCancelPenalty}
+          actionLoading={actionLoading}
+        />
       )}
     </DashboardContent>
   );
