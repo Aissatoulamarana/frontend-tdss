@@ -93,11 +93,11 @@ export function useNavData() {
                 path: paths.dashboard.declaration.list,
                 icon: ICONS.declaration,
               },
-              {
-                title: 'Penalités',
-                path: paths.dashboard.penalite.list,
-                icon: ICONS.penalite,
-              },
+              // {
+              //   title: 'Penalités',
+              //   path: paths.dashboard.penalite.list,
+              //   icon: ICONS.penalite,
+              // },
             ]
           : []),
 
