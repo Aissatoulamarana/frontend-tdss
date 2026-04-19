@@ -343,6 +343,11 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         return;
       }
 
+      // Durée <= 12 : champs vidés, l'utilisateur saisit de nouvelles valeurs
+      // Durée > 12  : champs pré-remplis avec les valeurs récupérées, modifiables
+      const fetchedDuration = data?.contract_duration ?? 0;
+      const keepContractValues = fetchedDuration > 12;
+
       append({
         passport_number: data.passport_number,
         last: data.last,
@@ -356,8 +361,8 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
         email: data?.email,
         birthday: data?.birthday,
         address: data?.address,
-        contract_starts_at: data?.contract_starts_at ?? '', // ✅ conservé même si caché
-        contract_duration: data?.contract_duration ?? '', // ✅ conservé même si caché
+        contract_starts_at: keepContractValues ? (data?.contract_starts_at ?? '') : '',
+        contract_duration: keepContractValues ? fetchedDuration : '',
         passportExists: true,
         locked: true,
       });
@@ -715,37 +720,31 @@ export function DeclarationAddEmployee({ declaration, open, onClose }) {
                         />
                       </Box>
 
-                      {/* ✅ Masqué pour les renouvellements */}
-                      {!isRenewal && (
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Field.DatePicker
-                            size="small"
-                            name={`employees[${index}].contract_starts_at`}
-                            label="Date début contrat"
-                            InputLabelProps={{ shrink: true }}
-                            slotProps={{
-                              textField: {
-                                size: 'small',
-                                fullWidth: true,
-                              },
-                            }}
-                          />
-                        </Box>
-                      )}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Field.DatePicker
+                          size="small"
+                          name={`employees[${index}].contract_starts_at`}
+                          label="Date début contrat"
+                          InputLabelProps={{ shrink: true }}
+                          slotProps={{
+                            textField: {
+                              size: 'small',
+                              fullWidth: true,
+                            },
+                          }}
+                        />
+                      </Box>
 
-                      {/* ✅ Masqué pour les renouvellements */}
-                      {!isRenewal && (
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Field.Text
-                            size="small"
-                            type="number"
-                            name={`employees[${index}].contract_duration`}
-                            label="Durée Contrat (mois)"
-                            InputLabelProps={{ shrink: true }}
-                            inputProps={{ min: 1, max: 24, step: 1 }}
-                          />
-                        </Box>
-                      )}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Field.Text
+                          size="small"
+                          type="number"
+                          name={`employees[${index}].contract_duration`}
+                          label="Durée Contrat (mois)"
+                          InputLabelProps={{ shrink: true }}
+                          inputProps={{ min: 1, max: 24, step: 1 }}
+                        />
+                      </Box>
 
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Autocomplete
