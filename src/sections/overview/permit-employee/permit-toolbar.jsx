@@ -35,7 +35,13 @@ import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
-export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeStatus }) {
+export function PermitToolbar({
+  permit,
+  currentStatus,
+  statusOptions,
+  onChangeStatus,
+  rejectReasons = [],
+}) {
   const router = useRouter();
 
   const [openPrint, setOpenPrint] = useState(false);
@@ -61,7 +67,10 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
   const printConfirm = useBoolean();
 
   const [openRejetDialog, setOpenRejetDialog] = useState(false);
-  const [motifRejet, setMotifRejet] = useState('');
+  const [rejectForm, setRejectForm] = useState({
+    reject_reason_type: '',
+    reject_reason_description: '',
+  });
   const [errors, setError] = useState(null);
 
   const componentRef = useRef(null);
@@ -179,18 +188,29 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
     }
   });
 
-  const handleRejetter = useCallback(async (motifRejet) => {
+  const handleRejetter = useCallback(async () => {
+    if (!rejectForm.reject_reason_type) {
+      toast.error('Veuillez sélectionner un type de rejet');
+      return;
+    }
+    if (!rejectForm.reject_reason_description.trim()) {
+      toast.error('Veuillez ajouter une description');
+      return;
+    }
+
     try {
-      // Appel à l'API backend pour rejeter la déclaration
-      const response = await axios.post(API.rejectPermit(permit?.slug), {
-        reject_reason_name: motifRejet,
-      });
+      const payload = {
+        reject_reason_type: rejectForm.reject_reason_type,
+        reject_reason_description: rejectForm.reject_reason_description,
+      };
+
+      const response = await axios.post(API.rejectPermit(permit?.slug), payload);
+
       if (response) {
-        toast.success('Permit rejetée avec succès !');
-        onChangeStatus('rejected');
-      } else {
-        console.error('Erreur lors du rejet :', response.data.error);
-        toast.error('Une erreur est survenue.');
+        toast.success('Permit rejeté avec succès !');
+        onChangeStatus('correction');
+        setRejectForm({ reject_reason_type: '', reject_reason_description: '' });
+        setOpenRejetDialog(false);
       }
     } catch (error) {
       const errorMessage =
@@ -200,10 +220,9 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
         error?.detail ||
         error?.non_field_errors?.[0];
       setError(errorMessage);
-      console.error('Erreur réseau ou serveur:', error);
       toast.error(errorMessage);
     }
-  });
+  }, [rejectForm, permit?.slug, onChangeStatus]);
 
   const handlePrintPermis = useCallback(async () => {
     try {
@@ -385,32 +404,53 @@ export function PermitToolbar({ permit, currentStatus, statusOptions, onChangeSt
       {/* Dialogue personnalisé pour le rejet avec motif */}
       <ConfirmDialog
         open={openRejetDialog}
-        onClose={() => setOpenRejetDialog(false)}
-        title="Rejeter "
+        onClose={() => {
+          setOpenRejetDialog(false);
+          setRejectForm({ reject_reason_type: '', reject_reason_description: '' });
+        }}
+        title="Rejeter le permit"
         content={
-          <TextField
-            fullWidth
-            sx={{ mt: 2 }}
-            label="Motif du rejet"
-            multiline
-            rows={3}
-            value={motifRejet}
-            onChange={(e) => setMotifRejet(e.target.value)}
-          />
+          <>
+            <TextField
+              select
+              fullWidth
+              label="Type de rejet"
+              value={rejectForm.reject_reason_type}
+              onChange={(e) =>
+                setRejectForm((prev) => ({ ...prev, reject_reason_type: e.target.value }))
+              }
+              sx={{ mb: 2, mt: 1 }}
+            >
+              {rejectReasons?.map((reason) => (
+                <MenuItem key={reason.slug} value={reason.slug}>
+                  {reason.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Description"
+              placeholder="Ajouter la raison détaillée du rejet"
+              value={rejectForm.reject_reason_description}
+              onChange={(e) =>
+                setRejectForm((prev) => ({ ...prev, reject_reason_description: e.target.value }))
+              }
+            />
+          </>
         }
         action={
           <Button
             variant="contained"
             color="error"
-            disabled={!motifRejet.trim()}
-            onClick={() => {
-              // On passe le motif au parent via onRejetRow
-              handleRejetter(motifRejet);
-              setMotifRejet('');
-              setOpenRejetDialog(false);
-            }}
+            disabled={
+              !rejectForm.reject_reason_type || !rejectForm.reject_reason_description.trim()
+            }
+            onClick={handleRejetter}
           >
-            Rejeter
+            Confirmer le rejet
           </Button>
         }
       />

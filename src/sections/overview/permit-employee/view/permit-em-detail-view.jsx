@@ -122,6 +122,24 @@ export function PermitDetailView({ slug }) {
     }));
   };
 
+  const [rejectReasons, setRejectReasons] = useState([]);
+
+  useEffect(() => {
+    const fetchRejectReasons = async () => {
+      try {
+        const response = await axios.get(API.listRejectReasons());
+        setRejectReasons(response.data.results);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchRejectReasons();
+  }, []);
+
+  const handleChangeStatus = useCallback((newStatus) => {
+    setStatus(newStatus);
+  }, []);
+
   return (
     <DashboardContent>
       <Box sx={{ mb: { xs: 1, md: 1 } }}>
@@ -135,7 +153,12 @@ export function PermitDetailView({ slug }) {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
-        <PermitToolbar permit={permit} currentStatus={status} />
+        <PermitToolbar
+          permit={permit}
+          currentStatus={status}
+          rejectReasons={rejectReasons}
+          onChangeStatus={handleChangeStatus}
+        />
       </Box>
       <Card sx={{ mb: 3, height: 290, position: 'relative' }}>
         <EmployeeCover

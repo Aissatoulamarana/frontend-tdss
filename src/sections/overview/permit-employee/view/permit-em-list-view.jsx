@@ -57,6 +57,7 @@ import { TableFiltersResult } from '../table-filter-result';
 import { TableRowComPermit } from '../permit-employee-table-row';
 import { useMockedUser } from 'src/auth/hooks';
 import dayjs, { fIsBetween } from 'src/utils/format-time'; // Ensure this imports the correct dayjs instance
+import { set } from 'nprogress';
 dayjs.locale('fr'); // Set the default locale to French
 
 // ----------------------------------------------------------------------
@@ -100,6 +101,12 @@ export function PermitListView() {
   const { user } = useMockedUser();
   const type = user?.type_code?.toLowerCase().trim();
 
+  const [RejetReasons, setRejetReasons] = useState([]);
+  const [rejectForm, setRejectForm] = useState({
+    reject_reason_type: '',
+    reject_reason_description: '',
+  });
+
   const isPrinter = type === 'printer';
 
   const router = useRouter();
@@ -136,19 +143,22 @@ export function PermitListView() {
   const [error, setError] = useState(null); // État pour gérer les erreurs
   const fetchRequestIdRef = useRef(0);
 
-  const filters = useSetState({
-    name: '',
-    declaration: '',
-    type: 'all',
-    passport_number: '',
-    reference: '',
-    status: 'all',
-    company: '',
-    number: '',
-    created_on_before: null,
-    created_on_after: null,
-    not_printed: false,
-  }, { persistByPath: true });
+  const filters = useSetState(
+    {
+      name: '',
+      declaration: '',
+      type: 'all',
+      passport_number: '',
+      reference: '',
+      status: 'all',
+      company: '',
+      number: '',
+      created_on_before: null,
+      created_on_after: null,
+      not_printed: false,
+    },
+    { persistByPath: true }
+  );
 
   const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
@@ -191,6 +201,19 @@ export function PermitListView() {
       totalRowsFiltered: tableData.length,
     });
   }, [tableData.length, table, tableData]);
+
+  const fetchRejetReasons = async () => {
+    try {
+      const response = await axios.get(API.listRejectReasons());
+      setRejetReasons(response.data.results);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRejetReasons();
+  }, []);
 
   const handleEditRow = useCallback(
     (slug) => {
@@ -282,36 +305,50 @@ export function PermitListView() {
     }
   });
 
-  const handleRejetRow = useCallback(async (slug, rejectReason) => {
+  const handleRejetRow = useCallback(async (slug, rejectReasonData) => {
     try {
-      const response = await axios.post(API.rejectPermit(slug), {
-        reject_reason_name: rejectReason,
-      });
+      const payload = {
+        reject_reason_type: rejectReasonData?.reject_reason_type || '',
+        reject_reason_description: rejectReasonData?.reject_reason_description || '',
+      };
+
+      const response = await axios.post(API.rejectPermit(slug), payload);
+
       if (response.data || response.status === 200) {
         toast.success('Permit rejeté avec succès!');
+
         setTableData((prevData) =>
           prevData.map((item) =>
             item.slug === slug
-              ? { ...item, status: 'rejected', reject_reason_name: rejectReason }
+              ? {
+                  ...item,
+                  status: 'correction',
+                  reject_reason_type: payload.reject_reason_type,
+                  reject_reason_description: payload.reject_reason_description,
+                }
               : item
           )
         );
       } else {
-        console.log('Erreur lors du rejet du permit');
         toast.error('Une erreur est survenue lors du rejet du permit');
       }
     } catch (error) {
       const errorMessage =
-        error?.error ||
-        error?.details ||
+        error?.response?.data?.error ||
+        error?.response?.data?.details ||
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        error?.response?.data?.non_field_errors?.[0] ||
         error?.message ||
-        error?.detail ||
-        error?.non_field_errors?.[0];
+        'Erreur lors du rejet du permit';
+
       setError(errorMessage);
-      console.error('Erreur réseau ou serveur:', error);
+
+      console.error('Erreur réseau ou serveur:', error?.response?.data || error);
+
       toast.error(errorMessage);
     }
-  });
+  }, []);
 
   const handleDeliverRow = useCallback(async (slug) => {
     try {
@@ -957,13 +994,16 @@ export function PermitListView() {
                         type={type}
                         key={row.slug}
                         row={row}
+                        rejectReasons={RejetReasons}
                         visibleColumns={visibleColumns}
                         selected={table.selected.includes(row.slug)}
                         onSelectRow={isPrinter ? () => table.onSelectRow(row.slug) : undefined}
                         onDeleteRow={() => handleDeleteRow(row.slug)}
                         onEditRow={() => handleEditRow(row.slug)}
                         onViewRow={() => handleViewRow(row.slug)}
-                        onRejetRow={(rejectReason) => handleRejetRow(row.slug, rejectReason)}
+                        onRejetRow={(rejectReasonData) =>
+                          handleRejetRow(row.slug, rejectReasonData)
+                        }
                         onSubmitRow={() => handlSubmitRow(row.slug)}
                         onUnsubmitRow={() => handleUnsubmitRow(row.slug)}
                         onValidateRow={() => handleValidateRow(row.slug)}
@@ -1128,4 +1168,3 @@ function applyFilter({ inputData, comparator, filters }) {
 
   return inputData;
 }
-
