@@ -385,6 +385,46 @@ export function PermitInfo({ created_at, permit, expired_at, status, permits }) 
             </Box>
           </>
         )}
+
+        {permits?.reject_reasons?.length > 0 && (
+          <>
+            <Divider sx={{ my: 3 }} />
+            <Box>
+              <SectionTitle title="Historique des rejets" />
+              <Stack spacing={2.5}>
+                {permits.reject_reasons.map((reject, index) => (
+                  <Box key={index}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                      <InfoItem
+                        icon="mdi:close-circle"
+                        label="Type de rejet"
+                        value={reject.type?.name || '-'}
+                      />
+                      <InfoItem
+                        icon="mdi:account-cancel"
+                        label="Rejeté par"
+                        value={reject.rejected_by || '-'}
+                      />
+                      <InfoItem
+                        icon="mdi:calendar-alert"
+                        label="Date"
+                        value={new Date(reject.created_on).toLocaleString('fr-FR')}
+                      />
+                      <InfoItem
+                        icon="mdi:text-box-outline"
+                        label="Description"
+                        value={reject.description || '-'}
+                      />
+                    </Box>
+                    {index < permits.reject_reasons.length - 1 && (
+                      <Divider sx={{ mt: 2, borderStyle: 'dashed' }} />
+                    )}
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
+          </>
+        )}
       </Box>
     </Card>
   );
