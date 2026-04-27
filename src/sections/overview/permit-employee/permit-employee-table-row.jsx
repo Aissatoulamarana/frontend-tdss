@@ -33,6 +33,7 @@ export function TableRowComPermit({
   onDeliverRow,
   onPrintRow,
   visibleColumns,
+  rejectReasons,
 }) {
   const confirm = useBoolean();
 
@@ -50,11 +51,31 @@ export function TableRowComPermit({
 
   const printConfirm = useBoolean();
 
-  const [motifRejet, setMotifRejet] = useState('');
+  const [rejectForm, setRejectForm] = useState({
+    reject_reason_type: '',
+    reject_reason_description: '',
+  });
+
+  // Remplace handleConfirmRejet par ceci :
 
   const handleConfirmRejet = () => {
-    onRejetRow(motifRejet); // On passe le motif en paramètre
-    setMotifRejet('');
+    if (!rejectForm.reject_reason_type) {
+      toast.error('Veuillez sélectionner un type de rejet');
+      return;
+    }
+
+    if (!rejectForm.reject_reason_description.trim()) {
+      toast.error('Veuillez ajouter une description');
+      return;
+    }
+
+    onRejetRow(rejectForm);
+
+    setRejectForm({
+      reject_reason_type: '',
+      reject_reason_description: '',
+    });
+
     rejetConfirm.onFalse();
   };
 
@@ -205,9 +226,10 @@ export function TableRowComPermit({
               </MenuItem>
             )}
 
-          {(type === 'supervisor' || type === 'aguipe') && row.status === 'submitted' && (
-            <>
+          {(type === 'supervisor' || type === 'aguipe') &&
+            row.status === 'submitted' && [
               <MenuItem
+                key="validate"
                 onClick={() => {
                   validateConfirm.onTrue();
                   popover.onClose();
@@ -216,19 +238,20 @@ export function TableRowComPermit({
               >
                 <Iconify icon="solar:check-bold" />
                 Valider
-              </MenuItem>
+              </MenuItem>,
+
               <MenuItem
+                key="reject"
                 onClick={() => {
                   rejetConfirm.onTrue();
                   popover.onClose();
                 }}
                 sx={{ color: 'error.main' }}
               >
-                <Iconify icon="solar:check-bold" />
+                <Iconify icon="solar:close-circle-bold" />
                 Rejeter
-              </MenuItem>
-            </>
-          )}
+              </MenuItem>,
+            ]}
 
           {type === 'printer' && (
             <>
@@ -381,22 +404,55 @@ export function TableRowComPermit({
 
       <ConfirmDialog
         open={rejetConfirm.value}
-        onClose={rejetConfirm.onFalse}
-        title="Rejeter"
+        onClose={() => {
+          rejetConfirm.onFalse();
+          setRejectForm({
+            reject_reason_type: '',
+            reject_reason_description: '',
+          });
+        }}
+        title="Rejeter le permit"
         content={
-          <TextField
-            fullWidth
-            label="Motif du rejet"
-            multiline
-            rows={3}
-            value={motifRejet}
-            onChange={(e) => setMotifRejet(e.target.value)}
-            sx={{ mt: 1 }}
-          />
+          <>
+            <TextField
+              select
+              fullWidth
+              label="Type de rejet"
+              value={rejectForm.reject_reason_type}
+              onChange={(e) =>
+                setRejectForm((prev) => ({
+                  ...prev,
+                  reject_reason_type: e.target.value,
+                }))
+              }
+              sx={{ mb: 2, mt: 1 }}
+            >
+              {rejectReasons?.map((reason) => (
+                <MenuItem key={reason.slug} value={reason.slug}>
+                  {reason.name}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Description"
+              placeholder="Ajouter la raison détaillée du rejet"
+              value={rejectForm.reject_reason_description}
+              onChange={(e) =>
+                setRejectForm((prev) => ({
+                  ...prev,
+                  reject_reason_description: e.target.value,
+                }))
+              }
+            />
+          </>
         }
         action={
           <Button variant="contained" color="error" onClick={handleConfirmRejet}>
-            Rejeter
+            Confirmer le rejet
           </Button>
         }
       />

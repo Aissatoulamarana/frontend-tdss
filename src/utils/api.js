@@ -3,6 +3,7 @@
 import { Save } from '@mui/icons-material';
 import { create } from '@mui/material/styles/createTransitions';
 import { get } from 'react-hook-form';
+import { list } from 'src/theme/core/components/list';
 
 const BASE_URL = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`; // Adresse de votre backend
 
@@ -174,6 +175,7 @@ const API = {
   unsubmitPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/unsubmit/`,
   validatePermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/validate/`,
   updateFile: (slug) => `${BASE_URL}/declarations/employees/${slug}/update-file/`,
+  listRejectReasons: () => `${BASE_URL}/declarations/employees/type-reject-reason/`,
   updatePermit: (declarationSlug, employeeSlug) =>
     `${BASE_URL}/declarations/${declarationSlug}/employees/${employeeSlug}/`,
 
