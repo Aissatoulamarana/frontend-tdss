@@ -23,7 +23,7 @@ import API from 'src/utils/api';
 
 // ----------------------------------------------------------------------
 
-export function BiometricData({ slug, picture, signature, fingerprints_picture, onUpdate }) {
+export function BiometricData({ slug, employee_slug, picture, signature, fingerprints_picture, onUpdate }) {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewData, setPreviewData] = useState({ type: '', url: '' });
 
@@ -74,7 +74,7 @@ export function BiometricData({ slug, picture, signature, fingerprints_picture, 
         const formData = new FormData();
         formData.append(fieldName, file);
 
-        const response = await axios.patch(API.updateFile(slug), formData, {
+        const response = await axios.patch(API.updateFile(employee_slug), formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
