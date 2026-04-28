@@ -80,15 +80,18 @@ const STATUS_OPTIONS = [
 
 const BASE_TABLE_HEAD = [
   // { id: 'check', width: 88 },
-  { id: 'reference', label: 'Reference' },
+  // { id: 'reference', label: 'Reference' },
   { id: 'passport', label: 'Numéro Passeport' },
   { id: 'name', label: 'Nom Complet' },
   { id: 'phone', label: 'Téléphone' },
   { id: 'function', label: 'Fonction' },
   { id: 'entreprise', label: 'Entreprise' },
+  { id: 'contract_starts_at', label: 'Date Contrat' },
+  { id: 'contract_duration', label: 'Durée Contrat' },
   { id: 'type', label: ' Permis ' },
   { id: 'typedec', label: 'Type Déclaration ' },
   { id: 'created_on', label: 'Date de création' },
+  { id: 'card_expires_at', label: "Date d'expiration" },
   { id: 'statut', label: 'Status' },
   { id: '', width: 88 },
 ];
@@ -117,8 +120,14 @@ export function PermitListView() {
     ? BASE_TABLE_HEAD.filter((col) => col.id !== 'typedec')
     : BASE_TABLE_HEAD;
 
+  const HIDDEN_BY_DEFAULT = ['phone', 'card_expires_at'];
+
+  const DEFAULT_VISIBLE_COLUMNS = TABLE_HEAD.map((column) => column.id).filter(
+    (id) => id && !HIDDEN_BY_DEFAULT.includes(id)
+  );
+
   const allColumns = TABLE_HEAD.map((column) => column.id).filter((id) => id);
-  const [visibleColumns, setVisibleColumns] = useState(allColumns);
+  const [visibleColumns, setVisibleColumns] = useState(DEFAULT_VISIBLE_COLUMNS);
   const columnSelector = useBoolean();
 
   const [selectedForPrint, setSelectedForPrint] = useState([]);

@@ -196,6 +196,7 @@ export function PermitDetailView({ slug }) {
           employee={permit}
           onDocumentUploaded={handleDocumentUploaded}
           onDocumentUpdated={handleDocumentUpdated}
+          type={permit?.type}
         />
       )}
 

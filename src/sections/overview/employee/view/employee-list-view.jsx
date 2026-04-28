@@ -47,7 +47,7 @@ import { EmployeeCreateDialog } from '../employee-create-dialog';
 const STATUS_OPTIONS = [{ value: 'all', label: 'Tous' }];
 
 const TABLE_HEAD = [
-  { id: 'reference', label: 'Reference ' },
+  // { id: 'reference', label: 'Reference ' },
   { id: 'numero', label: 'N° Passeport' },
   { id: 'name', label: 'Nom Complet' },
   { id: 'email', label: 'Email' },
@@ -117,59 +117,62 @@ export function EmployeeListView() {
     [filters, table]
   );
 
-  const fetchEmployees = useCallback(async (requestId) => {
-    setLoading(true);
-    setError(null);
+  const fetchEmployees = useCallback(
+    async (requestId) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const offset = table.page * table.rowsPerPage;
-      const params = {
-        limit: table.rowsPerPage,
-        offset,
-        ...(filters.state.passport_number
-          ? { passport_number: filters.state.passport_number }
-          : filters.state.reference
-            ? { reference: filters.state.reference }
-            : filters.state.name
-              ? { name: filters.state.name }
-              : {}),
-        ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
-        ...(filters.state.job?.length > 0 && {
-          job:
-            typeof filters.state.job[0] === 'object'
-              ? filters.state.job[0].name
-              : filters.state.job[0],
-        }),
-      };
+      try {
+        const offset = table.page * table.rowsPerPage;
+        const params = {
+          limit: table.rowsPerPage,
+          offset,
+          ...(filters.state.passport_number
+            ? { passport_number: filters.state.passport_number }
+            : filters.state.reference
+              ? { reference: filters.state.reference }
+              : filters.state.name
+                ? { name: filters.state.name }
+                : {}),
+          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(filters.state.job?.length > 0 && {
+            job:
+              typeof filters.state.job[0] === 'object'
+                ? filters.state.job[0].name
+                : filters.state.job[0],
+          }),
+        };
 
-      const response = await axios.get(API.listEmployee(), { params });
+        const response = await axios.get(API.listEmployee(), { params });
 
-      if (requestId !== fetchRequestIdRef.current) return;
+        if (requestId !== fetchRequestIdRef.current) return;
 
-      setTableData(response.data.results || []);
-      setPagination({
-        count: response.data.count || 0,
-        next: response.data.next,
-        previous: response.data.previous,
-      });
-    } catch (err) {
-      if (requestId !== fetchRequestIdRef.current) return;
+        setTableData(response.data.results || []);
+        setPagination({
+          count: response.data.count || 0,
+          next: response.data.next,
+          previous: response.data.previous,
+        });
+      } catch (err) {
+        if (requestId !== fetchRequestIdRef.current) return;
 
-      setError(err.message || 'Erreur lors du chargement des donnees.');
-      console.error('Erreur lors du chargement des employes:', err);
-    } finally {
-      if (requestId !== fetchRequestIdRef.current) return;
-      setLoading(false);
-    }
-  }, [
-    table.page,
-    table.rowsPerPage,
-    filters.state.name,
-    filters.state.job,
-    filters.state.passport_number,
-    filters.state.reference,
-    filters.state.status,
-  ]);
+        setError(err.message || 'Erreur lors du chargement des donnees.');
+        console.error('Erreur lors du chargement des employes:', err);
+      } finally {
+        if (requestId !== fetchRequestIdRef.current) return;
+        setLoading(false);
+      }
+    },
+    [
+      table.page,
+      table.rowsPerPage,
+      filters.state.name,
+      filters.state.job,
+      filters.state.passport_number,
+      filters.state.reference,
+      filters.state.status,
+    ]
+  );
 
   const handleEmployeeCreated = useCallback(() => {
     table.onResetPage();

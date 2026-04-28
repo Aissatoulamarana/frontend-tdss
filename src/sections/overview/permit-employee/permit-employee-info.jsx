@@ -514,9 +514,9 @@ export function PermitEmloyeeInfo({ info, type, onSyncSuccess }) {
                 <InfoItem icon="ic:baseline-email" label="Email" value={info?.email} isLink />
               )}
               {info?.address && <InfoItem icon="mdi:home" label="Adresse" value={info?.address} />}
-              {info?.residence && (
+              {/* {info?.residence && (
                 <InfoItem icon="mdi:home-city" label="Résidence" value={info?.residence} />
-              )}
+              )} */}
             </Box>
           </Box>
 

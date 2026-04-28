@@ -146,9 +146,9 @@ export function TableRowComPermit({
           <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.number}</TableCell>
         )} */}
 
-        {visibleColumns.includes('reference') && (
+        {/* {visibleColumns.includes('reference') && (
           <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.reference}</TableCell>
-        )}
+        )} */}
 
         {visibleColumns.includes('passport') && (
           <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.passport_number}</TableCell>
@@ -176,10 +176,22 @@ export function TableRowComPermit({
 
         {visibleColumns.includes('entreprise') && <TableCell>{row.company_name}</TableCell>}
 
+        {visibleColumns.includes('contract_starts_at') && (
+          <TableCell>{fDate(row.contract_starts_at)}</TableCell>
+        )}
+
+        {visibleColumns.includes('contract_duration') && (
+          <TableCell>{row.contract_duration} mois</TableCell>
+        )}
+
         {visibleColumns.includes('type') && <TableCell>{row.job?.permit}</TableCell>}
 
         {visibleColumns.includes('typedec') && <TableCell>{row.type_display}</TableCell>}
         {visibleColumns.includes('created_on') && <TableCell>{fDate(row.created_on)}</TableCell>}
+
+        {visibleColumns.includes('card_expires_at') && (
+          <TableCell>{fDate(row.card_expires_at)}</TableCell>
+        )}
 
         {visibleColumns.includes('statut') && (
           <TableCell>

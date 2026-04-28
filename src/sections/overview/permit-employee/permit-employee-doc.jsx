@@ -30,7 +30,7 @@ const iconMap = {
   'Certificat de régulation sociale': 'mdi:certificate',
 };
 
-export function PermitEmployeeDoc({ documents = [], employee, onDocumentUploaded }) {
+export function PermitEmployeeDoc({ type, documents = [], employee, onDocumentUploaded }) {
   const [openUploadDialog, setOpenUploadDialog] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -62,6 +62,13 @@ export function PermitEmployeeDoc({ documents = [], employee, onDocumentUploaded
   useEffect(() => {
     getDocuments();
   }, [getDocuments]);
+
+  const filteredDocuments = documentList.filter((docType) => {
+    if (type === 'new') {
+      return docType.name !== 'Permis expiré';
+    }
+    return true;
+  });
 
   // Trouver un document existant chez l'employé
   const getDocumentBySlug = (name) => {
@@ -344,14 +351,14 @@ export function PermitEmployeeDoc({ documents = [], employee, onDocumentUploaded
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="h6">Documents de l'employé</Typography>
               <Chip
-                label={`${documents?.length || 0}/${documentList.length} documents`}
-                color={documents?.length === documentList.length ? 'success' : 'warning'}
+                label={`${documents?.length || 0}/${filteredDocuments.length} documents`}
+                color={documents?.length === filteredDocuments.length ? 'success' : 'warning'}
                 size="small"
               />
             </Box>
 
             <Grid container spacing={2}>
-              {documentList.map((docType) => {
+              {filteredDocuments.map((docType) => {
                 const existingDoc = getDocumentBySlug(docType.name);
                 const hasDocument = !!existingDoc;
 
