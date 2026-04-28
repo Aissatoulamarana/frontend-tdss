@@ -251,7 +251,7 @@ export function EmployeeInfo({ info, type, onSyncSuccess }) {
                 },
               }}
             />
-            <Chip
+            {/* <Chip
               icon={
                 <Iconify
                   icon={info?.is_registered_in_abis ? 'mdi:check-circle' : 'mdi:close-circle'}
@@ -275,8 +275,8 @@ export function EmployeeInfo({ info, type, onSyncSuccess }) {
                   fontSize: { xs: '0.75rem', sm: '0.8125rem' },
                 },
               }}
-            />
-            {type === 'agent' && canSendToABIS && (
+            /> */}
+            {/* {type === 'agent' && canSendToABIS && (
               <Chip
                 icon={<Iconify icon="solar:refresh-bold" width={18} />}
                 label={abisActionLabel}
@@ -295,7 +295,7 @@ export function EmployeeInfo({ info, type, onSyncSuccess }) {
                   },
                 }}
               />
-            )}
+            )} */}
           </Stack>
         </Box>
 
