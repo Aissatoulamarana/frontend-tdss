@@ -57,7 +57,7 @@ import { useMockedUser } from 'src/auth/hooks';
 import { PlanTableRow } from '../plan-africantion-row';
 
 const TABLE_HEAD = [
-  { id: 'reference', label: 'Référence' },
+  // { id: 'reference', label: 'Référence' },
   { id: 'full_name', label: 'Nom Complet' },
   { id: 'email', label: 'Email' },
   { id: 'phone_number', label: 'Téléphone' },
@@ -90,18 +90,21 @@ export function ListPlanAfricanisationView() {
     previous: null,
   });
 
-  const filters = useSetState({
-    company: '',
-    expatriate_name: '',
-    declaration_employee: '',
-    reference: '',
-    status: 'all',
-    expatriate_passport: '',
-    hire_date_from: null,
-    hire_date_to: null,
-    first_name: '',
-    last_name: '',
-  }, { persistByPath: true });
+  const filters = useSetState(
+    {
+      company: '',
+      expatriate_name: '',
+      declaration_employee: '',
+      reference: '',
+      status: 'all',
+      expatriate_passport: '',
+      hire_date_from: null,
+      hire_date_to: null,
+      first_name: '',
+      last_name: '',
+    },
+    { persistByPath: true }
+  );
 
   const dateError = fIsBetween(filters.state.hire_date_from, filters.state.hire_date_to);
 
@@ -129,7 +132,9 @@ export function ListPlanAfricanisationView() {
           limit: table.rowsPerPage,
           offset: offset,
           ...(filters.state.company ? { company: filters.state.company } : {}),
-          ...(filters.state.expatriate_name ? { expatriate_name: filters.state.expatriate_name } : {}),
+          ...(filters.state.expatriate_name
+            ? { expatriate_name: filters.state.expatriate_name }
+            : {}),
           ...(filters.state.declaration_employee
             ? { declaration_employee: filters.state.declaration_employee }
             : {}),
@@ -313,4 +318,3 @@ export function ListPlanAfricanisationView() {
     </>
   );
 }
-

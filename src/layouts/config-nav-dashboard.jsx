@@ -73,7 +73,8 @@ export function useNavData() {
         type === 'accountant' ||
         type === 'agent' ||
         type === 'aguipe' ||
-        type === 'supervisor'
+        type === 'supervisor' ||
+        type === 'printer'
           ? [{ title: 'Dashboard', path: paths.dashboard.root, icon: ICONS.dashboard }]
           : []),
 
@@ -158,7 +159,7 @@ export function useNavData() {
 
         ...(type === 'admin' ||
         type === 'accountant' ||
-        // type === 'agent' ||
+        // type === 'printer' ||
         type === 'treasurer' ||
         type === 'supervisor'
           ? [
