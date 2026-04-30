@@ -19,6 +19,8 @@ const API = {
 
   dashboardAdmin: () => `${BASE_URL}/declarations/dashboard-admin/`, // Dashboard admin
 
+  dashboardPrinter: () => `${BASE_URL}/declarations/dashboard-printer/`, // Dashboard imprimeur
+
   createUser: () => `${BASE_URL}/users/`, // Création d'un utilisateur
   listUsers: (params = {}) => {
     const searchParams = new URLSearchParams(params).toString();
