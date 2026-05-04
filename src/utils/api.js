@@ -169,6 +169,7 @@ const API = {
   // Listes des  api pour les permis des employés
   listPermitsEmployees: () => `${BASE_URL}/declarations/employees/`,
   listPendingPermitsEmployees: () => `${BASE_URL}/declarations/employees/pending-print/`,
+  listPrintedPermitsEmployees: () => `${BASE_URL}/declarations/employees/printed/`,
   detailPermitEmployee: (slug) => `${BASE_URL}/declarations/employees/${slug}/`,
   printPermis: () => `${BASE_URL}/declarations/employees/mark-as-print/`,
   deliverPermit: (slug) => `${BASE_URL}/declarations/employees/${slug}/deliver/`,

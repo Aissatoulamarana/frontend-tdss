@@ -21,7 +21,7 @@ import { CustomPopover } from 'src/components/custom-popover';
 import MenuItem from '@mui/material/MenuItem';
 import MenuList from '@mui/material/MenuList';
 import axios from 'src/utils/axios';
-import { useState, useEffect, useCallback, useRef, use } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, use } from 'react';
 import { _roles } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { varAlpha } from 'src/theme/styles';
@@ -78,6 +78,15 @@ const STATUS_OPTIONS = [
   { value: 'expired', label: 'Expiré' },
 ];
 
+const STATUS_OPTIONS_BY_ROLE = {
+  agent: ['all', 'processing', 'billed', 'paid', 'submitted', 'correction', 'validated'],
+  supervisor: ['all', 'submitted', 'validated', 'correction'],
+  aguipe: ['all', 'submitted', 'validated', 'correction'],
+  printer: ['all', 'validated', 'printed'],
+  admin: STATUS_OPTIONS.map((option) => option.value),
+  default: ['all'],
+};
+
 const BASE_TABLE_HEAD = [
   // { id: 'check', width: 88 },
   // { id: 'reference', label: 'Reference' },
@@ -111,6 +120,11 @@ export function PermitListView() {
   });
 
   const isPrinter = type === 'printer';
+  const allowedStatusValues = STATUS_OPTIONS_BY_ROLE[type] || STATUS_OPTIONS_BY_ROLE.default;
+  const statusOptions = useMemo(
+    () => STATUS_OPTIONS.filter((option) => allowedStatusValues.includes(option.value)),
+    [allowedStatusValues]
+  );
 
   const router = useRouter();
 
@@ -168,6 +182,7 @@ export function PermitListView() {
     },
     { persistByPath: true }
   );
+  const canSelectForPrint = isPrinter && filters.state.status !== 'printed';
 
   const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
@@ -223,6 +238,15 @@ export function PermitListView() {
   useEffect(() => {
     fetchRejetReasons();
   }, []);
+
+  useEffect(() => {
+    if (!filters.isHydrated) return;
+
+    if (!allowedStatusValues.includes(filters.state.status)) {
+      table.onResetPage();
+      filters.setState({ status: 'all' });
+    }
+  }, [allowedStatusValues, filters, table, filters.isHydrated, filters.state.status]);
 
   const handleEditRow = useCallback(
     (slug) => {
@@ -359,30 +383,41 @@ export function PermitListView() {
     }
   }, []);
 
-  const handleDeliverRow = useCallback(async (slug) => {
-    try {
-      const response = await axios.post(API.deliverPermit(slug));
-      if (response.data || response.status === 200) {
-        toast.success('Permit livré avec succès!');
-        setTableData((prevData) =>
-          prevData.map((item) => (item.slug === slug ? { ...item, status: 'delivered' } : item))
-        );
-      } else {
-        console.log('Erreur lors de la livraison du permit');
-        toast.error('Une erreur est survenue lors de la livraison du permit');
+  const handleDeliverRow = useCallback(
+    async (slug) => {
+      try {
+        const response = await axios.post(API.deliverPermit(slug));
+        if (response.data || response.status === 200) {
+          toast.success('Permit livré avec succès!');
+          if (isPrinter && filters.state.status === 'printed') {
+            setTableData((prevData) => prevData.filter((item) => item.slug !== slug));
+            setPagination((prev) => ({
+              ...prev,
+              count: Math.max((prev.count || 0) - 1, 0),
+            }));
+          } else {
+            setTableData((prevData) =>
+              prevData.map((item) => (item.slug === slug ? { ...item, status: 'delivered' } : item))
+            );
+          }
+        } else {
+          console.log('Erreur lors de la livraison du permit');
+          toast.error('Une erreur est survenue lors de la livraison du permit');
+        }
+      } catch (error) {
+        const errorMessage =
+          error?.error ||
+          error?.details ||
+          error?.message ||
+          error?.detail ||
+          error?.non_field_errors?.[0];
+        setError(errorMessage);
+        console.error('Erreur réseau ou serveur:', error);
+        toast.error(errorMessage);
       }
-    } catch (error) {
-      const errorMessage =
-        error?.error ||
-        error?.details ||
-        error?.message ||
-        error?.detail ||
-        error?.non_field_errors?.[0];
-      setError(errorMessage);
-      console.error('Erreur réseau ou serveur:', error);
-      toast.error(errorMessage);
-    }
-  });
+    },
+    [filters.state.status, isPrinter]
+  );
 
   const handlePrintRow = useCallback(async (slug) => {
     try {
@@ -826,7 +861,12 @@ export function PermitListView() {
             : {}),
         };
 
-        const apiRoute = isPrinter ? API.listPendingPermitsEmployees() : API.listPermitsEmployees();
+        const apiRoute =
+          isPrinter && filters.state.status === 'printed'
+            ? API.listPrintedPermitsEmployees()
+            : isPrinter
+              ? API.listPendingPermitsEmployees()
+              : API.listPermitsEmployees();
 
         const response = await axios.get(apiRoute, { params });
 
@@ -897,7 +937,7 @@ export function PermitListView() {
             }}
           >
             {' '}
-            {STATUS_OPTIONS.map((tab) => (
+            {statusOptions.map((tab) => (
               <Tab
                 key={tab.value}
                 iconPosition="end"
@@ -930,7 +970,7 @@ export function PermitListView() {
           )}
 
           <Box sx={{ position: 'relative' }}>
-            {isPrinter && (
+            {canSelectForPrint && (
               <TableSelectedAction
                 dense={table.dense}
                 numSelected={table.selected.length}
@@ -968,7 +1008,7 @@ export function PermitListView() {
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={
-                    isPrinter
+                    canSelectForPrint
                       ? (checked) =>
                           table.onSelectAllRows(
                             checked,
@@ -1006,7 +1046,9 @@ export function PermitListView() {
                         rejectReasons={RejetReasons}
                         visibleColumns={visibleColumns}
                         selected={table.selected.includes(row.slug)}
-                        onSelectRow={isPrinter ? () => table.onSelectRow(row.slug) : undefined}
+                        onSelectRow={
+                          canSelectForPrint ? () => table.onSelectRow(row.slug) : undefined
+                        }
                         onDeleteRow={() => handleDeleteRow(row.slug)}
                         onEditRow={() => handleEditRow(row.slug)}
                         onViewRow={() => handleViewRow(row.slug)}

@@ -50,6 +50,7 @@ export function TableRowComPermit({
   const deliverConfirm = useBoolean();
 
   const printConfirm = useBoolean();
+  const isSelectable = type === 'printer' && Boolean(onSelectRow);
 
   const [rejectForm, setRejectForm] = useState({
     reject_reason_type: '',
@@ -129,7 +130,7 @@ export function TableRowComPermit({
           },
         }}
       >
-        {type === 'printer' && (
+        {isSelectable && (
           <TableCell padding="checkbox">
             <Checkbox
               id={row.slug}
@@ -275,7 +276,7 @@ export function TableRowComPermit({
                   }}
                   sx={{ color: 'success.main' }}
                 >
-                  <Iconify icon="mdi:truck-delivery" />
+                  <Iconify icon="solar:printer-minimalistic-bold" />
                   imprimer le permis
                 </MenuItem>
               )}
@@ -287,8 +288,8 @@ export function TableRowComPermit({
                   }}
                   sx={{ color: 'success.main' }}
                 >
-                  <Iconify icon="mdi:truck-delivery" />
-                  délivrer le permis
+                  <Iconify icon="mdi:check-bold" />
+                  Livrer
                 </MenuItem>
               )}
             </>
