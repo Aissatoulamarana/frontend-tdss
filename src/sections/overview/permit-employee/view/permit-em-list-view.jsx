@@ -82,7 +82,7 @@ const STATUS_OPTIONS_BY_ROLE = {
   agent: ['all', 'processing', 'billed', 'paid', 'submitted', 'correction', 'validated'],
   supervisor: ['all', 'submitted', 'validated', 'correction'],
   aguipe: ['all', 'submitted', 'validated', 'correction'],
-  printer: ['all', 'validated', 'printed'],
+  printer: ['validated', 'printed'],
   admin: STATUS_OPTIONS.map((option) => option.value),
   default: ['all'],
 };
@@ -120,7 +120,9 @@ export function PermitListView() {
   });
 
   const isPrinter = type === 'printer';
+  const isSupervisor = type === 'supervisor' || type === 'aguipe';
   const allowedStatusValues = STATUS_OPTIONS_BY_ROLE[type] || STATUS_OPTIONS_BY_ROLE.default;
+  const defaultStatusValue = isPrinter ? 'validated' : 'all';
   const statusOptions = useMemo(
     () => STATUS_OPTIONS.filter((option) => allowedStatusValues.includes(option.value)),
     [allowedStatusValues]
@@ -173,7 +175,7 @@ export function PermitListView() {
       type: 'all',
       passport_number: '',
       reference: '',
-      status: 'all',
+      status: defaultStatusValue,
       company: '',
       number: '',
       created_on_before: null,
@@ -182,14 +184,17 @@ export function PermitListView() {
     },
     { persistByPath: true }
   );
-  const canSelectForPrint = isPrinter && filters.state.status !== 'printed';
+  const currentStatusFilter = allowedStatusValues.includes(filters.state.status)
+    ? filters.state.status
+    : defaultStatusValue;
+  const canSelectForPrint = isPrinter && currentStatusFilter !== 'printed';
 
   const dateError = fIsBetween(filters.state.created_on_after, filters.state.created_on_before);
 
   const canReset =
     !!filters.state.name ||
     !!filters.state.declaration ||
-    filters.state.status !== 'all' ||
+    currentStatusFilter !== defaultStatusValue ||
     filters.state.type !== 'all' ||
     !!filters.state.passport_number ||
     !!filters.state.reference ||
@@ -198,7 +203,7 @@ export function PermitListView() {
     !!filters.state.not_printed ||
     (!!filters.state.created_on_before && !!filters.state.created_on_after);
 
-  const notFound = pagination.count === 0 && canReset;
+  const notFound = pagination.count === 0;
 
   const handleDeleteRow = useCallback(
     (slug) => {
@@ -236,17 +241,26 @@ export function PermitListView() {
   };
 
   useEffect(() => {
-    fetchRejetReasons();
-  }, []);
+    if (isSupervisor) {
+      fetchRejetReasons();
+    }
+  }, [isSupervisor]);
 
   useEffect(() => {
     if (!filters.isHydrated) return;
 
     if (!allowedStatusValues.includes(filters.state.status)) {
       table.onResetPage();
-      filters.setState({ status: 'all' });
+      filters.setState({ status: defaultStatusValue });
     }
-  }, [allowedStatusValues, filters, table, filters.isHydrated, filters.state.status]);
+  }, [
+    allowedStatusValues,
+    defaultStatusValue,
+    filters,
+    table,
+    filters.isHydrated,
+    filters.state.status,
+  ]);
 
   const handleEditRow = useCallback(
     (slug) => {
@@ -389,7 +403,7 @@ export function PermitListView() {
         const response = await axios.post(API.deliverPermit(slug));
         if (response.data || response.status === 200) {
           toast.success('Permit livré avec succès!');
-          if (isPrinter && filters.state.status === 'printed') {
+          if (isPrinter && currentStatusFilter === 'printed') {
             setTableData((prevData) => prevData.filter((item) => item.slug !== slug));
             setPagination((prev) => ({
               ...prev,
@@ -416,7 +430,7 @@ export function PermitListView() {
         toast.error(errorMessage);
       }
     },
-    [filters.state.status, isPrinter]
+    [currentStatusFilter, isPrinter]
   );
 
   const handlePrintRow = useCallback(async (slug) => {
@@ -848,7 +862,7 @@ export function PermitListView() {
                 ? { name: filters.state.name }
                 : {}),
           ...(filters.state.type !== 'all' ? { type: filters.state.type } : {}),
-          ...(filters.state.status !== 'all' ? { status: filters.state.status } : {}),
+          ...(currentStatusFilter !== 'all' ? { status: currentStatusFilter } : {}),
           ...(filters.state.declaration ? { declaration: filters.state.declaration } : {}),
           ...(filters.state.company ? { company: filters.state.company } : {}),
           ...(filters.state.number ? { number: filters.state.number } : {}),
@@ -862,7 +876,7 @@ export function PermitListView() {
         };
 
         const apiRoute =
-          isPrinter && filters.state.status === 'printed'
+          isPrinter && currentStatusFilter === 'printed'
             ? API.listPrintedPermitsEmployees()
             : isPrinter
               ? API.listPendingPermitsEmployees()
@@ -898,7 +912,7 @@ export function PermitListView() {
     filters.state.passport_number,
     filters.state.reference,
     filters.state.type,
-    filters.state.status,
+    currentStatusFilter,
     filters.state.company,
     filters.state.number,
     filters.state.created_on_before,
@@ -928,7 +942,7 @@ export function PermitListView() {
 
         <Card>
           <Tabs
-            value={filters.state.status}
+            value={currentStatusFilter}
             onChange={handleFilterStatus}
             sx={{
               px: 2.5,
