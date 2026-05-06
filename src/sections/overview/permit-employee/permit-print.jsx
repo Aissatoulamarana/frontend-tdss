@@ -291,7 +291,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Photo - Position absolue en haut à gauche -->
-          <div style="position: absolute; top: 21mm; left: 3.8mm; width: 20mm; height: 27mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 21mm; left: 3.8mm; width: 20mm; height: 29mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.picture
                 ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
