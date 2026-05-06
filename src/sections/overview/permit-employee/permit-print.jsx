@@ -93,6 +93,10 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
+
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                text-rendering: geometricPrecision;
               }
               
               body {
@@ -224,6 +228,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
       display: flex;
       align-items: baseline;
       line-height: 1;
+      text-shadow: 0 0 0.2mm rgba(255,255,255,0.6);
     ">
       <span style="font-weight: ${labelWeight};">
         ${label} :
@@ -232,6 +237,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         font-weight: ${valueWeight};
         letter-spacing: 0.1mm;
         margin-left: 1mm;
+        text-shadow: 0 0 0.15mm rgba(255,255,255,0.5);
         ${limitedStyle}
       ">
         ${displayValue}
@@ -245,7 +251,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
     const length = text.length;
 
     // Taille adaptative TRÈS LARGE
-    let fontSize = 2.5; // mm (normal)
+    let fontSize = 2.6; // mm (normal)
 
     if (length > 55) fontSize = 1.6;
     else if (length > 45) fontSize = 1.8;
@@ -285,7 +291,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Photo - Position absolue en haut à gauche -->
-          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 17mm; left: 5mm; width: 20mm; height: 27mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.picture
                 ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
@@ -334,7 +340,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
 
           <!-- NUMÉRO DE CARTE en bas à droite -->
-          <div style="position: absolute; top: 14mm; left: 55mm; font-size: 3mm; font-weight: 700; color: #000;">
+          <div style="position: absolute; top: 14mm; left: 50mm; font-size: 3mm; font-weight: 700; color: #000;">
             N° ${permit?.card_number}
           </div>
         </div>
@@ -423,7 +429,16 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   const LabelValue = ({ label, value }) => {
     return (
-      <Typography sx={{ color: '#000', lineHeight: 1, mb: 0.3, width: '100%' }}>
+      <Typography
+        sx={{
+          color: '#000',
+          lineHeight: 1,
+          mb: 0.3,
+          width: '100%',
+          textShadow: '0 0 1px rgba(255,255,255,0.5)',
+          fontWeight: 500,
+        }}
+      >
         <Box component="span" sx={{ fontSize: '0.6rem', mr: 0.5 }}>
           {label} :
         </Box>
