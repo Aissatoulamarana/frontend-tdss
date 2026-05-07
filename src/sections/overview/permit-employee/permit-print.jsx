@@ -228,7 +228,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
       display: flex;
       align-items: baseline;
       line-height: 1;
-      text-shadow: 0 0 0.2mm rgba(255,255,255,0.6);
+     
     ">
       <span style="font-weight: ${labelWeight};">
         ${label} :
@@ -237,7 +237,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         font-weight: ${valueWeight};
         letter-spacing: 0.1mm;
         margin-left: 1mm;
-        text-shadow: 0 0 0.15mm rgba(255,255,255,0.5);
+       
         ${limitedStyle}
       ">
         ${displayValue}
@@ -291,7 +291,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Photo - Position absolue en haut à gauche -->
-          <div style="position: absolute; top: 17mm; left: 5mm; width: 20mm; height: 27mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 21mm; left: 3.8mm; width: 20mm; height: 29mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.picture
                 ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
@@ -435,7 +435,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           lineHeight: 1,
           mb: 0.3,
           width: '100%',
-          textShadow: '0 0 1px rgba(255,255,255,0.5)',
+          // textShadow: '0 0 1px rgba(255,255,255,0.5)',
           fontWeight: 500,
         }}
       >
