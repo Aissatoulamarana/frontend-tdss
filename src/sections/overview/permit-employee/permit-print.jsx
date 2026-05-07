@@ -41,9 +41,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
   useEffect(() => {
     const generateQRCode = async () => {
       try {
-        const qrData = encodeURIComponent(
-          `Permit N° ${permit?.card_number || permit?.reference || 'N/A'}`
-        );
+        const qrData = encodeURIComponent(` ${permit?.card_number}`);
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200`;
         setQrCodeUrl(qrUrl);
       } catch (error) {
