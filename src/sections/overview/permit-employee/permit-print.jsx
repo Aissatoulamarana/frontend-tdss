@@ -41,7 +41,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
   useEffect(() => {
     const generateQRCode = async () => {
       try {
-        const qrData = encodeURIComponent(` ${permit?.card_number}`);
+        const qrData = encodeURIComponent(` ${permit?.card_number}${permit?.contract_duration}`);
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200`;
         setQrCodeUrl(qrUrl);
       } catch (error) {
@@ -202,6 +202,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
       valueWeight = 700,
       marginBottom = 1,
       uppercase = true,
+      valueNoWrap = false,
     } = options;
 
     const displayValue = (value && (uppercase ? String(value).toUpperCase() : value)) || 'N/A';
@@ -228,13 +229,15 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
       line-height: 1;
      
     ">
-      <span style="font-weight: ${labelWeight};">
+      <span style="font-weight: ${labelWeight}; white-space: nowrap; flex-shrink: 0;">
         ${label} :
       </span>
       <span style="
         font-weight: ${valueWeight};
         letter-spacing: 0.1mm;
         margin-left: 1mm;
+        min-width: 0;
+        ${valueNoWrap ? 'white-space: nowrap;' : ''}
        
         ${limitedStyle}
       ">
@@ -289,7 +292,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Photo - Position absolue en haut à gauche -->
-          <div style="position: absolute; top: 21mm; left: 3.8mm; width: 20mm; height: 29mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 19.2mm; left: 3.8mm; width: 20mm; height: 29mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${
               permit?.picture
                 ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />`
@@ -353,7 +356,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Section supérieure avec informations employeur -->
-          <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
+          <div style="position: absolute; top: 4mm; left: 5mm; right: 17mm;">
           <!-- EMPLOYEUR -->
           ${createLabelValueHTML('EMPLOYEUR', permit?.company_sigle)}
 
@@ -369,10 +372,16 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             
 
             <!-- VALIDITÉ ET DURÉE -->
+            ${createLabelValueHTML('DEBUT CONTRAT', formatDate(permit?.contract_starts_at))}
        
-             ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_starts_at, permit?.contract_duration))}
-               
-               ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
+             <div style="display: flex; gap: 3mm; align-items: baseline;">
+               <div style="flex: 0 0 50%; min-width: 0;">
+                 ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_starts_at, permit?.contract_duration), { marginBottom: 0, valueNoWrap: true })}
+               </div>
+               <div style="flex: 1; min-width: 0; padding-left: 2mm;">
+                 ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at), { marginBottom: 0, valueNoWrap: true })}
+               </div>
+             </div>
 
        
           </div>
@@ -459,6 +468,39 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
       </Typography>
     );
   };
+
+  const InlineLabelValue = ({ label, value, sx }) => (
+    <Typography
+      sx={{
+        color: '#000',
+        lineHeight: 1,
+        mt: 0.3,
+        minWidth: 0,
+        display: 'flex',
+        alignItems: 'baseline',
+        fontWeight: 500,
+        ...sx,
+      }}
+    >
+      <Box component="span" sx={{ fontSize: '0.6rem', mr: 0.5, flexShrink: 0 }}>
+        {label} :
+      </Box>
+      <Box
+        component="span"
+        sx={{
+          fontSize: '0.7rem',
+          fontWeight: 700,
+          minWidth: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+        title={value}
+      >
+        {value || 'N/A'}
+      </Box>
+    </Typography>
+  );
 
   const calculateDuration = (startDate, duration) => {
     if (!startDate || !duration) return 'N/A';
@@ -669,11 +711,19 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
             label="CATEGORIE "
             value={`TYPE ${getLabelPermit(permit?.category || permit?.job?.permit) || ''}`}
           />
-          <LabelValue
-            label="DUREE CONTRAT "
-            value={calculateDuration(permit?.contract_starts_at, permit?.contract_duration)}
-          />
-          <LabelValue label="VALIDITE " value={formatDate(permit?.card_expires_at)} />
+          <LabelValue label="DEBUT CONTRAT" value={formatDate(permit?.contract_starts_at)} />
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'baseline', width: '100%' }}>
+            <InlineLabelValue
+              label="DUREE CONTRAT "
+              value={calculateDuration(permit?.contract_starts_at, permit?.contract_duration)}
+              sx={{ flex: '0 0 52%' }}
+            />
+            <InlineLabelValue
+              label="VALIDITE "
+              value={formatDate(permit?.card_expires_at)}
+              sx={{ flex: 1, pl: 0.5 }}
+            />
+          </Box>
         </Box>
 
         {/* QR Code */}
