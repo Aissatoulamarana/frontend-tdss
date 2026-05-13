@@ -472,21 +472,21 @@ export function PermitListView() {
       };
       const response = await axios.post(API.printPermis(), paylaod);
 
-      // if (response?.data || response?.status === 200 || response?.status === 201) {
-      //   toast.success(`${table.selected.length} permits marqués comme imprimés`);
+      if (response?.data || response?.status === 200 || response?.status === 201) {
+        toast.success(`${table.selected.length} permits marqués comme imprimés`);
 
-      //   setTableData((prevData) =>
-      //     prevData.map((item) =>
-      //       table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
-      //     )
-      //   );
-      generateBulkPrint(selectedForPrint, printMode);
+        setTableData((prevData) =>
+          prevData.map((item) =>
+            table.selected.includes(item.slug) ? { ...item, status: 'printed' } : item
+          )
+        );
+        generateBulkPrint(selectedForPrint, printMode);
 
-      setOpenBulkPrint(false);
-      table.setSelected([]);
-      // } else {
-      //   toast.error("Echec lors de l'impression des permits sélectionnés");
-      // }
+        setOpenBulkPrint(false);
+        table.setSelected([]);
+      } else {
+        toast.error("Echec lors de l'impression des permits sélectionnés");
+      }
     } catch (error) {
       const errorMessage =
         error?.error ||
