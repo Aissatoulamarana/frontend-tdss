@@ -56,6 +56,7 @@ export function PermitDetailView({ slug }) {
   const tabs = useTabs('info');
   const { user } = useMockedUser();
   const type = user?.type_code?.toLowerCase().trim();
+  const isSupervisor = type === 'supervisor' || type === 'aguipe';
   const [loading, setLoading] = useState(true);
 
   const [permit, setPermit] = useState();
@@ -125,6 +126,8 @@ export function PermitDetailView({ slug }) {
   const [rejectReasons, setRejectReasons] = useState([]);
 
   useEffect(() => {
+    if (!isSupervisor) return;
+
     const fetchRejectReasons = async () => {
       try {
         const response = await axios.get(API.listRejectReasons());
@@ -134,7 +137,7 @@ export function PermitDetailView({ slug }) {
       }
     };
     fetchRejectReasons();
-  }, []);
+  }, [isSupervisor]);
 
   const handleChangeStatus = useCallback((newStatus) => {
     setStatus(newStatus);
