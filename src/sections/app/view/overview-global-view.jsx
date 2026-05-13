@@ -28,7 +28,7 @@ export function OverviewGlobalView() {
       case 'agent':
         return <AgentAppView />;
       case 'supervisor':
-        return <SuperviserAppView />;
+        return <AguipeAppView />;
       case 'accountant':
         return <ComptableAppView />;
       case 'treasurer':
