@@ -62,12 +62,12 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
     try {
       const ok = await onPrint?.();
 
-      // if (ok) {
-      //   onClose?.();
-      setOpenPrintDialog(true);
-      // } else {
-      //   onClose?.();
-      // }
+      if (ok) {
+        onClose?.();
+        setOpenPrintDialog(true);
+      } else {
+        onClose?.();
+      }
     } catch (error) {
       console.error('Erreur lors du print click:', err);
       onClose?.();
@@ -233,8 +233,10 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         ${label} :
       </span>
       <span style="
+        font-family: &quot;Bahnschrift SemiBold Condensed&quot;, Bahnschrift, Arial, sans-serif;
+        font-stretch: condensed;
         font-weight: ${valueWeight};
-        letter-spacing: 0.1mm;
+        letter-spacing: 0;
         margin-left: 1mm;
         min-width: 0;
         ${valueNoWrap ? 'white-space: nowrap;' : ''}
@@ -270,9 +272,11 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         ${label} :
       </span>
       <span style="
+        font-family: &quot;Bahnschrift SemiBold Condensed&quot;, Bahnschrift, Arial, sans-serif;
+        font-stretch: condensed;
         font-size: ${fontSize}mm;
         font-weight: 700;
-        letter-spacing: 0.03mm;
+        letter-spacing: 0;
         display: inline-block;
         max-width: 38mm;
         white-space: nowrap;

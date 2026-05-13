@@ -509,7 +509,7 @@ export function PermitListView() {
 
     permits.forEach((permit, index) => {
       const qrData = encodeURIComponent(
-        `Permit N° ${permit?.card_number || permit?.reference || 'N/A'}`
+        ` ${permit?.card_number || permit?.reference || 'N/A'}${permit?.contract_duration || ''}`
       );
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200`;
 
@@ -526,13 +526,17 @@ export function PermitListView() {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: geometricPrecision;
           }
           
           body {
             margin: 0;
             padding: ${printMode === 'a4' ? '20px' : '0'};
             background: white;
-            font-family: Arial, sans-serif;
+            font-family: "Bahnschrift SemiBold Condensed", Bahnschrift, Arial, sans-serif;
           }
           
           .print-container {
@@ -550,7 +554,7 @@ export function PermitListView() {
             width: 100%;
             page-break-after: ${printMode === 'duplex' ? 'always' : 'auto'};
           }
-            .permit-group: last-child {
+            .permit-group:last-child {
               page-break-after: auto;
             }   
 
@@ -706,6 +710,7 @@ export function PermitListView() {
         valueWeight = 700,
         marginBottom = 1,
         uppercase = true,
+        valueNoWrap = false,
       } = options;
 
       const displayValue = (value && (uppercase ? String(value).toUpperCase() : value)) || 'N/A';
@@ -725,51 +730,20 @@ export function PermitListView() {
       align-items: baseline;
       line-height: 1;
     ">
-      <span style="font-weight: ${labelWeight};">
+      <span style="font-weight: ${labelWeight}; white-space: nowrap; flex-shrink: 0;">
         ${label} :
       </span>     
         <span style="
+        font-family: &quot;Bahnschrift SemiBold Condensed&quot;, Bahnschrift, Arial, sans-serif;
+        font-stretch: condensed;
         font-weight: ${valueWeight};
-        letter-spacing: 0.1mm;
+        letter-spacing: 0;
         margin-left: 1mm;
+        min-width: 0;
+        ${valueNoWrap ? 'white-space: nowrap;' : ''}
         ${limitedStyle}
       ">
         ${displayValue}
-      </span>
-    </div>`;
-    };
-
-    const createEmployerHTML = (label, value) => {
-      const text = (value || 'N/A').toUpperCase();
-      const length = text.length;
-
-      let fontSize = 2.5;
-      if (length > 55) fontSize = 1.6;
-      else if (length > 45) fontSize = 1.8;
-      else if (length > 35) fontSize = 2.0;
-      else if (length > 28) fontSize = 2.2;
-
-      return `
-    <div style="
-      margin-bottom: 1mm;
-      color: #000;
-      font-size: 1.8mm;
-      line-height: 1;
-    ">      
-     <span style="font-weight: 400;">
-        ${label} :
-      </span>
-      <span style="
-        font-size: ${fontSize}mm;
-        font-weight: 700;
-        letter-spacing: 0.03mm;
-        display: inline-block;
-        max-width: 38mm;
-        white-space: nowrap;
-        overflow: hidden;
-        vertical-align: middle;
-      ">
-        ${text}
       </span>
     </div>`;
     };
@@ -783,14 +757,14 @@ export function PermitListView() {
       <!-- RECTO -->
       <div class="card-face card-front">
         <div class="card-content" style="padding: 8mm 5mm;">
-          <div style="position: absolute; top: 19mm; left: 4mm; width: 20mm; height: 27mm; background: white; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 19mm; left: 3.8mm; width: 20mm; height: 29mm; background: white; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${permit?.picture ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />` : '<div style="color: #999; font-size: 2.5mm;">PHOTO</div>'}
           </div>
 
           <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
+            ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
             ${createLabelValueHTML('NOM ', permit?.last)}
             ${createLabelValueHTML('PRÉNOM(S) ', permit?.first)}
-            ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
             ${createLabelValueHTML('NÉ(E) LE ', formatDate(permit?.birthday))}
             ${createLabelValueHTML('À ', permit?.birth_place)}
             ${createLabelValueHTML('NATIONALITÉ ', permit?.nationality)}
@@ -801,7 +775,7 @@ export function PermitListView() {
             ${permit?.signature ? `<img src="${permit.signature}" alt="signature" style="max-height: 100%; max-width: 100%; object-fit: contain;" />` : '<div style="font-size: 1.8mm; color: #000; font-weight: 400;">SIGNATURE DU TITULAIRE</div>'}
           </div>
 
-          <div style="position: absolute; top: 14mm; left: 55mm; font-size: 3mm; font-weight: 700; color: #000;">
+          <div style="position: absolute; top: 14mm; left: 48mm; font-size: 3mm; font-weight: 700; color: #000;">
             N° ${permit?.card_number}
           </div>
         </div>
@@ -810,20 +784,27 @@ export function PermitListView() {
       <!-- VERSO -->
       <div class="card-face card-back">
         <div class="card-content" style="padding: 8mm 5mm;">
-          <div style="position: absolute; top: 4mm; left: 5mm; right: 22mm;">
-            ${createEmployerHTML('EMPLOYEUR', permit?.company_sigle)}
+          <div style="position: absolute; top: 4mm; left: 5mm; right: 17mm;">
+            ${createLabelValueHTML('EMPLOYEUR', permit?.company_sigle)}
             ${createLabelValueHTML('ADRESSE', permit?.company_address || 'N/A')}
             ${createLabelValueHTML('FONCTION ', permit?.job?.name || 'N/A')}
             ${createLabelValueHTML('CATÉGORIE ', 'TYPE ' + (getLabelPermit(permit?.category || permit?.job?.permit) || ''))}
-            ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_duration))}
-            ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at || permit?.contract_starts_at))}
+            ${createLabelValueHTML('DEBUT CONTRAT', formatDate(permit?.contract_starts_at))}
+            <div style="display: flex; gap: 3mm; align-items: baseline;">
+              <div style="flex: 0 0 50%; min-width: 0;">
+                ${createLabelValueHTML('DURÉE CONTRAT', calculateDuration(permit?.contract_duration), { marginBottom: 0, valueNoWrap: true })}
+              </div>
+              <div style="flex: 1; min-width: 0; padding-left: 2mm;">
+                ${createLabelValueHTML('VALIDITÉ ', formatDate(permit?.card_expires_at), { marginBottom: 0, valueNoWrap: true })}
+              </div>
+            </div>
           </div>
 
-          <div style="position: absolute; top: 7mm; right: 27.5mm; width: 8mm; height: 12mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; top: 7mm; right: 27mm; width: 8mm; height: 12mm; background: white;  overflow: hidden; display: flex; align-items: center; justify-content: center;">
             ${permit?.picture ? `<img src="${permit.picture}" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;" />` : '<div style="color: #999; font-size: 2mm;">PHOTO</div>'}
           </div>
 
-          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white; border: 0.3mm solid #ccc; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white; display: flex; align-items: center; justify-content: center; overflow: hidden;">
             ${qrUrl ? `<img src="${qrUrl}" alt="QR Code" style="width: 100%; height: 100%;" />` : '<div style="color: #ccc; font-size: 2mm;">QR</div>'}
           </div>
         </div>
