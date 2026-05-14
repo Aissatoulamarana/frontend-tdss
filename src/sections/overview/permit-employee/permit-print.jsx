@@ -347,7 +347,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
           <!-- NUMÉRO DE CARTE en haut à droite -->
           <div style="position: absolute; top: 15mm; left: 50mm; font-size: 3mm; font-weight: 700; color: #000;">
-             ${permit?.card_number}
+             N°${permit?.card_number}
           </div>
         </div>
       </div>
