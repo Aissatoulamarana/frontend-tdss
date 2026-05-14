@@ -197,7 +197,8 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
 
   function createLabelValueHTML(label, value, options = {}) {
     const {
-      fontSize = 2.5,
+      labelFontSize = 2.1,
+      valueFontSize = 2.8,
       labelWeight = 400,
       valueWeight = 700,
       marginBottom = 1,
@@ -223,18 +224,18 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
     <div style="
       margin-bottom: ${marginBottom}mm;
       color: #000;
-      font-size: ${fontSize}mm;
       display: flex;
       align-items: baseline;
       line-height: 1;
      
     ">
-      <span style="font-weight: ${labelWeight}; white-space: nowrap; flex-shrink: 0;">
+      <span style="font-size: ${labelFontSize}mm; font-weight: ${labelWeight}; white-space: nowrap; flex-shrink: 0;">
         ${label} :
       </span>
       <span style="
         font-family: &quot;Bahnschrift SemiBold Condensed&quot;, Bahnschrift, Arial, sans-serif;
         font-stretch: condensed;
+        font-size: ${valueFontSize}mm;
         font-weight: ${valueWeight};
         letter-spacing: 0;
         margin-left: 1mm;
@@ -254,12 +255,12 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
     const length = text.length;
 
     // Taille adaptative TRÈS LARGE
-    let fontSize = 2.6; // mm (normal)
+    let fontSize = 3.6; // mm (normal)
 
-    if (length > 55) fontSize = 1.6;
-    else if (length > 45) fontSize = 1.8;
-    else if (length > 35) fontSize = 2.0;
-    else if (length > 28) fontSize = 2.2;
+    if (length > 55) fontSize = 2.6;
+    else if (length > 45) fontSize = 2.8;
+    else if (length > 35) fontSize = 3.0;
+    else if (length > 28) fontSize = 3.2;
 
     return `
     <div style="
@@ -275,7 +276,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         font-family: &quot;Bahnschrift SemiBold Condensed&quot;, Bahnschrift, Arial, sans-serif;
         font-stretch: condensed;
         font-size: ${fontSize}mm;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 0;
         display: inline-block;
         max-width: 38mm;
@@ -305,7 +306,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           </div>
 
           <!-- Informations à droite de la photo -->
-          <div style="position: absolute; top: 19mm; left: 28mm; right: 10mm;">
+          <div style="position: absolute; top: 22mm; left: 28mm; right: 10mm;">
             <!-- NOM -->
             ${createLabelValueHTML('N° INDENTITE ', permit?.passport_number)}
             ${createLabelValueHTML('NOM ', permit?.last)}
@@ -360,7 +361,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
         <div class="card-content" style="padding: 8mm 5mm;">
           
           <!-- Section supérieure avec informations employeur -->
-          <div style="position: absolute; top: 4mm; left: 5mm; right: 17mm;">
+          <div style="position: absolute; top: 4mm; left: 3mm; right: 17mm;">
           <!-- EMPLOYEUR -->
           ${createLabelValueHTML('EMPLOYEUR', permit?.company_sigle)}
 
@@ -400,7 +401,7 @@ export function WorkPermitCard({ permit, onClose, open, onPrint }) {
           </div>
 
           <!-- QR Code en bas à gauche -->
-          <div style="position: absolute; bottom: 8mm; left: 6mm; width: 17mm; height: 17mm; background: white;  display: flex; align-items: center; justify-content: center; overflow: hidden;">
+          <div style="position: absolute; bottom: 8mm; left: 4mm; width: 17mm; height: 17mm; background: white;  display: flex; align-items: center; justify-content: center; overflow: hidden;">
             ${
               qrCodeUrl
                 ? `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%;" />`
