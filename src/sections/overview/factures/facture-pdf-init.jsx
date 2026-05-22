@@ -5,6 +5,7 @@ import { amountToWords } from 'src/utils/number-to-words';
 import {
   formatFactureAmount,
   formatFacturePdfDate,
+  getFactureCurrencyAmount,
   getFactureCurrencySign,
   parseFactureAmount,
 } from './facture-utils';
@@ -83,6 +84,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
 
   const currency = getFactureCurrencySign(devise);
   const invoiceAmount = parseFactureAmount(facture?.amount);
+  const invoiceCurrencyAmount = getFactureCurrencyAmount(invoiceAmount, currency);
   const permits = Array.isArray(facture?.permits) ? facture.permits : [];
   const formatMontant = (value) => sanitize(formatFactureAmount(value, devise));
 
@@ -264,7 +266,7 @@ export async function generateFacturePDFInit(facture, devise, { download = true 
 
   rowY -= totalToWordsGap;
   const amountLabel = 'Arrete la presente facture a la somme de : ';
-  const words = sanitize(amountToWords(invoiceAmount, currency));
+  const words = sanitize(amountToWords(invoiceCurrencyAmount, currency));
 
   page.drawText(amountLabel, { x: 40, y: rowY, size: baseSize, font: helvetica, color: black });
 
