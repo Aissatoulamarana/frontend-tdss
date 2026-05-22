@@ -7,6 +7,7 @@ import { getPenaltyTypeLabel } from '../penalite/penalite-filter-options';
 import {
   formatFactureAmount,
   formatFacturePdfDate,
+  getFactureCurrencyAmount,
   getFactureCurrencySign,
   isPenaltyFacture,
   parseFactureAmount,
@@ -88,6 +89,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
 
   const currency = getFactureCurrencySign(devise);
   const invoiceAmount = parseFactureAmount(facture?.amount);
+  const invoiceCurrencyAmount = getFactureCurrencyAmount(invoiceAmount, currency);
   const declarations = Array.isArray(facture?.declarations) ? facture.declarations : [];
   const penalty = facture?.penalty;
   const isPenaltyInvoice = isPenaltyFacture(facture);
@@ -325,7 +327,7 @@ export async function generateFacturePDF(facture, devise, { download = true } = 
 
   rowY -= totalToWordsGap;
   const amountLabel = 'Arrete la presente facture a la somme de : ';
-  const words = sanitize(amountToWords(invoiceAmount, currency));
+  const words = sanitize(amountToWords(invoiceCurrencyAmount, currency));
 
   page.drawText(amountLabel, { x: 40, y: rowY, size: baseSize, font: helvetica, color: black });
 

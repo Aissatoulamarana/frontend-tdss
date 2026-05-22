@@ -65,17 +65,32 @@ export function getFactureKind(facture) {
 
 export function formatFactureAmount(value, devise) {
   const currency = getFactureCurrencySign(devise);
-  const amount = parseFactureAmount(value);
+  const amount = getFactureCurrencyAmount(value, currency);
 
   if (currency === 'USD') {
-    return fCurrency(amount / 9200);
+    return fCurrency(amount);
   }
 
   if (currency === 'EUR') {
-    return fEuro(amount / 10000);
+    return fEuro(amount);
   }
 
   return fGNF(amount);
+}
+
+export function getFactureCurrencyAmount(value, devise) {
+  const currency = getFactureCurrencySign(devise);
+  const amount = parseFactureAmount(value);
+
+  if (currency === 'USD') {
+    return amount / 9200;
+  }
+
+  if (currency === 'EUR') {
+    return amount / 10000;
+  }
+
+  return amount;
 }
 
 export function formatFacturePdfDate(value) {
